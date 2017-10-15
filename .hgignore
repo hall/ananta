@@ -52,14 +52,3 @@ keydb/countersigned
 keydb/signed
 keydb/signerkey
 tmp/*
-
-syntax: regexp
-^appl/.*.dis
-^appl/.*.sbl
-^tmp/.*
-^contrib/.*
-^usr/\.*
-^grid/.*
-^libinterp/cryptmod.h
-^libinterp/ipintsmod.h
-^libinterp/keyringif.h

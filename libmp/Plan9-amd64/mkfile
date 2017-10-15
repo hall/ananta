@@ -10,7 +10,7 @@ SFILES=\
 	mpvecsub.s\
 	mpdigdiv.s\
 
-HFILES=$ROOT/$SYSTARG/$OBJTYPE/include/u.h $ROOT/include/mp.h ../port/dat.h
+HFILES=$ROOT/arch/$SYSTARG/$OBJTYPE/include/u.h $ROOT/include/mp.h ../port/dat.h
 
 OFILES=${SFILES:%.s=%.$O}
 

@@ -9,9 +9,9 @@ PORTHFILES=\
 	../port/fns.h\
 
 LIBNAMES=${LIBS:%=lib%.a}
-LIBFILES=${LIBS:%=$ROOT/$SYSTARG/$OBJTYPE/lib/lib%.a}
+LIBFILES=${LIBS:%=$ROOT/arch/$SYSTARG/$OBJTYPE/lib/lib%.a}
 
-$ROOT/$SYSTARG/$OBJTYPE/lib/lib%.a:N:	lib%.a
+$ROOT/arch/$SYSTARG/$OBJTYPE/lib/lib%.a:N:	lib%.a
 
 %.$O:	%.s
 	$AS $ASFLAGS $stem.s

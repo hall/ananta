@@ -21,14 +21,14 @@ CC=		cc -c
 CFLAGS=\
 		$CFLAGS\
 		-g\
-		-I$ROOT/$SYSTARG/$OBJTYPE/include\
+		-I$ROOT/arch/$SYSTARG/$OBJTYPE/include\
 		-I$ROOT/include\
 
 ANSICPP=
 LD=		cc
 LDFLAGS=\
 		$LDFLAGS\
-		-L$ROOT/$SYSTARG/$OBJTYPE/lib\
+		-L$ROOT/arch/$SYSTARG/$OBJTYPE/lib\
 		-L/usr/openwin/lib\
 		-L/usr/X11R6/lib\
 

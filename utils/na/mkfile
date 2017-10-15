@@ -13,6 +13,5 @@ LIBS=9
 
 CFLAGS=$CFLAGS -I../include
 
-BIN=$ROOT/$OBJDIR/bin
 
 <$ROOT/mkfiles/mkone-$SHELLTYPE

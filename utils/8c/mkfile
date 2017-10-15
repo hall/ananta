@@ -25,7 +25,6 @@ HFILES=\
 
 LIBS=cc bio 9		# order is important
 
-BIN=$ROOT/$OBJDIR/bin
 
 <$ROOT/mkfiles/mkone-$SHELLTYPE
 

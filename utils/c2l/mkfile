@@ -26,7 +26,6 @@ YFILES=	cc.y\
 
 LIBS=math bio 9
 
-BIN=$ROOT/$OBJDIR/bin
 
 <$ROOT/mkfiles/mkone-$SHELLTYPE
 

@@ -31,7 +31,6 @@ HFILES=	fns.h\
 
 LIBS=	regexp bio 9
 
-BIN=$ROOT/$OBJDIR/bin
 
 <$ROOT/mkfiles/mkone-$SHELLTYPE
 

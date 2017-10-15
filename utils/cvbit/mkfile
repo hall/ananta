@@ -10,6 +10,5 @@ HFILES=	\
 
 LIBS=	draw memdraw draw bio 9
 
-BIN=$ROOT/$OBJDIR/bin
 
 <$ROOT/mkfiles/mkone-$SHELLTYPE

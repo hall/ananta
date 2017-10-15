@@ -13,7 +13,6 @@ HFILES=
 
 LIBS=9 sec
 
-BIN=$ROOT/$OBJDIR/bin
 
 <$ROOT/mkfiles/mkone-$SHELLTYPE
 

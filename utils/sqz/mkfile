@@ -12,7 +12,6 @@ HFILES=	\
 
 LIBS=	mach bio 9
 
-BIN=$ROOT/$OBJDIR/bin
 
 <$ROOT/mkfiles/mkone-$SHELLTYPE
 

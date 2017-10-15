@@ -47,17 +47,17 @@ all:V:		all-$HOSTMODEL
 clean:V:	clean-$HOSTMODEL
 install:V:	install-$HOSTMODEL
 installall:V:	installall-$HOSTMODEL
-emu:V:	emu/all-$HOSTMODEL
+emu:V:	        emu/all-$HOSTMODEL
 emuinstall:V:	emu/install-$HOSTMODEL
 emuclean:V:	emu/clean-$HOSTMODEL
 emunuke:V:	emu/nuke-$HOSTMODEL
 kernel:V:	kernel/all-$HOSTMODEL
 kernelall:V:	kernel/all-$HOSTMODEL
 kernelclean:V:	kernel/clean-$HOSTMODEL
-kernelinstall:V:	kernel/install-$HOSTMODEL
-kernelinstallall:V:	kernel/installall-$HOSTMODEL
-kernelnuke:V:	kernel/nuke-$HOSTMODEL
-nuke:V:		nuke-$HOSTMODEL
+kernelinstall:V:        kernel/install-$HOSTMODEL
+kernelinstallall:V:     kernel/installall-$HOSTMODEL
+kernelnuke:V:   kernel/nuke-$HOSTMODEL
+nuke:V:         nuke-$HOSTMODEL
 
 cleandist:V: clean
 	rm -f $ROOT/$OBJDIR/lib/lib*.a
@@ -142,32 +142,6 @@ kernel/&-Plan9:QV:
 		echo '@{builtin cd' $j '; mk $MKFLAGS $stem}'
 		@{builtin cd $j; mk $MKFLAGS $stem }
 	}
-
-# Convenience targets
-
-Inferno-% inferno-% Inferno-386-% inferno-386-%:V:
-	mk 'SYSHOST=Inferno' 'OBJTYPE=386' $stem
-
-Inferno-arm-% inferno-arm-%:V:
-	mk 'SYSHOST=Inferno' 'OBJTYPE=arm' $stem
-
-Plan9-% plan9-%:V:
-	mk 'SYSHOST=Plan9' 'OBJTYPE=386' $stem
-
-Irix-% irix-%:V:
-	mk 'SYSHOST=Irix' 'OBJTYPE=mips' $stem
-
-Linux-% linux-%:V:
-	mk 'SYSHOST=Linux' 'OBJTYPE=386' $stem
-
-NetBSD-% netbsd-%:V:
-	mk 'SYSHOST=NetBSD' 'OBJTYPE=386' $stem
-
-Nt-% nt-% Win95-% win95-%:V:
-	mk 'SYSHOST=Nt' 'OBJTYPE=386' $stem
-
-Solaris-% solaris-%:V:
-	mk 'SYSHOST=Solaris' 'OBJTYPE=sparc' $stem
 
 mkdirs:V:	mkdirs-$SHELLTYPE
 

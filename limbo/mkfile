@@ -33,8 +33,6 @@ LIBS=	bio\
 
 YFILES=	limbo.y
 
-BIN=$ROOT/$OBJDIR/bin
-
 <$ROOT/mkfiles/mkone-$SHELLTYPE
 
 CFLAGS='-DINCPATH="'$ROOT/module'"' $CFLAGS

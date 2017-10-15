@@ -8,7 +8,7 @@ CONF=emu			#default configuration
 CONFLIST=emu
 CLEANCONFLIST=
 
-INSTALLDIR=$ROOT/arch/$SYSTARG/$OBJTYPE/bin	#path of directory where kernel is installed
+INSTALLDIR=$ROOT/bin    #path of directory where kernel is installed
 
 #end configurable parameters
 

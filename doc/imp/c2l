@@ -1,0 +1,168 @@
+C2L(10.1)                                                  C2L(10.1)
+
+NAME
+       c2l - C to Limbo translator
+
+SYNOPSIS
+       c2l [ option ...  ] file
+
+DESCRIPTION
+       C2l  translates  the  named C file into Limbo. The translated
+       code should be almost always syntactically correct  but  will
+       certainly never be semantically correct as certain constructs
+       in C (strings for example) are almost impossible  to  convert
+       automatically  into  Limbo.   Otherwise it tries to do a good
+       job of translating the C constructs that have  some  sort  of
+       equivalence  in  Limbo. The C ternary ?: operator is replaced
+       where possible.  C library calls are mapped to calls  to  the
+       Limbo  system module, maths module or the provided Limbo libc
+       modules. Some library calls,  such  as  malloc,  are  instead
+       mapped directly into Limbo wherever possible.
+
+       Once  a  translation has been made, running the limbo(1) com‐
+       piler on the resulting output should pick out the areas where
+       hand editing is required.
+
+       C2l  normally puts all mapped C code (plus that from included
+       files) into a single .b file.
+
+       The options to c2l are:
+
+       -p     Use an ANSI preprocessor in place of the internal one.
+
+       -Dname=def
+       -Dname Define the name to the preprocessor, as if  by  If  no
+              definition is given, the name is defined as
+
+       -Idir  An  file  whose  name  does not begin with slash or is
+              enclosed in double quotes is always  sought  first  in
+              the directory of the file argument.  If this fails, or
+              the name is enclosed in  <>,  it  is  then  sought  in
+              directories named in -I options, then in /sys/include,
+              and finally in /$objtype/include.
+
+       -m     Put the mapped code of any included .h files into  its
+              corresponding .m file instead of the .b file.
+
+       -i     Send  the  mapped  code  of  any  included .h files to
+              /dev/null.
+
+       -l     Send the mapped code  of  any  non-local  included  .h
+              files to /dev/null.
+
+       -c     Just  generate  code  corresponding  to  the C code ie
+              don't include any prologue or epilogue code such as an
+              implement  header, include declarations, module decla‐
+              rations or an init function.
+
+       -v     Outputs any warnings to  standard  error  as  well  as
+              putting them in the output source.
+
+       -s     Map  C  strings  to  NUL-terminated arrays of bytes in
+              Limbo. This just  about  preserves  the  semantics  of
+              strings  and  makes  the  process of hand editing much
+              easier. It is useful as a first  attempt  at  transla‐
+              tion.  In this case the module /module/libc0.m is used
+              in place of the standard one /module/libc.m.
+
+       -S     Map char* in C to string in Limbo.  Incompatible  with
+              the -s option.
+
+       -M     Indicates  this  file is the one containing the C main
+              program. Used with the -q option below when  c2l  does
+              not always know this until it's too late.
+
+       -q     This  reduces the number of passes that c2l makes over
+              the C code. It makes it faster but more liable to miss
+              some transformations. Cyclic data structures might not
+              be detected.
+
+       -a     For functions which are passed the address of a scalar
+              typed  (ie  not  a structure or union) expression as a
+              parameter, pass the expression itself and rewrite  the
+              function and all calls of it to return the expression.
+              For example :-
+
+                 int
+                 f(int x, int *y)
+                 {
+                      *y = x*x*x;
+                      return x*(*y);
+                 }
+
+                 void
+                 g()
+                 {
+                      int p3, p4;
+
+                      p4 = f(1729, &p3);
+                 }
+
+                 becomes
+
+                 f(x: int, y: int): (int, int)
+                 {
+                      y = x*x*x;
+                      return (x*y, y);
+                 }
+
+                 g()
+                 {
+                      p3, p4: int;
+
+                      (p4, p3) = f(1729, p3);
+                 }
+
+       C2l runs the preprocessor  on  the  C  code  before  starting
+       translation. As a special case it will convert definitions of
+       constants into Limbo  constant  declarations.   It  makes  no
+       attempt  to  convert  any  definitions into function declara‐
+       tions.
+
+       Identifier names that clash with Limbo keywords have letter x
+       appended  so,  for  example,  a  structure member called type
+       would become typex.
+
+       Warning  messages  preceded  by  the  acronym  TBA   (to   be
+       addressed)  are  issued  for  NUL bytes in strings, ... as an
+       argument, array indices in declarations, use  of  void  type,
+       use  of unions, bit fields, use of address operator, negative
+       array indices, element specifiers, initial  values  in  Limbo
+       modules, labels, gotos and case statement fall through.
+
+       The  C  types  char and unsigned char are mapped to the Limbo
+       byte type.  The C types short, unsigned short, int,  unsigned
+       int, long and unsigned long are mapped to the Limbo int type.
+       The C types long long and unsigned long long  are  mapped  to
+       the  Limbo big type. Finally the C types float and double are
+       mapped to the Limbo real type.
+
+       Anonymous C structures and unions map to a name of  the  form
+       <module>_adt_<num>  where  module  is  the name of the module
+       which is, in turn, derived from the file name. Anonymous mem‐
+       ber  names  in  strucures  and unions have a name of the form
+       anon_<num>. Finally,temporary variables generated by c2l have
+       a  name of the form tmp_<num>. In all cases <num> is a unique
+       identifier.
+
+SOURCE
+       /module/libc.m
+
+       /module/libc0.m
+
+       /appl/lib/libc.b
+
+       /appl/lib/libc0.b
+
+       SEE ALSO
+              2c(10.1), limbo(1)
+
+BUGS
+       C2l is not a pretty printer. It has its own idea of how Limbo
+       should be laid out.
+
+       C2l may well crash if given invalid C code.
+
+       c2l -a does not always do all possible conversions.
+
+                                                           C2L(10.1)

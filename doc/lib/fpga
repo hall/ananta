@@ -1,0 +1,74 @@
+FPGA(3)               Library Functions Manual               FPGA(3)
+
+NAME
+       fpga - interface to on-board FPGA
+
+SYNOPSIS
+       bind -a #F /dev
+
+       /dev/fpgaclk
+       /dev/fpgactl
+       /dev/fpgamemb
+       /dev/fpgamemw
+       /dev/fpgaprog
+       /dev/fpgastatus
+
+DESCRIPTION
+       Fpga allows configuration of an on-board FPGA (eg, the Altera
+       Flex6000 on the Bright Star Engineering  ip-Engine),  control
+       of  its clocks and environment, and raw access to any devices
+       presented in the FPGA address space.  On  booting,  the  FPGA
+       subsystem  is  normally  left  powered  down and the system's
+       external clocks are not directed to  the  processor's  output
+       pins, to conserve power if the subsystem is unused.
+
+       The control file fpgactl accepts the following requests:
+
+       bclk n Set BCLK output to n MHz, where n must be a divisor of
+              the system clock frequency (eg, of 48 if the system is
+              running at 48 MHz).
+
+       power  Power  up  the  FPGA  subsystem (that is automatically
+              done when fpgaprog is accessed).
+
+       power off
+              Power down the FPGA subsystem.
+
+       reset  Reset the FPGA, forcing  it  into  configuration  mode
+              (automatically done when fpgaprog is accessed).
+
+       vclk n m v r
+              Program  the  clock synthesiser with the given parame‐
+              ters, and enable its output as VCLK.
+
+       vclk off
+              Disable output from the clock synthesiser.
+
+       The files fpgamemb and fpgamemw give 8-bit and 16-bit  access
+       respectively  to  the  address space interpreted by the FPGA.
+       The file offset is the address read or  written  within  that
+       space;  offset and count must both be even for fpgamemw.  The
+       interpretation of the data, including  the  data  format  and
+       whether byte or word access is required, is completely deter‐
+       mined by the program configured into the FPGA.
+
+       The write-only file fpgaprog configures the device.  A single
+       write  provides  an  FPGA configuration in raw binary format.
+       The FPGA subsystem is given power, the processor's clocks are
+       made  visible  externally,  and the device is configured with
+       the data written.  The write returns an error  if  configura‐
+       tion fails.
+
+       The  read-only file fpgastatus contains a single line of text
+       giving the state of the two status bits in  the  FPGA  inter‐
+       face.   The  word  config  appears if CONFIG_DONE is set, and
+       !config otherwise; the word status appears if nSTATUS is set,
+       and !status otherwise.
+
+SOURCE
+       /os/ipengine/devfpga.c
+
+SEE ALSO
+       fpgaload(8)
+
+                                                             FPGA(3)

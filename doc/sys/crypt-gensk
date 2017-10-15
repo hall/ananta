@@ -1,0 +1,124 @@
+CRYPT-GENSK(2)           System Calls Manual          CRYPT-GENSK(2)
+
+NAME
+       crypt:  genSK,  genSKfromPK, sktopk, dhparams, sign, verify -
+       generate keys and digital signatures
+
+SYNOPSIS
+       include "ipints.m";
+       ipints := load IPints IPints->PATH;
+       IPint: import ipints;
+
+       include "crypt.m";
+       crypt := load Crypt Crypt->PATH;
+
+       PK: adt
+       {
+           pick {
+           RSA =>
+               n:     ref IPint;   # modulus
+               ek:    ref IPint;   # exp (encryption key)
+           Elgamal =>
+               p:     ref IPint;   # modulus
+               alpha: ref IPint;   # generator
+               key:   ref IPint;   # encryption key (alpha**secret mod p)
+           DSA =>
+               p:     ref IPint;   # modulus
+               q:     ref IPint;   # group order, q divides p-1
+               alpha: ref IPint;   # group generator
+               key:   ref IPint;   # encryption key (alpha**secret mod p)
+           }
+       };
+
+       SK: adt
+       {
+           pick {
+           RSA =>
+               pk:     ref PK.RSA;
+               dk:     ref IPint;   # exp (decryption key)
+               p:      ref IPint;   # q in pkcs
+               q:      ref IPint;   # p in pkcs
+               # precomputed crt values
+               kp:     ref IPint;   # k mod p-1
+               kq:     ref IPint;   # k mod q-1
+               c2:     ref IPint;   # for converting residues to number
+           Elgamal =>
+               pk:     ref PK.Elgamal;
+               secret: ref IPint;   # decryption key
+           DSA =>
+               pk:     ref PK.DSA;
+               secret: ref IPint;   # decryption key
+           }
+       };
+
+       PKsig: adt
+       {
+           pick {
+           RSA =>
+               n:  ref IPint;
+           Elgamal =>
+               r:  ref IPint;
+               s:  ref IPint;
+           DSA =>
+               r:  ref IPint;
+               s:  ref IPint;
+           }
+       };
+
+       genSK:       fn(algname: string, length: int): ref SK;
+       genSKfromPK: fn(pk: ref PK): ref SK;
+       sktopk:      fn(sk: ref SK): ref PK;
+
+       sign:        fn(sk: ref SK, m: ref IPint): ref PKsig;
+       verify:      fn(pk: ref PK, sig: ref PKsig, m: ref IPint): int;
+
+       dhparams:    fn(nbits: int): (ref IPint, ref IPint);
+
+DESCRIPTION
+       Crypt implements a set of  public-key  signature  algorithms.
+       The public/private key pairs are represented by values of the
+       adt SK, containing both the private (secret) and public parts
+       of  the  pair,  and PK, containing only the public part.  The
+       several algorithms are represented by  different  pick  vari‐
+       ants.
+
+       GenSK generates a new public/private key pair, represented by
+       SK.  Algname is the name of the algorithm to use; in the cur‐
+       rent  implementation,  dsa,  elgamal  and  rsa  are possible.
+       Length gives the length of the key modulus  in  bits.   GenSK
+       returns nil if an unknown algorithm has been specified.
+
+       GenSKfromPK  generates  a  private  key  that  has the system
+       parameters as the public key pk.  It is used to generate  new
+       keys that are of the same complexity as old keys.
+
+       Sktopk  returns a reference to the public part of private key
+       sk.
+
+       Sign creates a digital signature of a message m,  represented
+       by  an  IPint,  using the private key sk.  Typically m repre‐
+       sents a secure hash  (eg,  using  crypt-sha1(2))  of  a  much
+       larger message.
+
+       Verify  uses  public key pk to verify that the value sig is a
+       digital signature of the message m using the private key cor‐
+       responding  to  pk.  It returns non-zero (true) if the signa‐
+       ture is valid; zero (false) otherwise.
+
+       Most applications use generic operations on public  and  pri‐
+       vate  keys, referring to PK and SK, but specific variants can
+       be named, such as PK.RSA for RSA keys, allowing use  of  RSA-
+       specific operations.  Crypt-dsagen(2) describes functions for
+       key generation that are specific to various algorithms, using
+       algorithm-specific parameters.
+
+       Dhparams  creates  Diffie-Hellman  parameters.  It  returns a
+       tuple of IPints (alpha,p).  P is an nbits long  prime  number
+       that serves as the modulus.  Alpha is a primitive root in the
+       integer field defined by that modulus.
+
+SEE ALSO
+       crypt-dsagen(2), crypt-sha1(2),  security-auth(2),  security-
+       oldauth(2)
+
+                                                      CRYPT-GENSK(2)

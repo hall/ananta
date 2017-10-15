@@ -1,0 +1,272 @@
+9P-NINEP(2)              System Calls Manual             9P-NINEP(2)
+
+NAME
+       Ninep:  Rmsg,  Tmsg,  dir2text, istmsg, packdir, packdirsize,
+       readmsg, qid2text, unpackdir - interface to 9P file protocol
+
+SYNOPSIS
+       include "9p.m";
+       ninep := load Ninep Ninep->PATH;
+
+       Tmsg: adt {
+           tag: int;
+           pick {
+           Readerror =>
+               error: string;      # tag is unused in this case
+           Version =>
+               msize: int;
+               version: string;
+           Auth =>
+               afid: int;
+               uname, aname: string;
+           Attach =>
+               fid, afid: int;
+               uname, aname: string;
+           Flush =>
+               oldtag: int;
+           Walk =>
+               fid, newfid: int;
+               names: array of string;
+           Open =>
+               fid, mode: int;
+           Create =>
+               fid: int;
+               name: string;
+               perm, mode: int;
+           Read =>
+               fid: int;
+               offset: big;
+               count: int;
+           Write =>
+               fid: int;
+               offset: big;
+               data: array of byte;
+           Clunk or
+           Stat or
+           Remove =>
+               fid: int;
+           Wstat =>
+               fid: int;
+               stat: Sys->Dir;
+           }
+
+           read:   fn(fd: ref Sys->FD, msize: int): ref Tmsg;
+           unpack: fn(a: array of byte): (int, ref Tmsg);
+           pack:   fn(nil: self ref Tmsg): array of byte;
+           packedsize: fn(nil: self ref Tmsg): int;
+           text:   fn(nil: self ref Tmsg): string;
+           mtype:  fn(nil: self ref Tmsg): int;
+       };
+
+       Rmsg: adt {
+           tag: int;
+           pick {
+           Readerror =>
+               error: string;      # tag is unused in this case
+           Version =>
+               msize: int;
+               version: string;
+           Auth =>
+               aqid: Sys->Qid;
+           Attach =>
+               qid: Sys->Qid;
+           Flush =>
+           Error =>
+               ename: string;
+           Clunk or
+           Remove or
+           Wstat =>
+           Walk =>
+               qids: array of Sys->Qid;
+           Create or
+           Open =>
+               qid: Sys->Qid;
+               iounit: int;
+           Read =>
+               data: array of byte;
+           Write =>
+               count: int;
+           Stat =>
+               stat: Sys->Dir;
+           }
+
+           read:   fn(fd: ref Sys->FD, msize: int): ref Rmsg;
+           unpack: fn(a: array of byte): (int, ref Rmsg);
+           pack:   fn(nil: self ref Rmsg): array of byte;
+           packedsize: fn(nil: self ref Rmsg): int;
+           text:   fn(nil: self ref Rmsg): string;
+           mtype:  fn(nil: self ref Rmsg): int;
+       };
+
+       init:        fn();
+
+       readmsg:     fn(fd: ref Sys->FD, msize: int): (array of byte, string);
+       istmsg:      fn(f: array of byte): int;
+
+       compatible:  fn(t: ref Tmsg.Version, msize: int, version: string): (int, string);
+
+       packdirsize: fn(d: Sys->Dir): int;
+       packdir:     fn(d: Sys->Dir): array of byte;
+       unpackdir:   fn(f: array of byte): (int, Sys->Dir);
+       dir2text:    fn(d: Sys->Dir): string;
+       qid2text:    fn(q: Sys->Qid): string;
+
+       VERSION:  con "9P2000";
+       MAXWELEM: con 16;
+       NOTAG:    con 16rFFFF;
+       NOFID:    con ~0;
+       IOHDRSZ:  con implementation-defined;
+       DEFMSIZE: con implementation-defined;
+
+DESCRIPTION
+       Ninep provides a Limbo interface to send and receive messages
+       of  the  9P  file service protocol, described by Section 5 of
+       this manual, a thorough reading of which  is  advised  before
+       using  this  module.   Init  must  be called before using any
+       other function in the module.
+
+       A 9P client transmits requests to a  server  as  `T-messages'
+       and  receives  replies in matching `R-messages'.  A T-message
+       is here represented by values of the type Tmsg, and an R-mes‐
+       sage  by values of type Rmsg.  Every message has a tag value,
+       and the alternatives of the pick adt represent  the  possible
+       operation  types  of  a  T-message,  generally with parameter
+       names and types corresponding to those described  in  section
+       5.   The  exceptions are: Tmsg.Write and Rmsg.Read contain an
+       array of byte, data, to hold the data for  the  corresponding
+       message,  and  the `count' parameter of the message is simply
+       the length  of  that  array;  and  there  is  an  alternative
+       labelled  Readerror  that does not appear in the protocol but
+       is used to represent input errors as described  below.   Also
+       note that values that are `unsigned' integers in the protocol
+       are typically given signed integer types in the Limbo  repre‐
+       sentation  (in  particular,  fids, qid paths, counts and off‐
+       sets), and applications should  take  appropriate  care  when
+       manipulating them.
+
+       The following functions are provided by Tmsg:
+
+       read(fd, msize)
+              Read  file  descriptor fd to obtain exactly one T-mes‐
+              sage and return (a  reference  to)  the  corresponding
+              Tmsg.  A nil value is returned on end of file.  Other‐
+              wise, if the read fails or the data read does not form
+              a  valid  T-message,  the  value  returned  will  be a
+              Tmsg.Readerror  value  in  which  the   error   member
+              describes  the  error.  Msize gives the maximum number
+              of bytes in any acceptable T-message,  and  should  be
+              the  value  negotiated in the exchange of version mes‐
+              sages; any incoming  message  larger  than  that  will
+              result  in a diagnostic as a Tmsg.Readerror value.  An
+              msize of 0 means  `no  limit  negotiated'  and  should
+              (only)  be  used until a message size has been negoti‐
+              ated by exchange of version(5) messages.
+
+       t.pack()
+              Return an array of bytes containing the value of t  in
+              the machine-independent format described in Section 5.
+              It can return nil only if the message t is itself  nil
+              or has an invalid type.
+
+       unpack(a)
+              The  array a is assumed to contain zero or more T-mes‐
+              sages.  Unpack attempts to unpack the  first  message,
+              and returns a tuple of the form (n,v).  If successful,
+              n is the number of bytes at the start of a used by the
+              message,  and v is the corresponding Tmsg value.  If a
+              contains the prefix of a valid message but  more  data
+              is  required to complete it, n is zero (and v is nil);
+              the caller will typically read more data, append it to
+              a,  and try again.  If the message is invalid, n is -1
+              and v is nil.
+
+       t.packedsize()
+              Return the number of bytes required for the value of t
+              when  packed in its machine-independent format.  (Zero
+              is returned if t is invalid.)
+
+       t.text()
+              Return a printable string showing the contents  of  t,
+              for tracing or debugging.
+
+       t.mtype()
+              Return the 9P message type of the message.
+
+       An  R-message  is  represented by Rmsg.  Its member functions
+       behave exactly as those for Tmsg, except that they operate on
+       R-messages not T-messages.
+
+       When  a  client  reads  a directory, the data returned in the
+       reply must be formatted as described in read(5): an array  of
+       directory entries, one per file, with each entry formatted in
+       a machine-independent format.  An appropriate array value can
+       be  produced by packdir from a Sys->Dir structure, as used by
+       sys-stat(2).  The space that packed representation will  take
+       can be calculated beforehand by packdirsize.  The server will
+       usually fill the buffer for the reply to  the  read  with  as
+       many  entries  as  will  fit,  checking  the  space remaining
+       against the result of packdirsize and if the value will  fit,
+       storing  the  result of packdir.  Given an array a containing
+       at most one packed directory value (as produced by  packdir),
+       unpackdir  returns a tuple (n, d) where n is -1 if a is ille‐
+       gally formatted; n is zero if a does not contain  a  complete
+       directory entry value; and otherwise n is the number of bytes
+       of a used to produce the unpacked Dir value d .
+
+       The functions dir2text and qid2text produce printable strings
+       showing  the  contents  of the corresponding data structures,
+       for use when tracing or debugging.
+
+       Applications that acts as file servers will  read  T-messages
+       and  reply  with  R-messages.  They can use Tmsg.read to read
+       each T-message, build an Rmsg reply value r, and  use  r.pack
+       to  produce  an  array  of  bytes  to  be written in reply by
+       Sys->write (see sys-read(2)).
+
+       A few specialised programs might need the  lower-level  func‐
+       tion  readmsg  that  underlies  Tmsg.read  and Rmsg.read.  It
+       reads a single message, which can be either a T-message or R-
+       message,  and returns it as an array of bytes, which can then
+       be unpacked using Tmsg.unpack or Rmsg.unpack.  Msize  is  the
+       negotiated message size, or 0 meaning `no limit'.  The predi‐
+       cate istmsg returns true if the contents  of  array  f  looks
+       like  a packed representation of a T-message, judging only by
+       its type byte.
+
+       When generating the version  message  (see  version(5)),  the
+       constant NOTAG can be used in Tmsg.tag and Rmsg.tag to repre‐
+       sent `no tag value'.  The constant VERSION names the  current
+       version  of  the  protocol,  and  can be used as the value of
+       Tmsg.version.
+
+       Compatible can be used by a server to compare its  msize  and
+       version   (which  is  typically  VERSION)  to  those  in  the
+       Tmsg.Version message received from a client,  to  decide  its
+       reply, following the rules in version(5).  It returns a tuple
+       (m, v) with values for use in the Rmsg.Version reply.   M  is
+       the lesser of msize and t.msize, and v is the negotiated pro‐
+       tocol version, or the value "unknown" if no version could  be
+       agreed.   The  constant  DEFMSIZE  is  a reasonable value for
+       msize on current systems.  The resulting value m  can  subse‐
+       quently  be  given to the various read functions as the limit
+       msize.  The constant IOHDRSZ gives the amount  to  allow  for
+       protocol overhead, when limiting data size for Tmsg.Write and
+       Rmsg.Read.
+
+       The constant NOFID can be used as the value of  afid  of  the
+       attach  message  when  authentication  is  not  required (see
+       attach(5)).
+
+       The constant MAXWELEM gives the protocol-defined limit on the
+       length  of  the  arrays  Tmsg.names  and Rmsg.qids.  For spe‐
+       cialised applications, the module defines constants Tversion,
+       Rversion, etc. for the message types of the protocol, and the
+       other constants mentioned in Section 5.
+
+SOURCE
+       /appl/lib/ninep.b
+
+SEE ALSO
+       styxservers(2), intro(5)
+
+                                                         9P-NINEP(2)

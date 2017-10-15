@@ -1,0 +1,39 @@
+PARSECMD(10.2)                                        PARSECMD(10.2)
+
+NAME
+       parsecmd - parse device commands
+
+SYNOPSIS
+       Cmdbuf* parsecmd(char *a, int n)
+
+DESCRIPTION
+       Parsecmd  is  an interface to tokenize (see getfields(10.2)),
+       that safely parses a command, with blank-separated fields, as
+       might  be  written  to a device's ctl file.  The buffer a and
+       count n can be those passed to the driver's  write  function.
+       Parsecmd  converts  the  byte array (which might not be null-
+       terminated) to a null-terminated string, trimming any  trail‐
+       ing  new  line,  before invoking tokenize to break the string
+       into arguments, interpreting blank and tab as  field  separa‐
+       tors  when  they  are not quoted (in the style of sh(1)).  It
+       returns a pointer to a  dynamically-allocated  Cmdbuf  struc‐
+       ture,  which holds a copy of the string as modified by parse‐
+       fields, and the resulting fields; it is defined as follows:
+
+              typedef
+              struct Cmdbuf
+              {
+                    char  buf[128];
+                    char  *f[16];
+                    int   nf;
+              } Cmdbuf;
+
+       The array f holds the field pointers; nf gives the number  of
+       fields.   Cmdbuf  is allocated by smalloc (see malloc(10.2)),
+       and the caller is responsible for freeing it using free.
+
+SOURCE
+       /os/port/parse.c
+       /emu/port/dev.c
+
+                                                      PARSECMD(10.2)

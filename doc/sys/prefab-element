@@ -1,0 +1,296 @@
+PREFAB-ELEMENT(2)        System Calls Manual       PREFAB-ELEMENT(2)
+
+NAME
+       prefab: Element - menu and display elements for ITV toolkit
+
+SYNOPSIS
+       include "draw.m";
+       include "prefab.m";
+       prefab := load Prefab Prefab->PATH;
+
+       # types of Elements
+       EIcon:      con 0;
+       EText:      con 1;
+       ETitle:     con 2;
+       EHorizontal:con 3;
+       EVertical:  con 4;
+       ESeparator: con 5;
+
+       # first arg to Element.adjust: size of elements
+       Adjpack:    con 10; # leave alone, pack tightly
+       Adjequal:   con 11; # make equal
+       Adjfill:    con 12; # make equal, filling available space
+
+       # second arg: position of element within space
+       Adjleft:    con 20;
+       Adjup:      con 20;
+       Adjcenter:  con 21;
+       Adjright:   con 22;
+       Adjdown:    con 22;
+
+       Layout: adt
+       {
+         font:    ref Draw->Font;
+         color:   ref Draw->Image;
+         text:    string;
+         icon:    ref Draw->Image;
+         mask:    ref Draw->Image;
+         tag:     string;
+       };
+
+       Element: adt
+       {
+         kind:   int;
+         r:      Draw->Rect;
+         environ:ref Environ;
+         tag:    string;
+
+         # different fields defined for different kinds of Elements
+         kids:   cyclic list of ref Element; # children of elists
+         str:    string;           # text in an EText element
+         mask:   ref Draw->Image;  # part of Eicon, ESeparator
+         image:  ref Draw->Image;  # part of Eicon, ESeparator, EText, Etitle
+         font:   ref Draw->Font;   # part of EText, Etitle
+
+         icon:      fn(env: ref Environ, r: Draw->Rect,
+                      icon, mask: ref Draw->Image):
+                      ref Element;
+         text:      fn(env: ref Environ, text: string,
+                      r: Draw->Rect, kind: int): ref Element;
+         layout:    fn(env: ref Environ, lay: list of Layout,
+                      r: Draw->Rect, kind: int): ref Element;
+         elist:     fn(env: ref Environ, elem: ref Element, kind: int):
+                      ref Element;
+         separator: fn(env:ref Environ, r: Draw->Rect,
+                      icon, mask: ref Draw->Image): ref Element;
+
+         append:    fn(elist: self ref Element, elem: ref Element): int;
+         adjust:    fn(elem: self ref Element, equal: int, dir: int);
+         clip:      fn(elem: self ref Element, r: Draw->Rect);
+         scroll:    fn(elem:self ref Element, d: Draw->Point);
+         translate: fn(elem:self ref Element, d: Draw->Point);
+         show:      fn(elist: self ref Element, elem: ref Element): int;
+       };
+
+DESCRIPTION
+       Prefab  Elements  are the building blocks of the ITV toolkit.
+       They represent and display text  and  pictures  that  can  be
+       grouped  in  arbitrary  two-dimensional menus to be walked by
+       the infrared remote control.  Elements  are  packaged  within
+       Compounds (see prefab-compound(2)) for display.
+
+       environ
+              This specifies the element's environment.
+
+       image  If the element needs an Image object (see kind below),
+              this member specifies it.
+
+       kind   The Prefab module defines six Element varieties,  each
+              labelled by a defined constant in the kind member.
+
+              EIcon  An image.
+
+              EHorizontal
+                     A horizontal list of elements.
+
+              ESeparator
+                     An Image object, like an EIcon, but intended to
+                     fill space in a list, rather than to  serve  as
+                     an element of the list.  Separators are ignored
+                     when selecting or highlighting list elements.
+
+              EText  A single line of text.  Text for  this  element
+                     will   be   drawn   with   Style.textfont   and
+                     Style.textcolor.
+
+              ETitle A single line of text, usually giving the title
+                     of  a  Compound  object.  Text for this element
+                     will  be   drawn   with   Style.titlefont   and
+                     Style.titlecolor.
+
+              EVertical
+                     A vertical list of elements.
+
+       mask   When   an   element  contains  an  Image  object,  the
+              Image.draw function will be used to display it on  the
+              screen.   The  mask  image  is  used as an argument to
+              Image.draw; see draw-intro(2) for more information.
+
+       r      All Elements are rectangular, occupying  the  position
+              on  the  display  specified by r.min.  The size of the
+              element also depends on r.  During  creation,  if  the
+              rectangle  is  degenerate (has zero size), the element
+              takes its size from the sizes of its  components:  the
+              image  size  for  icons,  text width for strings, etc.
+              Otherwise, the element's size matches the rectangle.
+
+       tag    The tag of an element serves two purposes:  it  allows
+              an  element  to  be  labelled with arbitrary invisible
+              text, and provides a mechanism to control  which  ele‐
+              ments  of  a list may be selected: see the description
+              of Compound.tagselect in prefab-compound(2).  The  tag
+              field  of  an element may be modified freely after the
+              element is created.
+
+       icon(env, r, icon, mask)
+              Build one EIcon element to be drawn with the icon  and
+              mask.   The rectangle, r, gives the element's position
+              and size.
+
+       text(env, text, r, kind)
+              Build a textual element or a list of textual elements.
+              Kind  may be EText or ETitle, determining the style of
+              the drawn text.  The resulting Element object may be a
+              single  element or a EVertical list of the appropriate
+              kind, if the text occupies more than  one  line.   The
+              text  is folded as necessary to accommodate the avail‐
+              able horizontal space; newlines in the text cause line
+              breaks.  The width of the text is determined by r, but
+              if r has no width, it will be set by the text  itself.
+              The  height  of  the  Element is also determined by r;
+              again, if the height of r is zero, the Element will be
+              made  as  tall  as necessary (if r is not tall enough,
+              the rest of the text may be made visible by  calls  to
+              Element.scroll).   Thus one may choose a specific size
+              or let the text determine the size by setting r  suit‐
+              ably.
+
+       layout(env, lay, r, kind)
+              Like  Element.text,  but  builds a structure using the
+              contents of the list lay of  Layout  structures.   The
+              Layout type allows construction of a more general form
+              of textual display by providing fine control over  the
+              font  and  colour  in  which  to  display text and the
+              inclusion of images  as  textual  elements.   It  also
+              allows  setting  of  the tag for each component of the
+              resulting element or list of elements.  If the  Layout
+              has  a  non-nil image field, it is taken as a descrip‐
+              tion of a picture to be incorporated in the text as an
+              EIcon  element (and the text field is ignored); other‐
+              wise the text field specifies the text to be drawn  in
+              the  indicated  font and color.  As with Element.text,
+              Element.layout does all the geometry management,  text
+              line breaking and folding, etc.
+
+       elist(env, elem, kind)
+              Start a list of Element objects.  The kind may be Pre‐
+              fab->EHorizontal or Prefab->EVertical, specifying  the
+              orientation  of the list.  Elem will be the first ele‐
+              ment of the list.  It may be  nil,  which  creates  an
+              empty  list  of the requested orientation.  Subsequent
+              Element.append calls build the list.
+
+       separator(env, r, icon, mask)
+              Build one ESeparator element to be drawn with the icon
+              and mask.  The rectangle, r, gives the element's posi‐
+              tion and size.
+
+       elist.append(elem)
+              Append one Element, elem, to an existing list,  elist.
+              The new element will appear after those already there,
+              either to the right for EHorizontal or below for EVer‐
+              tical lists.
+
+       elem.adjust(spacing, dir)
+              Format the list so its elements abut.  The list-build‐
+              ing functions such as append attempt to build a sensi‐
+              ble  geometry.   Alternatively,  one  can build a list
+              using degenerate geometry and then let adjust  compute
+              the  geometry  for  the  whole list.  For example, one
+              could place all the elements at (0, 0) and  then  call
+              adjust to decide where the elements belong.
+
+              Spacing specifies how the elements fit together:
+
+              Adjequal
+                     Makes  them all equal sized in the dimension of
+                     the list, but only as big as the  largest  ele‐
+                     ment.   For  example, if the element is a hori‐
+                     zontal list, all elements will be  as  wide  as
+                     the  widest  item.   If the list is too big for
+                     the allocated space, only some will be visible.
+
+              Adjfill
+                     Makes them all equal sized in the dimension  of
+                     the  list,  expanding  the  elements to fit the
+                     space of the list's Element.r.  If the list  is
+                     too big for the allocated space, only some will
+                     be visible.
+
+              Adjpack
+                     Packs elements as tightly  as  possible,  using
+                     the  ``natural''  size of each element and set‐
+                     ting their rectangles against one another.
+
+              Dir controls how each element is placed in its  allot‐
+              ted space:
+
+              Adjcenter
+                     Place each element in the middle of its space.
+
+              Adjdown
+                     In  a  vertical  list, move each element to the
+                     bottom.
+
+              Adjleft
+                     In a horizontal list, move each element to  the
+                     left.
+
+              Adjright
+                     In  a horizontal list, move each element to the
+                     right.
+
+              Adjup  In a vertical list, move each  element  to  the
+                     top.
+
+       elem.clip(r)
+              The  drawing  model  for  Element objects is that they
+              occupy some space in the plane, which may be larger or
+              smaller  than  the  space  occupied by its constituent
+              text, icons, sub-elements,  etc.   The  clip  function
+              sets  the rectangle of elem to r, without changing its
+              internal geometry.  Any space made  newly  visible  by
+              this  will be filled in by the list's Style.elemcolor.
+              For example, if e is an icon element just large enough
+              to  display its image, e.clip(e.r.inset(-2)) will make
+              a two-pixel-wide border around the  icon  when  it  is
+              drawn.   As  another  example,  lists  are scrolled by
+              leaving their clip rectangle intact while  translating
+              the list elements' coordinates.
+
+       elem.scroll(d)
+              D  is  a Point, representing a vector; elem is an Ele‐
+              ment object  to  be  scrolled.   The  scroll  function
+              leaves  the  element's  r alone and translates all the
+              constituent pieces of the list by d, causing a differ‐
+              ent portion of elem to be visible in its rectangle.
+
+       elem.translate(d)
+              Like elem.scroll(d), but moves r too, thus translating
+              the entire Element rather than just the  visible  part
+              within a fixed rectangle.
+
+       elist.show(elem)
+              Show  does  nothing if elem is not a list.  If it is a
+              list, the list is scrolled so elem, which  must  be  a
+              member of the list, is visible through elist.r.
+
+       The  geometry  of elements and the membership of lists may be
+       modified only through the provided functions; the Limbo-visi‐
+       ble structure is (intended to be) read-only.  Tags, text, and
+       images may be modified freely by the application, but at  the
+       moment  there  is  no  way to recalculate the geometry if the
+       components of an textual or image icon change size.
+
+       Element objects are never  drawn  explicitly,  nor  are  they
+       drawn  after  any  Element  operation.  They are made visible
+       only by calls  to  Compound.draw,  described  by  prefab-com‐
+       pound(2).
+
+SOURCE
+       /libinterp/prefab.c /libprefab/*.c
+
+SEE ALSO
+       prefab-compound(2) prefab-environ(2) prefab-style(2)
+
+                                                   PREFAB-ELEMENT(2)

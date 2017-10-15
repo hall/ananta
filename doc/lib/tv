@@ -1,0 +1,126 @@
+TV(3)                 Library Functions Manual                 TV(3)
+
+NAME
+       tv - Hauppage TV device
+
+SYNOPSIS
+       bind -b #V /dev
+
+       /dev/tv
+       /dev/tvctl
+
+DESCRIPTION
+       The  tv  device  serves two files giving access to a Hauppage
+       television card in NTSC mode (only).
+
+       The control device tvctl accepts the  following  commands  to
+       control tuning and image processing:
+
+       init   Reset the device to the default settings.
+
+       window minx miny maxx maxy
+              Set the display window size (default: none).
+
+       colorkey rl rh gl gh bl bh
+              Set  the key limits for chromakey display to the given
+              `low' and `high' values for each  of  red,  green  and
+              blue  (default: 15 63 255 15 15 63), and enable use of
+              the colour key.  The value 255 for a lower limit  dis‐
+              ables the limit.
+
+       capture minx miny maxx maxy
+              Set  the  capture  window  (default:  none);  see  the
+              description of reading the tv file, below.
+
+       capbrightness n
+              Set the brightness of a captured  frame  to  n,  on  a
+              scale from 0 to 100 (default: 13).
+
+       capcontrast n
+              Set  the contrast of a captured frame to n, on a scale
+              from 0 to 100 (default: 57).
+
+       capsaturation n
+              Set the saturation of a captured  frame  to  n,  on  a
+              scale from 0 to 100 (default: 51).
+
+       caphue n
+              Set  the hue of a captured frame to n, on a scale from
+              0 to 100 (default: 0).
+
+       capbw n
+              Capture colour (n=0) or  monochrome  (n=1);  (default:
+              0).
+
+       brightness n
+              Set  the  image  brightness to n, on a scale from 0 to
+              100 (default: 0)
+
+       contrast n
+              Set the image contrast to n, on a scale from 0 to  100
+              (default: 54)
+
+       saturation n
+              Set  image  saturation  to n, on a scale from 0 to 100
+              (default: 54)
+
+       source n
+              Set the input source to n (default: video input 0).
+
+       svideo n
+              If n is non-zero, set the input capture format  to  S-
+              Video.
+
+       format n
+              Set  the input format to n (0, NTSC-M; 1, NTSC-443; 2,
+              external control).  Default: 0.
+
+       channel c f
+              Sets the right frequency for HRC CATV channel c,  with
+              fine tuning by signed offset f (in MHz).
+
+       volume m[ n ]
+              Set  the volume of left and right channels to m and n,
+              on a scale from 0 to 100 (default: 80).  If only m  is
+              given, set both left and right volumes to m.
+
+       bass n Set  the bass to n, on a scale from 0 to 100 (default:
+              50).
+
+       treble n
+              Set the treble  to  n,  on  a  scale  from  0  to  100
+              (default: 50).
+
+       freeze n
+              If  n  is  non-zero, freeze the current frame; if n is
+              zero, unfreeze the video.
+
+       The data file tv is read-only.  Reading is valid only after a
+       capture  window  has been set (see capture above).  Each read
+       at file offset 0 causes the contents of the input video image
+       within the previously-set capture window to be captured.  The
+       frame data is successively returned in  this  and  subsequent
+       reads until a short read signals that all frame data has been
+       transferred.  The data is returned in Plan 9 picfile  format,
+       with  a  two  line  textual header followed by an empty line,
+       followed by the image data in binary format.  The header  has
+       the form:
+
+              TYPE=ccir601
+              WINDOW=minx miny maxx maxy
+
+       The  WINDOW coordinates are those of the capture window.  The
+       image data is organised as interleaved scan lines from top to
+       bottom  of  the  window, with UY0 and VY1 values alternating,
+       with two bytes  per  value,  stored  high-order  byte  first,
+       encoded  according  to the IEEE digital component video stan‐
+       dard.
+
+SOURCE
+       /os/port/devtv.c
+       /os/pc/tv.h
+
+SEE ALSO
+       audio(3)
+
+                                                               TV(3)

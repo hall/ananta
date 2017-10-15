@@ -1,0 +1,198 @@
+XML(2)                   System Calls Manual                  XML(2)
+
+NAME
+       xml - XML navigation
+
+SYNOPSIS
+       include "xml.m";
+
+       xml := load Xml Xml->PATH;
+       Parser, Item, Locator, Attributes, Mark: import xml;
+
+       init:   fn(): string;
+       open: fn(f: string, warning: chan of (Locator, string),
+                       preelem: string): (ref Parser, string);
+       fopen: fn(iob: ref Bufio->Iobuf, f: string, warning: chan of (Locator, string),
+                       preelem: string): (ref Parser, string);
+
+       Parser: adt {
+           fileoffset: int;
+
+           next:       fn(p: self ref Parser): ref Item;
+           down:       fn(p: self ref Parser);
+           up:         fn(p: self ref Parser);
+           mark:       fn(p: self ref Parser): ref Mark;
+           atmark:     fn(p: self ref Parser, m: ref Mark): int;
+           goto:       fn(p: self ref Parser, m: ref Mark);
+           str2mark:   fn(p: self ref Parser, s: string): ref Mark;
+       };
+
+       Item: adt {
+           fileoffset: int;
+           pick {
+           Tag =>
+               name:   string;
+               attrs:  Attributes;
+           Text =>
+               ch:     string;
+               ws1:   int;
+                 ws2:    int;
+           Process =>
+               target: string;
+               data:   string;
+           Doctype =>
+               name:   string;
+               public: int;
+               params: list of string;
+           Stylesheet =>
+               attrs:  Attributes;
+           Error =>
+               loc:    Locator;
+               msg:    string;
+           }
+       };
+
+       Locator: adt {
+           line:       int;
+           systemid:   string;
+           publicid:   string;
+       };
+
+       Attribute: adt {
+           name:       string;
+           value:      string;
+       };
+
+       Attributes: adt {
+           all:        fn(a: self Attributes): list of Attribute;
+           get:        fn(a: self Attributes, name: string): string;
+       };
+
+       Mark: adt {
+           offset:     int;
+           str:        fn(m: self ref Mark): string;
+       };
+
+DESCRIPTION
+       Xml  provides  an  interface for navigating XML files (`docu‐
+       ments'). Once loaded, the module must first be initialised by
+       calling  init.   A  new parser instance is created by calling
+       open(f, warning, preelem), which opens the file f for parsing
+       as  an  XML  document, or fopen(iob, name, warning, preelem),
+       which does the same for an already  open  Iobuf  (the  string
+       name  will  be used in diagnostics).  Both functions return a
+       tuple (p, err).  If there is an error opening the document, p
+       is  nil,  and err contains a description of the error; other‐
+       wise p can be used to examine the contents of  the  document.
+       If  warning  is  not  nil,  non-fatal errors encountered when
+       parsing will be sent on this channel  -  a  separate  process
+       will be needed to received them. Each error is represented by
+       a tuple (loc, msg), containing  the  location  loc,  and  the
+       description,  msg,  of  the  error  encountered. One XML tag,
+       preelem, may be marked  for  special  treatment  by  the  XML
+       parser:  within  this  tag  all  white  space  will be passed
+       through as-is.
+
+       Once an XML document has been opened,  the  following  Parser
+       methods may be used to examine the items contained within:
+
+       p.next()  An XML document is represented by a tree-structure.
+                 Next returns the next item in the document  at  the
+                 current level of the tree within the current parent
+                 element. If  there  are  no  more  such  items,  it
+                 returns nil.
+
+       p.down()  Down  descends  into the element that has just been
+                 returned by next, which should be a Tag item.  Sub‐
+                 sequent items returned by next will be those within
+                 that tag.
+
+       p.up()    Up moves up one level in the XML tree.
+
+       p.mark()  Mark returns a mark that  can  be  used  to  return
+                 later  to the current position in the document. The
+                 underlying file must be seekable for this to work.
+
+       p.goto(m) Goes back to a previously marked  position,  m,  in
+                 the document.
+
+       p.atmark(m)
+                 Atmark  returns non-zero if the current position in
+                 the document is the same as that marked by m.   The
+                 current tree level is ignored in the comparison.
+
+       p.str2mark(s)
+                 Str2mark turns a string as created by Mark.str back
+                 into a mark as returned by Parser.mark.
+
+   Items
+       Various species of items live  in  XML  documents;  they  are
+       encapsulated  in  the  Item  adt. This contains one member in
+       common to all its subtypes: fileoffset, the position  in  the
+       XML  document of the start of the item.  The various kinds of
+       item are as follows:
+
+       Tag    A generic XML tag.  Name  names  the  tag,  and  attrs
+              holds its attributes, if any.
+
+       Text   Text represents inline text in the XML document.  With
+              the exception of text inside the tag named by  preelem
+              in  open,  any runs of white space are compressed to a
+              single space, and white space at the start or  end  of
+              the  text  is elided.  Ch contains the resulting text;
+              ws1 and ws2 are non-zero if there was originally white
+              space at the start or end of the text respectively.
+
+       Process
+              Process  represents  an XML document processing direc‐
+              tive.  Target is the processing instruction's  target,
+              and  data holds the rest of the text inside the direc‐
+              tive.   XML  stylesheet  directives   are   recognised
+              directly and have their own item type.
+
+       Doctype
+              Doctype should only occur at the start of an xml docu‐
+              ment, and represents the type of the XML document.
+
+       Stylesheet
+              Stylesheet represents  an  XML  stylesheet  processing
+              request.  The data of the processing request is parsed
+              as per the RFC into attribute-value pairs.
+
+       Error  If an unrecoverable error occurs processing the  docu‐
+              ment,  an  Error item is returned holding the location
+              (loc), and description (msg) of the error.  This  will
+              be the last item returned by the parser.
+
+       The  attribute-value  pairs  in  Tag and Stylesheet items are
+       held in an Atttributes adt, say a.   A.all()  yields  a  list
+       holding  all  the attributes; a.get(name) yields the value of
+       the attribute name.
+
+       The location returned when  an  error  is  reported  is  held
+       inside  a  Locator  adt, which holds the line number on which
+       the error occurred, the ``system id''  of  the  document  (in
+       this  implementation,  its file name), and the "public id" of
+       the document (not currently used).
+
+       A Mark m may be converted to  a  string  with  m.str();  this
+       enables marks to be written out to external storage, to index
+       a large XML document, for example.  Note that if the XML doc‐
+       ument changes, any stored marks will no longer be valid.
+
+SOURCE
+       /appl/lib/xml.b
+
+SEE ALSO
+       ``Extensible  Markup  Language  (XML) 1.0 (Second Edition)'',
+       http://www.w3.org/TR/REC-xml
+
+       ``Navigating Large XML Documents on Small Devices'' in Volume
+       2.
+
+BUGS
+       XML's definition makes it tricky to handle leading and trail‐
+       ing white space efficiently; ws1 and ws2 in Item.Text is  the
+       current compromise.
+
+                                                              XML(2)

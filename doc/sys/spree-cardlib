@@ -1,0 +1,345 @@
+SPREE-CARDLIB(2)         System Calls Manual        SPREE-CARDLIB(2)
+
+NAME
+       Cardlib - support for card games in Spree engines.
+
+SYNOPSIS
+       include "sys.m";
+       include "draw.m";
+       include "sets.m";
+       include "spree.m";
+       include "spree/cardlib.m";
+
+       Object: import Spree;
+       cardlib := load Cardlib Cardlib->PATH;
+
+       init:               fn(spree: Spree, clique: ref Clique, archived: int);
+       selection:     fn(stack: ref Object): ref Selection;
+
+       makecard: fn(deck: ref Object, c: Card, rear: string): ref Object;
+       makecards:     fn(stack: ref Object, r: Range, rear: string);
+       getcard:       fn(card: ref Object): Card;
+       getcards:      fn(stack: ref Object): array of Card;
+       setface:       fn(card: ref Object, face: int);
+       flip:               fn(stack: ref Object);
+       shuffle:       fn(stack: ref Object);
+       discard:       fn(stk, pile: ref Object, facedown: int);
+       deal:               fn(stack: ref Object, n: int, stacks: array of ref Object, first: int);
+       sort:               fn(stack: ref Object, rank, suitrank: array of int);
+
+       addlayframe:   fn(name: string, parent: string, layout: ref Layout, packopts: int, facing: int);
+       addlayobj:     fn(name: string, parent: string, layout: ref Layout, packopts: int, obj: ref Object);
+       dellay:        fn(name: string, layout: ref Layout);
+       maketable:     fn(parent: string);
+
+       newstack:      fn(parent: ref Object, p: ref Member, spec: Stackspec): ref Object;
+
+       archive:       fn(): ref Object;
+       unarchive:     fn(): ref Object;
+       setarchivename: fn(o: ref Object, name: string);
+       archivearray:  fn(a: array of ref Object, name: string);
+       getarchiveobj: fn(name: string): ref Object;
+       getarchivearray: fn(name: string): array of ref Object;
+
+       nmembers: fn(): int;
+
+       Layout: adt {
+            lay: ref Object;
+       };
+
+       Stackspec: adt {
+            style:    string;
+            maxcards: int;
+            title:         string;
+            conceal:  int;
+       };
+
+       Card: adt {
+            suit:          int;
+            number:   int;
+            face:          int;
+       };
+
+       # a member currently playing
+       Cmember: adt {
+            ord:      int;
+            id:       int;
+            p:        ref Member;
+            obj:      ref Object;
+            layout:   ref Layout;
+            sel:      ref Selection;
+
+            join:          fn(p: ref Member, ord: int): ref Cmember;
+            index:    fn(ord: int): ref Cmember;
+            find:          fn(p: ref Member): ref Cmember;
+            findid:   fn(id: int): ref Cmember;
+            leave:    fn(cp: self ref Cmember);
+            next:          fn(cp: self ref Cmember, fwd: int): ref Cmember;
+            prev:          fn(cp: self ref Cmember, fwd: int): ref Cmember;
+       };
+
+       Selection: adt {
+            stack:    ref Object;
+            ownerid:  int;
+            isrange:  int;
+            r:        Range;
+            idxl:          list of int;
+
+            set:      fn(sel: self ref Selection, stack: ref Object);
+            setexcl:  fn(sel: self ref Selection, stack: ref Object): int;
+            setrange: fn(sel: self ref Selection, r: Range);
+            addindex: fn(sel: self ref Selection, i: int);
+            delindex: fn(sel: self ref Selection, i: int);
+            isempty:  fn(sel: self ref Selection): int;
+            isset:         fn(sel: self ref Selection, index: int): int;
+            transfer: fn(sel: self ref Selection, dst: ref Object, index: int);
+            owner:    fn(sel: self ref Selection): ref Cmember;
+       };
+
+DESCRIPTION
+       Cardlib  provides facilities to help in the implementation of
+       spree (2) engines that implement  the  spree-cards(4)  inter‐
+       face.   Facilities include the layout of clients' cards, sup‐
+       port for card selections, and card manipulation.
+
+       Init must be called first to initialise the  Cardlib  module,
+       giving  it the spree module and the current clique.  Archived
+       should be non-zero if the card game is being restored from an
+       archive.
+
+   Cards
+       The  value  of a playing card is represented by the Card adt,
+       having attributes suit, number, and face.  Suit ranges from 0
+       to  3  inclusive,  representing  clubs,  diamonds, hearts and
+       spades respectively; number ranges from 0 to 12 inclusive for
+       the  standard  cards, with ace low and king high - a joker is
+       represented by a number  greater  than  12;  face  represents
+       whether the card is face up or face down (0 is face down).
+
+       A actual card is represented by an object in the object hier‐
+       archy of type card, with attributes number, face,  and  rear.
+       Number  is  the suit/number of the card (held as n, where n%4
+       gives the suit, and n/4 the rank).  Face is as  held  in  the
+       Card adt, and rear is a number that represents the pattern on
+       the back of the card (numbered from 0 upwards).   Convention‐
+       ally  the  number  attribute is made invisible to all players
+       when the face attribute is set to zero.
+
+       Makecard creates a new card of value c, placing the new  card
+       object  at the end of deck, and setting the rear attribute to
+       rear if it is non-nil.  Makecards makes a set of  cards,  all
+       face down, in all four suits, having numbers within the range
+       r.
+
+       Getcard gets the value representation of a card  from  object
+       card; getcards gets the values of all the card objects within
+       stack.  Setface sets of card to face; the visibility  of  the
+       card's number is changed appropriately.
+
+       The  following  few  routines  operate  on  stacks  of cards:
+       objects which contain only  card  objects:  flip  reverses  a
+       stack  of cards, reversing their faces as it does so; shuffle
+       shuffles a stack of cards, and sort sorts a stack of cards by
+       suit  and  then number, according to rank and suitrank.  Rank
+       and suitrank are permutations  mapping  number/suit  to  sort
+       precedence  (0  low).   If  either  of  these are nil, then a
+       default ranking scheme is chosen (two low, ace high for  num‐
+       ber).   Discard moves all the cards in stk onto pile, turning
+       them face down if facedown is non-zero.  Deal deals  out  all
+       the  cards  in  stack  as  evenly as possible amongst stacks,
+       dealing to stacks[first] first.
+
+   Members and card selection
+       Cardlib keeps a record of the current players of the game;  a
+       player  is  represented  by  a  Cmember  adt; the players are
+       assumed to sit in a circle, numbered from 0  updwards;  nmem‐
+       bers  gives the number of current players.  Each player has a
+       unique integer id, and an associated selection and card  lay‐
+       out.
+
+       m.join(m, ord)
+                 Join a new player to the game; m is the clique mem‐
+                 ber that's joining, and ord is where  to  slot  the
+                 player  in  the circle of existing players.  If ord
+                 is -1, the player will be added at the end.
+
+       m.leave() Remove m from the list of current players.
+
+       m.index(ord)
+                 Index returns the ordth player around the table.
+
+       m.find(m) Find the Cmember corresponding to member m.
+
+       m.findid(id)
+                 Find the Cmember with identifier id, and return it.
+                 m.next(fwd) Next returns the next player around the
+                 table from  m.   If  fwd  is  non-zero,  it  counts
+                 upwards,    otherwise    it    counts    downwards.
+                 m.prev(fwd) Prev is the opposite of next.   If  fwd
+                 is  non-zero,  it  counts  downwards,  otherwise it
+                 counts upwards.
+
+   Selection
+       Each Cmember m has an associated selection, m.sel, which con‐
+       sists  of  a  selection  of some cards from a single stack of
+       cards.  A selection can consist of either a  range  of  cards
+       within  a stack, or an arbitrary set of cards within a stack.
+       A stack can only be the subject of one selection; the  member
+       that has that selection is known as its owner.
+
+       sel.set(stack)
+                 Set  makes  stack  (an  object containing only card
+                 objects) the subject of sel's selection.  If  stack
+                 is nil, the selection is cleared.
+
+       sel.setexcl(stack)
+                 Setexcl is the same as set except that it will fail
+                 if the stack is owned by  a  different  player.  It
+                 returns 0 if it fails, otherwise non-zero.
+
+       sel.setrange(r)
+                 Setrange  sets  the  selection sel to be a range of
+                 cards within its stack.  If the selection had  been
+                 of distinct cards (set using addindex), it is first
+                 cleared.
+
+       sel.addindex(i)
+                 Addindex adds the card at index i to the  selection
+                 sel.   If  a range had previously been selected, it
+                 is first cleared.
+
+       sel.delindex(i)
+                 Delindex deletes the  card  at  index  i  from  the
+                 selection.   If  the  selection  was  previously  a
+                 range, this is a no-op.
+
+       sel.isempty()
+                 Isempty returns non-zero  if  sel  holds  an  empty
+                 selection.
+
+       sel.isset(index)
+                 Isset  returns  non-zero if the card at index index
+                 is contained within the selection sel.
+
+       sel.transfer(dst, index)
+                 Transfer moves all the cards in the  selection  sel
+                 to   just   before  index  within  the  stack  dst.
+                 sel.owner() Owner returns the Cmember that owns the
+                 selection sel.
+
+   Layout
+       Creating  a  stack  of cards does not specify how it is to be
+       displayed to members of the game. Each member  has  a  layout
+       object  which  defines  which  objects are to be displayed to
+       that member, and how they are to be  laid  out.   Any  member
+       must  see  at  most  one layout object (it is conventional to
+       make a layout object visible only to its owner).  Objects are
+       laid   out  using  tk-like  pack(9)  semantics:  frames  pack
+       together display objects or other frames.  A  display  object
+       can  lay  out  anything  the card client knows how to display
+       (see ``Display Objects'', below).
+
+       Addlayframe adds a new frame named name within a layout frame
+       named  parent,  specific  to  layout.   If parent is nil, the
+       frame is added to the root of the hierarchy.   If  layout  is
+       nil,  a  frame  is added to parent for each member that has a
+       layout frame of that name.  Packopts specifies how the  frame
+       is  to be packed within its parent: it is a bitmask, specify‐
+       ing the side of the cavity against which it is to be  packed,
+       the  place  it  is to be anchored should the cavity be bigger
+       than its requested size, how to fill its cavity,  whether  to
+       expand its requested size to fill extra available space.  See
+       pack(9) for details of the packing  algorithm.   The  packing
+       direction  is  specified  with one of dTOP, dLEFT, dBOTTOM or
+       dRIGHT.  The anchor direction is specified with one of  aCEN‐
+       TRE, aUPPERCENTRE, aUPPERLEFT, aCENTRELEFT, aLOWERLEFT, aLOW‐
+       ERCENTRE, aLOWERRIGHT, aCENTRERIGHT, or  aUPPERRIGHT.   FILLX
+       and FILLY specify how to fill unused space in its cavity (not
+       mutually exclusive), and EXPAND requests unused space.   Fac‐
+       ing  influences  direction  that objects are packed in under‐
+       neath the frame. It should be one of the pack direction  con‐
+       stants specified above (e.g.  dTOP).  For instance, if dRIGHT
+       is specified, then all objects packed underneath  have  their
+       attributes  modified 90° clockwise, as if the player in ques‐
+       tion was sitting on the left of  the  table,  looking  right.
+       This  feature means that it is possible to set up a ``table''
+       in which layout objects can be added to all  players  at  the
+       same  time,  but  which  nonetheless  looks different to each
+       player around the table.
+
+       Maketable creates such a      ``table'' for between 0  and  4
+       players.  It creates a frame for each player, named pn, where
+       n is the ordinal number of the player around the  table;  and
+       an  inner  space,  named  public.   The  parent  argument  to
+       maketable gives the frame within which the  table  is  to  be
+       created.
+
+       Addlayobj adds a new display object obj to the layout hierar‐
+       chy.  Name, parent, layout, and packopts are the same as  for
+       addlayframe  except  that if it is a stack object, then pack‐
+       opts also specifies the orientation of the stack, with one of
+       the constants oRIGHT, oUP, oLEFT, or oDOWN, giving the direc‐
+       tion in which cards are laid out within the stack.
+
+       Dellay deletes the object named name from the layout  hierar‐
+       chy. If layout is nil, it is deleted from all layouts, other‐
+       wise from layout only.
+
+   Display Objects
+       Currently, two kinds of objects can be displayed: stacks  and
+       widgets.  A  stack  has  object type stack, and contains only
+       cards objects.  Attributes on the  stack  object  define  its
+       appearance:  maxcards  gives  the  default size of the stack;
+       style gives the style of stack layout, currently one of  pile
+       (all the cards piled directly on top of one another), or dis‐
+       play (cards are spread out in the direction specified by  the
+       orientation given in the packing options, see Layout, above);
+       title gives a title to display with the stack.
+
+       Newstack creates a new stack according to the  specifications
+       in spec, where spec is an adt that holds style, maxcards, and
+       title, as described above.  If spec.conceal is non-zero,  the
+       contents  of  the  new  stack  will  be made invisible to all
+       (except owner, if owner is non-nil).
+
+       Widgets are created by making  an  object  of  type  ``widget
+       type'', where type is one of button, entry,or menu.  The text
+       attribute controls the text that is displayed in the  widget;
+       command  gives  the text that will be sent to the engine when
+       the widget is activated, and width specifies  the  widget  of
+       the widget, in multiples of the width of the ``0'' character.
+
+       Entries  can be made in a menu widget by creating new objects
+       of type menuentry inside a menu object. The text and  command
+       attributes have the usual meaning here.
+
+   Archival
+       Engines  that use cardlib should not use spree-objstore(2) to
+       archive their objects: cardlib provides an  interface  to  do
+       this,  and  also  knows  how to archive and unarchive its own
+       internal state.
+
+       Archive commits all the internal  state  of  cardlib  to  the
+       object  hierarchy,  prior  to  archival.  It returns an ``ar‐
+       chive'' object that can be used as a convenient place to  put
+       attributes  that  need  archiving but are not associated with
+       any particular object.  Setarchivename associates  name  with
+       the  object  o such that it can be retrieved when unarchiving
+       by calling  getarchiveobj  with  the  same  name.   Similarly
+       Archivearray  associates a name with each object in the array
+       a such that the array can be retrieved  when  unarchiving  by
+       calling  getarchivearray with the same name.  Name should not
+       end in  a  decimal  digit.   Unarchive  unarchives  cardlib's
+       internal  state.  It returns the same archive object that was
+       returned by archive.
+
+SOURCE
+       /appl/spree/lib/cardlib.b
+
+SEE ALSO
+       spree(2), spree-allow(2), spree-objstore(2)
+
+BUGS
+       This interface is not complete and is liable to change.
+
+                                                    SPREE-CARDLIB(2)

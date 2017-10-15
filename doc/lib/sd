@@ -1,0 +1,126 @@
+SD(3)                 Library Functions Manual                 SD(3)
+
+NAME
+       sd - storage device interface
+
+SYNOPSIS
+       bind #S /dev
+
+       /dev/sdCu/ctl
+       /dev/sdCu/raw
+       /dev/sdCu/data
+       ...
+
+DESCRIPTION
+       The  storage  device  interface  serves a two-level directory
+       giving access to multiple storage units, typically ATA(PI) or
+       SCSI discs.  Each unit is accessed via files in the directory
+       named by the controller to which it is attached,  C,  and  by
+       its  unit  number  u.   The  controller naming convention for
+       ATA(PI) units starts with the first  controller  being  named
+       the  second  etc.  up  to a maximum of 4 controllers ([C-F]);
+       legacy controllers are always 'C' and 'D'.  There  can  be  a
+       maximum  of  2 units per ATA(PI) controller ([01]).  The con‐
+       troller naming convention for  SCSI  units  starts  with  the
+       first  controller being named the second etc. up to a maximum
+       of 16 controllers ([0-9a-f]).  There can be a maximum  of  16
+       units per SCSI controller ([0-9a-f]).
+
+       Units are not accessed before the first attach.  Units may be
+       individually attached using the attach specifier, for example
+
+              bind -a '#SsdD0' /dev
+
+       An attach without a specifier will cause the driver  to  scan
+       for  all  possible  units  before  processing the rest of the
+       name.
+
+       The subdirectory for each unit contains two  files,  ctl  and
+       raw.   In  addition,  if  the unit is a direct-access disc of
+       some type it may be split into partitions and  the  subdirec‐
+       tory  may contain a file per partition.  By default, the par‐
+       tition data will exist for such media.
+
+       Partitions are added and deleted by writing to the ctl file
+
+              part name start-sector end-sector
+              delpart name
+
+       The default data partition may be deleted.  A partition  can‐
+       not  be  deleted  if  a  process has it open.  If a change of
+       removable media is detected, the new media cannot  be  opened
+       until all open partitions on the old media are closed.
+
+       Reading  the  ctl  file  returns at least one line of textual
+       information about the unit.  The first line  will  always  be
+       prefixed  by  inquiry  and will give a manufacturer and model
+       number if possible.   A  line  prefixed  by  config  will  be
+       returned  for  appropriate  media, e.g. for ATA(PI) units the
+       remainder of the line contains configuration information from
+       the  device's  identify command (config and capabilities) and
+       also the available I/O transfer options; this is a diagnostic
+       aid.  A line prefixed by geometry will be returned for appro‐
+       priate media; at least two numbers  will  follow,  the  first
+       being  the  number  of  sectors contained in the unit and the
+       second the sector size in bytes.  Any  remaining  information
+       on  the  geometry line is unit-dependent, for instance, head,
+       cylinder and sector counts for ATA discs.  If any  partitions
+       are  defined for the media, their name, start-sector and end-
+       sector will be returned, prefixed by part.
+
+              % cat /dev/sdD0/ctl
+              inquiry KENWOOD CD-ROM UCR-421  208E10/20/99  7.39  2 M0
+              config 85C0 capabilities 0F00 dma 00550004 dmactl 00000000
+              geometry 242725 2352
+              part data 0 242725
+              %
+
+       The use of DMA and multi-sector read/write  commands  may  be
+       enabled  and  disabled on ATA(PI) units by writing to the ctl
+       file dma and rwm respectively followed by  on  or  off.   For
+       example, to enable DMA on a unit that supports it:
+
+              % echo 'dma on'>/dev/sd00/ctl
+
+       If supported by the unit, the standby timer may be enabled:
+
+              % echo 'standby T'>/dev/sdC0/ctl
+
+       where  T  is  the standby timer period in seconds.  T must be
+       between 30 and 1200, or can be 0 to disable the timer.
+
+       The raw file is used to execute an arbitrary command  on  the
+       unit  at a low level.  This is used by programs to manipulate
+       devices that do not fit the simple  storage  model  or  using
+       special  commands  for  maintenance  purposes.  The following
+       steps may be used to execute a command
+
+              - Write the command to the raw file;
+
+              - Read or write  data  associated  with  the  command,
+              according to the direction of the transfer.
+
+              - Read the raw file to retrieve the status of the com‐
+              mand, returned as a text integer.
+
+SOURCE
+       /os/port/devsd.c
+       /os/*/sd*.[hc]
+
+SEE ALSO
+       ds(3), floppy(3)
+
+BUGS
+       Still in development.
+
+       No LUNs.
+
+       The 4 controller limit for ATA(PI) is not enforced.
+
+       No account is taken of some buggy ATA PCI controllers such as
+       the CMD640.
+
+       ATA(PI)  units  come  up with DMA and multi-sector read/write
+       capability disabled.
+
+                                                               SD(3)

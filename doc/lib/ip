@@ -1,0 +1,610 @@
+IP(3)                 Library Functions Manual                 IP(3)
+
+NAME
+       ip - network protocols over IP
+
+SYNOPSIS
+       bind -a #I[ifn] /net
+
+       /net/arp
+       /net/bootp
+       /net/iproute
+       /net/ipselftab
+       /net/iprouter
+       /net/log
+
+       /net/ipifc/clone
+       /net/ipifc/stats
+       /net/ipifc/n
+       /net/ipifc/n/data
+       /net/ipifc/n/ctl
+       /net/ipifc/n/local
+       /net/ipifc/n/status
+
+       /net/proto/clone
+       /net/proto/stats
+       /net/proto/n
+       /net/proto/n/ctl
+       /net/proto/n/data
+       /net/proto/n/err
+       /net/proto/n/local
+       /net/proto/n/remote
+       /net/proto/n/status
+       /net/proto/n/listen
+       ...
+
+DESCRIPTION
+       The  IP  device  serves  a directory representing a self-con‐
+       tained collection of IP interfaces.   There  may  be  several
+       instances,  identified  by  the decimal interface number ifn,
+       that follows the #I device name; #I0 is assumed  by  default.
+       Each  instance  has  a  disjoint collection of IP interfaces,
+       routes and address resolution maps.  A  physical  or  virtual
+       device,  or  medium,  that  produces IP packets is associated
+       with a logical IP  network  using  the  mechanisms  described
+       under Physical and logical interfaces below.  Commonly all IP
+       media on a host are assigned to  a  single  instance  of  #I,
+       which  is  conventionally bound to /net, but other configura‐
+       tions are possible: interfaces might be assigned to different
+       device instances forming separate logical IP networks to par‐
+       tition networks in firewall or gateway applications.
+
+       Hosted Inferno provides a subset of the  interface  described
+       here  that  gives  to  the TCP/IP and UDP/IP of the host sys‐
+       tem's own IP subsystem.  See Hosted interfaces  below  for  a
+       summary of the differences.
+
+   Protocols
+       Within  each instance, the IP device provides an interface to
+       each IP protocol configured into the system, such  as  TCP/IP
+       or UDP/IP.
+
+       Each  of the protocols is served by the IP device, which rep‐
+       resents a connection by a set of device files.  The top level
+       directory, proto in the SYNOPSIS above, is named after a pro‐
+       tocol (eg, tcp, il, udp) and contains a clone file,  a  stats
+       file,  and subdirectories numbered from zero to the number of
+       connections configured for this protocol.
+
+       The read-only stats file contains  protocol-specific  statis‐
+       tics  as  one  or more lines of text.  There is no particular
+       format, but the values are often a superset of those required
+       by the SNMP MIB.
+
+       Opening  the clone file reserves a connection, represented by
+       one of  the  numbered  subdirectories.   The  resulting  file
+       descriptor  will  be  open  on  the control file, ctl, of the
+       newly allocated connection.  Reading the ctl file  returns  a
+       text  string representing the number of the connection.  Con‐
+       nections may be used either to listen for incoming  calls  or
+       to initiate calls to other machines.
+
+       A  connection  is  controlled  by writing text strings to the
+       associated ctl file.  After a connection has been established
+       data may be read from and written to the data file.
+
+       Before  sending  data, remote and local addresses must be set
+       for the connection.  For outgoing calls the local port number
+       will be allocated randomly if none is set.  Addresses are set
+       by writing control messages to the ctl file  of  the  connec‐
+       tion.   The connection is not established until the data file
+       is opened.  There are two models depending on the  nature  of
+       the protocol.  For connection-oriented protocols, the process
+       will block on open until the remote host has acknowledged the
+       connection,  either accepting it, causing a successful return
+       from open, or rejecting it, causing open to return an  appro‐
+       priate  error.  For connectionless protocols, the open always
+       succeeds; the `connect' request sets local parameters for the
+       source  and destination fields for use by subsequent read and
+       write requests.
+
+       The following control messages are provided by this interface
+       to  all  protocols.   A particular protocol can provide addi‐
+       tional commands, or change the interpretation or even  syntax
+       of those below, as described in the manual page for that pro‐
+       tocol.  The description below  shows  the  standard  commands
+       with the default argument syntax and interpretation:
+
+       connect ipaddress!port[!r] [lport]
+              Set the remote IP address and port number for the con‐
+              nection.  If the r flag is supplied and  the  optional
+              local  port  lport  has  not been specified the system
+              will allocate a restricted port  number  (between  600
+              and  1024)  for  the connection to allow communication
+              with Unix machines' login and exec services.
+
+       announce [ipaddress!]port
+              Set the local port number to port and accept calls  to
+              that  port.   Port is a decimal port number or If port
+              is zero, assign a port number (the one assigned can be
+              read  from the local address file).  If port is accept
+              calls for any port  that  no  process  has  explicitly
+              announced.   If  the  optional ipaddress is given, set
+              the local  IP  address  for  the  connection  to  that
+              address,  and accept only those incoming calls to port
+              that are addressed to ipaddress.   Announce  fails  if
+              the connection is already announced or connected.
+
+       bind port
+              Port  is  a  decimal port number or Set the local port
+              number to port.  This request exists to support emula‐
+              tion of of BSD sockets and is otherwise neither needed
+              nor used in Inferno.
+
+       tos [ n ]
+              Set the type-of-service value in outgooing packets  to
+              n (default: 0).
+
+       ttl [ n ]
+              Set  the time-to-live (TTL) value in packets transmit‐
+              ted on this conversation to n (default: 255).
+
+       Port numbers must be in the range 1 to 32767.
+
+       Several read-only files report the status  of  a  connection.
+       The  remote  and  local files contain the IP address and port
+       number for the remote and local side of the connection.   The
+       status  file  contains protocol-dependent information to help
+       debug network connections.  The first word on the first  line
+       gives the status of the connection.
+
+       Having  announced,  a process may accept incoming connections
+       by calling open on the listen  file.   The  open  will  block
+       until  a  new connection request arrives; it will then return
+       an open file descriptor that points to the  control  file  of
+       the newly accepted connection.  Repeating this procedure will
+       accept all calls for the given protocol.
+
+       In general it should not be necessary to use the file  system
+       interface  to  the  networks.  The dial, announce, and listen
+       functions described in dial(2) perform the necessary  I/O  to
+       establish and manipulate network connections.
+
+   TCP protocol
+       The  TCP protocol is the standard Internet protocol for reli‐
+       able stream communication; it does  not  preserve  read/write
+       boundaries.
+
+       A  connection  is  controlled  by writing text strings to the
+       associated ctl file.  After a connection has been established
+       data  may be read from and written to the data file.  The TCP
+       protocol provides a stream connection that does not  preserve
+       read/write boundaries.
+
+       For  outgoing  calls  the local port number will be allocated
+       randomly if none is set.  Addresses are set by  writing  con‐
+       trol messages to the ctl file of the connection.  The connec‐
+       tion is not established until the data file is  opened.   For
+       TCP the process will block until the remote host has acknowl‐
+       edged the connection.
+
+       As well as the standard control messages above,  TCP  accepts
+       the following:
+
+       hangup Send  a TCP reset (RST) to the remote side and end the
+              conversation, without waiting for  untransmitted  data
+              to  be  acknowledged,  unlike  a  normal  close of the
+              device.
+
+       keepalive [n]
+              Enable `keep alive' mode: if no  traffic  crosses  the
+              link  within  a  given  period, send a packet to check
+              that the remote party is still there,  and  remind  it
+              that the local connection is still live.  The optional
+              value n gives  the  keep-alive  time  in  milliseconds
+              (default: 120000).
+
+       The  status  file  has many lines, each containing a labelled
+       number, giving the values of parameters and  statistics  such
+       as:  maximum  allowed  connections,  outgoing calls, incoming
+       calls, established but later reset, active calls, input  seg‐
+       ments, output segments, retransmitted segments, retransmitted
+       timeouts, input errors, transmitted reset.
+
+   UDP protocol
+       UDP provides the standard Internet  protocol  for  unreliable
+       datagram communication.
+
+       UDP  opens  always  succeed.  Before sending data, remote and
+       local addresses must be set  for  the  connection.   Alterna‐
+       tively, the following special control requests can be used:
+
+       headers
+              Set  the connection to use an address header with IPv6
+              addressing on reads  and  writes  of  the  data  file,
+              allowing a single connection to send datagrams to con‐
+              verse with many different  destination  addresses  and
+              ports.   The  52 byte binary header appears before the
+              data read or written.  It contains: remote IP address,
+              local  IP  address, interface IP address, remote port,
+              and local port.  The IP addresses are 16 bytes each in
+              IPv6  format, and the port addresses are 2 bytes each,
+              all written in network (big-endian) order.  On  reads,
+              the  header  gives  the values from the incoming data‐
+              gram, except that if the remote used a multicast  des‐
+              tination  address,  the  IP  address  of the receiving
+              interface is substituted.  On writes, the header  pro‐
+              vides  the destination for the resulting datagram, and
+              if the local IP address corresponds to a  valid  local
+              unicast interface, that address is used, otherwise the
+              IP address of the transmitting  interface  is  substi‐
+              tuted.
+
+       headers4
+              Set  the connection to use an address header with IPv4
+              addresses on reads and writes of the data file, allow‐
+              ing  a single connection to send datagrams to converse
+              with many different destination addresses  and  ports.
+              The 12 byte binary header appears before the data read
+              or written.  It contains: remote IP address, local  IP
+              address,   remote   port,  and  local  port.   The  IP
+              addresses are 4 bytes each, the port addresses  are  2
+              bytes each, all written in network (big-endian) order.
+              On reads, the header gives the values from the  incom‐
+              ing datagram.  On writes, the header provides the des‐
+              tination for the resulting  datagram.   This  mode  is
+              obsolete and destined for oblivion.
+
+       A  read  of less than the size of the datagram will cause the
+       entire datagram to be consumed.  Each write to the data  file
+       will send a single datagram on the network.
+
+       In  replies,  in  connection-oriented  mode,  if  the  remote
+       address has not been set, the first arriving packet sets  the
+       following  based  on the source of the incoming datagram: the
+       remote address and port for the conversation, and  the  local
+       address  is  set  to  the destination address in the datagram
+       unless that is a multicast address, and then the  address  of
+       the receiving interface is used.
+
+       If  a conversation is in headers mode, only the local port is
+       relevant.
+
+       Connection-oriented UDP is hungup if an ICMP error (eg,  host
+       or  port unreachable, or time exceeded) arrives with matching
+       port.
+
+       The udp status file contains four lines,  each  containing  a
+       labelled number counting an event: input datagrams, datagrams
+       on unannounced ports, datagrams with wrong checksum, and out‐
+       put datagrams.
+
+   IL Protocol
+       IL  provides  a  reliable point-to-point datagram service for
+       communication between Plan 9  and  native  Inferno  machines.
+       Each  read and write transfers a single datagram, as for UDP.
+       The datagrams are delivered reliably and in order.  Conversa‐
+       tions are addressed and established as for TCP.
+
+   Routing
+       The  iproute  file  can  be  read and written.  When read, it
+       returns the contents of the IP routing tables, one  line  per
+       entry, with six fields giving the destination host or network
+       address, address mask, gateway address, route type, tag  (see
+       below),  and  the  number  of  the ipifc interface owning the
+       route (or `-' if none).  The route type is up to four charac‐
+       ters:  4  or  6 (IPv4 or IPv6 route); i (route is interface);
+       one of u (unicast), b  (broadcast),  or  m  (multicast);  and
+       lastly p if the route is point-to-point.
+
+       Commands can also be written to control the routing:
+
+       add ip mask gw [ tag ]
+              Add  a  route via the gateway identified by IP address
+              gw to the address specified  by  ip  and  subnet  mask
+              mask.  Tag the resulting table entry with the tag pro‐
+              vided, or the current tag (see tag below), or the  tag
+              none.
+
+       flush [ tag ]
+              Remove  all routes with the given tag that do not cor‐
+              respond to a local interface.  If tag  is  not  given,
+              flush all routes.
+
+       remove ip mask
+              Remove routes to the given address.
+
+       tag tag
+              Tag the routes generated by writes on the current file
+              descriptor with the given tag of up to  4  characters.
+              The default is none, set when iproute is opened.
+
+       The  ipselftab  file summarises the addresses and routes that
+       refer to the local host.  It gives an address, the number  of
+       logical  interfaces,  and the interface type in the same form
+       as the route type of iproute.
+
+       The iprouter file is provided for use by a user-level  appli‐
+       cation  acting  as  an IP gateway.  It is effective only when
+       the kernel-level gateway is not enabled  (see  the  iprouting
+       interface  control request below).  Once opened, packets that
+       are not addressed to a local address can be  read  from  this
+       device.  The packet contents are preceded by a 16 byte binary
+       header that gives the IPv6 address  of  the  local  interface
+       that received the packet.
+
+   Bootstrap
+       The  read-only  bootp  file  contains the results of the last
+       BOOTP request transmitted on any interface (see Physical  and
+       logical  interfaces below) as several lines of text, with two
+       fields each.  The first field names an entity and the  second
+       field  gives  its  value in IPv4 address format.  The current
+       entities are:
+
+              auip   Authentication server address
+
+              fsip   File server address
+
+              gwip   Address of an IP gateway out of this (sub)net.
+
+              ipaddr Local IP address
+
+              ipmask Subnet mask for the local IP address
+
+       If any value is unknown (no reply to BOOTP, or value unspeci‐
+       fied), the value will be zero, represented as 0.0.0.0.
+
+   Address resolution
+       The  arp file can be read and written.  When read, it returns
+       the contents of the current ARP cache as a sequence of lines,
+       one  per map entry, giving type, state, IP address and corre‐
+       sponding MAC address.  Several textual commands can be  writ‐
+       ten to it:
+
+       add [ medium ] ip mac
+              Add  a  mapping  from  IP  address ip to the given mac
+              address (a sequence of bytes in  hexadecimal)  on  the
+              given medium.  It must support address resolution (eg,
+              Ethernet).  If the medium is not specified,  find  the
+              one  associated  with  a  route  to  ip (which must be
+              IPv4).
+
+       flush  Clear the cache.
+
+   Logging
+       The log file provides protocol tracing  and  debugging  data.
+       While  the  file  is  held open, the system saves, in a small
+       circular buffer, error messages logged by selected protocols.
+       When  read,  it  returns  data  not previously read, blocking
+       until there is data to read.  The following commands  can  be
+       written to determine what is logged:
+
+       set proto ...
+              Enable logging of messages from each source proto, one
+              or more of: ppp, ip, fs, tcp, il, icmp, udp, compress,
+              ilmsg, gre, tcpmsg, udpmsg, ipmsg and esp.
+
+       clear proto ...
+              Disable logging of messages from the given sources.
+
+   Physical and logical interfaces
+       The  configuration  of the physical and logical IP interfaces
+       in a given instance of  #I  uses  a  virtual  protocol  ipifc
+       within  that  instance,  that  adds,  controls and removes IP
+       interfaces.  It is  represented  by  the  protocol  directory
+       ipifc.   Each  connection  corresponds  to  an interface to a
+       physical or virtual medium on which IP packets  can  be  sent
+       and received.  It has a set of associated values: minimum and
+       maximum transfer unit, MAC address, and a set of  logical  IP
+       interfaces.   Each  logical IP interface has local and remote
+       addresses and an address mask.
+
+       Opening the clone file returns a file descriptor open on  the
+       ctl  file  for  a  new connection.  A medium is then attached
+       using a bind request; logical interfaces  are  associated  by
+       connect  or  add;  they  are  removed  by remove; and finally
+       unbind detaches the medium from the connection.  For  certain
+       types  of  media, the unbind is automatic when the connection
+       itself is closed.  With most media, including  Ethernet,  the
+       ipifc connection files can be closed after configuration, and
+       later reopened if need be to add  or  remove  logical  inter‐
+       faces, or set other parameters.
+
+       The ctl file responds to the following text commands, includ‐
+       ing  interface-specific  variants  of  standard   IP   device
+       requests:
+
+       bind medium [ name [ arg ... ]
+              Attach  device medium to the interface, which must not
+              already be bound to a device.  The name and subsequent
+              arguments  are  interpreted  by  the  driver  for  the
+              medium.  The device name associated with the interface
+              is name, if given, or a generated name otherwise.
+
+       connect ip [mask [remote [mtu ]]]
+              Remove  all  existing  logical interfaces and create a
+              new one as if by add (see below).  The connection must
+              be bound to a medium.
+
+       add ip [ mask [ remote [ mtu ] ] ]
+              Add a logical interface with local IP address ip.  The
+              default for mask is the mask for ip's  address  class;
+              for the remote address, ip's network; and for mtu, the
+              largest MTU allowed by the medium.  The new  interface
+              is registered in the IP routing tables.
+
+       bootp  Broadcast  a  BOOTP  packet  (using  udp).  If a valid
+              response is received, set the interface's  IP  address
+              and  mask,  and  the IP stack's default gateway to the
+              results obtained from BOOTP.   The  results  are  also
+              available  to  applications  by reading the bootp file
+              above.  Note that this mechanism is now deprecated  in
+              favour of dhcpclient(2).
+
+       remove ip mask
+              Remove  the  logical  interface  determined  by ip and
+              mask.
+
+       iprouting [n]
+              Control the use of IP routing on this ip(3)  instance.
+              If  n  is missing or non-zero, allow use as a gateway,
+              rerouting  via  one  interface  packets  received   on
+              another.   By default, or if n is zero, use as a gate‐
+              way is not  allowed:  if  a  packet  received  is  not
+              addressed  to any local interface, either pass it to a
+              gateway application if active (see iprouter in ip(3)),
+              and otherwise drop the packet.
+
+       mtu n
+              Set  the maximum transmit unit (MTU) on this interface
+              to n bytes, which must be valid for the medium.
+
+       addmulti multi
+              Add the multicast address multi to the interface.
+
+       remmulti multi
+              Remove the multicast address multi from the interface.
+
+       unbind Remove any  association  between  the  current  medium
+              (device)  and  the connection: remove all routes using
+              this interface, detach the device, stop packet  trans‐
+              port,  and remove all logical interfaces.  The connec‐
+              tion is ready for re-use.
+
+       The local file contains one line for each logical  interface,
+       of the form:
+
+              local->self...
+
+       where  local  is the local address associated with the inter‐
+       face and each self is a broadcast or multicast  address  that
+       can  address  that  interface, including subnet addresses, if
+       any.
+
+       The status file contains many fields: the first two give  the
+       device  name  and the value of the current MTU, followed by 7
+       fields per line for each logical  interface:  local  address,
+       address  mask, remote address, packets in, packets out, input
+       errors, and output errors.
+
+       The following sections describe the media drivers  available.
+       Each is separately configurable into a kernel.
+
+   Ethernet medium
+       Ethernet  devices as described in ether(3) can be bound to an
+       IP interface.  The bind request has the form:
+
+              bind ether device
+
+       The interface opens two conversations on the  given  Ethernet
+       device,  for  instance  ether0,  using an internal version of
+       dial, with the addresses device!0x800 (IPv4) and device!0x806
+       (ARP).  See dial(2) for the interpretation of such addresses.
+       The interface runs until a process does an  explicit  unbind.
+       Multicast  settings  made  on the interface are propagated to
+       the device.
+
+   Point-to-point medium
+       An asynchronous serial device as described in eia(3)  can  be
+       bound  to  an  interface  as  a Point-to-Point protocol (PPP)
+       device.  The bind request has the form:
+
+              bind ppp serial ip remote mtu framing username secret
+
+       All parameters except serial are optional.  The character `-'
+       can  appear  as  a placeholder for any parameter.  Except for
+       authentication data, an attempt is made to negotiate suitable
+       values  for  any  missing parameter values, including network
+       addresses.  The parameters are interpreted as follows:
+
+              serial Name of the device that will run PPP.
+
+              ip     Local IP address for the interface.
+
+              remote IP address of the other end of the link.
+
+              mtu    Initial MTU  value  for  negotiation  (default:
+                     1450)
+
+              framing
+                     If  framing  is  zero,  do  not provide asynch.
+                     framing (on by default).  Unimplemented.
+
+              username
+                     Identification  string  used  in  PAP  or  CHAP
+                     authentication.
+
+              secret Secret  used  in  authentication;  with CHAP it
+                     never crosses the link.
+
+       If the name serial contains `!'  a connection will be  opened
+       using  dial (see dial(2)).  Otherwise the name will be opened
+       as-is; usually it  is  the  name  of  a  serial  device  (eg,
+       #t/eia0).  In the latter case, a companion ctl file will also
+       be opened if possible, to set serial characteristics for  PPP
+       (flow  control,  64kbyte queue size, nonblocking writes).  An
+       attempt is made to start the PPP link immediately.  The write
+       of the bind control message returns with an error if the link
+       cannot be started, or if negotiation fails.  The PPP link  is
+       automatically  unbound  if the line hangs up (eg, modem drops
+       carrier), or an unrecoverable error occurs  when  reading  or
+       writing the connection.
+
+       The  PPP implementation can use either PAP and CHAP authenti‐
+       cation, as negotiated, provided an appropriate  username  and
+       secret is given in the bind request.  It does not yet support
+       the Microsoft authentication scheme.
+
+   Packet medium
+       The packet medium allows an application to be source and sink
+       for  IP  packets.   It is bound to an interface by the simple
+       request:
+
+              bind pkt
+
+       All other interface parameters including its IP  address  are
+       set  using the standard ipifc requests described above.  Once
+       that has been done, the application reads the  data  file  of
+       the  interface to receive packets addressed to the interface,
+       and it writes to the file to inject packets into the IP  net‐
+       work.  The interface is automatically unbound when all inter‐
+       face files are closed.
+
+   Hosted interfaces
+       Native Inferno and Plan 9 have  related  IP  implementations.
+       Plan 9 emu therefore simply imports Plan 9's /net, and in the
+       absence of version-specific differences,  what  is  described
+       above still applies.
+
+       On  all  other hosted platforms, the IP device gives applica‐
+       tions within  emu(1)  a  portable  interface  to  TCP/IP  and
+       UDP/IP, even through it is ultimately using the host system's
+       own TCP/IP and UDP/IP implementations (usually but not always
+       socket  based).  The interface remains the same: for instance
+       by /net/tcp and /net/udp, but is currently  more  limited  in
+       the set of services and control requests.  Both IPv4 and IPv6
+       address syntax may be used, but the IPv6 form must still  map
+       to  the IPv4 address space if the IPv6 support is not config‐
+       ured into emu.  Only TCP and UDP are generally available, and
+       a  limited  interface  to  ARP on some platforms (see below).
+       The set of TCP/UDP control requests is limited  to:  connect,
+       announce, bind, ttl, tos, ignoreadvice, headers4, oldheaders,
+       headers, hangup and keepalive.
+
+       The write-only arp file is implemented only on some Unix sys‐
+       tems,  and  is  intended  to  allow the implementation of the
+       BOOTP protocol using Inferno, on hosted systems.  It  accepts
+       a single textual control request:
+
+       add ip ether
+              Add  a  new ARP map entry, or replace an existing one,
+              for IP address ip, associating it with the given ether
+              MAC address.  The ip address is expressed in the usual
+              dotted address notation; ether is a 12 digit hexadeci‐
+              mal number.
+
+       An  error  results  if the host system does not allow the ARP
+       map to be set, or the current user lacks  the  privileges  to
+       set it.
+
+SOURCE
+       /emu/port/devip.c
+       /os/ip/devip.c
+       /os/ip/proto.c
+       /os/ip/ipifc.c
+       /os/ip/*medium.c
+
+SEE ALSO
+       dial(2)
+
+                                                               IP(3)

@@ -1,0 +1,69 @@
+FILTER-DEFLATE(2)        System Calls Manual       FILTER-DEFLATE(2)
+
+NAME
+       deflate, inflate - data compression filters
+
+SYNOPSIS
+       include "filter.m";
+
+       deflate := load Filter Filter->DEFLATEPATH;
+       inflate := load Filter Filter->INFLATEPATH;
+
+       init:  fn();
+       start: fn(param: string): chan of ref Rq;
+
+DESCRIPTION
+       These  implementation  modules  conform  to the Filter module
+       interface for data-processing filters.  For  details  of  the
+       interface, see filter(2).
+
+       Deflate  implements  gzip-compatible stream compression.  The
+       param string argument to start can contain one or more of the
+       following option characters:
+
+                 `d'    Enable debugging output. Each line of debug‐
+                        ging output is provided in an  Rq.Info  mes‐
+                        sage.
+
+                 `v'    Enable  verbose  mode.  Each line of verbose
+                        output is provided in an Rq.Info message.
+
+                 `h'    Add a gzip header and footer  to  the  data.
+                        With  this  flag,  the  data after filtering
+                        will be in exactly the same format as a gzip
+                        file, with accompanying checksum.
+
+                 `z'    Add  a  zlib  header and footer to the data.
+                        The footer contains a checksum.
+
+                 `0' to `9'
+                        Specifies the level  of  compression  to  be
+                        used (9 highest). See gzip(1).
+
+       Inflate  performs  the  inverse operation to deflate.  If the
+       param argument to start begins with the  character  `h'  then
+       the input to the filter is assumed to be in the standard gzip
+       file format; if it  starts  with  the  character  `z'  it  is
+       assumed  to be in zlib format; the output will be checked for
+       integrity in both cases. While processing a gzip stream,  the
+       Rq.Info  message  is  used  to transmit some information; the
+       type of information is determined by the first word  of  msg,
+       as follows:
+
+              file   The  rest  of  msg (after a following space) is
+                     the name of the original filename  before  com‐
+                     pression.
+
+              mtime  The  rest  of  msg (after a following space) is
+                     the modification  time  of  the  original  file
+                     before compression.
+
+SOURCE
+       /appl/lib/deflate.b
+       /appl/lib/inflate.b
+
+SEE ALSO
+       gzip(1), filter(2)
+       Internet RFCs RFC1950, RFC1951, and RFC1952.
+
+                                                   FILTER-DEFLATE(2)

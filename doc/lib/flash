@@ -1,0 +1,123 @@
+FLASH(3)              Library Functions Manual              FLASH(3)
+
+NAME
+       flash - flash memory
+
+SYNOPSYS
+       bind -a #F[n] /dev
+
+       /dev/flash
+       /dev/flash/part
+       /dev/flash/partctl
+
+DESCRIPTION
+       The  flash memory device serves a two-level directory, giving
+       access to files representing part or all of a bank  of  flash
+       memory.   A  platform might have more than one bank of flash,
+       numbered starting from 0.  The attach specifier n is a  deci‐
+       mal integer that selects a particular bank of flash (default:
+       0).  Both NOR and NAND flash is supported.  For both types of
+       flash,  the  driver gives a read/write/erase interface to the
+       raw flash device, which can impose constraints on  operations
+       beyond  those  imposed  by the driver.  Other drivers such as
+       ftl(3)  or  logfs(3)  implement   any   higher-level   format
+       required, including ECC for NAND flash, for instance.
+
+       The  top  level  directory  contains a single directory named
+       flash for bank 0, and flashn for each other bank n.  It  con‐
+       tains  two  files for each partition: a data file part and an
+       associated control file partctl, where part is  the  name  of
+       the  partition.   Each partition represents a region of flash
+       memory that starts and ends on a flash segment  (erase  unit)
+       boundary.   The  system  initially  creates a single standard
+       partition flash representing the whole of flash  memory,  and
+       the  corresponding  control  file flashctl.  Other partitions
+       can be created by writing to flashctl as described below.
+
+       The data file part provides read  and  write  access  to  the
+       bytes  on  the  system's flash memory.  Bytes can be read and
+       written on any byte boundary: the interface hides any  align‐
+       ment  restrictions.  A read returns the value of the bytes at
+       the current file offset, where zero is the start of the  par‐
+       tition.   A write reprograms the flash to the given byte val‐
+       ues, at the current file offset (relative to the start of the
+       partition),  using  the physical device's reprogramming algo‐
+       rithm.  An erased flash byte is logically  16rFF  (regardless
+       of  the  conventions  of the physical flash device).  A write
+       can change a bit with value 1 to a 0, but cannot change  a  0
+       bit  to 1; that can only be done by erasing one or more flash
+       segments.  NAND flash typically has restrictions on the  num‐
+       ber  of  writes  allowed  to  a page before requiring a block
+       erase.  Reads and writes are unbuffered.
+
+       The control file partctl can be read  and  written.   A  read
+       returns several lines containing decimal and hexadecimal num‐
+       bers (separated by white space) revealing the characteristics
+       of memory within the partition.  The first line gives the the
+       manufacturer ID,  the flash device ID, the  memory  width  in
+       bytes,  and  a string giving the flash type (currently either
+       nor or nand).  Subsequent lines give characteristics of  each
+       group  of  erase  units within the partition, where the erase
+       units within a group have the  same  properties.   Each  line
+       gives  the  start  and  end  (as byte addresses) of the erase
+       units in the region that lie within the  partition,  followed
+       by  the  size  in bytes of each erase unit, which is followed
+       for NAND flash by the size in bytes of a page.  The sizes for
+       NAND flash include the extra bytes per page typically used to
+       hold an ECC and block status.  A write contains  one  of  the
+       following textual commands:
+
+       add name start end
+              Create  a  new partition that ranges from start to end
+              within the current  partition.   Each  value  must  be
+              numeric (decimal, octal or hexadecimal) and a multiple
+              of the erase unit size.  Name must not be the name  of
+              an existing partition.  On success, new files name and
+              namectl will appear in the parent flash directory.
+
+       erase all
+              Erase the whole flash partition, setting all bytes  to
+              16rFF, except those that are hardware write-protected.
+
+       erase offset
+              Erase  the  segment  that  begins  at the given offset
+              within the partition,  setting  all  bytes  to  16rFF,
+              except  those  that are hardware write-protected.  The
+              offset is given in bytes, but must be  a  multiple  of
+              the segment (erase unit) size.
+
+       protectboot[ off ]
+              By  default  the  system  prevents erase unit 0 of the
+              flash from being erased or written, assuming  it  con‐
+              tains  the  primary  bootstrap.   Writing this command
+              with parameter off removes that  protection.   Writing
+              protectboot   with   any  other  parameter  (or  none)
+              restores the protection.   Note  that  a  manufacturer
+              might also have locked the flash in hardware, and that
+              protection must be removed in a device-dependent way.
+
+       sync   If the underlying device must buffer or cache (current
+              devices do not), flush the buffer(s).
+
+       The  syntax  of  all  numbers  is  that of strtoul(10.2); the
+       default base is 10.
+
+SOURCE
+       /os/*/devflash.c
+       /os/*/flash*.c
+
+SEE ALSO
+       ftl(3)
+
+DIAGNOSTICS
+       A write will return an error if an attempt is made to  change
+       a  0  bit to 1, or if the flash memory fails to be programmed
+       correctly.
+
+BUGS
+       The flash cannot  be  written  if  the  kernel  is  executing
+       directly  from  flash,  because  the physical flash cannot be
+       read during programming, and the driver  does  not  copy  the
+       programming code to DRAM.
+
+                                                            FLASH(3)

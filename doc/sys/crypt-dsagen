@@ -1,0 +1,67 @@
+CRYPT-DSAGEN(2)          System Calls Manual         CRYPT-DSAGEN(2)
+
+NAME
+       crypt:  dsagen,  eggen,  rsagen, rsafill,  rsaencrypt, rsade‐
+       crypt - specific public key systems
+
+SYNOPSIS
+       include "ipints.m";
+       ipints := load IPints IPints->PATH;
+       IPint: import ipints;
+
+       include "crypt.m";
+       crypt := load Crypt Crypt->PATH;
+
+       dsagen:     fn(oldpk: ref PK.DSA): ref SK.DSA;
+
+       eggen:      fn(nlen: int, nrep: int): ref SK.Elgamal;
+
+       rsagen:     fn(nlen: int, elen: int, nrep: int): ref SK.RSA;
+       rsafill:    fn(n: ref IPint, ek: ref IPint, dk: ref IPint,
+                      p: ref IPint, q: ref IPint): ref SK.RSA;
+       rsaencrypt: fn(k: ref PK.RSA, m: ref IPint): ref IPint;
+       rsadecrypt: fn(k: ref SK.RSA, m: ref IPint): ref IPint;
+
+DESCRIPTION
+       Crypt-gensk(2) describes a set  of  functions  that  generate
+       public/private  key  pairs  given an algorithm name and a key
+       length.  Some key types allow further parameters for key gen‐
+       eration or support further operations.
+
+       Dsagen  generates  a DSA public/private key pair, represented
+       by the pick adt SK.DSA, and compatible  with  the  containing
+       type SK.  If the parameter oldpk is not nil, dsagen takes the
+       new key's modulus and group order from the existing key; oth‐
+       erwise it generates a new pair of primes.
+
+       Eggen  generates  a new El-Gamal key pair, represented by the
+       pick adt SK.Elgamal.  Nlen is the length of the modulus; nrep
+       is  the  number  of repetitions of the Miller-Rabin primality
+       test (0 gives the default, currently 18).
+
+       Rsagen generates an RSA public/private key pair,  represented
+       by  the  pick  adt SK.RSA, and compatible with the containing
+       type SK.  Nlen gives the length of the key modulus  in  bits;
+       elen gives the exponent length in bits; and nrep is as above.
+
+       The  RSA  private key representation used by Inferno includes
+       some extra values  to  speed  computation.   Rsagen  provides
+       those  values but keys imported from other systems might not.
+       Given the essential set of RSA private key parameters  for  a
+       given  key, represented as IPints, rsafill returns a suitable
+       SK.RSA for that key, including the extra values.
+
+       The public key of type PK.RSA can be extracted from  a  given
+       private key value sk by referencing the field sk.pk.
+
+       Rsaencrypt  encrypts  a  message  m, represented by an IPint,
+       using the public key pk.
+
+       Rsadecrypt decrypts m using private key sk.   The  result  is
+       again returned as an IPint.
+
+SEE ALSO
+       crypt-gensk(2),  crypt-sha1(2),  security-auth(2),  security-
+       oldauth(2)
+
+                                                     CRYPT-DSAGEN(2)

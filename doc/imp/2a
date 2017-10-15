@@ -1,0 +1,37 @@
+2A(10.1)                                                    2A(10.1)
+
+NAME
+       0a, 1a, 2a, 5a, 6a, 7a, 8a, ka, qa, va - assemblers
+
+SYNOPSIS
+       2a [ option ...  ] [ name ...  ]
+       etc.
+
+DESCRIPTION
+       These programs assemble the named files into object files for
+       the corresponding architectures; see 2c(10.1) for the  corre‐
+       spondence  between  an  architecture and the character (1, 2,
+       etc.) that specifies it.  The assemblers handle the most com‐
+       mon C preprocessor directives and the associated command-line
+       options -D and -I.  Other options are:
+
+       -o obj Place output in file obj (allowed  only  if  there  is
+              just  one  input  file).   Default is to take the last
+              element of the input path name, strip any trailing .s,
+              and  append  .O, where O is first letter of the assem‐
+              bler's name.
+
+FILES
+       The directory /sys/include  is  searched  for  include  files
+       after machine-dependent files in /$objtype/include.
+
+SOURCE
+       /utils/2a, etc.
+
+SEE ALSO
+       2c(10.1), 2l(10.1).
+
+       Rob Pike, ``A manual for the Plan 9/Inferno assembler'', Vol‐
+       ume 2
+
+                                                            2A(10.1)

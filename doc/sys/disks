@@ -1,0 +1,183 @@
+DISKS(2)                 System Calls Manual                DISKS(2)
+
+NAME
+       disks: Disk, PCpart, readn, chstext - generic disk and parti‐
+       tion interface
+
+SYNOPSIS
+       include "disks.m";
+
+       disks := load Disks Disks->PATH;
+
+       Disk: adt {
+           prefix:  string;    # prefix before partition name
+           part:    string;    # partition name (nil if not partition)
+           fd:      ref Sys->FD;
+           wfd:     ref Sys->FD;
+           ctlfd:   ref Sys->FD;
+           rdonly:  int;       # non-zero if readonly
+           dtype:   string;    # device type
+
+           secs:    big;    # number of sectors in device or partition
+           secsize: int;    # device's sector size
+           size:    big;    # size of device or partition
+           offset:  big;    # within larger disk, perhaps
+           width:   int;    # of disk size in bytes as decimal string
+           c:       int;    # geometry: cyl, head, sectors
+           h:       int;
+           s:       int;
+           chssrc:  string; # source of c/h/s values
+
+           open:    fn(f: string, mode: int, noctl: int): ref Disk;
+       };
+
+       PCpart: adt {
+           active: int;    # Active or 0
+           ptype:  int;
+           base:   big;    # base block address
+           offset: big;    # block offset from base to partition
+           size:   big;    # in sectors
+
+           extract: fn(a: array of byte, d: ref Disk): PCpart;
+           bytes:   fn(p: self PCpart, d: ref Disk): array of byte;
+       };
+
+       init:      fn();
+       readn:   fn(fd: ref Sys->FD, buf: array of byte, n: int): int;
+       chstext: fn(p: array of byte): string;
+
+DESCRIPTION
+       Disks provides a simple way to  gather  and  use  information
+       about  floppy(3) and sd(3) disks and disk partitions, as well
+       as plain files.
+
+       Init must be called before invoking any other  operations  of
+       the module
+
+       Disk.open  opens file and returns a reference to a Disk value
+       to represent the disk.  Mode should be either  Sys->OREAD  or
+       Sys->ORDWR  to  establish  the  open mode.  Open always opens
+       file for reading and stores that file descriptor in the  ele‐
+       ment  fd.  If the mode is not Sys->OREAD, opendisk also opens
+       file for writing and stores that file descriptor in wfd.  The
+       two  file descriptors are kept separate to help prevent acci‐
+       dents.  If noctl is not set, open looks for a ctl file in the
+       same directory as the disk file; if it finds one, it declares
+       the disk to be an sd(3) device, setting dtype  to  "sd".   If
+       the passed file is named fdndisk, it looks for a file fdnctl,
+       and if it finds that, declares the disk to be a floppy  disk,
+       of  type  "floppy".   If  either control file is found, it is
+       opened for  reading  and  writing,  and  the  resulting  file
+       descriptor  is  saved  as ctlfd.  Otherwise the returned disk
+       has type "file".
+
+       Open then stores the file's length (as given by  sys-stat(2))
+       in  size.   If the disk is an sd(3) partition, open reads the
+       sector size from the control file and stores it  in  secsize;
+       otherwise  the  sector  size  is assumed to be 512, as is the
+       case for floppy disks.  Open stores the disk size measured in
+       sectors in secs.
+
+       If  the  disk  is an sd(3) partition, open parses the control
+       file to find the partition's offset within its  disk;  other‐
+       wise  it  sets  offset  to zero.  If the disk is an ATA disk,
+       open reads the disk geometry (number of cylinders, heads, and
+       sectors)  from the geometry line in the sd control file; oth‐
+       erwise it sets these to zero as well.   Name  is  initialized
+       with  the  base name of the disk partition, and is useful for
+       forming messages to the sd control file.  Prefix  is  set  to
+       the original file name without the name suffix.
+
+       The IBM PC BIOS interface allocates 10 bits for the number of
+       cylinders, 8 for the number of heads, and 6 for the number of
+       sectors  per  track.  Disk geometries are not quite so simple
+       anymore, but to keep the interface useful, modern  disks  and
+       BIOSes  present  geometries  that still fit within these con‐
+       straints.  These numbers are still used when partitioning and
+       formatting  disks.   Open  employs  a number of heuristics to
+       discover this supposed geometry and store it in the c, h, and
+       s  elements of Disk.  Disk offsets in partition tables and in
+       FAT descriptors are stored in a  form  dependent  upon  these
+       numbers,  so opendisk works hard to report numbers that agree
+       with those used by other operating systems; the numbers  bear
+       little or no resemblance to reality.
+
+       Chssrc  names the source of the geometry values: disk (values
+       returned by disk itself); part (values stored in PC partition
+       table); or guess (calculated by module's heuristics).
+
+       Readn attempts to read exactly n bytes from file fd into buf,
+       using as many sys-read(2) calls as required.  It helps  insu‐
+       late  a program from any peculiar underlying IO boundaries of
+       a device.  It returns less than  n  only  if  end-of-file  is
+       reached.  It returns -1 if the first read fails.
+
+       The PC BIOS and operating systems support an arcane system of
+       disk partitions: a partition table at the end of  the  master
+       boot  record  defines up to four partitions.  One (or perhaps
+       more) of those can be an  extended  partition  that  heads  a
+       chain (or perhaps roots a tree) of partition tables elsewhere
+       on disk, allowing many more  than  four  partitions  in  all.
+       Disks  represents  a partition table entry by a value of type
+       PCpart.  It provides the following operations and values:
+
+       active Has the value Disks->Active if  it  is  bootable,  and
+              zero otherwise.
+
+       ptype  Partition  type;  Disks->Type9  is  used by Plan 9 and
+              Inferno (see prep(8)).
+
+       base   Address of the extended  partition  that  started  the
+              chain  (or rooted the tree) containing this partition.
+              Zero for primary partitions defined by the master boot
+              record.
+
+       offset Block  address  of the start of the partition relative
+              to the base.
+
+       size   Size of the partition in sectors.
+
+       extract(a, d)
+              Extracts the relevant data from an array  of  bytes  a
+              containing  a  PC-format partition table entry on Disk
+              d, and returns a PCpart value that represents the par‐
+              tition.
+
+       pc.bytes(d)
+              Return an array of bytes containing the PC-format par‐
+              tition table  entry  corresponding  to  pc.   It  will
+              always be TentrySize bytes long.
+
+       Several other values are defined here for convenience:
+
+       Active Value for PCpart.active if the partition is bootable.
+
+       Type9  Partition type used by Plan 9 and Inferno.
+
+       Toffset
+              Offset  (in  bytes) of the partition table in a master
+              boot record or extended partition start sector.
+
+       TentrySize
+              Size in bytes of a partition table entry.
+
+       NTentry
+              Number of table entries.
+
+       Magic0
+
+       Magic1 Each sector containing a partition  table  should  end
+              with  these  two  bytes (a master boot record must end
+              with them).
+
+       Chstext takes a 3-byte array  containing  the  packed  cylin‐
+       der/head/sector  representation of a disk address and returns
+       the corresponding text in the form c/h/s.
+
+SOURCE
+       /appl/lib/disks.b
+
+SEE ALSO
+       scsiio(2), floppy(3), sd(3), prep(3)
+
+                                                            DISKS(2)

@@ -1,0 +1,81 @@
+FS(3)                 Library Functions Manual                 FS(3)
+
+NAME
+       fs - host file system interface
+
+SYNOPSIS
+       bind #Uspec /
+
+       sys->bind("#Uspec", "/", Sys->MAFTER|Sys->MCREATE);
+
+DESCRIPTION
+       Fs provides an interface to the host file system when running
+       emu(1).  The device is automatically bound to the root of the
+       Inferno  namespace  when  emu starts.  Fs maps filenames from
+       the Inferno namespace to the real host filesystem  namespace.
+       The  mapping  is determined by the host system directory that
+       emu serves (see the description of the -r option in emu(1)).
+
+       The plain name #U always refers to the root  of  the  Inferno
+       tree  within  the  host file system.  An optional spec string
+       can select a different tree using conventions peculiar to the
+       host system type.  Currently, on Unix and Plan 9, a spec of *
+       (ie, #U*) refers to the root of the host system; on  Windows,
+       the  spec can give a device letter (eg, #Uc:) to refer to the
+       Windows tree on that device.
+
+       When there is nothing but root(3)  in  the  name  space,  the
+       device  can  only  be  bound  from Limbo using sys-bind(2) as
+       shown above, since there is nothing in the name space to sup‐
+       port  either  bind(1)  or  newns(2).  It can later be rebound
+       elsewhere in the name space using bind(1).
+
+       Fs provides only an approximation to the file  ownership  and
+       permissions checking defined in intro(5) and other entries in
+       this manual.  Emu(1) typically runs as the user  that  starts
+       it, and that user will own all newly-created files and direc‐
+       tories, and that user's host  system  access  rights  control
+       access  to  any file.  Other details are specific to the host
+       system, as given below.
+
+       The set of characters visible in file names within fs is also
+       determined  by  the  host operating system, not Inferno.  For
+       instance, names might contain  control  characters,  or  even
+       `/', which might render them unusable in Inferno.
+
+   Unix
+       When  checking owner, group and other permissions, the intent
+       in Inferno is that each is tried  in  turn,  in  that  order.
+       Unix  checks  just  the  first that applies, so that if group
+       permission disallows access but other allows it,  the  access
+       is  still  denied.   If  emu(1)  is  run  as  the super-user,
+       Inferno's rules for ownership  and  permission  checking  are
+       enforced  by fs itself; otherwise, Unix's permission checking
+       prevails.
+
+       On MacOS X, file names might be case  insensitive,  depending
+       on file system settings.
+
+   FAT file system (Windows9x and Windows/NT)
+       The values of uid and gid are Everyone.
+
+       Files  and  directories  always have read and execute permis‐
+       sion, which cannot be changed.  Files without  write  permis‐
+       sion cannot be removed.
+
+   NTFS file system (Windows/NT, 2000, XP)
+       Permissions for read, write and execute operates as described
+       in sys-stat(2).  Emu(1) attempts to maintain  a  limited  but
+       consistent  map  between  Inferno and NT worlds, specifically
+       between Inferno names and NT security IDs.  Special NT  group
+       Everyone   represents  `other'  for  file  permissions.   The
+       Inferno uid is the file  owner  under  NT;  the  Inferno  gid
+       reported  is the first user in the file's ACL that is neither
+       the owner nor Everyone; failing that, the gid is  the  file's
+       owner.
+
+SOURCE
+       /emu/*/devfs.c
+       /emu/port/devfs-posix.c
+
+                                 emu                           FS(3)

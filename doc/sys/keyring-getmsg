@@ -1,0 +1,51 @@
+KEYRING-GETMSG(2)        System Calls Manual       KEYRING-GETMSG(2)
+
+NAME
+       keyring:  getmsg, sendmsg, senderrmsg - send and receive mes‐
+       sages on undelimited streams
+
+SYNOPSIS
+       include "keyring.m";
+       keyring := load Keyring Keyring->PATH;
+
+       getmsg:  fn(fd: ref Sys->FD): array of byte;
+       sendmsg: fn(fd: ref Sys->FD, buf: array of byte, n: int): int;
+       senderrmsg: fn(fd: ref Sys->FD, s: string): int;
+
+DESCRIPTION
+       These functions allow arbitrary data, packed into  arrays  of
+       bytes,  to  be exchanged on network connections using connec‐
+       tion-oriented transport protocols that do not preserve record
+       boundaries  (eg,  TCP/IP  without  ssl(3)).  They are used to
+       implement   various   authentication   protocols,   including
+       auth(6), as implemented by keyring-auth(2).
+
+       Each data message is transmitted with a five-byte header con‐
+       taining a four-character zero-padded decimal count  n  termi‐
+       nated  by a newline, followed by n bytes of message data.  An
+       error message has a similar structure, except that the  first
+       character  of  the  count  is replaced by an exclamation mark
+       (!); the  message  data  following  contains  the  diagnostic
+       string in its UTF-8 encoding (see utf(6)).
+
+       Getmsg  reads  the  next message from fd and returns its data
+       content.
+
+       Sendmsg sends the first n bytes of buf as a  message  on  fd,
+       and returns n.
+
+       Senderrmsg sends the error message s.
+
+SOURCE
+       /libinterp/keyring.c
+
+DIAGNOSTICS
+       Sendmsg  and senderrmsg return -1 if there was an error writ‐
+       ing to fd; they set the system error string.  Getmsg  returns
+       nil if there was an error reading from fd; it sets the system
+       error string to reflect the cause.  It also returns nil if an
+       error  message  was  received  instead of a data message; the
+       system error string will contain the error message's diagnos‐
+       tic.
+
+                                                   KEYRING-GETMSG(2)

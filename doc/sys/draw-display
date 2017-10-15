@@ -1,0 +1,238 @@
+DRAW-DISPLAY(2)          System Calls Manual         DRAW-DISPLAY(2)
+
+NAME
+       Display - connection to draw device
+
+SYNOPSIS
+       include   "draw.m";
+       draw := load Draw Draw->PATH;
+
+       Display: adt
+       {
+           image:       ref Image;
+           white:       ref Image;
+           black:       ref Image;
+           opaque:      ref Image;
+           transparent: ref Image;
+
+           allocate:    fn(dev: string): ref Display;
+           startrefresh:fn(d: self ref Display);
+           publicscreen:fn(d: self ref Display, id: int):
+                        ref Screen;
+           newimage:    fn(d: self ref Display,
+                        r: Rect, chans: Chans,
+                        repl, rgba: int):
+                        ref Image;
+           color:       fn(d: self ref Display, rgba: int):
+                        ref Image;
+           colormix:    fn(d: self ref Display, one: int, three: int):
+                        ref Image;
+           rgb:         fn(d: self ref Display, red, green, blue: int):
+                        ref Image;
+           namedimage:  fn(d: self ref Display, name: string):
+                        ref Image;
+           open:        fn(d: self ref Display, name: string):
+                        ref Image;
+           readimage:   fn(d: self ref Display, fd: ref Sys->FD):
+                        ref Image;
+           writeimage:  fn(d: self ref Display, fd: ref Sys->FD,
+                        i: ref Image): int;
+           rgb2cmap:    fn(d: self ref Display, red, green, blue: int):
+                        int;
+           cmap2rgb:    fn(d: self ref Display, c: int):
+                        (int, int, int);
+           cmap2rgba:   fn(d: self ref Display, c: int):
+                        int;
+       };
+
+       Chans: adt
+       {
+          mk:    fn(s: string): Chans;
+          text:  fn(c: self Chans): string;
+          eq:    fn(c: self Chans, d: Chans): int;
+          depth: fn(c: self Chans): int;
+       };
+
+DESCRIPTION
+       The Display type represents a connection to a draw(3) device.
+       This device is the external representation of a physical dis‐
+       play,  such as a CRT, and its associated memory.  It contains
+       the storage for all images, even invisible ones, so all Image
+       objects  must  be allocated through Display member functions.
+       Graphics operations that use multiple Image objects  may  not
+       mix images from different Displays.
+
+       The  pixel  channel  structure of an Image is determined when
+       the image is allocated (including the image allocated by  the
+       system  to  represent a physical display).  This structure is
+       described externally by a channel format string, described in
+       colour(6),  and internally by a value of the Chans adt, which
+       is used when allocating new images in the calls below.   Draw
+       defines  a  set of constants of type Chans for common channel
+       types: GREY1, GREY2 and GREY8 for greyscale (depths 1, 2  and
+       8);  CMAP8  for 8-bit rgbv(8) colour-mapped images; RGB16 for
+       16-bit r5g6b5 colour images; RGB24  for  24-bit  colour;  and
+       RGBA32  for  24-bit colour with alpha channel.  Chans has the
+       following operations:
+
+       Chans.mk(s)
+                 Return the Chans value corresponding to the channel
+                 format string s (see image(6) for the syntax of s).
+
+       c.depth() Return  the depth in bits of c.  The result is 0 if
+                 c is invalid; in particular, Chans.mk(s).depth() is
+                 zero if s is invalid.
+
+       c.text()  Return the format string corresponding to c.
+
+       c.eq(d)   Return  true if d has the same channel structure as
+                 c; return false otherwise.
+
+       Colours in the calls below are specified as  32-bit  integers
+       (`32-bit  RGBA format') containing red, green, blue and alpha
+       components as 8-bit values, in order from most to least  sig‐
+       nificant  byte.   The  8-bit  colour component values express
+       illumination, ranging from 0 (no colour) to 255  (saturated).
+       For  the  alpha component, 0 is fully transparent, and 255 is
+       fully opaque.
+
+       Display itself has the following components:
+
+       image     The visible contents of the display; draw on  image
+                 to change the display.
+
+       white, black
+                 Replicated  images  of  a  single pixel, either all
+                 ones (white) or all zeroes (black).
+
+       opaque, transparent
+                 Replicated images of a  single  pixel,  either  all
+                 ones  (fully opaque) or all zeroes (fully transpar‐
+                 ent).  Used as mattes for  basic  graphical  opera‐
+                 tions.
+
+       allocate(dev)
+                 Attach to a new display, represented by the draw(3)
+                 device mounted in the specified dev directory.   If
+                 dev  is the empty string, /dev is used.  The return
+                 value is nil if the allocation fails.
+
+       d.startrefresh()
+                 After allocating a Display object, the  application
+                 should  spawn  a process to call startrefresh; this
+                 thread will  receive  and  process  window  refresh
+                 events from the device.
+
+       d.publicscreen(id)
+                 Create  a  locally  addressable pointer to a public
+                 Screen; see display-screen(2).
+
+       d.newimage(r, chans, repl, rgba)
+                 Allocate an off-screen Image.  The arguments supply
+                 values  for  the Image's r, chans, and repl, and an
+                 initial pixel value rgba  in  32-bit  RGBA  format,
+                 used  to  paint  the image when created.  It can be
+                 Draw->Transparent to  create  a  fully  transparent
+                 image  to  draw  on  to  form an arbitrarily-shaped
+                 image or matte.  If it is Draw->Nofill,  the  image
+                 is  not initialised.  The image's clipr is initial‐
+                 ized to r.
+
+       d.color(rgba)
+                 Creates a single-pixel, replicated off-screen image
+                 of  the  specified colour, expressed in 32-bit RGBA
+                 format.  The Draw module defines constants for sev‐
+                 eral dozen colours:
+
+                        Opaque:         con int 16rFFFFFFFF;
+                        Transparent:    con int 16r00000000;
+                        Black:          con int 16r000000FF;
+                        White:          con int 16rFFFFFFFF;
+                        Red:            con int 16rFF0000FF;
+                        Green:          con int 16r00FF00FF;
+                        Blue:           con int 16r0000FFFF;
+                        Cyan:           con int 16r00FFFFFF;
+                        Magenta:        con int 16rFF00FFFF;
+                        Yellow:         con int 16rFFFF00FF;
+                        Grey:           con int 16rEEEEEEFF;
+                        Paleyellow:     con int 16rFFFFAAFF;
+                        Darkyellow:     con int 16rEEEE9EFF;
+                        Darkgreen:      con int 16r448844FF;
+                        Palegreen:      con int 16rAAFFAAFF;
+                        Medgreen:       con int 16r88CC88FF;
+                        Darkblue:       con int 16r000055FF;
+                        Palebluegreen:  con int 16rAAFFFFFF;
+                        Paleblue:       con int 16r0000BBFF;
+                        Bluegreen:      con int 16r008888FF;
+                        Greygreen:      con int 16r55AAAAFF;
+                        Palegreygreen:  con int 16r9EEEEEFF;
+                        Yellowgreen:    con int 16r99994CFF;
+                        Medblue:        con int 16r000099FF;
+                        Greyblue:       con int 16r005DBBFF;
+                        Palegreyblue:   con int 16r4993DDFF;
+                        Purpleblue:     con int 16r8888CCFF;
+                        Notacolor:      con int 16rFFFFFF00;
+                        Nofill:         con Notacolor;
+
+                 The  special values Draw->Opaque (fully opaque) and
+                 Draw->Transparent (fully transparent) are useful as
+                 the  pixel values for Display.newimage when forming
+                 a matte.  The special value Draw->Nofill tells Dis‐
+                 play.newimage  not  to  paint  a new image with any
+                 colour, leaving it uninitialised.
+
+       d.colormix(one, three)
+                 Allocate background colours.  On  true  color  dis‐
+                 plays,  it  returns  a  1×1  replicated image whose
+                 pixel is the result of mixing the two colours in  a
+                 one  to  three ratio; both colours are expressed in
+                 32-bit RGBA format.   On  8-bit  color-mapped  dis‐
+                 plays,  it  returns a 2×2 replicated image with one
+                 pixel coloured one and the other three  with  three
+                 (after  translation  through the colour map).  This
+                 simulates a wider range of tones than can be repre‐
+                 sented  by  a single pixel value on a colour-mapped
+                 display.
+
+       d.rgb(red, green, blue)
+                 Uses the values of red, green, and blue to create a
+                 single-pixel  replicated image of that colour.  The
+                 values  are  intensities  that  range  from  0  (no
+                 colour) to 255 (saturated).  The alpha component is
+                 always 255 (fully opaque).
+
+       d.namedimage(name)
+                 Returns a reference to the image published as  name
+                 on  display  d  by  Image.name (see draw-image(2)).
+                 This allows unrelated processes to share the  image
+                 (eg, a window manager and client).
+
+       d.open(name)
+                 Read  an  image description from the named file and
+                 return an Image holding the picture.  See  image(6)
+                 for more information about image files.
+
+       d.readimage(fd)
+                 Analogous to open, but from an open file descriptor
+                 rather than a named file.
+
+       d.writeimage(fd, i)
+                 Complement of readimage: write an image file repre‐
+                 senting i to the open file descriptor.
+
+       d.rgb2cmap(red, green, blue)
+                 Return the rgbv colour map index (see colour(6)) of
+                 the colour  that  best  matches  the  given  colour
+                 triple.   The values of the components range from 0
+                 (no colour) to 255 (saturated).
+
+       d.cmap2rgb(c)
+                 Return the colour triple (red, blue, green)  corre‐
+                 sponding to colour map index c.
+
+       d.cmap2rgba(c)
+                 Return the 32-bit RGBA representation of the colour
+                 corresponding to colour map  index  c.   The  alpha
+                 component is always 255 (fully opaque).
+
+                                                     DRAW-DISPLAY(2)

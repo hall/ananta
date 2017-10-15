@@ -1,0 +1,168 @@
+DRAW-INTRO(2)            System Calls Manual           DRAW-INTRO(2)
+
+NAME
+       draw - basic graphics facilities module
+
+SYNOPSIS
+       include "draw.m";
+       draw := load Draw Draw->PATH;
+
+       setalpha:  fn(rgba: int, alpha: int): int;
+
+DESCRIPTION
+       Inferno's  Draw  module  provides  basic graphics facilities,
+       defining drawing contexts, images, character fonts, and  rec‐
+       tangular  geometric  operations.   See wmlib(2) and tk(2) for
+       higher level operations, such as windows and menu handling.
+
+   Pixels
+       Images are defined on a  rectangular  region  of  an  integer
+       plane  with  a picture element, or pixel, at each grid point.
+       Pixel values are integers with between  1  and  32  bits  per
+       pixel, and all pixels in a given image have the same size, or
+       depth.  Some operations allow images with different depths to
+       be  combined,  for example to do masking.  Images have one or
+       more channels: colour channels,  greyscale  channels,  colour
+       map  indices,  and  others,  as described in colour(6).  Each
+       pixel value contains a component of each such  channel.   All
+       pixels in an image have the same size, or depth, and the same
+       component structure.
+
+       When an image is displayed, the value of  each  pixel  deter‐
+       mines the colour of the display, according to the interpreta‐
+       tion of the image's channels.  For instance, on `true colour'
+       displays, the display image might contain red, blue and green
+       colour channels, and each pixel value will have red, blue and
+       green  colour  components.  For displays with only 8 bits per
+       pixel or less, Inferno uses a fixed colour map for each  dis‐
+       play  depth  (see  colour(6)).  Facilities exist in draw-dis‐
+       play(2) to convert between (red, green,  blue)  triplets  and
+       colour-mapped  pixel  values,  but  the mapping is often done
+       automatically by the graphics  operations  when  images  with
+       different channel structures are combined.
+
+       Draw  uses  a  standard representation of colour constants in
+       calls to create coloured images or to initialise  new  images
+       with  a  given  colour.   This is referred to as `32-bit RGBA
+       format'.  Each constant colour is  represented  as  a  32-bit
+       integer,  with  8-bit  red, blue and green colour components,
+       and an 8-bit alpha component, in  that  order  from  most  to
+       least significant byte.
+
+       The  RGB  values  in  a colour are premultiplied by the alpha
+       value; for example, a 50% red  is  int  16r7F00007F  not  int
+       16rFF00007F.   The function Draw->setalpha performs the alpha
+       computation on a given colour rgba  in  32-bit  RGBA  format,
+       ignoring its initial alpha value, and returning the result of
+       multiplying each colour component by the supplied alpha.  For
+       example,  to  make  a  50% red color value, one could execute
+       draw->setalpha(Draw->Red, 16r7F).
+
+   Terminology
+       Point  The graphics plane is defined on an integer grid, with
+              each (x, y) coordinate identifying the upper left cor‐
+              ner of the corresponding pixel.  The  plane's  origin,
+              (0, 0),  resides  at  the  upper  left  corner  of the
+              screen; x and y coordinates increase to the right  and
+              down.  The abstract data type, Point defines a coordi‐
+              nate position.
+
+       Rect   The type Rect defines  a  rectangular  region  of  the
+              plane.   It  comprises  two  Points,  min and max, and
+              specifies the region defined by  pixels  with  coordi‐
+              nates  greater  than or equal to min and strictly less
+              than max, in both x and y.   This  half-open  property
+              allows  rectangles  that  share  an edge to have equal
+              coordinates on the edge.
+
+       Display
+              The type Display represents a physical display, corre‐
+              sponding  to  a single connection to a draw(3) device.
+              Besides the image of the display itself,  the  Display
+              type  also  stores  references  to  off-screen images,
+              fonts, and so on.  The contents  of  such  images  are
+              stored in the display device, not in the client of the
+              display, which affects  how  they  are  allocated  and
+              used, see for example draw-image(2).
+
+       Screen The  Screen type is used to manage a set of windows on
+              an image, typically but not necessarily that of a dis‐
+              play.   Screens  and hence windows may be built recur‐
+              sively upon windows for subwindowing or even  on  off-
+              screen images.
+
+       Image  The  Image type provides basic operations on groups of
+              pixels.  Through a few simple operations, most  impor‐
+              tantly  the draw image combination operator (see draw-
+              image(2)), the Image type provides the building blocks
+              for Display, Screen, and Font.
+
+       Font   A  Font defines which character image to draw for each
+              character code value.  Although all character  drawing
+              operations  ultimately  use  the draw primitive on the
+              underlying images, Fonts provide convenient and  effi‐
+              cient  management  of  display text.  Inferno uses the
+              16-bit Unicode character encoding, so Fonts  are  man‐
+              aged  hierarchically to control their size and to make
+              common subsets such as ASCII  or  Greek  efficient  in
+              practice.  See draw-font(2), utf(6), and font(6).
+
+       Context
+              A Context provides an interface to the system graphics
+              and interactive devices.  The system creates this con‐
+              text when it starts an application.
+
+       Pointer
+              The  Pointer  type  conveys  information  for pointing
+              devices, such as mice or trackballs.
+
+   More about Images
+       An image occupies  a  rectangle,  Image.r,  of  the  graphics
+       plane.   A  second rectangle, Image.clipr, defines a clipping
+       region for the image.  Typically, the clipping  rectangle  is
+       the  same as the basic image, but they may differ.  For exam‐
+       ple, the clipping region may be made smaller and centered  on
+       the basic image to define a protected border.
+
+       The  pixel  structure  of  an  Image is stored as Chans value
+       Image.chans; the image's pixel depth in  bits  is  stored  as
+       integer Image.depth.
+
+       An image may be marked for replication: when set, the boolean
+       Image.repl causes the image to behave as if replicated across
+       the  entire integer plane, thus tiling the destination graph‐
+       ics area with copies of the source image.   When  replication
+       is turned on, the clipping rectangle limits the extent of the
+       replication and may even usefully be disjoint  from  Image.r.
+       See draw-image(2) for examples.
+
+       The  Image  member  functions  provide facilities for drawing
+       text and geometric objects, manipulating windows, and so on.
+
+       Objects of type Display, Font,  Screen,  and  Image  must  be
+       allocated  by  the member functions; if such objects are cre‐
+       ated with a regular Limbo definition, they  will  not  behave
+       properly and may generate run-time errors.
+
+       There are no ``free'' routines for graphics objects.  Instead
+       Limbo's garbage collection frees them automatically.   As  is
+       generally  so  within  Limbo, one can eliminate references by
+       assigning nil to reference variables,  returning  from  func‐
+       tions whose local variables hold references, etc.
+
+RETURN VALUES
+       Most  drawing operations operate asynchronously, so they have
+       no error return.  Functions that allocate objects return  nil
+       for  failure;  in  such  cases the system error string may be
+       interrogated (such as by the %r  format  (see  sys-print(2)))
+       for more information.
+
+SOURCE
+       /libinterp/draw.c
+       /libdraw/*.c
+
+SEE ALSO
+       draw(3),  ir(2), prefab-intro(2), tk(2), wmlib(2), colour(6),
+       font(6), image(6)
+
+                                                       DRAW-INTRO(2)

@@ -1,0 +1,99 @@
+SYS-BIND(2)              System Calls Manual             SYS-BIND(2)
+
+NAME
+       bind, mount, unmount - change file name space
+
+SYNOPSIS
+       include "sys.m";
+       sys := load Sys Sys->PATH;
+
+       bind:     fn(name, old: string, flag: int): int;
+       mount:    fn(fd: ref FD; afd: ref FD, old: string, flag: int, aname: string):
+                    int;
+       unmount:  fn(name, old: string): int;
+
+DESCRIPTION
+       Bind  and  mount  modify  the  file name space of the current
+       process and its name space group.  For both calls, old is the
+       name  of  an  existing  file or directory in the current name
+       space where the modification is to be made.  The name old  is
+       evaluated  as described in sys-intro(2) except that no trans‐
+       lation of the final path element is done.
+
+       For bind, name is the name of another (or possibly the  same)
+       existing  file or directory in the current name space.  After
+       a successful bind call, the file name old is an alias for the
+       object originally named by name; if the modification does not
+       hide the original, name will also still refer to its original
+       file.   The  evaluation  of  name  happens at the time of the
+       bind, not when the binding is later used.
+
+       The fd argument to mount is a file descriptor of an open pipe
+       or  network  connection  to a file server ready to receive 9P
+       messages.  The old file must be a directory.   After  a  suc‐
+       cessful mount, the file tree served (see below) by fd will be
+       visible with its root directory  having  name  old.   If  the
+       requested  service requires authentication, the file descrip‐
+       tor afd must be  open  on  an  authentication  file  for  the
+       requested service; otherwise it should be nil.
+
+       The  flag  controls  details  of the modification made to the
+       name space.  In the following, new  refers  to  the  file  as
+       defined  by  name or the root directory served by fd.  Either
+       both old and new files must be directories, or both must  not
+       be directories.  Flag can be one of:
+
+       Sys->MREPL
+              Replace  the  old file by the new one.  Henceforth, an
+              evaluation of old will be translated to the new  file.
+              If  they are directories (for mount, this condition is
+              true by definition), old  becomes  a  union  directory
+              consisting of one directory (the new file).
+
+       Sys->MBEFORE
+              Both  the  old and new files must be directories.  Add
+              the constituent files of  the  new  directory  to  the
+              union directory at old so its contents appear first in
+              the union.  After a Sys->MBEFORE bind  or  mount,  the
+              new  directory  will be searched first when evaluating
+              file names in the union directory.
+
+       Sys->MAFTER
+              Like Sys->MBEFORE but the new directory  goes  at  the
+              end of the union.
+
+       In  addition,  there  is a Sys->MCREATE flag that can be OR'd
+       with any of the above.  When a create call (see  sys-open(2))
+       attempts  to  create  in a union directory, and the file does
+       not exist, the elements of the union are  searched  in  order
+       until  one  is found with Sys->MCREATE set.  The file is cre‐
+       ated in that directory; if that  attempt  fails,  the  create
+       fails.
+
+       With  mount,  the file descriptor fd must be open for reading
+       and writing and connected to a file server.  After the mount,
+       the  file  tree  starting at old is served by a kernel mnt(3)
+       device.  That device will turn operations in  the  tree  into
+       messages  to the server on fd.  Aname selects among different
+       file trees on the server; the empty (or nil)  string  chooses
+       the default tree.
+
+       The  effects  of bind and mount can be undone by unmount.  If
+       name is nil, everything bound  to  or  mounted  upon  old  is
+       unbound or unmounted.  If name is not nil, it is evaluated as
+       described above for bind, and the effect of binding or mount‐
+       ing that particular result on old is undone.
+
+SEE ALSO
+       sys-intro(2)
+
+DIAGNOSTICS
+       The  return  value  is  a positive integer (a unique sequence
+       number) for success, -1 for failure.
+
+BUGS
+       Mount will not return until it has successfully  attached  to
+       the  file  server,  so the thread doing a mount cannot be the
+       one serving.
+
+                                                         SYS-BIND(2)

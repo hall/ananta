@@ -1,0 +1,61 @@
+MEMORY(10.2)                                            MEMORY(10.2)
+
+NAME
+       memccpy,  memchr,  memcmp,  memcpy,  memmove, memset - memory
+       operations
+
+SYNOPSIS
+       void* memccpy(void *s1, void *s2, int c, long n)
+
+       void* memchr(void *s, int c, long n)
+
+       int   memcmp(void *s1, void *s2, long n)
+
+       void* memcpy(void *s1, void *s2, long n)
+
+       void* memmove(void *s1, void *s2, long n)
+
+       void* memset(void *s, int c, long n)
+
+DESCRIPTION
+       These functions operate efficiently on memory  areas  (arrays
+       of  bytes bounded by a count, not terminated by a zero byte).
+       They do not check for the overflow of  any  receiving  memory
+       area.
+
+       Memccpy  copies  bytes  from memory area s2 into s1, stopping
+       after the first occurrence of byte  c  has  been  copied,  or
+       after  n  bytes  have been copied, whichever comes first.  It
+       returns a pointer to the byte after the copy of c in  s1,  or
+       zero if c was not found in the first n bytes of s2.
+
+       Memchr returns a pointer to the first occurrence of byte c in
+       the first n bytes of memory area s, or zero  if  c  does  not
+       occur.
+
+       Memcmp  compares  its arguments, looking at the first n bytes
+       only, and returns an integer less than, equal to, or  greater
+       than 0, according as s1 is lexicographically less than, equal
+       to, or greater than s2.  The comparison is bytewise unsigned.
+
+       Memmove copies n bytes from memory area s2 to s1.  It returns
+       s1.  It is guaranteed to work if s1 and s2 overlap.
+
+       In  the  Inferno kernel memcpy is equivalent to memmove.  (In
+       ANSI C, by contrast, memcpy does not account for  overlapping
+       memory regions.)
+
+       Memset  sets  the first n bytes in memory area s to the value
+       of the least significant byte of c.  It returns s.
+
+DIAGNOSTICS
+       If memcpy and memmove are handed negative counts, they abort.
+
+SOURCE
+       /libkern/mem*.c
+       /libkern/mem*-objtype.s
+
+SEE ALSO
+       strcat(10.2)
+
+                                                        MEMORY(10.2)

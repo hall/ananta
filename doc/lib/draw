@@ -1,0 +1,315 @@
+DRAW(3)               Library Functions Manual               DRAW(3)
+
+NAME
+       draw - screen graphics
+
+SYNOPSIS
+       bind -a #i /dev
+
+       /dev/draw/new
+
+       /dev/draw/n/ctl
+       /dev/draw/n/data
+       /dev/draw/n/refresh
+
+DESCRIPTION
+       The draw device serves a three-level file system providing an
+       interface to the graphics  facilities  of  the  system.   The
+       Limbo  Draw  module  (see draw-intro(2)) implements its func‐
+       tions using this device.  Each client of the device  connects
+       by  opening  /dev/draw/new  and  reading  12 strings, each 11
+       characters wide followed by a blank:  the  connection  number
+       (n), the image id (q.v.)  of the display image (always zero),
+       the channel format of the image, the min.x, min.y, max.x, and
+       max.y  of the display image, and the min.x, min.y, max.x, and
+       max.y of the clipping rectangle.  The channel  format  string
+       is  described  in  image(6), and the other fields are decimal
+       numbers.
+
+       The client can then open the directory /dev/draw/n/ to access
+       the  ctl, data, and refresh files associated with the connec‐
+       tion.
+
+       Via the ctl and draw files, the draw device  provides  access
+       to  images  and  font  caches  in  its  private  storage,  as
+       described in draw-intro(2).  Each image is  identified  by  a
+       4-byte integer, its id.
+
+       Reading  the  ctl  file  yields  12  strings  formatted as in
+       /dev/draw/new, but for the current image rather than the dis‐
+       play image.  The current image may be set by writing a binary
+       image id to the ctl file.
+
+       A process can write messages to data  to  allocate  and  free
+       images,  fonts,  and  subfonts; read or write portions of the
+       images; and draw line segments and character strings  in  the
+       images.   All  graphics requests are clipped to their images.
+       Some messages return a response to be  recovered  by  reading
+       the data file.
+
+       The  draw  device provides three types of graphical resource:
+       Images, Screens and Fonts.  Resource instances have an  iden‐
+       tification  number.   Screen  identifiers  are  global to the
+       device.  All other identifiers are local to each client.
+
+       Image is the fundamental resource type on which  all  drawing
+       primitives  are performed.  At client connection the physical
+       display is represented by Image 0.
+
+       A Screen manages a set of (overlapping) Images,  handling  Z-
+       order and position manipulation and the refreshing of regions
+       uncovered by such operations.  When a Screen is created it is
+       associated  with  an  Image  on  which to render itself.  New
+       images can be associated with a screen when they are created;
+       they are then treated as windows on that screen.  Screens can
+       be marked as public, meaning that other  clients  can  import
+       their ID and create new windows on them.
+
+       A  Font is an image with associated character data.  The Font
+       image provides the bitmap of all the characters in the  Font;
+       the  character  data  is used by the string command to render
+       characters from the image.
+
+   Command messages
+       The format of messages written to data  is  a  single  letter
+       followed  by binary parameters; multibyte integers are trans‐
+       mitted with the low order byte first.  Points are  two  four-
+       byte  numbers:  x, y.  Rectangles are four four-byte numbers:
+       min x, min y, max x, and max y.  Images, screens,  and  fonts
+       have  32-bit  identifiers.  In the discussion of the protocol
+       below, the distinction between identifier and  actual  image,
+       screen, or font is not made, so that ``the object id'' should
+       be interpreted as ``the object  with  identifier  id''.   The
+       definitions of constants used in the description below can be
+       found in /module/draw.m or /include/draw.h.
+
+       The following requests are accepted by the  data  file.   The
+       numbers  in  brackets give the length in bytes of the parame‐
+       ters.
+
+       A id[4] imageid[4] fillid[4] public[1]
+            Allocate a new Screen (see draw-display(2)) with  screen
+            identifier id using backing store image imageid, filling
+            it initially with data from image fillid.  If the public
+            byte  is non-zero, the screen can be accessed from other
+            processes using the publicscreen interface.
+
+       b  id[4]  screenid[4]  refresh[1]  chan[4]   repl[1]   r[4*4]
+            clipr[4*4] color[4]
+            Allocate an image with a given id on the screen named by
+            screenid.  The image will have rectangle r and  clipping
+            rectangle  clipr.   If  repl  is  non-zero,  the image's
+            replicate bit will be set (see draw(2)).
+
+            Refresh specifies the method to be used to draw the win‐
+            dow  when  it is uncovered.  Refbackup causes the server
+            to maintain a backing store, Refnone  does  not  refresh
+            the  image,  and Refmesg causes a message to be sent via
+            the refresh file (q.v.).
+
+            The image format is described by chan, a binary  version
+            of  the  channel format string.  Specifically, the image
+            format is the catenation of up to  four  8-bit  numbers,
+            each  describing  a  particular  image channel.  Each of
+            these 8-bit numbers contains a channel type in its  high
+            nibble  and  a bit count in its low nibble.  The channel
+            type is one of CRed, CGreen, CBlue, CGrey, CAlpha, CMap,
+            and CIgnore.  See image(6).
+
+            Color is the catenation of four 8-bit numbers specifying
+            the red, green, blue, and alpha channels  of  the  color
+            that the new image should be initially filled with.  The
+            red channel is in the highest 8 bits, and the  alpha  in
+            the  lowest.   Note that color is always in this format,
+            independent of the image format.
+
+       c dstid[4] repl[1] clipr[4*4]
+            Change the replicate bit and clipping rectangle  of  the
+            image  dstid.   This  overrides  whatever  settings were
+            specified in the allocate message.
+
+       d dstid[4] srcid[4] maskid[4] dstr[4*4] srcp[2*4] maskp[2*4]
+            Use the draw operator to combine the rectangle  dstr  of
+            image  dstid  with  a  rectangle of image srcid, using a
+            rectangle of image maskid as an alpha  mask  to  further
+            control  blending.   The  three rectangles are congruent
+            and aligned such that the  upper  left  corner  dstr  in
+            image dstid corresponds to the point srcp in image srcid
+            and the point maskp in image maskid.  See draw-image(2).
+
+       D debugon[1]
+            If debugon is non-zero,  enable  debugging  output.   If
+            zero,  disable  it.  The meaning of ``debugging output''
+            is implementation dependent.
+
+       e  dstid[4]  srcid[4]  c[2*4]  a[4]  b[4]  thick[4]   sp[2*4]
+            alpha[4] phi[4]
+            Draw  an  ellipse  in  image dst centered on the point c
+            with horizontal and vertical  semiaxes  a  and  b.   The
+            ellipse  is drawn using the image src, with the point sp
+            in src aligned with c in dst.  The ellipse is drawn with
+            thickness 1+2×thick.
+
+            If  the  high  bit  of alpha is set, only the arc of the
+            ellipse from degree angles alpha to phi is  drawn.   For
+            the  purposes  of drawing the arc, alpha is treated as a
+            signed 31-bit number by ignoring its high bit.
+
+       E dstid[4] srcid[4] center[2*4] a[4]  b[4]  thick[4]  sp[2*4]
+            alpha[4] phi[4]
+            Draws  an  ellipse  or  arc as the e message, but rather
+            than outlining it, fills the corresponding sector  using
+            the  image  srcid.  The thick field is ignored, but must
+            be non-negative.
+
+       f id[4]
+            Free the resources associated with the image id.
+
+       F id[4]
+            Free the the screen with the specified id.   Windows  on
+            the screen must be freed separately.
+
+       i id[4] n[4] ascent[1]
+            Treat the image id as a font cache of n character cells,
+            each with ascent ascent.
+
+       l  cacheid[4]  srcid[4]  index[2]  r[4*4]   sp[2*4]   left[1]
+            width[1]
+            Load  a  character  into  the font cache associated with
+            image cacheid at cache position  index.   The  character
+            data is drawn in rectangle r of the font cache image and
+            is fetched from the congruent rectangle in  image  srcid
+            with upper left corner sp.  Width specifies the width of
+            the character—the spacing from  this  character  to  the
+            next—while  left  specifies the horizontal distance from
+            the left side of the character to the left side  of  the
+            cache image.  The dimensions of the image of the charac‐
+            ter are defined by r.
+
+       L dstid[4] p0[2*4] p1[2*4] end0[4] end1[4] thick[4]  srcid[4]
+            sp[2*4]
+            Draw  a  line of thickness 1+2×thick in image dstid from
+            point p0 to p1.  The  line  is  drawn  using  the  image
+            srcid,  translated so that point sp in srcid aligns with
+            p0 in dstid.  The end0 and end1 fields  specify  whether
+            the  corresponding  line end should be a square, a disc,
+            or an arrow head.  See line in  draw-image(2)  for  more
+            details.
+
+       N id[4] in[1] j[1] name[j]
+            If  in  is  non-zero,  associate  the  image id with the
+            string name.  If in is zero and name already corresponds
+            to the image id, the association is deleted.
+
+       n id[4] j[1] name[j]
+            Introduce  the  identifier id to correspond to the image
+            named by the string name.
+
+       o id[4] r.min[2*4] scr[2*4]
+            Position the window id so that its upper left corner  is
+            at  the  point scr on its screen.  Simultaneously change
+            its internal (logical) coordinate  system  so  that  the
+            point  log  corresponds  to the upper left corner of the
+            window.
+
+       p dstid[4] n[2] end0[4]  end1[4]  thick[4]  srcid[4]  sp[2*4]
+            dp[2*2*(n+1)]
+            Draw  a polygon of thickness 1+2×thick.  It is conceptu‐
+            ally equivalent to a series of n  line-drawing  messages
+            (see  L  above)  joining  adjacent points in the list of
+            points dp.  The source image srcid is translated so that
+            the point sp in srcid aligns with the first point in the
+            list dp.  The polygon need not be closed: end0 and  end1
+            specify the line endings for the first and last point on
+            the polygon.  All interior lines have  rounded  ends  to
+            make smooth joins.
+
+       P   dstid[4]   n[2]   wind[4]  ignore[2*4]  srcid[4]  sp[2*4]
+            dp[2*2*(n+1)]
+            Draw a polygon as the p message, but fill it rather than
+            outlining  it.  The winding rule parameter wind resolves
+            ambiguities about what to fill if the polygon  is  self-
+            intersecting.   If  wind  is  ~0,  a pixel is inside the
+            polygon if the polygon's winding number about the  point
+            is  non-zero.   If  wind  is 1, a pixel is inside if the
+            winding number is odd.  Complementary values (0  or  ~1)
+            cause outside pixels to be filled.  The meaning of other
+            values is undefined.  The polygon is closed with a  line
+            if necessary.
+
+       r id[4] r[4*4]
+            Cause the next read of the data file to return the image
+            pixel data corresponding to the rectangle r in image id.
+
+       s dstid[4] srcid[4] fontid[4] p[2*4] clipr[4*4] sp[2*4]  n[2]
+            n*(index[2])
+            Draw in the image dstid the text string specified by the
+            n cache indices into  font  fontid,  starting  with  the
+            upper  left corner at point p in image dstid.  The image
+            drawn is taken from image srcid, translated to align  sp
+            in  srcid  with dp in dstid.  All drawing is confined to
+            the clipping rectangle clipr in dstid.
+
+       x dstid[4] srcid[4] fontid[4] dp[2*4] clipr[4*4] sp[2*4] n[2]
+            bgid[4] bp[2*4] n*(index[2])
+            Like  the  string  drawing s command, but fill the back‐
+            ground of each character with pixels  from  image  bgid.
+            The image bgid is translated so that the point bp aligns
+            with the point dp in dstid.
+
+       S id[4] chan[4] Attach to the public screen with  the  speci‐
+            fied  id.   It is an error if the screen does not exist,
+            is not public, or does not have the  channel  descriptor
+            chan for its associated image.
+
+       t top[1] n[2] n*id[4]
+            Send  n  windows to the top (if t is non-zero) or bottom
+            (if t is zero) of the window stack.  The window is spec‐
+            ified  by  the list of n image ids are moved as a group,
+            maintaining their own order within the stack.
+
+       v
+            Flush changes from a soft screen, if any, to the display
+            buffer.
+
+       y id[4] r[4*4] buf[x*1]
+       Y id[4] r[4*4] buf[x*1]
+            Replace  the  rectangle r of pixels in image id with the
+            pixel data in buf.  The pixel data must be in the format
+            dictated   by   id's   image   channel  descriptor  (see
+            image(6)).  The y message uses uncompressed data,  while
+            the  Y message uses compressed data.  In either case, it
+            is an error to include more data than necessary.
+
+       The refresh file is  read-only.   As  windows  owned  by  the
+       client  are  uncovered,  if  they  cannot be refreshed by the
+       server (such as when they have refresh  functions  associated
+       with  them),  a message is made available on the refresh file
+       reporting what needs to be repainted by the client.  The mes‐
+       sage  has  five decimal integers formatted as in the ctl mes‐
+       sage: the image id of the window and the coordinates  of  the
+       rectangle that should be refreshed.
+
+SOURCE
+       /emu/port/devdraw.c
+       /emu/*/win.c
+       /os/port/devdraw.c
+       /os/*/screen.c
+       /libmemdraw
+
+SEE ALSO
+       draw-intro(2), colour(6), image(6), font(6)
+
+DIAGNOSTICS
+       Most  messages  to  draw  can  return  errors;  these  can be
+       detected by a system call error on the write(see sys-read(2))
+       of  the data containing the erroneous message.  The most com‐
+       mon error is a failure to allocate  because  of  insufficient
+       free resources.  Most other errors occur only when the proto‐
+       col is mishandled by the application.  The error string  (see
+       sys-intro(2)) will report details.
+
+BUGS
+       The Refmesg refresh method is not fully implemented.
+
+                                                             DRAW(3)

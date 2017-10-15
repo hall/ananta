@@ -1,0 +1,191 @@
+UBFA(2)                  System Calls Manual                 UBFA(2)
+
+NAME
+       ubfa:  readubf,  writeubf, UValue - read, write and represent
+       values in a UBF(A) data transport encoding
+
+SYNOPSIS
+       include "ubfa.m";
+       ubfa := load UBFa UBFa->PATH;
+
+       UValue: adt {
+           pick{
+           Atom =>
+               name:  string;
+           Int =>
+               value: int;
+           String =>
+               s:     string;
+           Binary =>
+               a:     array of byte;
+           Tuple =>
+               a:     cyclic array of ref UValue;  # tree
+           List =>
+               l:     cyclic list of ref UValue;   # tree
+           Tag =>
+               name:  string;
+               o:     cyclic ref UValue;
+           }
+           isatom:    fn(o: self ref UValue): int;
+           isstring:  fn(o: self ref UValue): int;
+           isint:     fn(o: self ref UValue): int;
+           istuple:   fn(o: self ref UValue): int;
+           isop:      fn(o: self ref UValue, op: string, arity: int): int;
+           islist:    fn(o: self ref UValue): int;
+           isbinary:  fn(o: self ref UValue): int;
+           istag:     fn(o: self ref UValue): int;
+           eq:        fn(o: self ref UValue, v: ref UValue): int;
+           op:        fn(o: self ref UValue, arity: int): string;
+           args:      fn(o: self ref UValue, arity: int):
+                       array of ref UValue;
+           els:       fn(o: self ref UValue): list of ref UValue;
+           val:       fn(o: self ref UValue): int;
+           binary:    fn(o: self ref UValue): array of byte;
+           objtag:    fn(o: self ref UValue): string;
+           obj:       fn(o: self ref UValue): ref UValue;
+           text:      fn(o: self ref UValue): string;
+       };
+
+       init:     fn(bufio: Bufio);
+       readubf:  fn(input: ref Iobuf): (ref UValue, string);
+       writeubf: fn(output: ref Iobuf, v: ref UValue): int;
+       uniq:     fn(s: string): string;
+
+       uvatom:   fn(s: string): ref UValue.Atom;
+       uvint:    fn(i: int): ref UValue.Int;
+       uvstring: fn(s: string): ref UValue.String;
+       uvbinary: fn(a: array of byte): ref UValue.Binary;
+       uvtuple:  fn(a: array of ref UValue): ref UValue.Tuple;
+       uvlist:   fn(l: list of ref UValue): ref UValue.List;
+       uvtag:    fn(name: string, o: ref UValue): ref UValue.Tag;
+
+DESCRIPTION
+       UBFa provides value representations, and encoding and  decod‐
+       ing  operations for Armstrong's UBF(A) data transport format,
+       defined by ubfa(6).
+
+       Init must be called before invoking any  other  operation  of
+       the  module.   The bufio parameter must refer to the instance
+       of bufio(2) that provides the Iobuf parameters used for input
+       and output.
+
+       UValue  is  the internal representation of values that can be
+       transmitted by the UBF(A) encoding.   The  various  sorts  of
+       values are distinguished in a pick adt:
+
+       UValue.Atom
+              Represents  an  atom: a symbolic constant, for example
+              the name of an operation or  an  enumeration  literal.
+              The  string  name gives the spelling of the constant's
+              name.
+
+       UValue.Int
+              Represents an integer value (eg, a Limbo int) with the
+              given value.
+
+       UValue.String
+              Represents  a  character  string  (eg, a Limbo string)
+              with the value s.
+
+       UValue.Binary
+              Represents binary data as a sequence of bytes  in  the
+              array a.
+
+       UValue.Tuple
+              Represents a compound value that contains a fixed num‐
+              ber of component values, given by successive  elements
+              of  the  array  a.  UBF tuples correspond to tuples or
+              non-pick adt values in Limbo.
+
+       UValue.List
+              Represents a compound value containing a variable num‐
+              ber  of component values, given by successive elements
+              of the list l.
+
+       UValue.Tag
+              Associates an application-specific  tag  with  another
+              UValue referenced by o.
+
+       Readubf reads a single value in ubfa(6) format from the input
+       stream and returns a tuple (val, err).  On success, val is  a
+       UValue  that  represents that value.  If an error occurs, val
+       is nil and err contains a diagnostic.
+
+       Writeubf writes a ubfa(6) representation of the  value  v  to
+       the  output  stream.  It returns 0 on success and -1 on error
+       (setting the system error string).
+
+       The easiest way to create a new UValue for subsequent  output
+       is  with  one  of  the  module-level functions uvatom, uvint,
+       uvstring, and so on.  As values of a pick adt, a  UValue  can
+       be inspected using Limbo's tagof operator and the appropriate
+       variant accessed using a pick statement.   UValue  also  sup‐
+       ports  several  groups  of  common  operations,  for smaller,
+       tidier code.  First, the set  of  enquiry  functions  u.isX()
+       return  true  if the value u is an instance of the UBF type X
+       (atom, int, string, binary, tuple, etc).   The  other  opera‐
+       tions are:
+
+       u.eq(v)
+              Return  true  if  the  values  of  u  and v are equal,
+              including the values of  corresponding  subcomponents,
+              recursively
+
+       u.isop(op, n)
+              Return  true  if u is a tuple having n components, and
+              its first component is an  atom  or  string  with  the
+              value op.
+
+       u.op(n)
+              If  u is a tuple with n components, and the first com‐
+              ponent is an atom or string, return its value.  Other‐
+              wise, return nil.
+
+       u.args(n)
+              If  u  is  a  tuple with n components, return an array
+              containing the values of all but the first  component.
+              Otherwise, return  nil.
+
+       u.els()
+              If  u  is  a list, return a Limbo list of its elements
+              (ie, u.l).  Otherwise, return nil.
+
+       u.val()
+              If u is  an  integer,  return  its  value.   Otherwise
+              return zero.
+
+       u.binary()
+              If u is a binary value, return the corresponding array
+              of bytes; if u is an atom or string, return  an  array
+              of bytes containing its value; otherwise, return nil.
+
+       u.objtag()
+              If u is a tag, return the name of the tag.  Otherwise,
+              return nil.
+
+       u.obj()
+              If u is a tag, return the  tagged  value.   Otherwise,
+              return u itself.
+
+       u.text()
+              Return  a  printable  representation  of  the value u,
+              mainly intended for debugging and tracing.
+
+       One difference between atoms and strings is  that  all  atoms
+       with  identical  spellings  refer  to  the same string in the
+       implementation's storage.  Given an atom name,  uniq  returns
+       the  corresponding  string, stored in an internal dictionary.
+       It is used by UBFa to create the strings  UValue.Atom.s,  and
+       can  be  put  to  similar  use  directly by applications.  It
+       should only be applied to values that are small in number (as
+       with symbolic constants).
+
+SOURCE
+       /appl/lib/ubfa.b
+
+SEE ALSO
+       sexprs(2), ubfa(6)
+       J  L  Armstrong,  ``Getting  Erlang  to  talk  to the outside
+       world'', ACM SIGPLAN Erlang workshop 2002 , Pittsburg, PA USA
+
+                                                             UBFA(2)

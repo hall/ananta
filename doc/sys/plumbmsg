@@ -1,0 +1,202 @@
+PLUMBMSG(2)              System Calls Manual             PLUMBMSG(2)
+
+NAME
+       plumbmsg - plumbing message module
+
+SYNOPSIS
+       include "plumbmsg.m";
+       plumbmsg := load Plumbmsg Plumbmsg->PATH;
+       Msg: import plumbmsg;
+
+       Msg: adt
+       {
+           src:    string;
+           dst:    string;
+           dir:    string;
+           kind:   string;
+           attr:   string;
+           data:   array of byte;
+           # used by applications
+           send:   fn(msg: self ref Msg): int;
+           recv:   fn(): ref Msg;
+           # used by plumb and send, recv
+           pack:   fn(msg: self ref Msg): array of byte;
+           unpack: fn(b: array of byte): ref Msg;
+       };
+
+       Attr: adt
+       {
+           name: string;
+           val:  string;
+       };
+
+       init:         fn(willsend: int, rcvport: string, maxdata: int): int;
+       shutdown:     fn();
+       string2attrs: fn(s: string): list of ref Attr;
+       attrs2string: fn(l: list of ref Attr): string;
+       lookup:       fn(attrs: list of ref Attr, name: string): (int, string);
+
+DESCRIPTION
+       Plumbmsg is an interface for message-passing between applica‐
+       tions via the plumber(8).  It allows applications to  receive
+       messages  from  the plumber on a logical input port, and send
+       messages to other applications via the plumber.
+
+       Init must be called once when the application starts, to  set
+       up its plumbing connections.  Applications can choose to send
+       messages, receive them, or do both.  Note  that  the  plumber
+       must  be  running  before  any of these functions are useful.
+       Normally, that is done by the window system's  initialisation
+       procedure,  but  in specialised systems, plumbing can be used
+       for attribute-oriented communication even  without  a  window
+       system.
+
+       If  the application will be sending messages via the plumber,
+       the value willsend must be non-zero, and init  will  open  an
+       appropriate  channel  to the plumber; if the application will
+       not send messages, the value should be zero.
+
+       If the application  is  prepared  to  receive  messages,  the
+       parameter  rcvport  names  its logical input port, which must
+       also be known to the plumber (ie, it must be named as a  pos‐
+       sible  destination  in plumbing(6)); init will open an appro‐
+       priate channel to receive messages  from  the  plumber.   The
+       parameter maxdata gives the size in bytes of the largest mes‐
+       sage the application is prepared  to  receive.   Applications
+       that only send messages set rcvport to nil.
+
+       Init  returns  returns -1 if for any reason either connection
+       cannot be set up correctly, in particular if the  plumber  is
+       not  running  or  the  input  port  is unknown.  Otherwise it
+       returns a non-negative value.
+
+       The following program fragment establishes input  and  output
+       plumbing for an application `edit':
+
+              plumbed := 0;
+              plumbmsg = load Plumbmsg Plumbmsg->PATH;
+              if(plumbmsg->init(1, "edit", 1000) >= 0)
+                   plumbed = 1;
+
+       The  variable plumbed is set to allow the application to dis‐
+       able its plumbing user interface (and  not  attempt  to  send
+       messages) if initialisation fails.
+
+       The  Msg  adt  encapsulates  the  message data routed between
+       applications  and  provides  member  functions  to  send  and
+       receive them.  Its components are used as follows:
+
+       src    The name of the program generating the message.
+
+       dst    The  output port to which the plumber should route the
+              message.   In  practice,  destination  is  often  left
+              empty,  and the destination port will be determined by
+              the plumber applying the automatic routing rules  (cf.
+              plumbing(6))
+
+       dir    The  directory  in which to interpret the data (eg, if
+              the data is a local file name).
+
+       kind   The format of the data.  Currently, `text' is the only
+              type  that  applications  understand, but the plumbing
+              system can route any kind of data.
+
+       attr   A string containing name=value  pairs  (eg,  click=7),
+              separated  by tabs.  Normally the value should be cre‐
+              ated using attrs2string and parsed using string2attrs,
+              described below.
+
+       data   The  message to be conveyed.  If kind is text, and the
+              message is a string s, data will be `array of byte  s'
+              (ie, its UTF encoding).
+
+       Plumbing  messages  are  created  directly  using Limbo's ref
+       operator, giving the desired value to each field.  For  exam‐
+       ple:
+
+                   msg := ref Msg(
+                        "WmSh",
+                        "",
+                        workdir->init(),
+                        "text",
+                        attr,
+                        array of byte text);
+
+       The  plumbing  messages  are exchanged with the plumber using
+       two member functions:
+
+       m.send(msg)
+              Writes a plumbing message to the plumber.  It  returns
+              the  number  of  bytes written (the result of write in
+              sys-read(2) which does the writing).  It returns -1 if
+              the plumber cannot route the message.
+
+       Msg.recv()
+              Reads  a  plumbing  message from the file representing
+              the application's input  port,  previously  opened  by
+              init.  It waits for a message, and returns a reference
+              to a Msg that contains the message data.
+
+       Shutdown sends a message  to  the  plumber  that  shuts  down
+       plumbing for the application's input port rcvport.  An appli‐
+       cation must call it before it exits if it has an active input
+       port.
+
+       String2attrs  takes  a string containing a tab-separated list
+       of attribute pairs and returns a list of references  to  Attr
+       adts.
+
+       Attr2string converts a list of references to Attr adts into a
+       string of  the  form  name=valuename=value  .  .  .   .   The
+       name=value pairs are separated by a single tab.
+
+       Lookup  searches  attrs  for an attribute name, and if found,
+       returns the tuple (1,value).  If name is  not  found,  lookup
+       returns (0, nil).
+
+   Packed message format
+       The  format  of  plumbing messages as transmitted, and member
+       functions that encapsulate it, are documented here  for  com‐
+       pleteness, and in case the details are useful in interpreting
+       plumbing messages outside the Inferno environment.
+
+       Plumbing messages have a fixed structure: five lines of  text
+       giving  UTF  representations  of  the corresponding fields of
+       Msg, then a line giving the length of data in  decimal,  fol‐
+       lowed by the bytes of data:
+
+              source\n
+              destination\n
+              directory\n
+              kind\n
+              attributes\n
+              n\n
+              n bytes
+
+       The details are encapsulated in two functions:
+
+       m.pack()
+              Pack  packs  the  contents Msg m into an array of byte
+              for subsequent  transmission  using  write  (see  sys-
+              read(2)).
+
+       Msg.unpack(b)
+              Unpack  unpacks  an  array of byte b to form a copy of
+              the original Msg, which it returns.
+
+FILES
+       /chan/plumb.input
+              file to send messages to the plumber
+
+       /chan/plumb.rcvport
+              file to receive messages routed to  the  logical  name
+              rcvport
+
+SOURCE
+       /appl/lib/plumbmsg.b
+
+BUGS
+       Shutdown  should  not  be  needed:  the plumber(8), as a file
+       server, must know that a particular client has vanished.
+
+                                                         PLUMBMSG(2)

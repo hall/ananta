@@ -1,0 +1,46 @@
+SMTP(2)                  System Calls Manual                 SMTP(2)
+
+NAME
+       smtp - Simple Mail Transfer Protocol
+
+SYNOPSIS
+       include "smtp.m";
+       smtp := load Smtp Smtp->PATH;
+
+       open:     fn(server: string): (int, string);
+       sendmail: fn(fromwhom: string,
+                    towhom: list of string,
+                    cc: list of string,
+                    msg: list of string): (int, string);
+       close:    fn(): (int, string);
+
+DESCRIPTION
+       Smtp  provides  an  interface  to the mail transport protocol
+       SMTP.
+
+       Open opens a connection to the given SMTP server.  If  server
+       is  nil,  open uses the default mail server $smtp, which must
+       be defined in ndb(6).  It returns -1 and an error message  if
+       the connection fails.
+
+       Sendmail  sends mail to the SMTP server for subsequent deliv‐
+       ery.  The first argument names the sender,  the  list  towhom
+       names  the  recipients, cc is a list of CC's, and msg has the
+       text of the message. The latter may simply be a list  of  one
+       item  containing  the  whole  message, a list of lines of the
+       message or any intermediate format.  It  returns  -1  and  an
+       error message on failure.
+
+       Close closes the connection to the SMTP server.
+
+SOURCE
+       /appl/lib/smtp.b
+
+SEE ALSO
+       sendmail(1), acme(1)
+
+BUGS
+       Too  much  copying  of strings is done, especially with large
+       messages.
+
+                                                             SMTP(2)

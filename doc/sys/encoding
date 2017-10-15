@@ -1,0 +1,61 @@
+ENCODING(2)              System Calls Manual             ENCODING(2)
+
+NAME
+       Encoding:  enc, dec - encoding and decoding of byte arrays as
+       text
+
+SYNOPSIS
+       include "encoding.m";
+       base16 := load Encoding Encoding->BASE16PATH;
+       base32 := load Encoding Encoding->BASE32PATH;
+       base32a := load Encoding Encoding->BASE32APATH;
+       base64 := load Encoding Encoding->BASE64PATH;
+
+       enc: fn(a: array of byte): string;
+       dec: fn(s: string): array of byte
+
+DESCRIPTION
+       Encoding presents a  common  interface  to  several  ways  of
+       encoding  binary  data  (represented  in  arrays of bytes) as
+       printable text, to be included in  essentially  textual  data
+       (such as XML) or sent through e-mail systems (as in MIME).
+
+       Enc  returns  a  string with a textual encoding of the binary
+       data in a.
+
+       Dec returns an array of  bytes  containing  the  binary  data
+       encoded in s.
+
+       Four  encodings  are provided, including all those defined by
+       RFC3548; load the one required from the given path.
+
+       BASE16PATH
+              Encode in base 16, representing each byte as a pair of
+              hexadecimal    digits,    using   upper-case   letters
+              (RFC3548).
+
+       BASE32PATH
+              Encode in base 32,  encoding  5  bits  per  character,
+              using  upper-case  letters,  digits `2' to `7', padded
+              with `=', as per RFC3548.
+
+       BASE32APATH
+              Alternative encoding in base 32, encoding 5  bits  per
+              character,  using  digits  `2' to `7', letters (either
+              case) except `l' and `o', not padded.
+
+       BASE64PATH
+              Encode in base 64,  encoding  6  bits  per  character,
+              using  upper-  and lower-case letters, digits, `+' and
+              `/', padded with `=' (RFC3548).
+
+       When  decoding,  white  space  and  illegal  characters   are
+       ignored; base 16 and base 32 decoders are case-insensitive.
+
+SOURCE
+       /appl/lib/encoding
+
+SEE ALSO
+       convcs(2)
+
+                                                         ENCODING(2)

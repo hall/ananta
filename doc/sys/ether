@@ -1,0 +1,56 @@
+ETHER(2)                 System Calls Manual                ETHER(2)
+
+NAME
+       ether - Ethernet address manipulation
+
+SYNOPSIS
+       include "ether.m";
+       ether := load Ether Ether->PATH;
+
+       Eaddrlen: con 6;
+
+       init:   fn();
+       parse:  fn(s: string): array of byte;
+       text:   fn(a: array of byte): string;
+       addressof:  fn(dev: string): array of byte;
+       eqaddr: fn(a, b: array of byte): int;
+
+DESCRIPTION
+       Ether  provides  a  small  set  of  functions that manipulate
+       Ethernet MAC addresses, for the use of the  few  applications
+       such as bootpd(8) that must work with them.
+
+       Init  must  be  called before using any other function in the
+       module.
+
+       Parse takes a textual representation of a MAC  address  in  s
+       and  returns its internal representation as an array of bytes
+       of length Eaddrlen, the form used in packets read and written
+       via  ether(3).   S  is a string of twelve hexadecimal digits,
+       corresponding to the six bytes of a MAC address.   Each  pair
+       of  digits  can  optionally be separated by a colon.  If s is
+       invalid, parse returns nil.
+
+       Text takes an array of bytes of length Eaddrlen  and  returns
+       its  textual  representation  (a string of twelve hexadecimal
+       digits).  It returns if the array is less than Eaddrlen,  but
+       it ignores any bytes beyond that.
+
+       Addressof  returns  the MAC address of the given Ether device
+       dev (eg, which it reads from dev/addr.  It  returns  nil  and
+       sets  the  error  string  if  that  file does not exist or is
+       invalid.
+
+       Eqaddr returns true iff a and b are the same address.
+
+FILES
+       net/etherN/addr
+              hardware address of Ether N
+
+SOURCE
+       /appl/lib/ether.b
+
+SEE ALSO
+       ip(2), ether(3)
+
+                                                            ETHER(2)

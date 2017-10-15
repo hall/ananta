@@ -1,3 +1,9 @@
 **/bin
+*.out
 *.o
 *.a
+**/y.*
+libinterp/*.h
+emu/*/*.c
+emu/*/*.h
+emu/*/o.emu

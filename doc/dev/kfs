@@ -1,0 +1,98 @@
+KFS(4)                Kernel Interfaces Manual                KFS(4)
+
+NAME
+       kfs - disk file system
+
+SYNOPSIS
+       mount {disk/kfs [-r [ -b bsize ] ] [-c] [-A] [-P] [-R] [-W] [
+       -n name ]  file} dir
+
+DESCRIPTION
+       Kfs implements a hierarchical Inferno file system  within  an
+       existing file, which is typically a disk or flash memory par‐
+       tition.  It gives access to it through the 9P protocol on its
+       standard input, and the contents can be mounted directly on a
+       given dir as shown above.  The file system format is the same
+       as  that  used  by the kfs command of Plan 9, except that the
+       modification user ID is implemented.
+
+       The -r option causes the file system to be reset to  an  ini‐
+       tially empty state (`reamed').  Permission checking is turned
+       off, to allow any desired permissions and file  ownership  to
+       be  set.  (In other words, the -W and -P options are also set
+       by default.)  The file system block size is set to the  bsize
+       given by the -b option (default: 1024 bytes), which must be a
+       multiple of 512 and not greater than 16k  bytes.   The  block
+       size  is stored in the file and need not be given again.  The
+       storage representation is always little-endian.
+
+       Otherwise, the file system is checked if required, unless the
+       -c option is given.
+
+       The contents of the file system can be provided by using com‐
+       mands such as mkdir(1), cp(1) and rm(1) in dir, or built from
+       a description using mkfs(8).
+
+       The  mapping  between  user names and internal IDs within the
+       file system is established by the file adm/users (within  the
+       file system itself) as described by users(6), which kfs reads
+       when it starts.  If no such file exists, as for instance when
+       the  file  system  is initially empty, kfs uses a minimal set
+       corresponding to the following users(6) file:
+
+              -1:adm:adm:
+              0:none:adm:
+              9999:noworld::
+              10000:sys::
+              10001:upas:upas:
+              10002:bootes:bootes:
+              10006:inferno::
+
+       Any users(6) file used with kfs should include entries for at
+       least adm, none, and noworld as above (although group member‐
+       ship can vary).
+
+       Kfs  can  optionally  serve  a  control  file,  for  use   by
+       kfscmd(8).   If the -n option is given, kfs creates a channel
+       /chan/kfs.name.cmd and accepts commands on it from  the  user
+       that started kfs.
+
+       Other options are:
+
+       -A     do not update access times; useful when running a file
+              system in flash over ftl(3), to avoid excessive wear
+
+       -P     suppress permission checking
+
+       -R     file system is read only
+
+       -W     allow wstat (see sys-stat(2) or stat(5)) to make arbi‐
+              trary changes to user and group fields
+
+EXAMPLES
+       Create  an  empty  file system in the file kfs.file.  Because
+       the file system will be no larger than  the  existing  file's
+       size,  and  the  file is assumed not to be a device file, use
+       zeros(1) to prepare a file with 2048  blocks  of  1024  bytes
+       each:
+
+              zeros 1024 2048 >kfs.file
+              mount -c {disk/kfs -r kfs.file} /n/local
+
+       The  -c  option  to  mount  allows  files  to  be  created in
+       /n/local.
+
+SOURCE
+       /appl/cmd/disk/kfs.b
+
+SEE ALSO
+       dd(1), zeros(1), flash(3), ftl(3), logfs(3), sd(3), users(6),
+       kfscmd(8), mkfs(8)
+
+BUGS
+       Because  the  file system format is the same as Plan 9's kfs,
+       this one also does not support  file  names  longer  than  27
+       bytes.   It likewise cannot cope with files bigger than 2ⁱ-1
+       bytes.
+
+                                                              KFS(4)

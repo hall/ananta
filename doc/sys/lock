@@ -1,0 +1,36 @@
+LOCK(2)                  System Calls Manual                 LOCK(2)
+
+NAME
+       lock - thread locking.
+
+SYNOPSIS
+       include "lock.m";
+       lock := load Lock Lock->PATH;
+       Semaphore: adt {
+            c: chan of int;
+            obtain: fn(s: self ref Semaphore);
+            release: fn(s: self ref Semaphore);
+            new: fn(): ref Semaphore;
+       };
+       init: fn();
+
+DESCRIPTION
+       Lock provides semaphore-based mutual exclusion.  Init must be
+       called before creating any locks.
+
+       Semaphore.new()
+              Creates and returns a reference  to  a  new  Semaphore
+              (lock).
+
+       s.obtain()
+              Obtains exclusive access to the lock s.  It will block
+              until it can do so.
+
+       s.release()
+              Releases access to the lock  s  and  allows  processes
+              waiting on it to proceed.
+
+SOURCE
+       /appl/lib/lock.b
+
+                                                             LOCK(2)

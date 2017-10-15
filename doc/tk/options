@@ -1,0 +1,246 @@
+OPTIONS(9)            Kernel Developer's Manual           OPTIONS(9)
+
+NAME
+       options - Standard options supported by widgets
+
+DESCRIPTION
+       This  manual entry describes the common configuration options
+       supported by widgets in the Tk toolkit.   Every  widget  does
+       not  necessarily support every option (see the manual entries
+       for individual widgets for a list  of  the  standard  options
+       supported  by  that  widget), but if a widget does support an
+       option with one of the names listed below,  then  the  option
+       has exactly the effect described below.  For a description of
+       kinds of values that can passed to the various  options,  see
+       types(9).
+
+       In the descriptions below, the name refers to the switch used
+       in class commands and configure widget commands to  set  this
+       value.   For  example,  if an option's command-line switch is
+       set to -foreground and there exists a widget .a.b.c, then the
+       command
+              .a.b.c configure -foreground black
+       may  be used to specify the value black for the option in the
+       the widget .a.b.c.
+
+       -activebackground colour
+              Specifies background colour to use when drawing active
+              elements.   An  element (a widget or portion of a wid‐
+              get) is active if the mouse cursor is positioned  over
+              the  element  and  pressing  a mouse button will cause
+              some action to occur.
+
+       -activeforeground colour
+              Specifies foreground colour to use when drawing active
+              elements.   See  above  for  definition of active ele‐
+              ments.
+
+       -actx  Returns the current x position of the widget in screen
+              coordinates.
+
+       -acty  Returns the current y position of the widget in screen
+              coordinates.
+
+       -actwidth
+              Returns the current allocated width of the widget.
+
+       -actheight
+              Returns the current allocated height of the widget.
+
+       -anchor val
+              Specifies how the information in a widget  (e.g.  text
+              or  a  bitmap)  is to be displayed in the widget.  Val
+              must be one of the values n, ne, e, se, s, sw, w,  nw,
+              or center.  For example, nw means display the informa‐
+              tion such that its top-left corner is at the  top-left
+              corner of the widget.
+
+       -background colour or -bg colour
+              Specifies  the  normal  background  colour to use when
+              displaying the widget.
+
+       -bitmap bitmap
+              Specifies a bitmap to  display  in  the  widget.   The
+              exact  way  in  which  the  bitmap is displayed may be
+              affected by other options such as anchor  or  justify.
+              Typically,  if  this option is specified then it over‐
+              rides other options that specify a  textual  value  to
+              display  in the widget; the bitmap option may be reset
+              to an empty string to re-enable a  text  display.   In
+              widgets  that  support  both bitmap and image options,
+              image will usually override bitmap.  For those widgets
+              that  support  the foreground option, if the bitmap is
+              monochrome  it  is  displayed  using  the   foreground
+              colour.
+
+       -borderwidth dist or -bd dist
+              Specifies a non-negative value indicating the width of
+              the 3-D border to draw around the outside of the  wid‐
+              get  (if  such  a  border  is being drawn;  the relief
+              option typically determines this).  The value may also
+              be  used  when  drawing 3-D effects in the interior of
+              the widget.
+
+       -disabledcolor colour
+              Specifies the foreground colour to  use  when  drawing
+              disabled  widgets.  Certain widgets can be disabled by
+              use of their -state option.
+
+       -font font
+              Specifies the font to use when drawing text inside the
+              widget.
+
+       -foreground colour or -fg colour
+              Specifies  the  normal  foreground  colour to use when
+              displaying the widget.
+
+       -highlightcolor colour
+              Specifies the colour to use for  the  traversal  high‐
+              light  rectangle  that is drawn around the widget when
+              it has the input focus.
+
+       -highlightthickness dist
+              Specifies a non-negative value indicating the width of
+              the  highlight rectangle to draw around the outside of
+              the widget when it has the input focus.  If the  value
+              is  zero,  no focus highlight is drawn around the wid‐
+              get.
+
+       -image image
+              Specifies an image to display  in  the  widget,  which
+              must  have been created with the image create command.
+              Typically, if the image option is  specified  then  it
+              overrides  other options that specify a bitmap or tex‐
+              tual value to display in the widget; the image  option
+              may  be reset to an empty string to re-enable a bitmap
+              or text display.  For those widgets that  support  the
+              foreground  option,  if  the image is monochrome it is
+              displayed using the foreground colour.
+
+       -jump boolean
+              For widgets with a  slider  that  can  be  dragged  to
+              adjust a value, such as scrollbars, this option deter‐
+              mines when notifications are made about changes in the
+              value.   If  the value is false, updates are made con‐
+              tinuously as the slider is dragged.  If the  value  is
+              true,  updates  are  delayed until the mouse button is
+              released to end the drag;   at  that  point  a  single
+              notification  is made (the value ``jumps'' rather than
+              changing smoothly).
+
+       -justify val
+              When there are multiple lines of text displayed  in  a
+              widget,  this  option determines how the lines line up
+              with each other.  Val must be one of left, center,  or
+              right.  Left means that the lines' left edges all line
+              up, center means that the lines' centers are  aligned,
+              and right means that the lines' right edges line up.
+
+       -orient orientation
+              For  widgets that can lay themselves out with either a
+              horizontal or vertical orientation,  such  as  scroll‐
+              bars,  this  option specifies which orientation should
+              be used.  Orientation must  be  either  horizontal  or
+              vertical.
+
+       -padx dist
+              Specifies  a  non-negative  value  indicating how much
+              extra space to request for the widget in the  X-direc‐
+              tion.  When computing how large a window it needs, the
+              widget will add this amount to the width it would nor‐
+              mally  need  (as determined by the width of the things
+              displayed in the widget);  if the geometry manager can
+              satisfy  this  request,  the  widget  will end up with
+              extra internal space to the left and/or right of  what
+              it displays inside.  Most widgets only use this option
+              for padding text:  if they are displaying a bitmap  or
+              image, then they usually ignore padding options.
+
+       -pady dist
+              Specifies  a  non-negative  value  indicating how much
+              extra space to request for the widget in the  Y-direc‐
+              tion.  When computing how large a window it needs, the
+              widget will add this amount to  the  height  it  would
+              normally  need  (as  determined  by  the height of the
+              things displayed in the widget);  if the geometry man‐
+              ager  can satisfy this request, the widget will end up
+              with extra internal space above and/or below  what  it
+              displays  inside.   Most  widgets only use this option
+              for padding text:  if they are displaying a bitmap  or
+              image, then they usually ignore padding options.
+
+       -relief val
+              Specifies  the  3-D  effect  desired  for  the widget.
+              Acceptable values for val are  raised,  sunken,  flat,
+              ridge,  and groove.  The value indicates how the inte‐
+              rior of the widget should appear relative to its exte‐
+              rior;   for  example, raised means the interior of the
+              widget should appear to protrude from the screen, rel‐
+              ative to the exterior of the widget.
+
+       -selectbackground colour
+              Specifies the background colour to use when displaying
+              selected items.
+
+       -selectborderwidth dist
+              Specifies a non-negative value indicating the width of
+              the 3-D border to draw around selected items.
+
+       -selectforeground colour
+              Specifies the foreground colour to use when displaying
+              selected items.
+
+       -takefocus boolean
+              Determines whether clicking on the widget  will  auto‐
+              matically give it the keyboard focus, and also whether
+              the widget will become part of the keyboard focus list
+              and made accessible by keyboard navigation.
+
+       -text val
+              Specifies  a  string,  val, to be displayed inside the
+              widget.  The way in  which  the  string  is  displayed
+              depends on the particular widget and may be determined
+              by other options, such as anchor or justify.
+
+       -underline integer
+              Specifies the integer index of a character  to  under‐
+              line  in  the  widget.   This  option  is  used by the
+              default bindings to implement keyboard  traversal  for
+              menu  buttons  and menu entries.  0 corresponds to the
+              first character of the text displayed in the widget, 1
+              to the next character, and so on.
+
+       -xscrollcommand command
+              Specifies the prefix for a command used to communicate
+              with horizontal scrollbars.  When the view in the wid‐
+              get's window changes (or whenever anything else occurs
+              that could change the display in a scrollbar, such  as
+              a  change in the total size of the widget's contents),
+              the widget will generate a Tk command by concatenating
+              command  and  two  numbers.   Each of the numbers is a
+              fraction between 0 and 1, which indicates  a  position
+              in  the  document.   0  indicates the beginning of the
+              document, 1 indicates the end, .333 indicates a  posi‐
+              tion  one  third  the way through the document, and so
+              on.  The first fraction indicates the  first  informa‐
+              tion  in  the  document that is visible in the window,
+              and the second fraction indicates the information just
+              after  the  last portion that is visible.  The command
+              is then passed to the Tk  interpreter  for  execution.
+              Typically  the  -xscrollcommand option consists of the
+              path name of a scrollbar widget followed  by  ``set'',
+              e.g.    ``.x.scrollbar  set'':  this  will  cause  the
+              scrollbar to be updated whenever the view in the  win‐
+              dow changes.  If this option is not specified, then no
+              command will be executed.
+
+       -yscrollcommand command
+              Specifies the prefix for a command used to communicate
+              with  vertical  scrollbars.  This option is treated in
+              the same way as  the  -xscrollcommand  option,  except
+              that  it  is  used for vertical scrollbars and is pro‐
+              vided by widgets that support vertical scrolling.  See
+              the  description of -xscrollcommand for details on how
+              this option is used.
+
+                                                          OPTIONS(9)

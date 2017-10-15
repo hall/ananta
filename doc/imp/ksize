@@ -1,0 +1,23 @@
+KSIZE(10.1)                                              KSIZE(10.1)
+
+NAME
+       ksize - print size of kernel images
+
+SYNOPSIS
+       ksize [ file ...  ]
+
+DESCRIPTION
+       Ksize  prints  the size of the segments for each of the argu‐
+       ment executable files (default 8.out).  The format is
+
+              textsizet + datasized + bsssizeb = total
+
+       where the numbers are in bytes.
+
+SOURCE
+       /utils/ksize
+
+SEE ALSO
+       kstrip(10.1), a.out(10.6)
+
+                                                         KSIZE(10.1)

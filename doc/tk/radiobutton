@@ -1,0 +1,186 @@
+RADIOBUTTON(9)        Kernel Developer's Manual       RADIOBUTTON(9)
+
+NAME
+       radiobutton - Create and manipulate radiobutton widgets
+
+SYNOPSIS
+       radiobutton pathName ?options?
+
+STANDARD OPTIONS
+       -activebackground -disabledcolor      -justify
+       -activeforeground -font               -relief
+       -anchor           -foreground         -takefocus
+       -background       -highlightcolor     -text
+       -bitmap           -highlightthickness -underline
+       -borderwidth      -image
+
+WIDGET-SPECIFIC OPTIONS
+       -command command
+              Specifies  a  Tk command to associate with the button.
+              This command is typically invoked when mouse button  1
+              is  released  over  the  button  window.  The button's
+              global variable (-variable  option)  will  be  updated
+              before the command is invoked.
+
+       -height dist
+              Specifies  a  desired  height for the button.  If this
+              option isn't specified, the button's desired height is
+              computed  from the size of the image or bitmap or text
+              being displayed in it.
+
+       -indicatoron boolean
+              Specifies whether  or  not  the  indicator  should  be
+              drawn.  If false, the relief option is ignored and the
+              widget's relief is always  sunken  if  the  widget  is
+              selected and raised otherwise.
+
+       -selectcolor colour
+              Specifies  a  background colour to use when the button
+              is selected.   If  indicatoron  is  true,  the  colour
+              applies  to  the  indicator.  If indicatoron is false,
+              this colour is used as the background for  the  entire
+              widget,  in  place  of background or activebackground,
+              whenever the widget is selected.  If specified  as  an
+              empty string, no special colour is used for displaying
+              when the widget is selected.
+
+       -state state
+              Specifies one of three  states  for  the  radiobutton:
+              normal,  active,  or  disabled.   In  normal state the
+              radiobutton is  displayed  using  the  foreground  and
+              background  options.   The  active  state is typically
+              used when the pointer is  over  the  radiobutton.   In
+              active  state  the  radiobutton is displayed using the
+              activeforeground and activebackground  options.   Dis‐
+              abled  state  means  that  the  radiobutton  should be
+              insensitive:  the  default  bindings  will  refuse  to
+              activate  the  widget  and  will  ignore  mouse button
+              presses.  In this state the  disabledcolor  and  back‐
+              ground  options  determine how the radiobutton is dis‐
+              played.
+
+       -value string
+              Specifies value to store in  the  button's  associated
+              variable whenever this button is selected.
+
+       -variable string
+              Specifies name of global variable to set whenever this
+              button is selected.  Changes  in  this  variable  also
+              cause   the  button  to  select  or  deselect  itself.
+              Defaults to the value selectedButton.
+
+       -width dist
+              Specifies a desired width for  the  button.   If  this
+              option  isn't specified, the button's desired width is
+              computed from the size of the image or bitmap or  text
+              being displayed in it.
+
+DESCRIPTION
+       The  radiobutton  command  creates a new window (given by the
+       pathName argument) and makes it into  a  radiobutton  widget.
+       Additional  options, described above, may be specified on the
+       command line to configure aspects of the radiobutton such  as
+       its colours, font, text, and initial relief.  The radiobutton
+       command returns its pathName argument.  At the time this com‐
+       mand  is  invoked,  there must not exist a window named path‐
+       Name.
+
+       A radiobutton is a widget that  displays  a  textual  string,
+       bitmap or image and a circle called an indicator.  If text is
+       displayed, it must all be in a single font, but it can occupy
+       multiple  lines  on  the screen (if it contains newlines) and
+       one of the characters may optionally be underlined using  the
+       underline  option.  A radiobutton has all of the behaviour of
+       a simple button: it can display itself  in  either  of  three
+       different ways, according to the state option; it can be made
+       to appear raised, sunken, or flat; and it invokes a  Tk  com‐
+       mand  whenever  mouse button 1 is clicked over the check but‐
+       ton.
+
+       In addition, radiobuttons can be selected.  If a  radiobutton
+       is selected, the indicator is normally drawn as a circle con‐
+       taining a disc (possibly in a special colour), and a Tk vari‐
+       able  associated  with the radiobutton is set to a particular
+       value.  If the radiobutton is not selected, the indicator  is
+       drawn  as  an  empty circle.  Typically, several radiobuttons
+       share a single variable and the value of the  variable  indi‐
+       cates  which radiobutton is to be selected.  When a radiobut‐
+       ton is selected it sets the value of the variable to indicate
+       that  fact;   each radiobutton also monitors the value of the
+       variable and automatically selects and deselects itself  when
+       the  variable's  value  changes.   By  default  the  variable
+       selectedButton is used;  its contents give the  name  of  the
+       button  that  is  selected,  or the empty string if no button
+       associated with that variable is selected.  The name  of  the
+       variable  for  a  radiobutton, plus the variable to be stored
+       into it, may be modified with options on  the  command  line.
+       Configuration  options may also be used to modify the way the
+       indicator is displayed (or whether it is displayed  at  all).
+       By  default  a  radiobutton is configured to select itself on
+       button clicks.
+
+WIDGET COMMAND
+       The radiobutton command creates a new Tk command  whose  name
+       is  pathName.   This  command  may  be used to invoke various
+       operations on the widget.  It has the following general form:
+              pathName option ?arg arg ...?
+       Option and the args determine the exact behaviour of the com‐
+       mand.   The  following  commands are possible for radiobutton
+       widgets:
+
+       pathName cget option
+              Returns the current value of the configuration  option
+              given  by  option.   Option may have any of the values
+              accepted by the radiobutton command.
+
+       pathName configure ?option? ?value option value ...?
+              Query or modify the configuration options of the  wid‐
+              get.  If no option is specified, returns a list of all
+              of the available options for pathName.  If one or more
+              option-value pairs are specified, the command modifies
+              the given widget option(s) to have the given value(s);
+              in  this  case  the  command  returns an empty string.
+              Option may have any of  the  values  accepted  by  the
+              radiobutton command.
+
+       pathName deselect
+              Deselects  the  radiobutton  and  sets  the associated
+              variable to an empty string.  If this radiobutton  was
+              not currently selected, the command has no effect.
+
+       pathName invoke
+              Does just what would have happened if the user invoked
+              the radiobutton with the mouse: selects the button and
+              invokes  its  associated  Tk command, if there is one.
+              The return value is the return value from the Tk  com‐
+              mand,  or an empty string if there is no command asso‐
+              ciated with the radiobutton.  This command is  ignored
+              if the radiobutton's state is disabled.
+
+       pathName select
+              Selects  the radiobutton and sets the associated vari‐
+              able to the value corresponding to this widget.
+
+BINDINGS
+       Tk automatically creates bindings for radiobuttons that  give
+       them the following default behaviour:
+
+       [1]    The  radiobutton  activates  whenever the mouse passes
+              over it and deactivates whenever the mouse leaves  the
+              radiobutton.
+
+       [2]    When  mouse  button 1 is pressed over a radiobutton it
+              is invoked (it becomes selected and the command  asso‐
+              ciated with the button is invoked, if there is one).
+
+       If the radiobutton's state is disabled then none of the above
+       actions occur:  the radiobutton is completely non-responsive.
+
+       The behaviour of radiobuttons can be changed by defining  new
+       bindings for individual widgets.
+
+SEE ALSO
+       button(9),   checkbutton(9),   choicebutton(9),   options(9),
+       types(9)
+
+                                                      RADIOBUTTON(9)

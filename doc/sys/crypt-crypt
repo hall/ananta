@@ -1,0 +1,95 @@
+CRYPT-CRYPT(2)           System Calls Manual          CRYPT-CRYPT(2)
+
+NAME
+       crypt: aessetup, aescbc, dessetup, descbc, desecb, ideasetup,
+       ideacbc, ideaecb - data encryption
+
+SYNOPSIS
+       include "ipints.m";
+       include "crypt.m";
+       crypt := load Crypt Crypt->PATH;
+
+       Encrypt:   con 0;
+       Decrypt:   con 1;
+
+       AESbsize:  con 16;
+
+       aessetup:  fn(key: array of byte, ivec: array of byte): ref AESstate;
+       aescbc:    fn(state: ref AESstate, buf: array of byte,
+                    n: int, direction: int);
+
+       BFbsize: con 8;
+
+       blowfishsetup: fn(key: array of byte, ivec: array of byte): ref BFstate;
+       blowfishcbc:   fn(state: ref BFstate, buf: array of byte,
+                    n: int, direction: int);
+
+       DESbsize:  con 8;
+
+       dessetup:  fn(key: array of byte, ivec: array of byte): ref DESstate;
+       descbc:    fn(state: ref DESstate, buf: array of byte,
+                    n: int, direction: int);
+       desecb:    fn(state: ref DESstate, buf: array of byte,
+                    n: int, direction: int);
+
+       IDEAbsize: con 8;
+
+       ideasetup: fn(key: array of byte, ivec: array of byte): ref IDEAstate;
+       ideacbc:   fn(state: ref IDEAstate, buf: array of byte,
+                    n: int, direction: int);
+       ideaecb:   fn(state: ref IDEAstate, buf: array of byte,
+                    n: int, direction: int);
+
+DESCRIPTION
+       These functions encrypt and decrypt blocks of data using dif‐
+       ferent encryption algorithms.  The interfaces are similar.
+
+       Each  algorithm has an adt that holds the current state for a
+       given encryption.  It is produced by the setup  function  for
+       the  algorithm,  algsetup, which is given a secret key and an
+       initialisation vector ivec.  A sequence of blocks of data can
+       then  be  encrypted or decrypted by repeatedly calling algcbc
+       (for `cipher block chaining'), or  algebc  (the  less  secure
+       `electronic code book', if provided).  On each call, buf pro‐
+       vides n bytes of the data to encrypt or decrypt.  N must be a
+       multiple  of  the encryption block size ALGbsize.  Exception‐
+       ally, aescbc allows n to be other than a multiple of AESbsize
+       in  length, but then for successful decryption, the decryptor
+       must use the same sequence of buffer sizes as the  encryptor.
+       Direction  is  the  constant  Encrypt or Decrypt as required.
+       State maintains the encryption state, initially  produced  by
+       the  setup  function, and updated as each buffer is encrypted
+       or decrypted.
+
+       The algorithms currently available are:
+
+       aes    The Advanced Encryption Standard, AES (also  known  as
+              Rijndael).   The key should be 16, 24 or 32 bytes long
+              (128, 192 or 256 bits).  Ivec should be AESbsize bytes
+              of  random  data:  random  enough to be unlikely to be
+              reused  but  not  cryptographically  strongly   unpre‐
+              dictable.
+
+       blowfish
+              Bruce  Schneier's  symmetric block cipher.  The key is
+              any length from 4 to 56 bytes.   Ivec  if  non-nil  is
+              BFbsize bytes of random data.  For blowfishcbc, n must
+              be a multiple of BFbsize.
+
+       des    The older Data Encryption Standard,  DES.   Key  is  8
+              bytes  (64 bits), containing a 56-bit key encoded into
+              64 bits where every eighth bit  is  parity.   Ivec  is
+              DESbsize bytes of random data.
+
+       idea   The  International  Data  Encryption  Standard, IDEA™.
+              The key is 16 bytes long (128 bits).  Ivec  is  IDEAb‐
+              size bytes of random data.
+
+SEE ALSO
+       crypt-intro(2), crypt-rc4(2), security-random(2)
+
+       IDEA  was  patented  by  Ascom-Tech  AG  (EP  0  482  154 B1,
+       US005214703), currently  held  by  iT_SEC  Systec  Ltd.   The
+       patent expired in 2012.
+
+                                                      CRYPT-CRYPT(2)

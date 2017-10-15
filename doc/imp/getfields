@@ -1,0 +1,41 @@
+GETFIELDS(10.2)                                      GETFIELDS(10.2)
+
+NAME
+       getfields, tokenize - break a string into fields
+
+SYNOPSIS
+       int   getfields(char *str, char **args, int maxargs, int mul‐
+       tiflag,
+                 char *delims)
+
+       int   tokenize(char *str, char **args, int maxargs)
+
+DESCRIPTION
+       Getfields breaks the null-terminated UTF string str  into  at
+       most  maxargs  null-terminated  fields and places pointers to
+       the start of these fields in the array  args.   Some  of  the
+       bytes in str are overwritten.  If there are more than maxargs
+       fields, only the first maxargs fields will be set.  Delims is
+       a UTF string defining a set of delimiters.
+
+       If  multiflag  is  zero,  adjacent  fields  are  separated by
+       exactly one delimiter.  A string containing n delimiter char‐
+       acters contains n+1 fields.  If the multiflag argument is not
+       zero, a field is a non-empty string of non-delimiters.
+
+       Getfields return the number of tokens processed.
+
+       Tokenize is the same as getfields with multiflag non-zero and
+       delims "\t\r\n ", except that fields may be quoted using sin‐
+       gle quotes, in the manner of the command interpreter.
+
+SOURCE
+       /libkern/getfields.c
+       /libkern/tokenize.c
+       /lib9/getfields.c
+       /lib9/tokenize.c
+
+SEE ALSO
+       strcat(10.2)
+
+                                                     GETFIELDS(10.2)

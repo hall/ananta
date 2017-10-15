@@ -1,0 +1,48 @@
+CSV(2)                   System Calls Manual                  CSV(2)
+
+NAME
+       csv - comma-separated values
+
+SYNOPSIS
+       include "bufio.m";
+       include "csv.m";
+       csv := load CSV CSV->PATH;
+
+       init:    fn(bufio: Bufio);
+       getline: fn(fd: ref Bufio->Iobuf): list of string;
+       quote:   fn(s: string): string;
+
+DESCRIPTION
+       CSV  provides  a few functions to help read and write data in
+       ``comma-separated value''  format.   The  csv  format  has  a
+       sequence  of  fields on a line (terminated by a newline, car‐
+       riage return, or carriage return and  newline).   Fields  are
+       separated  by  commas, and may be empty.  A field that starts
+       with a double-quote is a quoted field, continuing to the next
+       lone double-quote character, including commas and line termi‐
+       nators, but taking two double-quotes to represent one double-
+       quote.   Any text following quoted text, up to the next comma
+       or line terminator, is included in  the  field  value.   Note
+       that in a field that does not start with a double-quote, dou‐
+       ble-quotes are not treated specially.
+
+       Init must be called before any other operation of the module.
+       Bufio  is  the instance of the bufio(2) module that will pro‐
+       vide the open files to be read.
+
+       Getline reads a sequence of fields in csv format  from  Iobuf
+       fd, unquotes fields as required, and returns them in order in
+       a list.  It returns nil on end-of-file (or read  error).   An
+       empty line is regarded as containing a single empty field.
+
+       Quote  returns string s quoted as required by the csv format:
+       the result is quoted if s contains comma, newline, or a quote
+       (and all embedded quotes are doubled).
+
+SOURCE
+       /appl/lib/csv.b
+
+SEE ALSO
+       sh-csv(1)
+
+                                                              CSV(2)

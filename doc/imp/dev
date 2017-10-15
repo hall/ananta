@@ -1,0 +1,251 @@
+DEV(10.2)                                                  DEV(10.2)
+
+NAME
+       Dev - device driver interface
+
+SYNOPSIS
+       struct Dev
+       {
+           int dc;
+           char*   name;
+
+           void    (*reset)(void);        /* native only */
+           void    (*init)(void);
+           void    (*shutdown)(void);     /* native */
+           Chan*   (*attach)(char *spec);
+           Walkqid*  (*walk)(Chan *c, Chan *nc, char **name, int nname);
+           int     (*stat)(Chan *c, uchar *db, int dbsize);
+           Chan*   (*open)(Chan *c, int mode);
+           void    (*create)(Chan *c, char *name, int mode, ulong perm);
+           void    (*close)(Chan *c);
+           long    (*read)(Chan *c, void *buf, long nbytes, vlong offset);
+           Block*  (*bread)(Chan *c, long nbytes, ulong offset);
+           long    (*write)(Chan *c, void*, long, vlong offset);
+           long    (*bwrite)(Chan *c, Block *b, ulong offset);
+           void    (*remove)(Chan *c);
+           int     (*wstat)(Chan *c, uchar *db, int dbsize);
+           void    (*power)(int on);        /* native only */
+           int     (*config)(int on, char *spec, DevConf *cf); /* native */
+       };
+
+DESCRIPTION
+       Every  device  driver  serves a unique name space that repre‐
+       sents to the corresponding device(s).   Applications  act  on
+       the  space  using the operations of sys-bind(2), sys-open(2),
+       sys-read(2), sys-stat(2), and other system calls.  Within the
+       kernel,  the  Dev structure defines the interface between the
+       kernel and  a  device  driver  for  all  operations  on  that
+       driver's name space.
+
+       Dev  identifies  the  driver,  and lists a set of C functions
+       that are the driver's operations.  Most are operations on the
+       Chan  type  that  is  the  kernel representation of a file or
+       directory active in a name space.  The kernel converts system
+       calls acting on file descriptors into calls to a device's Dev
+       operations acting on channel values.  All channel values pre‐
+       sented through the Dev interface are associated with the cor‐
+       responding device driver: for channel  c,  c->type  specifies
+       that driver.  Within the driver, the c->qid.path of a channel
+       c identifies a file in the driver's name  space,  or  even  a
+       client-specific instance of a file (eg, for multiplexors such
+       as ip(3)).  The interpretation  of  the  path  is  completely
+       determined by the driver.
+
+       A  device  driver  in  the source file devx.c exports an ini‐
+       tialised instance of Dev xdevtab.   For  instance,  devcons.c
+       contains the global initialiser:
+
+              Dev consdevtab = {
+                  'c',
+                  "cons",
+
+                  devreset,
+                  consinit,
+                  devshutdown,
+                  consattach,
+                  conswalk,
+                  consstat,
+                  consopen,
+                  devcreate,
+                  consclose,
+                  consread,
+                  devbread,
+                  conswrite,
+                  devbwrite,
+                  devremove,
+                  devwstat,
+              };
+
+       The  kernel  accesses  the driver only through its Dev struc‐
+       ture, and consequently entry points such  as  consinit,  con‐
+       sread,  etc.  can  (and  should) be declared static, and thus
+       local to the file.
+
+       The following elements of Dev identify the driver:
+
+       dc     The device's type, represented by a Unicode  character
+              (`rune')  that must be unique amongst those in a given
+              kernel (and ideally for a given platform).  Its  value
+              is  the  value  of  Dir.dtype  in the result of a sys-
+              stat(2) applied to any file in the device.
+
+       name   The name that identifies the driver in a  kernel  con‐
+              figuration file and in /dev/drivers (see cons(3)).
+
+       All the other entries are functions.  In many cases, the val‐
+       ues given in a device's Dev will be  the  default  operations
+       provided by devattach(10.2).
+
+       reset()
+              Called once during system initialisation by the native
+              kernel's main after initialising all  supporting  sub‐
+              systems,  including  memory allocation, traps, screen,
+              MMU (if  used),  but  with  interrupts  disabled,  and
+              before  any kernel process environment has been estab‐
+              lished.  Typically used on  some  platforms  to  force
+              some  devices  into a sane state before interrupts are
+              enabled.
+
+       init() Called once during system initialisation in  the  con‐
+              text  of  the  first  kernel  process, with interrupts
+              enabled, before the virtual machine has been started.
+
+       shutdown()
+              Called once in native kernels during system shut down.
+              Used  on only a few platforms to force a device into a
+              state that will allow it to function correctly  during
+              and after a soft reboot (eg, without doing a full sys‐
+              tem hardware reset).
+
+       attach(spec)
+              Called on each new attach to the device (eg, a  refer‐
+              ence  to  #c by sys-bind(2)).  Spec is the string fol‐
+              lowing the device character and  before  a  subsequent
+              `/'  in  the bind request.  It is the empty string for
+              most devies.  If  the  attach  is  successful,  attach
+              should  return  a  Chan  the refers to the root of the
+              tree served by the device driver.  Normally,  it  will
+              suffice to return the value of devattach(10.2).
+
+       walk(c, nc, name, nname)
+              Walks  existing channel c from its current position in
+              the device tree to that specified by the  path  repre‐
+              sented  by  name[0],  ...   name[nname-1].  The driver
+              must interpret `..'  as a walk from the current  posi‐
+              tion one level up towards the root of the device tree.
+              The result is represented by  a  dynamically-allocated
+              Walkqid  value,  with  contents as described in devat‐
+              tach(10.2).  Most drivers simply pass parameters on to
+              devwalk in devattach(10.2) and return its result.
+
+       stat(c, db, nbytes)
+              Fill  db  with stat(5) data describing the file refer‐
+              enced by c.  Nbytes gives the size of db; if the  data
+              will  not  fit, return the value specified for convD2M
+              in styx(10.2).  Most drivers simply pass parameters on
+              to devstat in devattach(10.2); a few fill a local copy
+              of a Dir structure, and  call  convD2M  to  store  the
+              machine-independent representation in db.
+
+       open(c, mode)
+              Open the file represented by Chan c, in the given mode
+              (see sys-open(2)), and if successful,  return  a  Chan
+              value representing the result (usually c).  Many driv‐
+              ers simply apply devopen of  devattach(10.2).   Exclu‐
+              sive use drivers might check and increment a reference
+              count.
+
+       create(c, name, mode, perm)
+              C should be a directory.  Create a new  file  name  in
+              that directory, with permissions perm, opened with the
+              given mode.  If successful, make c refer to the  newly
+              created  file.   Most  drivers  return an error on all
+              creation attempts, by specifying devcreate  of  devat‐
+              tach(10.2) in the Dev table.
+
+       close(c)
+              Close  channel  c.   This  must  be implemented by all
+              drivers; there is no default,  although  the  function
+              often  is a no-op.  Exclusive use drivers might decre‐
+              ment a reference count.
+
+       read(c, buf, nbytes, offset)
+              Implement a sys-read(2) of nbytes  of  data  from  the
+              given  offset  in file c, and if successful, place the
+              data in buf, and return  the  number  of  bytes  read,
+              which  must  be no greater than nbytes.  Devices some‐
+              times ignore the  offset.   All  device  drivers  must
+              implement  read;  there is no default.  Note that if c
+              is a directory, the data has an array of stat(5)  data
+              listing  the  directory  contents,  in the format pre‐
+              scribed by read(5).  Most drivers have  devdirread  of
+              devattach(10.2)  do the work when c is the root direc‐
+              tory of the device's tree.
+
+       bread(c, nbytes, offset)
+              Implement a sys-read(2) of nbytes  of  data  from  the
+              given  offset  in file c, and if successful return the
+              data in a  Block  (see  allocb(10.2)  and  qio(10.2)).
+              Most  drivers  use  the  default  devbread provided by
+              devattach(10.2), and nearly all ignore the  offset  in
+              any  case.  Drivers that manipulate Blocks internally,
+              such as ip(3), ssl(3) and  similar  protocol  devices,
+              and  drivers  that are likely to provide data to those
+              devices, will provide a devbread implementation so  as
+              to reduce the number of times the data is copied.
+
+       write(c, buf, nbytes, offset)
+              Implement  a  write of nbytes of data from buf to file
+              c, which must not be  a  directory,  starting  at  the
+              given  byte  offset.  Return the number of bytes actu‐
+              ally written.  There is no default, but  drivers  that
+              do not implement writes to any of their files can sim‐
+              ply call error(Eperm) to signal an error.
+
+       bwrite(c, b, offset)
+              Similar to the write entry point, but the data is con‐
+              tained  in  a Block b (see allocb(10.2)).  B should be
+              freed before return, whether  the  driver  signals  an
+              error  or not.  Most drivers use the default devbwrite
+              from devattach(10.2), which calls the  driver's  write
+              entry point using the data in b.  Drivers that manipu‐
+              late Blocks internally, such as ip(3), ssl(3) and sim‐
+              ilar protocol devices, will provide a devbwrite imple‐
+              mentation so as to avoid copying the data needlessly.
+
+       remove(c)
+              Remove the file referenced by c.  Most  drivers  raise
+              an  error  by  using the default devremove from devat‐
+              tach(10.2).
+
+       wstat(c, db, dbsize)
+              Change the attributes of file  c,  using  the  stat(5)
+              data  in  buffer db, which is dbsize bytes long.  Usu‐
+              ally a driver will use convM2D of styx(10.2)  to  con‐
+              vert the data to a Dir structure, then apply the rules
+              of stat(5)  to  decide  which  attributes  are  to  be
+              changed  (and  whether  the  change is allowed).  Most
+              drivers simply return an error on all  wstat  requests
+              by using the default devwstat from devattach(10.2).
+
+       power(on)
+              Reserved  for use in native kernels, to allow the ker‐
+              nel to power the device on and off  for  power-saving;
+              on  is non-zero if the device is being powered up, and
+              zero if it is being powered down.  The  device  driver
+              should  save the device state if necessary.  Leave the
+              Dev entry null for now.
+
+       config(on, spec, cf)
+              Reserved for use in native kernels to allow  a  device
+              to  be  configured  on and off dynamically.  Leave the
+              Dev entry null for now.
+
+       The elements reset, shutdown, power, and config are currently
+       present only in the native kernels.
+
+SEE ALSO
+       intro(2),     intro(5),     allocb(10.2),    devattach(10.2),
+       newchan(10.2), qio(10.2)
+
+                                                           DEV(10.2)

@@ -1,0 +1,65 @@
+POP3(2)                  System Calls Manual                 POP3(2)
+
+NAME
+       pop3 - Post Office Protocol
+
+SYNOPSIS
+       include "pop3.m";
+       pop3 := load Pop3 Pop3->PATH;
+
+       open:       fn(user, password, server: string): (int, string);
+       stat:       fn(): (int, string, int, int);
+       msglist:    fn(): (int, string, list of (int, int));
+       msgnolist:  fn(): (int, string, list of int);
+       top:        fn(m: int): (int, string, string);
+       get:        fn(m: int): (int, string, string);
+       delete:     fn(m: int): (int, string);
+       close:      fn(): (int, string);
+
+DESCRIPTION
+       Pop3  provides  an interface to the Post Office Protocol POP3
+       through a set of functions.
+
+       Open opens a connection to a POP3 server, logging in  as  the
+       specified  user  with  the given password.  If server is nil,
+       open uses $pop3,  which  must  be  defined  in  ndb(6).   The
+       remaining functions assume a successfully opened connection.
+
+       Stat  returns  the  status  of the user's mailbox.  The third
+       element of its return tuple is the number of messages and the
+       fourth is the total number of bytes in the messages.
+
+       Msglist  lists  the  user's mailbox. The third element in its
+       return tuple gives a list  of  pairs  of  numbers  comprising
+       (message number, bytes in message).
+
+       Msgnolist  lists  the  user's  mailbox as above but omits the
+       bytes in each message.
+
+       Top returns the top of message m.
+
+       Get returns the full text of message m.
+
+       Delete deletes message m.
+
+       Close closes the connection to the POP3  server.   Note  that
+       subsequent  reconnections to the server may renumber the mes‐
+       sages in the mail box and will certainly do so  if  the  last
+       connection deleted messages.
+
+       Note  also that a connection is static in the sense that mail
+       messages entering the server during a connection will not  be
+       accessible.  A  reconnection  is  needed to see newly arrived
+       messages.
+
+SOURCE
+       /appl/lib/pop3.b
+
+SEE ALSO
+       acme(1)
+
+DIAGNOSTICS
+       All these functions return -1 and an error message on failure
+       as the first two entries in their return tuples.
+
+                                                             POP3(2)

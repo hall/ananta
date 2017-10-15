@@ -1,0 +1,241 @@
+DEBUG(2)                 System Calls Manual                DEBUG(2)
+
+NAME
+       debug - process debugging
+
+SYNOPSIS
+       include "debug.m";
+       debug := load Debug Debug->PATH;
+
+       Pos: adt
+       {
+           file:       string;
+           line:       int;
+           pos:        int;
+       };
+       Src: adt
+       {
+           start:      Pos;        # range within source files
+           stop:       Pos;
+       };
+       Sym: adt
+       {
+           srctopc:    fn(s: self ref Sym, src: ref Src): int;
+           pctosrc:    fn(s: self ref Sym, pc: int): ref Src;
+       };
+
+       Module: adt
+       {
+           addsym: fn(m: self ref Module, sym: ref Sym);
+           stdsym: fn(m: self ref Module);
+           dis:    fn(m: self ref Module): string;
+           sbl:    fn(m: self ref Module): string;
+       };
+
+       Prog: adt
+       {
+           cont:   fn(p: self ref Prog): string;
+           delbpt: fn(p: self ref Prog, dis: string, pc: int): string;
+           event:  fn(p: self ref Prog): string;
+           grab:   fn(p: self ref Prog): string;
+           kill:   fn(p: self ref Prog): string;
+           setbpt: fn(p: self ref Prog, dis: string, pc: int): string;
+           stack:  fn(p: self ref Prog): (array of ref Exp, string);
+           start:  fn(p: self ref Prog): string;
+           status: fn(p: self ref Prog): (int, string, string, string);
+           step:   fn(p: self ref Prog, how: int): string;
+           stop:   fn(p: self ref Prog): string;
+           unstop: fn(p: self ref Prog): string;
+       };
+
+       Exp: adt
+       {
+           name:   string;
+           m:      ref Module;
+
+           expand: fn(e: self ref Exp): array of ref Exp;
+           val:    fn(e: self ref Exp): (string, int);
+           src:    fn(e: self ref Exp): ref Src;
+           findsym:fn(e: self ref Exp): string;
+           srcstr: fn(e: self ref Exp): string;
+       };
+
+       init:       fn(): int;
+       startprog:  fn(dis, dir: string, ctxt: ref Draw->Context,
+                      argv: list of string): (ref Prog, string);
+       prog:       fn(pid: int): (ref Prog, string);
+       sym:        fn(sbl: string): (ref Sym, string);
+
+DESCRIPTION
+       Debug  is  the  module  interface to the debugging facilities
+       provided by prog(3).  It allows facilities for inspection  of
+       a  program's  data structures, as it is running, and to start
+       and stop a running program under program control.  Init  must
+       be  called  before  any  other function to initialise debug's
+       global state.
+
+       Startprog starts up a program under control of the debug mod‐
+       ule.   Dis  is  the  full  pathname of the Dis module to load
+       (which must be compatible with command(2); dir is the current
+       directory  in which to put the new process; ctxt and argv are
+       the arguments given to the new process.  Startprog returns  a
+       tuple  (prog, err)  where prog can be used to interrogate and
+       control the running process, as detailed below, unless  there
+       is an error, in which case prog will be nil, and err contains
+       a description of the error.  Prog is  similar  to  startprog,
+       except that it attaches to an already running process identi‐
+       fied by pid.
+
+   Controlling a process
+       A Prog  adt  provides  routines  for  controlling  a  running
+       process.   It implements the following routines.  Unless oth‐
+       erwise stated, they return nil on success  and  a  diagnostic
+       string on error.
+
+       prog.cont()
+                 Run the program until a break point is reached.
+
+       prog.delbpt(dis, pc)
+                 Delbpt  deletes  the  breakpoint  in the Dis module
+                 with filename dis at Dis instruction pc.
+
+       prog.event()
+                 Event waits for a state transition in  the  running
+                 prog  and  returns  the new state, as returned by a
+                 read of the dbgctl file (see prog(3)).
+
+       prog.grab()
+                 Grab stops the prog and puts it into a state  where
+                 single stepping is possible.
+
+       prog.kill()
+                 Kill kills prog.
+
+       prog.setbpt(dis, pc)
+                 Setbpt  sets  a  breakpoint  in the Dis module with
+                 filename dis at Dis instruction pc.
+
+       prog.stack()
+                 Stack returns a tuple (exps, err) where exps is  an
+                 array  of  Exp adts, each representing one frame of
+                 the current execution stack of prog.  If  an  error
+                 occurs,  exps  will  be nil, and err will contain a
+                 description of the error.
+
+       prog.start()
+                 Start runs prog  until  it  hits  a  breakpoint  or
+                 exits.
+
+       prog.status()
+                 Status  returns a tuple (pgrp, user, state, module)
+                 where pgrp is the process group id of prog, user is
+                 the  owner  of  the  process,  state is the current
+                 state of the process,  and  module  is  the  module
+                 implementation name of the currently executing mod‐
+                 ule.
+
+       prog.step(how)
+                 Step steps prog forward in a  manner  specified  by
+                 how, which is one of the following constants:
+
+                 StepExp
+                        Step one expression evaluation.
+
+                 StepStmt
+                        Step one source statement.
+
+                 StepOver
+                        Step over one called function.
+
+                 StepOut
+                        Step   until   the   current   function  has
+                        returned.
+
+       prog.stop()
+                 Stop prog from running.
+
+       prog.unstop()
+                 Release a program from its  stopped  state;  break‐
+                 points will no longer be triggered.
+
+   Inspecting data
+       The  Exp  adt  provides  facilities  for  inspecting the data
+       structures of a running Dis  process.   A  hierarchical  data
+       structure  can  be  expanded  into  an array of its component
+       Exps, as long as the appropriate symbol information has  been
+       located correctly using stdsym or addsym, and findsym.
+
+       A  Pos  represents a position in a Limbo source code file; it
+       holds the source file name, the line number  (origin  1)  and
+       the character within the line (origin 0).  The Src adt repre‐
+       sents a range in a Limbo  source  code  file;  Src.start  and
+       Src.stop  represent  the  beginning and the end of the range,
+       respectively.
+
+       A Sym represents a .sbl symbol file, and is created by  call‐
+       ing  sym(p)  where  p is the pathname of the symbol file; sym
+       returns a tuple (sym, err), where if sym is nil, err contains
+       an  error  message.   A  Sym  can  map between a Dis PC and a
+       source file address, and vice versa.  For a  given  Sym  sym,
+       sym.srctopc(src) returns the PC associated with src (or -1 on
+       error); sym.pctosrc converts the other way (and  returns  nil
+       on error).
+
+       Each  element  e  in  the  top  level  stack,  as returned by
+       Prog.stack, has an associated Module e.m which  needs  to  be
+       associated  with  a  Sym  so that debug can glean from it the
+       type information it needs.  Given a module m, m.stdsym() will
+       try and find a symbol file in a standard place, but this will
+       fail if the symbol file or the Dis file is in a  non-standard
+       place.   M.addsym(s) sets the symbol file for m to the Sym s.
+       M.dis() and m.sbl() return the paths of the  Dis  and  symbol
+       files associated with m respectively.
+
+       Each  top  level  stack  element expands into three elements,
+       ``args'', ``locals'', and ``module'', representing the  argu‐
+       ments  to  the  function, the function's local variables, and
+       the module-global variables of the function's module  respec‐
+       tively.  Before a top level stack element can be expanded, it
+       is necessary to call findsym on it to locate  the  function's
+       data.
+
+       exp.name  The name of the symbol.
+
+       exp.expand()
+                 Expand  a  hierarchical  structure into an array of
+                 its component elements. A list element expands into
+                 two  elements named ``hd'' and ``tl''; a tuple into
+                 elements named ``t0'', ``t1'',...,  an  array  into
+                 elements named ``0'', ``1'',..., etc.
+
+       exp.val() Val  returns  a tuple (s, flag) where s is a string
+                 representation of the value of exp, and if flag  is
+                 zero, exp cannot be expanded.
+
+       exp.src() Src returns the file range associated with exp.
+
+       exp.findsym()
+                 If  exp is a top level stack frame (i.e. one of the
+                 members of the array returned by  Prog.stack)  then
+                 findsym  will  attempt to locate its type and name.
+                 If it succeeds, it returns the null string,  other‐
+                 wise it returns an error indicating the problem.
+
+       exp.srcstr()
+                 Srcstr  returns  a string representing the position
+                 in the source file of exp.
+
+FILES
+       /prog/pid/*
+
+SOURCE
+       /appl/lib/debug.b
+
+SEE ALSO
+       wm-deb(1), prog(3)
+
+BUGS
+       There is  no  way  of  looking  at  the  types  of  the  data
+       extracted.
+
+                                                            DEBUG(2)

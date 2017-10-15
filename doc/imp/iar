@@ -1,0 +1,97 @@
+IAR(10.1)                                                  IAR(10.1)
+
+NAME
+       iar - archive and library maintainer
+
+SYNOPSIS
+       iar key [ posname ] afile [ file ...  ]
+
+DESCRIPTION
+       Iar  maintains groups of files combined into a single archive
+       file, afile.  The main use of iar is  to  create  and  update
+       library files for the loaders 2l(10.1), etc.  It can be used,
+       though, for any similar purpose.
+
+       Key is one character from the set  drqtpmx,  optionally  con‐
+       catenated  with  one or more of vuaibclo.  The files are con‐
+       stituents of the archive afile.   The  meanings  of  the  key
+       characters are:
+
+       d      Delete files from the archive file.
+
+       r      Replace  files  in  the  archive  file, or add them if
+              missing.  Optional modifiers are
+
+              u      Replace only files with  modified  dates  later
+                     than that of the archive.
+
+              a      Place  new  files  after posname in the archive
+                     rather than at the end.
+
+              b or i Place new files before posname in the archive.
+
+       q      Quick.  Append files to the end of the archive without
+              checking for duplicates.  Avoids quadratic behavior in
+
+       t      List a table of contents of the archive.  If names are
+              given, only those files are listed.
+
+       p      Print the named files in the archive.
+
+       m      Move the named files to the end or  elsewhere,  speci‐
+              fied as with
+
+       o      Preserve  the  access  and modification times of files
+              extracted with the x command.
+
+       x      Extract the named files.  If no names are  given,  all
+              files  in  the archive are extracted.  In neither case
+              does x alter the archive file.
+
+       v      Verbose.  Give a file-by-file description of the  mak‐
+              ing of a new archive file from the old archive and the
+              constituent files.  With p, precede each file  with  a
+              name.   With t, give a long listing of all information
+              about the files, somewhat like  a  listing  by  ls(1),
+              showing
+                   mode uid/gid size date name
+
+       c      Create.   Normally  iar will create a new archive when
+              afile does not exist, and give a  warning.   Option  c
+              discards any old contents and suppresses the warning.
+
+       l      Local.  Normally iar places its temporary files in the
+              directory /tmp.  This option causes them to be  placed
+              in the local directory.
+
+       When a d, r, or m key is specified and all members of the ar‐
+       chive are valid object files for the same  architecture,  iar
+       inserts  a table of contents, required by the loaders, at the
+       front of the library.  The table of contents is rebuilt when‐
+       ever the archive is modified, except when the q key is speci‐
+       fied or when the table of contents  is  explicitly  moved  or
+       deleted.
+
+EXAMPLE
+       iar cr lib.a *.v
+              Replace  the contents of library with the object files
+              in the current directory.
+
+FILES
+       /tmp/v*
+              temporaries
+
+SOURCE
+       /utils/iar
+
+SEE ALSO
+       2l(10.1), ar(10.6)
+
+BUGS
+       If the same file is mentioned twice in an argument  list,  it
+       may be put in the archive twice.
+       The  file format used by this command is taken from UNIX, and
+       makes some invalid assumptions, for instance  that  user  IDs
+       are numeric.
+
+                                                           IAR(10.1)

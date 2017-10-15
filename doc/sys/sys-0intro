@@ -1,0 +1,205 @@
+SYS-INTRO(2)             System Calls Manual            SYS-INTRO(2)
+
+NAME
+       Sys: intro - introduction to the Sys module
+
+SYNOPSIS
+       include "sys.m";
+       sys := load Sys Sys->PATH;
+
+DESCRIPTION
+       Inferno  system  calls  are  provided  by the built-in module
+       declared by sys.m.  It contains the fundamental  system  data
+       structures  and  interfaces.   There  are currently 42 calls,
+       providing: file access; basic I/O; name  space  manipulation;
+       formatted  output  for  Limbo; and basic character and string
+       manipulation.
+
+   File Name Space
+       Files are collected into a hierarchical organization called a
+       file  tree  starting  in  a directory called the root.  File‐
+       names, also called paths, consist of a number of  /-separated
+       path  elements with the slashes corresponding to directories.
+       A path element must contain only printable characters  (those
+       outside  ASCII  and  Latin-1  control space).  A path element
+       cannot contain a slash.  The path element ..  refers  to  the
+       parent directory of the directory containing that element.
+
+       When  a process presents a file name to Inferno, it is evalu‐
+       ated by the following algorithm.
+
+       1.     Start with a directory that depends on the first char‐
+              acter  of the path: / means the root of the main hier‐
+              archy, # means the separate root of a kernel  device's
+              file tree (see Section 3), and anything else means the
+              process's current working directory.
+
+       2.     For each path element, look  up  the  element  in  the
+              directory,  advance  to  that directory, do a possible
+              translation (see below).
+
+       3.     Repeat.  The last step may yield a directory or  regu‐
+              lar file.
+
+       The collection of files reachable from the root is called the
+       name space of a process.
+
+       A program can use bind or mount (see sys-bind(2)) to say that
+       whenever  a  specified  file is reached during an evaluation,
+       that evaluation continues instead  from  a  second  specified
+       file.  Also, these same calls create union directories, which
+       are concatenations of ordinary directories that are  searched
+       sequentially  until the desired element is found.  Using bind
+       and mount to do name space adjustment affects only  the  cur‐
+       rent  name space group (see below, and sys-pctl(2)).  Certain
+       conventions about the layout of the name space should be pre‐
+       served; see namespace(4).
+
+       The  operating  system  kernel  records the file name used to
+       access each open file or directory.  If the file is opened by
+       a  relative  path  name (one that does not begin / or #), the
+       system makes the stored name absolute by prefixing the string
+       associated  with  the  current  directory.   Similar  lexical
+       adjustments are made for path names containing .  (dot) or ..
+       (dot-dot).  By this process, the system maintains a record of
+       the route by which each file was accessed.  Although there is
+       a  possibility for error—the name is not maintained after the
+       file is opened, so removals and renamings  can  confound  it—
+       this  simple method usually permits the system to return, via
+       sys-fd2path(2) and related calls such as those of workdir(2),
+       a  valid name that may be used to find a file again.  This is
+       also the source of the names reported in the name space list‐
+       ing of ns(1) or the ns file of prog(3).
+
+       Inferno  gives  special meaning in path names only to `/' and
+       an initial `#', but individual file servers might impose fur‐
+       ther restrictions or conventions of their own.  For instance,
+       the set of characters allowed in names  by  fs(3)  ultimately
+       depends  on  the host operating system; and dial(2) and cs(8)
+       amongst others use `!' as a delimiter in network names,  pre‐
+       venting their use in the names of network devices.
+
+   File I/O
+       Files  are  opened for input or output by open or create (see
+       sys-open(2)).  These calls return a reference to an object of
+       type  FD (file descriptor) that identifies the file to subse‐
+       quent I/O calls, notably read and  write  (see  sys-read(2)).
+       When  the  last  reference  to  an  FD  disappears,  the file
+       descriptor is released—closed, in Unix parlance.  The FD con‐
+       tains  an  integer file descriptor, similar to those in Unix,
+       but the FD type is the one passed to Limbo I/O routines.
+
+       Integer file descriptor values range from 0 to n in the  cur‐
+       rent  system, where the upper bound depends on the underlying
+       operating  system.   The  system  allocates  the  numbers  by
+       selecting  the  lowest  unused descriptor.  They may be reas‐
+       signed using dup (see sys-dup(2)).  Integer  file  descriptor
+       values are indices into a kernel-resident file descriptor ta‐
+       ble, which is inherited from the parent  when  a  process  is
+       created  by  a  Limbo  spawn  operation.  A set of processes,
+       called a file descriptor group, shares that table,  so  files
+       opened  by  one process may be read and written by other pro‐
+       cesses in the group.  See sys-pctl(2) for more information.
+
+       By convention, file descriptor 0 is the standard input, 1  is
+       the standard output, and 2 is the standard error output.  The
+       operating system is unaware of these conventions; it is  per‐
+       missible  to  close  file  0, or even to replace it by a file
+       open only for writing, but many programs will be confused  by
+       such chicanery.
+
+       Files  are normally read or written in sequential order.  The
+       I/O position in the file is called the file offset and may be
+       set arbitrarily using the seek system call (sys-seek(2)).  An
+       offset can also be passed as a parameter to pread and  pwrite
+       (see sys-read (2)).
+
+       Inferno  provides  no guarantee of consistency should several
+       processes access a file concurrently.  Guaranteed synchronous
+       writes   are   not   available.   Whether  the  exclusive-use
+       attributes described in sys-open(2) and sys-stat(2)  will  be
+       honoured  for  a file depends entirely on the underlying file
+       server (eg, fs(3)).  Record locking in  the  underlying  file
+       system is not supported by Inferno.  Processes can coordinate
+       their file operations by other mechanisms.
+
+       Atomicity is guaranteed for byte counts no larger than the 9P
+       message size; see read(5).
+
+       Directories  may  be  opened and read much like regular files
+       (see sys-dirread(2)).  They contain  an  integral  number  of
+       records,  called directory entries.  Each entry is a machine-
+       independent representation of the information about an exist‐
+       ing  file  in  the  directory, including the name, ownership,
+       permission, access dates, and so on.
+
+       The entry corresponding to an arbitrary file can be retrieved
+       by  stat  or  fstat (see sys-stat(2)); wstat and fwstat write
+       back entries, thus changing the properties of a file.
+
+       New files are made with create and deleted with  remove  (see
+       sys-open(2) and sys-remove(2)).  Directories may not directly
+       be written; create, remove, wstat, and fwstat change them.
+
+   Process execution and control
+       A Limbo process, also called a thread, is the basic  unit  of
+       computation  for Limbo application programming in the Inferno
+       operating system.
+
+       A newly spawned thread shares the same address space as  that
+       of its creator thread.  That is, the set of global  variables
+       that is in scope to one is in scope to the other.   A  change
+       made  by  one  can  be detected by the other.  Since they are
+       scheduled  independently,  they  should   synchronize   their
+       actions to share this data coherently.
+
+       The  newly  created  thread  also shares the same set of open
+       file descriptors and the current working directory.
+
+       Processes are also organized into process groups (pgrps) that
+       represent  the set of threads of a single application and can
+       be terminated by a single kill request; see prog(3).
+
+       A newly-spawned thread automatically inherits  the  following
+       attributes:  file name space (including shared current direc‐
+       tory); file descriptor group; and process  group.   A  thread
+       can  subsequently  acquire a new, independent name space, new
+       or modified file descriptor group, or new process group.  See
+       sys-pctl(2).
+
+   User/Group Identity
+       The  Inferno operating system maintains user identifier (uid)
+       and group identifier (gid) strings for each  process.   These
+       values  are  also  attributes  of files and directories.  See
+       sys-stat(2) and stat(5).  A comparison of  process  and  file
+       identities take place when a process attempts to open or cre‐
+       ate a file.
+
+       When a path name crosses  from  one  server  to  another  the
+       process identities are mapped by each server receiving a file
+       request.
+
+       The uid and gid strings are assigned to  the  thread  created
+       when a user logs into Inferno and cannot be changed.
+
+SOURCE
+       /emu/port/inferno.c
+       /os/port/inferno.c
+
+DIAGNOSTICS
+       System  calls  often return an integer status, or tuples con‐
+       taining results and an integer status, and follow the conven‐
+       tion  that a status of -1 is returned when an error occurred;
+       a non-negative value (usually 0) is returned on success.   If
+       an  error  occurred, a detailed error message can be obtained
+       for the most recent error, using  the  `%r'  format  of  sys-
+       print(2).   Exceptions  to this general rule are noted in the
+       `DIAGNOSTICS' sections.
+
+       From Limbo, system calls that return values on the heap,  for
+       instance  strings  in Dir structures returned by sys-stat(2),
+       and arrays of directory entries returned  by  sys-readdir(2),
+       can  also  raise  ``out  of  memory:  heap''  exceptions when
+       attempting to create the return value.
+
+                                                        SYS-INTRO(2)

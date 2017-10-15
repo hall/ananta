@@ -1,0 +1,56 @@
+IOSTATS(4)            Kernel Interfaces Manual            IOSTATS(4)
+
+NAME
+       iostats - file system to measure I/O
+
+SYNOPSIS
+       iostats [ -d ] [ -f dbfile ] cmd [ args...  ]
+
+DESCRIPTION
+       Iostats  is  a  file  server that interposes itself between a
+       program and a copy of the current name space, which allows it
+       to  gather  statistics of file system use at the level of the
+       file system protocol of intro(5).  When the program exits,  a
+       report is printed on standard error.
+
+       The  report  consists  of  three sections.  The first section
+       reports the amount of user data in read  and  write  messages
+       sent  by  the  program and the average rate at which the data
+       was transferred.  The protocol line  reports  the  amount  of
+       data  sent  as  message  headers, that is, protocol overhead.
+       The rpc line reports the total number of file system transac‐
+       tions.
+
+       The second section gives the number of messages, the fastest,
+       slowest, and average turn around time and the amount of  data
+       involved  with each 9P message type.  The final section gives
+       an I/O summary for each file used by the program in terms  of
+       opens, reads and writes.
+
+       The  -d  option  causes  iostats  to write a debugging log to
+       dbfile (default: iostats.out) that records all protocol  mes‐
+       sages.
+
+EXAMPLE
+       Display summary of file I/O incurred by ls(1):
+
+              iostats ls
+
+       Start  a  new  shell, displaying all 9P traffic caused by the
+       shell or its children:
+
+              iostats -df /fd/1 sh
+
+SOURCE
+       /appl/cmd/iostats.b
+
+BUGS
+       Poor clock resolution means that large amounts of I/O must be
+       done to get accurate rate figures.
+
+       Can  be  fooled  by programs that do fresh mounts outside its
+       purview.
+
+       Cannot monitor standard input or output.
+
+                                                          IOSTATS(4)

@@ -1,0 +1,229 @@
+DHCPCLIENT(2)            System Calls Manual           DHCPCLIENT(2)
+
+NAME
+       Dhcpclient: Bootconf, Lease, bootp, dhcp, applycfg, removecfg
+       - client's side of dynamic host configuration protocol
+
+SYNOPSIS
+       include "dhcp.m";   # sic
+       dhcpclient := load Dhcpclient Dhcpclient->PATH;
+       Bootconf, Lease: import dhcpclient;
+
+       Bootconf: adt {
+           ip:      string;
+           ipgw:    string;
+           ipmask:  string;
+           bootf:   string;
+           bootip:  string;
+           dhcpip:  string;
+           siaddr:  string;
+           serverid: string;
+           sys:     string;
+           dom:     string;
+           lease:   int;
+           options: array of array of byte;
+           vendor:  array of array of byte;
+
+           new:     fn(): ref Bootconf;
+           get:     fn(c: self ref Bootconf, n: int): array of byte;
+           getint:  fn(c: self ref Bootconf, n: int): int;
+           getip:   fn(c: self ref Bootconf, n: int): string;
+           getips:  fn(c: self ref Bootconf, n: int): list of string;
+           gets:    fn(c: self ref Bootconf, n: int): string;
+           put:     fn(c: self ref Bootconf, n: int, a: array of byte);
+           putint:  fn(c: self ref Bootconf, n: int, v: int);
+           putips:  fn(c: self ref Bootconf, n: int, ips: list of string);
+           puts:    fn(c: self ref Bootconf, n: int, s: string);
+       };
+
+       Lease: adt {
+           configs: chan of (ref Bootconf, string);
+
+           release: fn(l: self ref Lease);
+       };
+
+       init:      fn();
+       tracing:   fn(debug: int);
+       bootp:     fn(net: string, ctlifc: ref Sys->FD, device: string,
+                      init: ref Bootconf): (ref Bootconf, string);
+       dhcp:      fn(net: string, ctlifc: ref Sys->FD, device: string,
+                      init: ref Bootconf, options: array of int):
+                      (ref Bootconf, ref Lease, string);
+
+       applycfg:  fn(net: string, ctlifc: ref Sys->FD,
+                      conf: ref Bootconf): string;
+       removecfg: fn(net: string, ctlifc: ref Sys->FD,
+                      conf: ref Bootconf): string;
+
+DESCRIPTION
+       Dhcpclient implements the client side  of  the  Dynamic  Host
+       Configuration  Protocol  (DHCP)  of Internet RFC2131.  In the
+       interface, Internet addresses are represented as strings,  in
+       forms  that ip(2) can parse, and that can be written directly
+       to control files in ip(3).
+
+       Init must be called before invoking any  other  operation  of
+       the module.
+
+       Bootp  reserves  the  UDP  port  on net for use by BOOTP/DHCP
+       clients, and sends a BOOTP request (ie, one  without  a  DHCP
+       operation  code).   Net  is the name of the network directory
+       (if nil, the default is /net).  If bootp is to configure  the
+       interface according to the results received, ctlifc should be
+       open on the control file of the net/ipifc directory  for  the
+       interface  to  be  configured;  otherwise  it  should be nil.
+       Bootp  repeats  the  request  periodically  until  it  either
+       receives  a reply or has made 5 attempts.  It returns a tuple
+       (conf, err).  If it has received a reply, conf  refers  to  a
+       Bootconf  value that contains the values received, and err is
+       nil.  If ctlifc is not nil, the interface will also have been
+       configured  appropriately.   If  a  valid  reply has not been
+       received, or some other error occurred, conf is nil, and  err
+       is a diagnostic.
+
+       Dhcp  has  a similar interface, but runs the full DHCP proto‐
+       col.  The options array has  integers  representing  possible
+       DHCP  options;  dhcp  asks  the  server to provide values for
+       them.  If options is nil, a few option values  are  requested
+       that  might  be useful for Inferno (eg, subnet mask, gateway,
+       DNS server, authentication and file servers, and so on).   If
+       the  server  does  supply  them, they can be retrieved either
+       from specific fields of Bootconf, or  using  its  get  opera‐
+       tions.  Init is also usually nil, but can refer to a Bootconf
+       that provides some values  to  suggest  to  the  server,  for
+       instance  if  the  client knows a previously-assigned address
+       stored  in  non-volatile  memory.   Dhcp  returns   a   tuple
+       (conf, lease, err), where conf and err are just as for bootp,
+       and the new component lease is a reference to a  Lease  value
+       that  gives  access  to  the  state  of  the client's address
+       assignment.
+
+       DHCP allows a server to assign a  client  an  address  perma‐
+       nently,  or  to lease it for a specified time.  In the latter
+       case, Bootconf.lease will have  a  non-zero  value,  and  the
+       client  must  periodically  renew  the  lease  to  retain the
+       address, and dhcp creates a process  to  do  so.   The  Lease
+       value  provides a way for that process to communicate changes
+       (if any) to the network configuration.  Each time the config‐
+       uration changes, the process will send a message on the chan‐
+       nel configs.  (The channel is buffered, and dhcp  first  dis‐
+       cards  any  previous notifications not yet received, so there
+       are no ill effects if no process ever receives from the chan‐
+       nel.)   Each message is a tuple (conf, diag).  If a new state
+       change has been made successfully, conf refers to a  Bootconf
+       value  with  the  details.   Otherwise,  conf is nil and diag
+       explains what went wrong.  In any case, the watchdog  process
+       continues to try to extend the lease, or failing that, obtain
+       a new network configuration,  perhaps  from  another  server.
+       Lease.release may be called to release the leased address and
+       stop the watchdog.
+
+       Bootconf has the following operations:
+
+       new()  Return a reference to  a  Bootconf  with  values  ini‐
+              tialised to nil or 0.
+
+       bc.get(n)
+              Return  the  value  of DHCP option n as a raw array of
+              bytes.  Return nil if the option is not set.
+
+       bc.getint(n)
+              Return the value of option n interpreted as  an  inte‐
+              ger.  Return zero if the option is not set.
+
+       bc.getip(n)
+              Return  the first Internet address provided for option
+              n.
+
+       bc.getips(n)
+              Return a list of all the Internet  addresses  provided
+              for option n.
+
+       bc.gets(n)
+              Return the value of option n as a string.
+
+       bc.put(n, a)
+              Set  the  value  of DHCP option n to the bytes of byte
+              array a.  If a is nil, put removes any existing  value
+              for the option.
+
+       bc.putint(n, v)
+              Set option n to the integer value v.
+
+       bc.putips(n, ips)
+              Set option n to the list of Internet addresses ips.
+
+       bc.puts(n, s)
+              Set option n to the string n.
+
+       Dhcpclient  names  a few constants representing commonly-used
+       configuration options (attributes).  They are suitable param‐
+       eters  for  the  option  selector n of Bootconf's get and put
+       functions.  The first set of constants name options for  both
+       BOOTP and DHCP:
+
+       Odnsserver               Internet  address(es) of Domain Name
+                                Servers
+       Odomainname              Current domain (see Bootconf.dom)
+       Ohostname                Host name (see Bootconf.sys)
+       Omask                    Network mask (IPv4).  Also see Boot‐
+                                conf.ipmask.
+       Onetbiosns               NetBIOS servers
+       Ontpserver               Network Time Protocol servers
+       Opop3server              POP3 mail servers
+       Orouter                  Default router for subnet (see Boot‐
+                                conf.ipgw)
+       Osmtpserver              SMTP mail delivery servers
+       Ovendorinfo              Vendor-specific data (see below)
+       Owwwserver               HTTP proxy
+
+       The second set has DHCP options:
+
+       Obootfile                Name of the file containing a kernel
+                                for  the  client   to  load  (eg, by
+                                TFTP); see Bootconf.bootf.
+       Olease                   Lease time for IP address,  in  sec‐
+                                onds (also see Bootconf.lease)
+       Omaxmsg                  Maximum  DHCP  size  the  client  is
+                                willing  to  accept   (minimum   576
+                                bytes).
+       Orebindingtime           Time   interval   in   seconds  from
+                                address  assignment  to   the   time
+                                address must be rebound.
+       Orenewaltime             Time   interval   in   seconds  from
+                                address assignment to first  attempt
+                                to renew the address.
+       Otftpserver              TFTP server from which to fetch ker‐
+                                nel and parameter files;  see  Boot‐
+                                conf.bootip.
+       Ovendorclass             Identify  vendor type and configura‐
+                                tion of client. Inferno sets this to
+                                plan9_386  (sic) to encourage Plan 9
+                                DHCP  servers  to   respond;   other
+                                servers will ignore it.
+
+       The  final  set  give  vendor-specific  options  that Inferno
+       shares with Plan 9:
+
+       Ovendor                  Flag OR'd in to an option number  to
+                                mark  it as destined for the `vendor
+                                information' section.
+       OP9auth                  Authentication server (Ovendor|129)
+       OP9fs                    File server (Ovendor|128)
+
+       Given a network configuration  in  conf,  and  a  valid  file
+       descriptor  for  a  network  interface's control file, in the
+       network net, applycfg sets  the  basic  interface  parameters
+       (address,  network  mask,  default gateway), and writes other
+       parameters to net/ndb; conversely, removecfg removes from the
+       interface  just those parameters set by conf.  Normally these
+       functions are called automatically, as required, by dhcp  and
+       its watchdog process.
+
+SOURCE
+       /appl/lib/dhcpclient.b
+
+SEE ALSO
+       bootpd(8), dhcp(8)
+
+                                                       DHCPCLIENT(2)

@@ -1,0 +1,63 @@
+STRINGINTTAB(2)          System Calls Manual         STRINGINTTAB(2)
+
+NAME
+       stringinttab - string table lookup module
+
+SYNOPSIS
+       include "strinttab.m";
+       StringInt: import StringIntTab;
+
+       strinttab := load StringIntTab StringIntTab->PATH;
+
+       StringInt: adt{
+           key: string;
+           val: int;
+       };
+
+       lookup:    fn(tab: array of StringInt, key: string) : (int, int);
+       revlookup: fn(tab: array of StringInt, val: int)    : string;
+
+DESCRIPTION
+       Stringinttab  provides  functions  that  perform  forward and
+       reverse searches of an ordered table of key-value pairs.
+
+       A table should  be  constructed  as  an  array  of  StringInt
+       entries,  ordered  by increasing key value.  Keys ordering is
+       determined by comparison of the Unicode value of their  char‐
+       acters.
+
+       Lookup  performs  a  binary  search  of tab for the StringInt
+       entry whose key field has a value equal to key and returns  a
+       tuple:  an  int  whose  value is non-zero if a match has been
+       found and zero otherwise, and an int whose value is equal  to
+       the val field of the matching StringInt entry.
+
+       Revlookup  searches  tab  for the first StringInt entry whose
+       val field has a value equal to val  and  returns  the  corre‐
+       sponding key string.
+
+EXAMPLES
+       T := load StringIntTab StringIntTab->PATH;
+
+       fmtstringtab := array[] of { Strinttab->StringInt
+            ("html", FHtml),
+            ("latex", FLatex),
+            ("latexbook", FLatexBook),
+            ("latexpart", FLatexPart),
+            ("latexproc", FLatexProc),
+            ("latexslides", FLatexSlides),
+       };
+
+       (fnd, fmt) := T->lookup(fmtstringtab, "latexbook");
+       fmtstring := T->revlookup(fmtstringtab, FLatex);
+
+SOURCE
+       /appl/lib/strinttab.b
+
+SEE ALSO
+       hash(2)
+
+BUGS
+       Revlookup performs a sequential search of the table.
+
+                                                     STRINGINTTAB(2)

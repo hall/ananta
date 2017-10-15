@@ -1,0 +1,69 @@
+TIMERS(2)                System Calls Manual               TIMERS(2)
+
+NAME
+       timers - interval timers
+
+SYNOPSIS
+       include "timers.m";
+       timers := load Timers Timers->PATH;
+
+       Timer: adt
+       {
+          timeout: chan of int;
+          start:   fn(msec: int): ref Timer;
+          stop:    fn(t: self ref Timer);
+       };
+
+       init:     fn(minms: int): int;
+       shutdown: fn();
+
+DESCRIPTION
+       Timers  provides  simple interval timing.  Timeouts are noti‐
+       fied by a message sent on a channel, allowing them to provide
+       timeouts in alt statements.
+
+       The  module  must first be initialised by calling init, which
+       starts a process to manage the interval  timers  and  returns
+       its process ID.  Before exit, the caller must shut the timing
+       process down either by calling shutdown, which stops it  syn‐
+       chronously;  by using the process ID returned by init to kill
+       it; or by killing the  process  group  of  the  process  that
+       called  init  (since  the  timing  processes  remain  in that
+       group).   Minms  gives  the  minimum  granularity  of  timing
+       requests in milliseconds.
+
+       Timer.start(msec)
+              Returns a Timer that will expire in msec milliseconds,
+              measured with the granularity of  either  sys-sleep(2)
+              or the granularity set by init, whichever is greater.
+
+       t.timeout
+              An  arbitrary  integer  value  is sent on this channel
+              when the timer t expires.
+
+       t.stop()
+              The timer t is stopped and removed from  the  interval
+              timing queue, if it has not already expired.
+
+       Each  Timer  value  times  a single interval.  When a timer t
+       expires, the timing process attempts, at that and each subse‐
+       quent  timing interval, to send on t.timeout until the expiry
+       message is delivered or the timer is stopped.
+
+EXAMPLE
+       Wait for data to be sent on an input channel, but give up  if
+       it does not arrive within 600 milliseconds:
+
+              t := Timer.start(600);
+              alt {
+              data := <-input =>
+                   t.stop();
+                   # process the data
+              <-t.timeout =>
+                   # request timed out
+              }
+
+SEE ALSO
+       sys-millisec(2), sys-sleep(2)
+
+                                                           TIMERS(2)

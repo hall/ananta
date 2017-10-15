@@ -1,0 +1,50 @@
+KEYRING-CERTTOSTR(2)     System Calls Manual    KEYRING-CERTTOSTR(2)
+
+NAME
+       keyring:  certtostr,  pktostr,  sktostr,  strtocert, strtopk,
+       strtosk - encryption key conversion functions
+
+SYNOPSIS
+       include "keyring.m"
+       keyring:= load Keyring Keyring->PATH;
+
+       strtocert: fn(s: string)         : ref Certificate;
+       certtostr: fn(c: ref Certificate): string;
+       strtopk:   fn(s: string)         : ref PK;
+       pktostr:   fn(pk: ref PK)        : string;
+       strtosk:   fn(s: string)         : ref SK;
+       sktostr:   fn(sk: ref SK)        : string;
+
+DESCRIPTION
+       Certificates, public keys, and private keys are  passed  over
+       networks and between applications using a Unicode representa‐
+       tion. This collection of functions provide a means to convert
+       adts  supplied  by the system to and from their portable tex‐
+       tual representation. These routines  are  typically  used  as
+       part of an I/O package for implementing security.
+
+       Strtocert  takes  a string argument containing a user name, a
+       hash algorithm, a  certifying  authority  and  an  expiration
+       time.  Fields are separated by a newline. The return value is
+       a Certificate.  If the string  is  of  improper  format,  the
+       result is nil.
+
+       Certtostr  performs the inverse operation: takes the Certifi‐
+       cate c and produces a text string suitable for  communication
+       over a network.
+
+       Strtopk and strtosk take as their arguments a string s repre‐
+       senting the public and private  keys  respectively.   S  must
+       contain  an  algorithm  name, a user name and the key. Fields
+       are separated by a newline.  Strtopk returns a  reference  to
+       the  resulting PK; strtosk returns a reference to the result‐
+       ing SK.  If the format of s is invalid, the result is nil.
+
+       Pktostr and sktostr perform the inverse operations: they take
+       a public key (secret key) and produce a printable representa‐
+       tion as a string.
+
+SOURCE
+       /libinterp/keyring.c
+
+                                                KEYRING-CERTTOSTR(2)

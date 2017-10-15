@@ -1,0 +1,34 @@
+SYS-FAUTH(2)             System Calls Manual            SYS-FAUTH(2)
+
+NAME
+       fauth  - set up authentication on a file descriptor to a file
+       server
+
+SYNOPSIS
+       include "sys.m";
+       sys := load Sys Sys->PATH;
+
+       fauth:  fn(fd: ref FD, aname: string): ref FD;
+
+DESCRIPTION
+       Fauth provides a means for the current user  to  authenticate
+       to  access resources available through the 9P connection rep‐
+       resented by fd.  The return value is a file descriptor,  con‐
+       ventionally  called afd, that is subsequently used to execute
+       the authentication protocol for the server.  After successful
+       authentication, afd may be passed as the second argument to a
+       subsequent mount call (see sys-bind(2)), with the same aname,
+       as a ticket-of-entry for the user.
+
+       If  fauth  returns  nil,  the error case, that means the file
+       server does not require authentication  for  the  connection,
+       and afd should be nil in the call to mount.
+
+SEE ALSO
+       attach(5), security-auth(2)
+
+DIAGNOSTICS
+       The system error string is set on error, including the server
+       not requiring authentication, and fauth returns nil.
+
+                                                        SYS-FAUTH(2)

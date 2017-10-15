@@ -1,0 +1,36 @@
+LOGFILE(4)            Kernel Interfaces Manual            LOGFILE(4)
+
+NAME
+       logfile - memory-based append-only circular storage buffer
+
+SYNOPSIS
+       logfile [-size] file
+
+DESCRIPTION
+       Logfile creates a name at file (the containing directory must
+       already exist).  Each write to file appends the written  data
+       up  to  a  maximum of size bytes; subsequent writes erase the
+       existing data in a circular fashion. A read  from  file  will
+       return  any  currently stored data, if any; if there is none,
+       then it will block until more data becomes available.  Multi‐
+       ple  readers  will  receive  the  data  independently  of one
+       another. If a writing process is consistently producing  data
+       faster  than  a reading process, then the data read will have
+       some bytes elided; a write is never blocked.
+
+SOURCE
+       /appl/cmd/logfile.b
+
+SEE ALSO
+       wm-logwindow(1), sys-file2chan(2)
+
+BUGS
+       Restrictions  on  sys-file2chan(2)  mean  that  the   logfile
+       process  will  not  terminate  automatically when its file is
+       removed or unmounted.
+
+       There is no indication to a reader of any missing data.
+
+       It is not possible to do a non-blocking read of the log file.
+
+                                                          LOGFILE(4)

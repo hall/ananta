@@ -1,0 +1,26 @@
+UPDATE(9)             Kernel Developer's Manual            UPDATE(9)
+
+NAME
+       update - flush graphics
+
+SYNOPSIS
+       update ?options?
+
+DESCRIPTION
+       Changes  made  via  Tk commands do not become visible until a
+       call to update.  Update flushes any pending  changes  to  the
+       screen.  The following options are supported:
+
+       -disable
+              If  this  option  is  given, all updates are disabled.
+              This is useful to enable a program to stop mouse move‐
+              ment  causing  automatic  updates  while  it is making
+              changes to the window.
+
+       -enable
+              This reverses a previous update -enable invocation.
+
+BUGS
+       Changes that affect window sizes are visible immediately.
+
+                                                           UPDATE(9)

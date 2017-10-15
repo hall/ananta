@@ -1,0 +1,53 @@
+SECONDS(10.2)                                          SECONDS(10.2)
+
+NAME
+       seconds,  ticks,  HZ,  MS2HZ,  MS2TK,  TK2MS, TK2SEC - kernel
+       times and time conversions
+
+SYNOPSIS
+       long    seconds(void)
+
+       ulong   ticks(void)
+
+       #define HZ          ...
+       #define MS2HZ(t)    ...
+       #define TK2SEC(t)   ...
+       #define TK2MS(t)    ...
+       #define MS2TK(m)    ...
+
+DESCRIPTION
+       Seconds returns the system's idea of the current time as  the
+       number of seconds since the start of the epoch (00:00:00 GMT,
+       January 1, 1970).
+
+       Ticks returns the  number  of  system-dependent  clock  ticks
+       since system boot.
+
+       The  system  clock  frequency is platform-dependent.  Several
+       symbolic constants and macro functions  are  defined  by  the
+       file mem.h to convert between different time units:
+
+       HZ     The number of clock ticks per second.
+
+       MS2HZ  Milliseconds per clock tick.
+
+       TK2SEC(t)
+              Convert t clock ticks to seconds and return the result
+              (truncating not rounding).
+
+       TK2MS(t)
+              Convert t clock ticks to milliseconds and  return  the
+              result.
+
+       MS2TK(m)
+              Convert  m  milliseconds to clock ticks and return the
+              result (truncating).
+
+       The functions are often used to calculate delays  for  timing
+       functions, for instance:
+
+              if(atactlrwait(dp->cp, DHmagic, 0, MS2TK(100))){
+                      ...
+              }
+
+                                                       SECONDS(10.2)

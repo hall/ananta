@@ -1,0 +1,84 @@
+DISKBLOCKS(2)            System Calls Manual           DISKBLOCKS(2)
+
+NAME
+       Diskblocks:  Block,  Disk,  tempfile  -  temporary storage of
+       variable-sized blocks
+
+SYNOPSIS
+       include "diskblocks.m";
+       diskblocks := load Diskblocks Diskblocks->PATH;
+
+       Block: adt {
+          addr: big;   # address on file
+          n:    int;   # size in bytes
+       };
+
+       Disk: adt {
+          init:    fn(fd: ref Sys->FD, gran: int, maxblock: int): ref Disk;
+          new:     fn(d: self ref Disk, n: int): ref Block;
+          release: fn(d: self ref Disk, b: ref Block);
+          read:    fn(d: self ref Disk, b: ref Block,
+                      a: array of byte, n: int): int;
+          write:   fn(d: self ref Disk, b: ref Block,
+                      a: array of byte, n: int): ref Block;
+       };
+
+       init:     fn();
+       tempfile: fn(): ref Sys->FD;
+
+DESCRIPTION
+       Diskblocks manages a set of variable-sized blocks on a tempo‐
+       rary file.
+
+       Init must be called before any other function in the module.
+
+       Each block has an address and a size in bytes, represented by
+       a value of type Block.
+
+       Each file is represented by the type Disk, providing the fol‐
+       lowing operations:
+
+       init(fd, gran, maxblock)
+              Initialises  the  file  fd  for use as temporary block
+              storage and returns a reference to a Disk to  describe
+              it.  Fd must be open for reading and writing, and must
+              refer to a file that allows random access.  Blocks are
+              allocated  in  multiples  of  the granularity gran, in
+              bytes; the largest possible block is  maxblock  bytes,
+              which must be a multiple of gran.
+
+       d.new(n)
+              Allocate  a  block  of  n bytes on Disk d and return a
+              reference to it.
+
+       d.release(b)
+              Free the Block b, making it  available  for  realloca‐
+              tion.
+
+       d.write(b, a, n)
+              Write  n  bytes  from  array  a  to Block b on Disk d,
+              returning a reference to the resulting Block.  If b is
+              nil  or  n exceeds b's current size, write allocates a
+              new block (releasing  b).   Thus  the  returned  value
+              might differ from b, and must be used in subsequent IO
+              requests.
+
+       d.read(b, a, n)
+              Read n bytes from Block b on  Disk  d  into  array  a,
+              returning the number of bytes read.  N must not exceed
+              b.n.
+
+       Tempfile returns a file descriptor referring to a  newly-cre‐
+       ated temporary file, suitable for use by Disk.init.  The file
+       will be removed automatically when  the  file  descriptor  is
+       closed.
+
+SOURCE
+       /appl/lib/diskblocks.b
+
+DIAGNOSTICS
+       A  function  that  returns  an integer returns -1 on error; a
+       function that returns a reference returns nil on error.   The
+       system error string is set in either case.
+
+                                                       DISKBLOCKS(2)

@@ -1,0 +1,72 @@
+SLEEP(10.2)                                              SLEEP(10.2)
+
+NAME
+       sleep, wakeup, tsleep, return0 - process synchronisation
+
+SYNOPSIS
+       void sleep(Rendez *r, int (*f)(void*), void *arg)
+
+       void wakeup(Rendez *r)
+
+       void tsleep(Rendez *r, int (*f)(void*), void *arg, int ms)
+
+       int  return0(void *arg)
+
+DESCRIPTION
+       A  process  running  in the kernel can use these functions to
+       synchronise with  an  interrupt  handler  or  another  kernel
+       process.   In  particular, they are used by device drivers to
+       wait for an event to be signalled on receipt of an interrupt.
+       (In  practice,  they  are most often used indirectly, through
+       qio(10.2) for instance.)
+
+       The caller of sleep and a caller of  wakeup  share  a  Rendez
+       structure, to provide a rendezvous point between them to syn‐
+       chronise on an event.  Sleep uses a condition function f that
+       returns true if the event has occurred.
+
+       Sleep  evaluates f(arg).  If true, the event has happened and
+       sleep returns immediately.  Otherwise, sleep  blocks  on  the
+       event variable r, awaiting wakeup.
+
+       Wakeup  is called by either a process or an interrupt handler
+       to wake any process sleeping at r, signifying that the corre‐
+       sponding  condition is true (the event has occurred).  It has
+       no effect if there is no sleeping process.
+
+       Tsleep is similar to sleep,  except  that  if  the  condition
+       f(arg)  is  false and the caller does sleep, and nothing else
+       wakes it within ms millliseconds, the system  will  wake  it.
+       Tsleep's  caller must check its environment to decide whether
+       timeout or the event occurred.  The timing provided by tsleep
+       is  imprecise, but adequate in practice for the normal use of
+       protecting against lost interrupts and otherwise unresponsive
+       devices or software.
+
+       Return0  ignores  its  arguments and returns zero. It is com‐
+       monly used as the predicate f in a call to tsleep to obtain a
+       time  delay, using a Rendez variable sleep in the Proc struc‐
+       ture, for example:
+
+              tsleep(&up->sleep, return0, nil, 10);
+
+       Both sleep and tsleep can  be  interrupted  by  swiproc  (see
+       kproc(10.2)),  causing  a  non-local  goto  through a call to
+       error(10.2).
+
+DIAGNOSTICS
+       There can be at most one process waiting on a Rendez, and  if
+       two  processes collide, the system will panic(10.2) (``double
+       sleep'').  Access to a Rendez must therefore be serialised by
+       some other mechanism, usually qlock(10.2).
+
+SOURCE
+       /os/port/proc.c
+       /emu/port/proc.c
+
+SEE ALSO
+       lock(10.2), qlock(10.2), delay(10.2)
+       ``Process  Sleep  and  Wakeup on a Shared-memory Multiproces‐
+       sor'', in Plan 9 Programmer's Manual: Volume 2 .
+
+                                                         SLEEP(10.2)

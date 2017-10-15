@@ -1,0 +1,71 @@
+INTRENABLE(10.2)                                    INTRENABLE(10.2)
+
+NAME
+       intrenable,  intrdisable - enable (disable) an interrupt han‐
+       dler
+
+SYNOPSIS
+       void intrenable(int v, void (*f)(Ureg*, void*), void* a,  int
+       tbdf, char *name)
+
+       void intrdisable(int v, void (*f)(Ureg*, void*), void* a, int
+       tbdf, char *name)
+
+DESCRIPTION
+       Intrenable registers f to be called by the kernel's interrupt
+       controller driver each time an interrupt denoted by v occurs,
+       and unmasks the corresponding interrupt in the interrupt con‐
+       troller.   The  encoding  of  v  is platform-dependent; it is
+       often an interrupt vector number, but can  be  more  complex.
+       Tbdf is a platform-dependent value that might further qualify
+       v.  It might  for  instance  denote  the  type  of  bus,  bus
+       instance,  device  number  and  function  (following  the PCI
+       device indexing scheme), hence its name, but can  have  plat‐
+       form-dependent   meaning.   Name  is  a  string  that  should
+       uniquely identify the  corresponding  device  (eg,  "uart0");
+       again  it is usually platform-dependent.  Intrenable supports
+       sharing of interrupt levels when the hardware does.
+
+       Almost invariably f is a function defined in a device  driver
+       to carry out the device-specific work associated with a given
+       interrupt.  The pointer a is passed to f; typically it points
+       to  the  driver's  data for a given device or controller.  It
+       also passes f a Ureg* value that contains the registers saved
+       by the interrupt handler (the contents are platform specific;
+       see the platform's include file ureg.h).
+
+       F is invoked by underlying code in the kernel that is invoked
+       directly from the hardware vectors.  It is therefore not run‐
+       ning in any process (see kproc(10.2); indeed, on  many  plat‐
+       forms  the  current  process pointer (up) will be nil.  There
+       are many restrictions on kernel functions running  outside  a
+       process,  but  a  fundamental  one  is  that  they  must  not
+       sleep(10.2), although they often call wakeup  to  signal  the
+       occurrence   of  an  event  associated  with  the  interrupt.
+       Qio(10.2) and other manual pages  note  which  functions  are
+       safe for f to call.
+
+       The  interrupt controller driver does whatever is required to
+       acknowledge or dismiss the interrupt signal in the  interrupt
+       controller,  before calling f, for edge-triggered interrupts,
+       and after calling f for level-triggered ones.  F is responsi‐
+       ble  for  deal with the cause of the interrupt in the device,
+       including any acknowledgement required in the device,  before
+       it returns.
+
+       Intrdisable  removes  any  registration  previously  made  by
+       intrenable with matching parameters, and if no  other  inter‐
+       rupt  is  active  on  v,  it  masks the interrupt in the con‐
+       troller.  Device drivers that are not dynamically  configured
+       tend  to  call intrenable during reset or initialisation (see
+       dev(10.2)), but can call it  at  any  appropriate  time,  and
+       instead of calling intrdisable they can simply enable or dis‐
+       able interrupts in the device as required.
+
+SOURCE
+       /os/*/trap.c
+
+SEE ALSO
+       malloc(10.2), qio(10.2), sleep(10.2), splhi(10.2)
+
+                                                    INTRENABLE(10.2)

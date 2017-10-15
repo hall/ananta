@@ -1,0 +1,45 @@
+SYS-BYTE2CHAR(2)         System Calls Manual        SYS-BYTE2CHAR(2)
+
+NAME
+       byte2char, char2byte - convert between bytes and characters
+
+SYNOPSIS
+       include "sys.m";
+       sys := load Sys Sys->PATH;
+
+       byte2char: fn(buf: array of byte, n: int): (int, int, int);
+       char2byte: fn(c: int, buf: array of byte, n: int): int;
+
+DESCRIPTION
+       Byte2char  converts a byte sequence to one Unicode character.
+       Buf is an array of bytes and n is the index of the first byte
+       to examine in the array.  The returned tuple, say (c, length,
+       status), specifies the result of the translation:  c  is  the
+       resulting  Unicode character, status is non-zero if the bytes
+       are a valid UTF sequence and zero otherwise,  and  length  is
+       set  to  the number of bytes consumed by the translation.  If
+       the input sequence is not long enough to determine its valid‐
+       ity,  byte2char consumes zero bytes; if the input sequence is
+       otherwise invalid, byte2char consumes one input byte and gen‐
+       erates  an  error  character  (Sys->UTFerror,  16r80),  which
+       prints in most fonts as a boxed question mark.
+
+       Char2byte performs the inverse of byte2char.  It translates a
+       Unicode character, c, to a UTF byte sequence, which is placed
+       in successive bytes starting  at  buf[n].   The  longest  UTF
+       sequence  for  a  single Unicode character is Sys->UTFmax (4)
+       bytes.  If the translation succeeds,  char2byte  returns  the
+       number  of  bytes placed in the buffer.  If the buffer is too
+       small to hold the result, char2byte returns zero  and  leaves
+       the array unchanged.
+
+SOURCE
+       /libinterp/runt.c
+
+SEE ALSO
+       sys-intro(2), sys-utfbytes(2), utf(6)
+
+DIAGNOSTICS
+       A run-time error occurs if n exceeds the bounds of the array.
+
+                                                    SYS-BYTE2CHAR(2)

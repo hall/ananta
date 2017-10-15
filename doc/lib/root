@@ -1,0 +1,46 @@
+ROOT(3)               Library Functions Manual               ROOT(3)
+
+NAME
+       root - the root file system
+
+SYNOPSIS
+       /
+       /chan
+       /dev
+       /env
+       /fd
+       /net
+       /net.alt
+       /nvfs
+       /prog
+       /root
+       /srv
+       /osinit.dis
+
+DESCRIPTION
+       This device is set up by the kernel to be the initial root of
+       the name space.  In the emulation environment, the  names  in
+       the one-level tree shown above are mostly just place-holders,
+       to allow a place on which to bind (see sys-bind(2)).
+
+       In the native environment,  an  arbitrary  initial  directory
+       structure and file content can be built-in when the kernel is
+       configured, but it will typically include at least the  names
+       above,  to  act  as mount points.  (See the discussion of the
+       `root section' in conf(10.6).)  The required file /osinit.dis
+       (not  present  in the emulation environment) provides an exe‐
+       cutable Dis binary  when  read,  and  is  the  first  program
+       invoked when initialising the system.  Other files needed for
+       bootstrap might also reside in this device.
+
+       Its local name #/ can be used by programs outside the kernel,
+       for instance to implement newns in newns(2).
+
+SOURCE
+       /emu/port/devroot.c
+       /os/port/devroot.c
+
+SEE ALSO
+       init(8)
+
+                                                             ROOT(3)

@@ -1,0 +1,72 @@
+SYS-EXPORT(2)            System Calls Manual           SYS-EXPORT(2)
+
+NAME
+       export - export a name space
+
+SYNOPSIS
+       include "sys.m";
+       sys := load Sys Sys->PATH;
+
+       export:   fn(fd: ref FD, dir: string, flag: int):   int;
+
+DESCRIPTION
+       Export receives and replies to 9P requests from a client on a
+       connection represented by fd, for file operations on the part
+       of  the  current file name space rooted at dir, which is thus
+       exported.  This is the server end of the client's mount call.
+       Names  presented  by  the  client are interpreted relative to
+       directory dir, which can be adjusted  using  sys-pctl(2)  and
+       sys-bind(2)  before  export.   The file descriptor fd must be
+       open for reading and writing, and neither  mounted  elsewhere
+       nor already exported.
+
+       Commonly,  export's  first argument is a file descriptor open
+       on the data file in the dir of a Connection returned by  lis‐
+       ten  (see dial(2)).  Before calling export, the connection on
+       fd can optionally be authenticated and set for encryption  or
+       digesting using the functions in security-auth(2).
+
+       The export function takes two mutually exclusive flags:
+
+       Sys->EXPWAIT
+              Export blocks until all client requests are complete.
+
+       Sys->EXPASYNC
+              Client  requests  are handled by a background (kernel)
+              process.  Export  returns  immediately.   The  serving
+              process terminates when the client hangs up.
+
+EXAMPLES
+       Export a given directory on fd, protecting it from subsequent
+       changes:
+
+              exportdir(fd: ref Sys->FD, dir: string, pid: chan of int)
+              {
+                   pid <-= sys->pctl(Sys->FORKNS|Sys->FORKENV|Sys->NEWFD, fd.fd :: nil);
+                   sys->export(fd, dir, Sys->EXPWAIT);
+              }
+
+       The FORKNS given to pctl forks the name space,  and  prevents
+       the  sys->export from seeing the effects of subsequent mounts
+       by the process that calls or spawns exportdir.  The exportdir
+       function above might be called using:
+
+              pid := chan of int;
+              spawn exportdir(fd, "/", pid);
+              expid := <-pid;
+
+       Service  will  stop  automatically  when  the  connection  fd
+       returns end-of-file (eg, when it hangs up), but it  can  also
+       be stopped locally by killing expid.
+
+SOURCE
+       /emu/port/inferno.c
+       /emu/port/exportfs.c
+       /os/port/inferno.c
+       /os/port/exportfs.c
+
+DIAGNOSTICS
+       Export  returns  a  non-negative  value  on success and -1 on
+       error; the system error string is set.
+
+                                                       SYS-EXPORT(2)

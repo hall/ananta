@@ -1,0 +1,46 @@
+SYS-DUP(2)               System Calls Manual              SYS-DUP(2)
+
+NAME
+       dup, fildes - duplicate an open file descriptor
+
+SYNOPSIS
+       include "sys.m";
+       sys := load Sys Sys->PATH;
+
+       dup:    fn(oldfd, newfd: int):  int;
+       fildes: fn(fd: int):            ref FD;
+
+DESCRIPTION
+       The  Limbo  programming language and its libraries manage I/O
+       via references to instances of abstract data type, FD, called
+       a Limbo file descriptor, or simply `file descriptor' when the
+       context is  understood.   FD  holds  an  integer-valued  file
+       descriptor,  the  form  used  by  the  operating system, in a
+       structure that can be  reference  counted  and  garbage  col‐
+       lected.  When the FD value is reclaimed, the system automati‐
+       cally closes the associated integer file  descriptor.   There
+       are occasions when a program must access the underlying inte‐
+       ger file descriptor, such as when  rearranging  the  standard
+       input and output for a new subprocess.
+
+       The  dup  call  takes a valid integer file descriptor, oldfd,
+       referring to an open file, and returns  a  new  integer  file
+       descriptor  referring  to  the same file.  If newfd is in the
+       range of legal file descriptors, dup will use  that  for  the
+       new  file  descriptor  (closing  any old file associated with
+       newfd); if newfd is -1 the system chooses the  lowest  avail‐
+       able  file  descriptor.  If a suitable file descriptor cannot
+       be found, dup returns -1.
+
+       Fildes duplicates the integer file descriptor fd,  as  if  by
+       sys->dup(fd,-1),  and returns a reference to the new descrip‐
+       tor as an FD value, making it usable by  other  functions  in
+       Sys,  such  as  sys-print(2)  and sys-read(2).  (Note that as
+       described above, the newly-allocated file descriptor will  be
+       closed automatically when the FD value is reclaimed.)  Fildes
+       returns nil if it cannot duplicate fd.
+
+SEE ALSO
+       sys-intro(2), sys-open(2)
+
+                                                          SYS-DUP(2)

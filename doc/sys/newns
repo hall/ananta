@@ -1,0 +1,32 @@
+NEWNS(2)                 System Calls Manual                NEWNS(2)
+
+NAME
+       Newns:  newns,  newuser  -  build  a  new  name  space from a
+       description file
+
+SYNOPSIS
+       include "newns.m";
+       ns := load Newns Newns->PATH;
+
+       newns:   fn(user: string, nsfile: string): string;
+       newuser: fn(user: string, cap: string, nsfile: string): string;
+
+DESCRIPTION
+       Newns reads file nsfile and builds a new name space based  on
+       the commands it contains.  The file has the format defined by
+       namespace(6).  If nsfile is nil or empty, then newns attempts
+       to read file the file namespace.
+
+       Newuser  uses  a capability cap suitable for cap(3) to change
+       the current process's user name to user, and uses  newns  and
+       nsfile to build it a new name space.  The capability is typi‐
+       cally obtained via factotum(4).
+
+SOURCE
+       /appl/lib/newns.b
+
+SEE ALSO
+       sys-bind(2), sys-chdir(2), sys-pctl(2),  factotum(4),  names‐
+       pace(6)
+
+                                                            NEWNS(2)

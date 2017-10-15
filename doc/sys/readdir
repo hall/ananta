@@ -1,0 +1,70 @@
+READDIR(2)               System Calls Manual              READDIR(2)
+
+NAME
+       readdir - read directory and sort files
+
+SYNOPSIS
+       include "readdir.m";
+       readdir := load Readdir Readdir->PATH;
+
+       NAME, ATIME, MTIME, SIZE, NONE: con iota;
+       COMPACT:    con (1<<4);
+       DESCENDING: con (1<<5);
+       init:    fn(path: string, sortkey: int): (array of ref Sys->Dir, int);
+       readall: fn(fd: ref Sys->FD, sortkey: int): (array of ref Sys->Dir, int);
+       sortdir: fn(a: array of ref Sys->Dir, key: int): (array of ref Sys->Dir, int);
+
+DESCRIPTION
+       Readdir provides functions to read and sort the contents of a
+       directory.  Each function returns its result as a tuple  that
+       represents  the  directory contents as an array of references
+       to Sys->Dir values, one  per  file  (see  sys-stat(2)  for  a
+       description of Dir).  The integer element of the tuple is the
+       number of entries returned, or -1 if there was an error read‐
+       ing  the  directory.  Readdir differs from sys-dirread (2) in
+       returning the contents of the whole  directory,  not  just  a
+       chunk of it, and in allowing the result to be sorted.
+
+       Init  is most often used: it reads the contents of the direc‐
+       tory path and sorts the resulting array according to sortkey.
+
+       The sorting criteria for the  returned  array  are  based  on
+       sortkey as follows:
+
+       NAME   Sort files alphabetically by name.
+
+       ATIME  Sort  files  by  access  time,  most recently accessed
+              first.
+
+       MTIME  Sort files by modification time, most  recently  modi‐
+              fied first.
+
+       SIZE   Sort files by size, largest file first.
+
+       NONE   Files are left in directory order, unsorted.
+
+       If the value DESCENDING is or'd into any of the values above,
+       except NONE, the order of sorting is reversed.
+
+       The sort used is stable,  of  particular  importance  in  the
+       presence  of  duplicate names in a union mount.  If the value
+       COMPACT is or'd into any of the values above, including NONE,
+       only  the  first  (outermost) entry with a given name will be
+       returned from reading a union mount, if names are  duplicated
+       in the union.
+
+       Readall  reads  file  descriptor  fd  which must be open on a
+       directory, and returns the contents after applying sortkey as
+       described above for init.
+
+       Sortdir  sorts  the  array  a  according to the given key, as
+       defined earlier,  except  that  the  COMPACT  option  has  no
+       effect.
+
+SOURCE
+       /appl/lib/readdir.b
+
+SEE ALSO
+       sys-dirread(2)
+
+                                                          READDIR(2)

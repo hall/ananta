@@ -1,0 +1,10 @@
+INTRO(7)          Miscellaneous Information Manual          INTRO(7)
+
+NAME
+       intro - introduction to databases
+
+DESCRIPTION
+       This  manual section describes databases available on Inferno
+       and the commands and modules that access them.
+
+                                                            INTRO(7)

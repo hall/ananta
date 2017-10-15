@@ -1,0 +1,44 @@
+REF(10.2)                                                  REF(10.2)
+
+NAME
+       Ref, incref, decref - reference counts
+
+SYNOPSIS
+       int   incref(Ref *r)
+
+       int   decref(Ref *r)
+
+DESCRIPTION
+       A Ref structure holds a reference count for a data structure:
+
+              typedef struct
+              struct Ref
+              {
+                  Lock;
+                  long ref;
+              } Ref;
+
+       The reference count proper is found in ref; the Lock prevents
+       concurrent updates (see lock(10.2)).
+
+       Incref atomically  increments  the  reference  count  r,  and
+       returns the new count.
+
+       Decref  atomically  decrements  the  reference  count  r, and
+       returns the new count.
+
+EXAMPLES
+       Release a structure containing a Ref on last use.
+
+              if(decref(s) == 0)
+                    free(s);
+
+DIAGNOSTICS
+       Decref will panic(10.2) if the count goes negative, revealing
+       a reference counting bug.
+
+SOURCE
+       /os/port/chan.c
+       /emu/port/chan.c
+
+                                                           REF(10.2)

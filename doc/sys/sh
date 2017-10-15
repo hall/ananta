@@ -1,0 +1,329 @@
+SH(2)                    System Calls Manual                   SH(2)
+
+NAME
+       Sh - module interface to the shell
+
+SYNOPSIS
+       include "sh.m";
+       sh := load Sh Sh->PATH;
+       Context, Listnode: import sh;
+
+       system:           fn(drawctxt: ref Draw->Context, cmd: string): string;
+       run:              fn(drawctxt: ref Draw->Context, argv: list of string): string;
+       parse:            fn(s: string): (ref Cmd, string);
+       cmd2string:       fn(c: ref Cmd): string;
+       list2stringlist:  fn(nl: list of ref Listnode): list of string;
+       stringlist2list:  fn(sl: list of string): list of ref Listnode;
+
+       Context: adt {
+               new:            fn(drawcontext: ref Draw->Context): ref Context;
+               get:            fn(c: self ref Context,
+                                  name: string): list of ref Listnode;
+               set:            fn(c: self ref Context,
+                                  name: string,
+                                  value: list of ref Listnode);
+               setlocal:       fn(c: self ref Context,
+                                  name: string,
+                                  value: list of ref Listnode);
+               envlist:        fn(c: self ref Context):
+                                    list of (string, list of ref Listnode);
+               push, pop:      fn(c: self ref Context);
+               copy:           fn(c: self ref Context, copyenv: int): ref Context;
+               run:            fn(c: self ref Context,
+                                  args: list of ref Listnode,
+                                  last: int): string;
+               addmodule:      fn(c: self ref Context, name: string,
+                                  mod: Shellbuiltin);
+               addbuiltin:     fn(c: self ref Context, name: string,
+                                  mod: Shellbuiltin);
+               removebuiltin:  fn(c: self ref Context, name: string,
+                                  mod: Shellbuiltin);
+               addsbuiltin:    fn(c: self ref Context, name: string,
+                                  mod: Shellbuiltin);
+               removesbuiltin: fn(c: self ref Context, name: string,
+                                  mod: Shellbuiltin);
+               fail:           fn(c: self ref Context, ename, msg: string);
+               options:        fn(c: self ref Context): int;
+               setoptions:     fn(c: self ref Context, flags, on: int): int;
+       };
+
+       Listnode: adt {
+               cmd:    ref Cmd;
+               word:   string;
+       };
+
+       Cmd: adt {
+               # private data
+       };
+
+       Shellbuiltin: module {
+               initbuiltin:    fn(ctxt: ref Context, sh: Sh): string;
+               whatis:         fn(ctxt: ref Sh->Context, sh: Sh,
+                                  name: string, wtype: int): string;
+              runbuiltin:     fn(ctxt: ref Context, sh: Sh,
+                                  cmd: list of ref Listnode,
+                                  last: int): string;
+               runsbuiltin:    fn(ctxt: ref Context, sh: Sh,
+                                  cmd: list of ref Listnode): list of ref Listnode;
+               getself:        fn(): Shellbuiltin;
+       };
+
+DESCRIPTION
+       Sh is a command-line interpreter and a scripting language; it
+       also presents a module interface to allow  Limbo  modules  to
+       access its functionality at a lower level.  The Sh module can
+       be used in several different ways.  At the simplest level, it
+       can  be  run  as a command-line program; for details of this,
+       see sh(1).  The simplest access at the Limbo level is through
+       the  system  function,  which given a draw Context (see draw-
+       context(2)) and a string executes the sh command contained in
+       s and returns its result. It catches any exceptions raised by
+       the command.  Almost as simple is run, which runs argv  as  a
+       command,  taking the first word as the command to be executed
+       (it can be a braced block) and giving the rest as  arguments,
+       catching any exceptions raised.
+
+       Although program arguments are passed to external programs as
+       lists of strings, at the Sh module level, an argument list is
+       held  as  a  list of ref Listnode.  A Listnode holds either a
+       simple string, or a braced block that has been parsed by  the
+       shell.  Sometimes  it  can hold both; in this case the string
+       and the block both represent the same thing.  Parse  converts
+       from  a  string to a Cmd (a braced block). It returns a tuple
+       (cmd, error) where cmd holds the parsed block, and  error  is
+       non-empty if an error has occurred doing so.  Cmd2string per‐
+       forms the opposite conversion; it returns a string that  when
+       parsed  will yield the same command block it was passed.  The
+       utility functions List2stringlist and stringlist2list convert
+       from  and  to  a  list  of  ref Listnode to or from a list of
+       string respectively.
+
+       A Context holds all the state information needed  by  a  cur‐
+       rently  running  sh process; this adt holds current values of
+       environment variables and a list of currently loaded  modules
+       and  builtin  commands.  It is specific to the process within
+       which it was created.  If it is desired to run sh commands in
+       a  newly spawned process, a new Context must be created, or a
+       copy of an existing Context made (making sure to  synchronise
+       access until the copy has been made).
+
+       Context.new(drawcontext)
+                 New  creates a new context.  Drawcontext represents
+                 the current graphics context within which  sh  com‐
+                 mands will be run (see draw-context(2)).
+
+       ctxt.get(name)
+                 Get  retrieves  the  value  of environment variable
+                 name from ctxt.  It is retrieved from the innermost
+                 scope in which a value for name has been set.
+
+       ctxt.set(name, value)
+                 Set  sets the value of environment variable name in
+                 ctxt to value.  It is set in the innermost scope in
+                 which  a value for name has been set, or the outer‐
+                 most level if it has not been set.
+
+       ctxt.setlocal(name, value)
+                 Similar to set() except that the value  is  set  in
+                 the innermost scope that has been pushed.
+
+       ctxt.envlist()
+                 Envlist  retrieves  the list of all the environment
+                 variables currently in scope, and their values.  It
+                 returns  a list of (name, value) tuples, where name
+                 is the name of the variable and value is its value.
+
+       ctxt.push()
+                 Push creates a new innermost  environment  variable
+                 scope.
+
+       ctxt.pop()
+                 Pop  discards  the  current innermost scope, losing
+                 the values of all variables that have been  defined
+                 there.   It  is  an error to pop a context that has
+                 not been pushed.  Care must be taken to ensure that
+                 a  push is always matched by a pop.  In particular,
+                 exceptions should be caught,  the  context  popped,
+                 and the exception re-raised.
+
+       ctxt.copy(copyenv)
+                 The shell's Context is associated with a particular
+                 process; copy returns a  copy  of  ctxt  associated
+                 with  the  current process. If copyenv is non-zero,
+                 the whole environment will be copied - this  should
+                 be  set if the new process is to run asynchronously
+                 - i.e.  if there is a chance that  there  might  be
+                 two processes accessing the context in parallel. It
+                 is an error to copy a context if not within  a  new
+                 process.
+
+       ctxt.run(args, last)
+                 Run executes a sh command.  Last should be non-zero
+                 if this is the last time that run will  be  called,
+                 so sh does not have to spawn a new process in order
+                 to hide file redirection side-effects.
+
+       ctxt.addmodule(name, mod)
+                 Addmodule adds the Shellbuiltin module mod  to  its
+                 list  of  builtin modules.  The module will be ini‐
+                 tialised  as  described  in  ``Builtin   modules'',
+                 below.
+
+       ctxt.addbuiltin(name, mod)
+                 Addbuiltin  may be called by a module that has pre‐
+                 viously been loaded by addmodule or by the load  sh
+                 command  to add a new builtin command to the shell.
+                 Any subsequent invocation of name within ctxt  will
+                 result  in  a  call  of  runbuiltin()  to mod.  Any
+                 attempt to redefine the command ``builtin'' will be
+                 ignored.
+
+       ctxt.removebuiltin(name, mod)
+                 Removebuiltin removes name from the list of builtin
+                 commands in ctxt.  If name had not previously  been
+                 defined  by mod, or had subsequently been replaced,
+                 then this function does nothing.
+
+       ctxt.addsbuiltin(name, mod)
+                 Addsbuiltin may be called by a module that has pre‐
+                 viously  been loaded by addmodule or by the load sh
+                 command to add a new builtin substitution  operator
+                 to the shell.  Any subsequent invocation of ${name}
+                 within ctxt will result in a call of  runsbuiltin()
+                 to mod.
+
+       ctxt.removesbuiltin(name, mod)
+                 Removesbuiltin   removes  name  from  the  list  of
+                 builtin substitution operators in  ctxt.   If  name
+                 had not previously been defined by mod, or had sub‐
+                 sequently been replaced, then  this  function  does
+                 nothing.
+
+       ctxt.fail(ename, msg)
+                 Fail  prints  msg  to the standard error if message
+                 printing  is  currently  enabled,  and  raises  the
+                 exception fail:ename.
+
+       ctxt.options()
+                 Options  returns a bitmask of the options currently
+                 enabled in ctxt.  The bits are defined by constants
+                 declared within Context.  They include:
+
+                 ctxt.INTERACTIVE
+                        Sh  is  currently being run from an interac‐
+                        tive command-line.
+
+                 ctxt.VERBOSE
+                        Message printing is currently enabled.
+
+                 ctxt.EXECPRINT
+                        Commands are printed to  standard  error  as
+                        they are executed.
+
+                 ctxt.ERROREXIT
+                        An  exception  will be raised when the first
+                        simple command returns an error status.
+
+                 Options are defined in the innermost scope of  ctxt
+                 and will be lost when it is popped.
+
+       ctxt.setoptions(flags, on)
+                 Setoptions  sets  the  specified flags within ctxt.
+                 Flags is a bitmask  of  options,  as  described  in
+                 options,  above.  If  on is non-zero, the specified
+                 bits will be set; otherwise  they  will  be  reset.
+                 Setoptions  returns the previously set options bit‐
+                 mask.
+
+   Builtin modules
+       Shellbuiltin specifies the interface to a loadable sh builtin
+       module.  Any  Limbo module mod adhering to this interface may
+       be loaded into the shell.
+
+       mod->initbuiltin(ctxt, sh)
+                 Initbuiltin is called when sh loads mod either  via
+                 the load command, or via the loadmodule() function.
+                 Ctxt is the context within which  the  builtin  has
+                 been  loaded,  and sh is the Sh module itself. When
+                 initbuiltin is called,  mod  is  expected  to  call
+                 ctxt.addbuiltin  and ctxt.addsbuiltin to define any
+                 builtin commands and builtin substitution operators
+                 that  it  wants.  If an error occurs on initialisa‐
+                 tion, initbuiltin should return  a  non-nil  value;
+                 this will cause the load to fail.
+
+       mod->runbuiltin(ctxt, sh, cmd, last)
+                 Runbuiltin  is  invoked  when sh executes a command
+                 that has previously been defined as a builtin  com‐
+                 mand by mod.  Ctxt is the current execution context
+                 (which may not be the original  context  passed  to
+                 initbuiltin()),  sh  is  the running Sh module, and
+                 cmd is the command to be executed.  Last is true if
+                 this is the last command to be executed in the cur‐
+                 rent process; it can be  passed  to  ctxt.run()  as
+                 appropriate.   The name of the command can be found
+                 in (hd cmd).word.  Runbuiltin returns its exit sta‐
+                 tus;  by  convention this is the exit status of the
+                 last command executed.  A non-nil  exit  status  is
+                 usually  treated  as  false.   By convention, if an
+                 invalid set of arguments are passed  to  a  builtin
+                 command,  a  usage  exception  is raised by calling
+                 ctxt.fail with usage and an explanatory usage  mes‐
+                 sage as arguments.
+
+       mod->runsbuiltin(ctxt, sh, cmd)
+                 Similar  to  runbuiltin, runsbuiltin is called when
+                 sh encounters a builtin substitution operator  that
+                 has previously been defined by mod.  It returns the
+                 list of values that will be substituted in place of
+                 the operator.
+
+       mod->getself()
+                 Getself  should return the Shellbuiltin module han‐
+                 dle for mod,  usually  obtained  by  invoking  load
+                 $self.    N.B.  it  is  important  that  the  value
+                 returned by getself is the same as that  passed  to
+                 addbuiltin or addsbuiltin.  As the Limbo load oper‐
+                 ator returns a different value each time, the value
+                 to  be  returned by getself() should be initialised
+                 once, during the call to initbuiltin().
+
+       mod->whatis(ctxt, sh, name, wtype)
+                 Whatis is called by the shell's whatis  command  to
+                 query  the  definition  of a name.  Wtype gives the
+                 type of name that is being asked about; it  can  be
+                 BUILTIN  (conventional commands), SBUILTIN (substi‐
+                 tution builtins), or OTHER (any  other  names  that
+                 the  module  defines).  Return nil to get the usual
+                 default behaviour. The  std  module,  for  example,
+                 uses  this  feature  to display the definition of a
+                 shell function correctly.
+
+   Exceptions
+       The exceptions used within sh are exactly the same  as  those
+       used  within  Limbo,  except that all exceptions generated by
+       the shell are prefixed  by  the  string  ``fail:'',  and  any
+       exception  caught with the prefix fail: has its first 5 char‐
+       acters removed before being made available to the sh  script.
+       This adheres to the convention defined by other shells within
+       Inferno that a process that raises an exception with a  fail:
+       prefix  is  just returning a non-zero exit status, and should
+       not be left in a Broken state.  It also means that the number
+       of  bytes  available for the exception string is reduced by 5
+       (to 59). Care must therefore be taken to avoid generating  an
+       exception  with  a  name that is too long; sh takes the prag‐
+       matic approach of truncating any exception string that is too
+       long.
+
+FILES
+       /prog/pid/wait
+                 The  file  used by the shell to wait for dead child
+                 processes.
+
+SOURCE
+       /appl/cmd/sh/sh.y
+
+SEE ALSO
+       sh(1), sh-std(1), sh-expr(1), sh-tk(1)
+
+                                                               SH(2)

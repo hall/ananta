@@ -1,0 +1,75 @@
+FTPFS(4)              Kernel Interfaces Manual              FTPFS(4)
+
+NAME
+       ftpfs - file transfer protocol (FTP) file server
+
+SYNOPSIS
+       ftpfs [ -/dpq ] [ -m mountpoint ] [ -a password ] ftphost
+
+DESCRIPTION
+       Ftpfs  connects to ftphost using the Internet's File Transfer
+       Protocol, and makes the remote files  visible  at  mountpoint
+       (default:  /n/ftp)  in  the current name space, for access by
+       ordinary Inferno file operations.  In other words,  it  is  a
+       protocol  translator  between  FTP and 9P.  The connection is
+       shut down by unmounting the mount point;  see  bind(1).   The
+       ftphost  can  be any address acceptable to cs(8); the default
+       network is tcp, and the default service is ftp (port 21).
+
+       Ftpfs will prompt for a user name  and  password  as  ftphost
+       demands.  If the FTP host supports `anonymous FTP' (ie, guest
+       access), it will accept the  user  name  and  a  conventional
+       password  (notionally  the user's e-mail address).  Given the
+       -a option, ftpfs automatically logs in as with  the  password
+       supplied, avoiding prompting.
+
+       By default, ftpfs uses a `passive' connection for file trans‐
+       fer: the remote system gives the local system a  new  address
+       to  call  to fetch the data.  This often works best for local
+       systems behind firewalls that block incoming calls  to  arbi‐
+       trary  ports,  but can fail for instance if the remote system
+       does not support passive mode, or is  itself  behind  such  a
+       firewall.   The  -p  option  forces  `active' connection: the
+       local system gives the remote machine an address on which  to
+       call it back to transfer the data.
+
+       Other options are:
+
+       -/     Mount  the  remote  machine's root directory on mount‐
+              point, not the user's home directory (which is used by
+              default).
+
+       -q     Suppress  the printing of chatter (`informational mes‐
+              sages') from the remote server.
+
+       -d     Display all FTP protocol transactions to allow a fail‐
+              ure to connect to be debugged.
+
+       Ftpfs  keeps a limited local cache of remote files and direc‐
+       tories.  The cache is kept consistent with file and directory
+       operations  by the local user through the current connection,
+       but not with changes made  by  others  on  the  remote  site.
+       Cached  entries  for a given directory can be flushed explic‐
+       itly by accessing the name .flush.ftpfs in that directory.
+
+EXAMPLE
+       Mount a remote machine and copy files from there to here.
+
+              mkdir here
+              ftpfs -a 'bloggs@' ftp.vitanuova.com
+              cp /n/ftp/package.tgz here
+              unmount /n/ftp
+
+FILES
+       /tmp/ftp.*
+              Temporarily cached files
+
+SOURCE
+       /appl/cmd/ftpfs.b
+
+BUGS
+       Symbolic links are not supported.
+       Ftpfs does not implement `rename', forcing mv(1) to rename by
+       copying.
+
+                                                            FTPFS(4)

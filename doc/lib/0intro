@@ -1,0 +1,42 @@
+INTRO(3)              Library Functions Manual              INTRO(3)
+
+NAME
+       intro - introduction to the Inferno devices
+
+DESCRIPTION
+       An  Inferno  device  implements  a  file tree for client pro‐
+       cesses.  A file name beginning with a hash  (number)  symbol,
+       such  as  names the root of a file tree implemented by a par‐
+       ticular kernel device  driver  identified  by  the  character
+       after the hash.  Such names are usually bound to conventional
+       locations in the name space.  For example, after
+
+              sys->bind("#c", "/dev", sys->MREPL)
+
+       an ls(1) of /dev will list the files provided by the  console
+       device.
+
+       A  kernel  device  driver  is  a  server  in the sense of the
+       Inferno File Protocol, 9P (see Section 5), but with the  mes‐
+       sages  implemented  by  local  rather  than  remote procedure
+       calls.  Also, several of the messages (Nop, Flush, and Error)
+       have no subroutine equivalents.
+
+       When  a  system  call is passed a file name beginning with it
+       looks at the next character, and if that is  a  valid  device
+       character  it  performs  an  attach(5)  on  the corresponding
+       device to  get  a  channel  representing  the  root  of  that
+       device's  file  tree.   If there are any characters after the
+       device character but before the next or end of string,  those
+       characters are passed as parameter aname to the attach.
+
+       Each  kernel  device  has a conventional place at which to be
+       bound to the name space.  The SYNOPSIS sections of  the  fol‐
+       lowing  pages includes a shell bind command to put the device
+       in the conventional place.  Most  of  these  binds  are  done
+       automatically by the system when it initializes; see init(8).
+
+SEE ALSO
+       intro(5), intro(2)
+
+                                                            INTRO(3)

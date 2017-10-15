@@ -1,0 +1,66 @@
+CAP(3)                Library Functions Manual                CAP(3)
+
+NAME
+       cap - capability for changing user name
+
+SYNOPSIS
+       bind #¤ dir
+
+       dir/caphash
+       dir/capuse
+
+DESCRIPTION
+       Cap  allows a process owned by the host owner (see eve(10.2))
+       to give another process on the same machine a  capability  to
+       set  its  user name to a specified user.  The capability is a
+       string of the form:
+
+              [ fromuser@ ] touser@key
+
+       where fromuser is a process's current user  name,  touser  is
+       its  new  user name, and key is a string of random characters
+       (eg, produced by security-random(2)).
+
+       Caphash is a write-only file that can only be opened  by  the
+       host  owner.   A  process  enables the use of a capability by
+       writing the keyed hash of fromuser@touser  to  caphash.   The
+       hash is computed using Keyring->hmac_sha1 as follows:
+
+              kr := load Keyring Keyring->PATH;
+              IPint: import kr;
+              users := sys->sprint("%s@%s", fromuser, touser);
+              cap := sys->sprint("%s@%s", users, key);
+              digest := array[Keyring->SHA1dlen] of byte;
+              ausers := array of byte users;
+              kr->hmac_sha1(ausers, len ausers, array of byte key, digest, nil);
+              if(sys->write(caphashfd, digest, len digest) < 0)
+                   error();
+
+       The capability (eg, cap in the example) can then be passed to
+       another process.
+
+       Capuse is a  write-only  file  that  can  be  opened  by  any
+       process.  It can then write a capability string to change its
+       user name,  provided  that  capability  has  previously  been
+       enabled  by the host owner via caphash, and if the capability
+       included a fromuser, the writing process currently  has  that
+       user  name.   After  a  successful write, the writing process
+       will be owned by touser.  Any capability can be used at  most
+       once.
+
+       A  capability  enabled  by caphash has a limited lifetime, on
+       the order of 30 seconds.  Caphash can be removed by the  host
+       owner to prevent its further use.
+
+SOURCE
+       /emu/port/devcap.c
+       /os/port/devcap.c
+
+SEE ALSO
+       keyring-sha1(2), cons(3), intro(5), eve(10.2)
+
+DIAGNOSTICS
+       A  write  to  capuse without a previous write to caphash sets
+       the error string to ``invalid capability''.
+
+                                                              CAP(3)

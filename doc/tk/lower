@@ -1,0 +1,17 @@
+LOWER(9)              Kernel Developer's Manual             LOWER(9)
+
+NAME
+       lower - Change a window's position in the stacking order
+
+SYNOPSIS
+       lower window
+
+DESCRIPTION
+       Lower  lowers  window so that it is below all of its siblings
+       in the stacking order (it will be obscured  by  any  siblings
+       that overlap it and will not obscure any siblings).
+
+SEE ALSO
+       raise(9)
+
+                                                            LOWER(9)

@@ -1,0 +1,50 @@
+XALLOC(10.2)                                            XALLOC(10.2)
+
+NAME
+       xalloc, xspanalloc, xfree - basic memory management
+
+SYNOPSIS
+       void* xalloc(ulong size)
+
+       void* xspanalloc(ulong size, int align, ulong span)
+
+       void  xfree(void *p)
+
+DESCRIPTION
+       Xalloc  and  xfree are primitives used by higher-level memory
+       allocators in the kernel, such as malloc(10.2).  They are not
+       intended  for use directly by most kernel routines.  The main
+       exceptions  are  routines  that  permanently  allocate  large
+       structures,  or need the special alignment properties guaran‐
+       teed by xspanalloc.
+
+       Xalloc returns a pointer to a range of size bytes of  memory.
+       The memory will be zero filled and aligned on a 8 byte (BY2V)
+       address. If the memory is not  available,  xalloc  returns  a
+       null pointer.
+
+       Xspanalloc allocates memory given alignment and spanning con‐
+       straints.   The  block  returned  will  contain  size  bytes,
+       aligned on a boundary that is 0 mod align, in such a way that
+       the memory in the block does not span an address  that  is  0
+       mod span.  Xspanalloc is intended for use allocating hardware
+       data structures (eg, page tables) or I/O  buffers  that  must
+       satisfy  specific alignment restrictions.  If xspanalloc can‐
+       not allocate memory to satisfy the given constraints, it will
+       panic(10.2).   The technique it uses can sometimes cause mem‐
+       ory to be wasted.  Consequently, xspanalloc  should  be  used
+       sparingly.
+
+       Xfree  frees  the  block  of  memory  at  p, which must be an
+       address previously returned by xalloc (not xspanalloc).
+
+   Allocation status
+       Some memory allocation statistics are written to the  console
+       in response to the debugging sequence The output includes the
+       total free space, the number of free holes, and a summary  of
+       active holes.  Each line shows `address top size'.
+
+SEE ALSO
+       malloc(10.2)
+
+                                                        XALLOC(10.2)

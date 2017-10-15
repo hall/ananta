@@ -1,0 +1,31 @@
+SECURITY-RANDOM(2)       System Calls Manual      SECURITY-RANDOM(2)
+
+NAME
+       random: randomint, randombuf - random number generation
+
+SYNOPSIS
+       include "security.m";
+       random := load Random Random->PATH;
+
+       randomint:  fn(which: int): int;
+       randombuf:  fn(which, n: int): array of byte;
+
+DESCRIPTION
+       Randomint  and  randombuf  return  random or not-quite-random
+       data obtained from /dev/random or /dev/notquiterandom.   Ran‐
+       domint  returns  a random integer; randombuf returns an array
+       of length n filled with random  bytes.   In  both  functions,
+       which  may be either ReallyRandom or NotQuiteRandom to select
+       the random data source.
+
+FILES
+       /dev/random
+       /dev/notquiterandom
+
+SOURCE
+       /appl/lib/random.b
+
+SEE ALSO
+       rand(2), cons(3)
+
+                                                  SECURITY-RANDOM(2)

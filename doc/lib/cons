@@ -1,0 +1,192 @@
+CONS(3)               Library Functions Manual               CONS(3)
+
+NAME
+       cons - console device
+
+SYNOPSIS
+       bind #c /dev
+
+       /dev/cons
+       /dev/consctl
+       /dev/drivers
+       /dev/jit
+       /dev/keyboard
+       /dev/klog
+       /dev/kprint
+       /dev/memory
+       /dev/msec
+       /dev/null
+       /dev/notquiterandom
+       /dev/pointer
+       /dev/random
+       /dev/scancode
+       /dev/sysctl
+       /dev/sysname
+       /dev/time
+       /dev/user
+
+DESCRIPTION
+       The console device serves a one-level directory giving access
+       to the console and miscellaneous information.
+
+       Reading the cons file returns characters typed  on  the  key‐
+       board.  Normally, characters are buffered to enable erase and
+       kill processing.  A control-U, typed at  the  keyboard  kills
+       the  current input line (removes all characters from the buf‐
+       fer of characters not yet read via  cons),  and  a  backspace
+       erases  the  previous  non-kill, non-erase character from the
+       input buffer.  Killing and  erasing  only  delete  characters
+       back  to,  but  not  including, the last newline.  Typed key‐
+       strokes produce 21-bit runes that  are  translated  into  the
+       variable-length UTF encoding (see utf(6)) before putting them
+       into the buffer.  A read of length greater than  zero  causes
+       the process to wait until a newline or a ends the buffer, and
+       then returns as much of the buffer as the  argument  to  read
+       allows,  but  only up to one complete line.  A terminating is
+       not put into the buffer.  If part of the  line  remains,  the
+       next  read will return bytes from that remainder and not part
+       of any new line that has been typed since. A single line con‐
+       taining  a  can  be used as an end of file indication to pro‐
+       grams that take interactive input.
+
+       If the string rawon has been written to the consctl file  and
+       the  file  is still open, cons is in raw mode: characters are
+       not echoed as they are typed, backspace, and are not  treated
+       specially,  and  characters  are available to read as soon as
+       they are typed.  Ordinary mode is reentered  when  rawoff  is
+       written to consctl or this file is closed.
+
+       A  write  to  cons causes the characters to be printed on the
+       console screen.
+
+       The keyboard file returns the underlying tokens  produced  by
+       the  keyboard hardware as they are produced; in the emulation
+       environment, it is like an always-raw cons file.
+
+       The null file throws away anything written to it  and  always
+       returns zero bytes when read.
+
+       The  klog  file  returns  the tail of messages written by the
+       native kernel debugging function  kprint  (mainly  used  when
+       debugging  interrupt  handlers  in  device  drivers).   It is
+       available only in native kernel implementations.
+
+       The kprint file returns console output: messages  written  by
+       kernel  print statements and messages written by processes to
+       this driver's cons file.  Until kprint is opened, system con‐
+       sole  output  is  handled  normally.   Once  kprint  has been
+       opened, if the machine's console is a serial line,  the  data
+       is sent both to the serial console and to kprint; if the con‐
+       sole is a graphics screen, the data is sent only to kprint.
+
+       A read of the pointer file returns the status of the mouse or
+       other  pointing  device:  its position and button state.  The
+       read blocks until the state has changed since the last  read.
+       The  read  returns  49  bytes:  the letter m followed by four
+       fields containing decimal integers, each 11  characters  wide
+       followed  by a blank.  The integers are: x and y, coordinates
+       of the pointer on the screen; a bit mask with the 1, 2, and 4
+       bits  when  the  pointer's  left,  middle, and right buttons,
+       respectively, are down; and a time stamp  in  units  of  mil‐
+       liseconds.
+
+       Writing  to  the  pointer file, using the same format, causes
+       the pointer to move to the specified x, y position (the  but‐
+       ton  and  millisecond  fields are ignored, and optional).  If
+       there is a visible image representing the pointer's position,
+       that will move too.
+
+       The random device returns as many bytes of random data as are
+       requested in the read.
+
+       The notquiterandom device returns as many  bytes  of  pseudo-
+       random  data  as are requested in the read; this is typically
+       faster than random but the results are more predictable.
+
+       The scancode device provides access to the raw scan codes  of
+       the  primary  keyboard  .   While it is open, key strokes are
+       diverted from cons and keyboard .  The  first  read(2)  after
+       opening returns an identifier string which defines the format
+       of data delivered by subsequent reads. Known ones are defined
+       in  scancode(6).  The most common format is a single byte per
+       scan code, where the top bit is 1 for up and 0 for down,  and
+       the  bottom 7 bits are the scan code. Some input devices have
+       a larger scan code space; in this case scan codes  are  often
+       delivered as two byte little endian quantities, where the top
+       bit is the up/down signifier, and the bottom 15 bits are  the
+       scan  code.  In  all cases the meaning of the individual scan
+       codes is device specific.
+
+       The rest of the files  contain  (mostly)  read-only  strings.
+       Each  string  has a fixed length: a read (see sys-read(2)) of
+       more than that gives a  result  of  that  fixed  length  (the
+       result  does  not include a terminating zero byte); a read of
+       less than that length leaves the file offset so the  rest  of
+       the  string  (but  no  more)  will be read the next time.  To
+       reread the file without closing it,  seek  must  be  used  to
+       reset  the offset.  When the file contains numeric data, each
+       number is formatted in decimal as  an  11-digit  number  with
+       leading blanks and one trailing blank: twelve bytes total.
+
+       The  sysctl  file  can  be read to return the current Inferno
+       version. Writing the string reboot to it attempts  to  reboot
+       the system, writing halt attempts to halt the system. Writing
+       nobroken ensures that broken processes  have  all  associated
+       memory  freed  before being destroyed, writing broken ensures
+       that they are left in this  state  to  allow  debugging  (the
+       default).   Only  the  privileged user is allowed to write to
+       this file.
+
+       The sysname file holds the textual name of the  machine.   It
+       can only be written by the privileged user.
+
+       The  user  file contains the name of the user associated with
+       the current process.  It can only be written  by  the  privi‐
+       leged  user.  In  the  emulation environment, writing to this
+       file also attempts to set the user id in the  host  operating
+       system to the specified value.
+
+       The memory file returns a formatted presentation of the state
+       of the memory allocation pools in the system.  Each  line  of
+       output  returned  reports,  for  a single pool, the amount of
+       memory in use, the upper size limit, the high water mark, the
+       number  of  allocations  done,  the number of frees done, the
+       number of extensions done, the largest  chunk  available  and
+       the name of the pool.
+
+       The  drivers file returns a list of the device drivers loaded
+       in the system.  Each line gives the name of  the  device  for
+       bind(1),  such  as  #c, followed by the name of the driver as
+       used in the system configuration file.
+
+       The other files served by the cons device are all single num‐
+       bers:
+
+       jit    non-zero  if  `just in time' compilation is configured
+              (can be written to change the state). Writing 0  turns
+              off  JIT  compilation, 1 turns it on and larger values
+              give increasingly detailed traces of  the  compilation
+              for debugging purposes.
+
+       msec   the value of a millisecond counter
+
+       time   number  of  microseconds since the epoch 00:00:00 GMT,
+              Jan. 1, 1970.  (Can be written once by the  privileged
+              user, to set at boot time.)
+
+SOURCE
+       /emu/port/devcons.c
+       /os/port/devcons.c
+
+SEE ALSO
+       draw(3), keyboard(6), utf(6), eve(10.2)
+
+BUGS
+       For  debugging,  on native systems only, two control-T's fol‐
+       lowed by a letter generate console output: prints data  about
+       kernel  processes, prints the kernel stack, prints data about
+       memory allocation.
+
+       The system can be rebooted by typing
+
+                                                             CONS(3)

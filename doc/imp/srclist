@@ -1,0 +1,27 @@
+SRCLIST(10.1)                                          SRCLIST(10.1)
+
+NAME
+       srclist - list source files used to build an executable
+
+SYNOPSIS
+       srclist [ -ce ] [ -r rootdir ...  ] executable
+
+DESCRIPTION
+       Srclist prints on standard output, one per line, the names of
+       source files used to build the given executable, which should
+       be in a.out(10.6) format.
+
+       By  default, all source file names are listed.  The -c option
+       restricts the output to names ending  `.c'.   The  -e  option
+       restricts  the  output  to  file  names that currently exist.
+       Each -r option adds a new root directory rootdir to an inter‐
+       nal  list.   Only the names of source files that appear below
+       one of the root directories will be printed.
+
+SOURCE
+       /utils/srclist
+
+SEE ALSO
+       inm(10.1)
+
+                                                       SRCLIST(10.1)

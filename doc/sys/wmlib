@@ -1,0 +1,55 @@
+WMLIB(2)                 System Calls Manual                WMLIB(2)
+
+NAME
+       wmlib - low level access to window manager
+
+SYNOPSIS
+       include "sys.m";
+       include "draw.m";
+       include "wmlib.m";
+       wmlib := load Wmlib Wmlib->PATH;
+
+       init:       fn();
+       connect:  fn(ctxt: ref Draw->Context): ref Draw->Wmcontext;
+       startinput:    fn(w: ref Draw->Wmcontext, devs: list of string): string;
+       wmctl:    fn(w: ref Draw->Wmcontext, request: string): (string, ref Draw->Image, string);
+       snarfput: fn(buf: string);
+       snarfget: fn(): string;
+
+DESCRIPTION
+       Wmlib  provides  basic routines to access the window manager,
+       It is used by higher level modules such  as  tkclient(2)  and
+       wmclient(2) to provide window manager access to applications.
+
+       Init  should  be called once to initialise the internal state
+       of Wmlib.  Connect makes a connection to the  window  manager
+       through  ctxt  (see  draw-context(2)).   Startinput tells the
+       window manager to start queuing events on the  input  streams
+       named  in  devs (e.g.  ptr, kbd) so that they can be received
+       by the application.
+
+       Wmctl sends request to the  window  manager.   It  returns  a
+       tuple,  say  (name, img, err).  If a request fails, then name
+       and img will be nil and the non-empty err gives  the  reason.
+       If  the  request  has resized or created an image, name gives
+       the tag name of the image and img holds the new image.  Wmlib
+       interprets  the exit request itself, by killing all processes
+       in the current process group, and exiting.
+
+       Snarfget and snarfput retrieve and replace  the  contents  of
+       the window manager's snarf buffer.
+
+FILES
+       /chan/snarf
+              snarf buffer maintained by wm(1)
+
+       /chan/wm
+              channel for interaction with wm(1)
+
+SOURCE
+       /appl/lib/wmclient.b
+
+SEE ALSO
+       wm(1), wmclient(2), tkclient(2), tk(2)
+
+                                                            WMLIB(2)

@@ -1,0 +1,58 @@
+STYXPERSIST(2)           System Calls Manual          STYXPERSIST(2)
+
+NAME
+       styxpersist - persistent 9P (Styx) connection
+
+SYNOPSIS
+       include "sys.m";
+       include "styxpersist.m";
+       styxpersist := load Styxpersist Styxpersist->PATH;
+
+       init: fn(clientfd: ref Sys->FD, usefac: int, keyspec: string):
+               (chan of chan of ref Sys->FD, string);
+
+DESCRIPTION
+       Styxpersist  tries to maintain a persistent 9P (Styx) connec‐
+       tion for its client.  Init starts a process to serve  9P  for
+       the  client  on clientfd.  If usefac is non-zero, styxpersist
+       will use factotum(2) to do  plan  9-style  authentication  if
+       necessary, and keyspec gives attribute-value pairs to pass to
+       factotum's proxy function.
+
+       Init returns a tuple, say (c, err).  If things  have  started
+       successfully,  c  holds  a  channel  that styxpersist uses to
+       request a new connection to the server.  The caller  of  init
+       should  arrange that a process is ready to repeatedly receive
+       on this channel, dial the server, and send the resulting file
+       descriptor (or nil if the connection was unsuccessful) on the
+       channel received,
+
+       If init failed, c will be nil and err describes the error.
+
+       If the server goes down, it redials as above,  and  tries  to
+       re-open  all the files that were open in the previous connec‐
+       tion.  In the meantime all client access to the namespace  is
+       blocked.
+
+       Note  that  this  service should only be used on conventional
+       file servers, where most reads and writes are idempotent.
+
+SOURCE
+       /appl/lib/styxpersist.b
+
+BUGS
+       Even on a conventional fileserver, some operations  are  non-
+       idempotent;  namely  create,  rename, remove, and write to an
+       append-only file.  If a fileserver dies while such a  request
+       is outstanding, it is unclear what it should do. Currently it
+       returns an error to the client if such a sitution occurs.
+
+       Styxpersist is dependent on the  capabilities  of  the  local
+       factotum to re-authenticate Plan 9 style. If a client uses an
+       external factotum with different  keys,  styxpersist  may  be
+       unable to re-authenticate.
+
+SEE ALSO
+       mount(1), dial(2)
+
+                                                      STYXPERSIST(2)

@@ -1,0 +1,49 @@
+9SRVFS(4)             Kernel Interfaces Manual             9SRVFS(4)
+
+NAME
+       9srvfs - add Inferno service to Plan 9 service registry
+
+SYNOPSIS
+       9srvfs [ -p perm ] srvname source
+
+DESCRIPTION
+       9srvfs  is  only  usable  (or  indeed of interest) on Inferno
+       hosted under Plan 9.  It uses srv9(3) to make an Inferno ser‐
+       vice  source  available to Plan 9 applications via the Plan 9
+       service registry.  Srv9 (3) must previously have  been  bound
+       to /srv in the current name space, with -c to allow file cre‐
+       ation (see bind(1)).
+
+       Source may be either a command or the name  of  a  directory.
+       If source is surrounded by braces ({ and }), it is invoked as
+       a sh(1) command, and its standard input (sic)  is  posted  as
+       Plan  9  service /srv/srvname with permissions perm (default:
+       mode 600).  Otherwise, source is taken to be a directory that
+       is the root of a name space to export to Plan 9, an exporting
+       file service is started (see sys-export(2)), and again posted
+       as  Plan  9  service  /srv/srvname, and the export terminates
+       when the Plan 9 service file has been removed  and  the  last
+       mounted instance goes away in Plan 9.
+
+EXAMPLE
+       Make  the  current Inferno environment variables available to
+       Plan 9 applications:
+
+              bind -c '#₪' /srv   # if not already done
+              9srvfs infenv /env
+
+       The name space can then be mounted in Plan 9, allowing  vari‐
+       ables to be read and written in that Inferno environment:
+
+              mount -c /srv/infenv /n/ftp
+              ls /n/ftp
+              cat /n/ftp/emuargs
+              echo masked man >/n/ftp/zorro
+
+SOURCE
+       /appl/cmd/9srvfs.b
+
+SEE ALSO
+       bind(1), srv9(3), import(4)
+
+                               Plan 9                      9SRVFS(4)

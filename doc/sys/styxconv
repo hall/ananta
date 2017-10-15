@@ -1,0 +1,63 @@
+STYXCONV(2)              System Calls Manual             STYXCONV(2)
+
+NAME
+       styxconv  -  convert  between  old 1995 Styx and current Styx
+       (9P)
+
+SYNOPSIS
+       include "styxconv.m";
+       styxconv := load Styxconv Styxconv->PATHNEW2OLD;
+       styxconv := load Styxconv Styxconv->PATHOLD2NEW;
+
+       init:     fn();
+       styxconv: fn(client: ref Sys->FD, server: ref Sys->FD);
+
+DESCRIPTION
+       Styxconv converts between the obsolete 1995  version  of  the
+       Styx  protocol,  as used for instance in Inferno's Third Edi‐
+       tion and earlier, and the current file service protocol, pre‐
+       viously also called `Styx' but based on 9P2000 and defined by
+       intro(5).
+
+       Init must be called before any other function in the module.
+
+       The function styxconv  takes  two  file  descriptors:  client
+       should  be  a connection to a client requiring one version of
+       the protocol; server should be a connection to a server serv‐
+       ing the other version of the protocol.  There are two conver‐
+       sion modules: PATHNEW2OLD converts from a new  client  to  an
+       old  server; PATHOLD2NEW converts from an old client to a new
+       server.
+
+       Styxconv should be spawned by the caller, and copies messages
+       between  client  and server, converting as required.  See the
+       example below.
+
+EXAMPLE
+       Apply styxconv to file descriptor fd,  connected  to  an  old
+       Styx server, and return a file descriptor suitable for mount‐
+       ing with mount(2).
+
+              cvstyx(fd: ref Sys->FD): ref Sys->FD
+              {
+                   styxconv := load Styxconv Styxconv->NEW2OLDPATH;
+                   if(styxconv == nil)
+                        return nil;
+                   p := array[2] of ref Sys->FD;
+                   if(sys->pipe(p) < 0)
+                        return nil;
+                   styxconv->init();
+                   spawn styxconv->styxconv(p[1], fd);
+                   return p[0];
+              }
+
+SOURCE
+       /appl/lib/styxconv
+
+SEE ALSO
+       bind(1), sys-bind(2), sys-pipe(2), intro(5)
+
+BUGS
+       There is no provision for 9P2000 authentication.
+
+                                                         STYXCONV(2)

@@ -1,0 +1,46 @@
+DRAW-POINT(2)            System Calls Manual           DRAW-POINT(2)
+
+NAME
+       Point - coordinate position
+
+SYNOPSIS
+       include    "draw.m";
+       draw := load Draw Draw->PATH;
+
+       Point: adt
+       {
+           x:    int;
+           y:    int;
+
+           add:  fn(p: self Point, q: Point):  Point;
+           sub:  fn(p: self Point, q: Point):  Point;
+           mul:  fn(p: self Point, i: int):    Point;
+           div:  fn(p: self Point, i: int):    Point;
+           eq:   fn(p: self Point, q: Point):  int;
+           in:   fn(p: self Point, r: Rect):   int;
+       };
+
+DESCRIPTION
+       The Point data type specifies a position in the integer grid.
+
+       x, y      The  coordinate  position. The coordinates increase
+                 to the right (x) and down (y).
+
+       p.add(q)  Returns the point (p.x+q.x, p.y+q.y).
+
+       p.sub(q)  Returns the point (p.x-q.x, p.y-q.y).
+
+       p.mul(i)  Returns the point (p.x*i, p.y*i).
+
+       p.div(i)  Returns the point (p.x/i, p.y/i).
+
+       p.eq(q)   Returns non-zero if  the  points'  coordinates  are
+                 equal and zero otherwise.
+
+       p.in(r)   Returns non-zero if point p lies within rectangle r
+                 and zero otherwise.
+
+SEE ALSO
+       draw-intro(2), draw-rect(2)
+
+                                                       DRAW-POINT(2)

@@ -1,0 +1,24 @@
+MNTGEN(4)             Kernel Interfaces Manual             MNTGEN(4)
+
+NAME
+       mntgen - dynamically generate mount points
+
+SYNOPSIS
+       mount {mntgen} dir
+
+DESCRIPTION
+       Mntgen  serves  9P  on  its  standard input, providing a name
+       space containing a single directory that is initially  empty,
+       but in which a subdirectory name appears when is first refer‐
+       enced, and remains only as long as it is needed (referenced).
+       Mntgen  is  typically  mounted on a directory dir using mount
+       (see bind(1)) as above.  Dir is commonly /n or /mnt, to  gen‐
+       erate mount points on demand for file systems or services.
+
+SOURCE
+       /appl/cmd/mntgen.b
+
+SEE ALSO
+       intro(1), bind(1), intro(5)
+
+                                                           MNTGEN(4)

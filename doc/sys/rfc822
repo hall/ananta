@@ -1,0 +1,211 @@
+RFC822(2)                System Calls Manual               RFC822(2)
+
+NAME
+       rfc822 - RFC822 mail format helpers
+
+SYNOPSIS
+       include "bufio.m";
+       include "rfc822.m";
+       rfc822 := load RFC822 RFC822->PATH;
+       Content, Rfclex: import rfc822;
+
+       Word, QString: con ...;
+       Maxrequest: con 16*1024;   # more than enough for anything sensible
+
+       init:         fn(b: Bufio);
+
+       Rfclex: adt {
+          tok:     int;
+          wordval: string;
+
+          mk:      fn(a: array of byte): ref Rfclex;
+          getc:    fn(p: self ref Rfclex): int;
+          ungetc:  fn(p: self ref Rfclex);
+          lex:     fn(p: self ref Rfclex): int;
+          unlex:   fn(p: self ref Rfclex);
+          skipws:  fn(p: self ref Rfclex): int;
+
+          line:    fn(p: self ref Rfclex): string;
+       };
+
+       readheaders:  fn(fd: ref Bufio->Iobuf, limit: int):
+                         array of (string, array of byte);
+       parseparams:  fn(ps: ref Rfclex): list of (string, string);
+       parsecontent: fn(ps: ref Rfclex, multipart: int,
+                         head: list of ref Content): list of ref Content;
+       mimefields:   fn(ps: ref Rfclex):
+                         list of (string, list of (string, string));
+
+       quotable:     fn(s: string): int;
+       quote:        fn(s: string): string;
+
+       sec2date:     fn(secs: int): string;
+       date2sec:     fn(s: string): int;
+       now:          fn(): int;
+       time:         fn(): string;
+
+       Content: adt{
+          generic:   string;
+          specific:  string;
+          params:    list of (string, string);
+
+          mk:        fn(specific: string, generic: string,
+                        params: list of (string, string)): ref Content;
+          check:     fn(c: self ref Content, oks: list of ref Content): int;
+          text:      fn(c: self ref Content): string;
+       };
+
+       suffixclass:  fn(name: string): (ref Content, ref Content);
+       dataclass:    fn(a: array of byte): (ref Content, ref Content);
+
+DESCRIPTION
+       RFC822  provides  types  and functions to help read and parse
+       RFC822 e-mail headers (following the more  streamlined  rules
+       of  RFC2822,  which has replaced RFC822), including some MIME
+       extensions.  Currently the focus is on operations  that  sup‐
+       port HTTP and other W3C protocols, rather than mail reading.
+
+       Init must be called before any other operation in the module.
+       It must be  given  an  instance  of  the  Bufio  module  (see
+       bufio(2)).
+
+       Readheaders reads a set of RFC822 header lines from fd, ended
+       by an empty line.  It returns  an  array  of  tuples  (field‐
+       name, value),  one  per header line.  The string fieldname is
+       the header line's field name, in lower case.  The value gives
+       the  rest of the line, after removing any initial white space
+       and appending any continuation lines,  uninterpreted,  as  an
+       array  of bytes (not a string).  Limit is the maximum allowed
+       size of the header in  bytes;  usually  that  is  Maxrequest.
+       Readheaders returns the tuple (nil, nil) on end of file or if
+       the header size limit is exceeded.
+
+       Rfclex takes a header line's value and produces a sequence of
+       tokens.  It provides the following operations:
+
+       Rfclex.mk(a)
+              Return  a  reference  to  a new Rfclex value that will
+              produce tokens from the array of byte a, which is nor‐
+              mally the value of one of the header lines returned by
+              readheaders.
+
+       rfl.getc()
+              Return the next character from the  input  stream,  in
+              the Latin-1 (ISO 8859-1) character set.  Return a neg‐
+              ative value (Bufio->EOF) on end-of-file.
+
+       rfl.ungetc()
+              Put back  the  last  character  read,  which  will  be
+              returned again by the next call to rfl.getc.
+
+       rfl.lex()
+              Return  the next token from the input stream, ignoring
+              any leading white space.  Most tokens are single char‐
+              acters  representing  themselves.   The token value is
+              also assigned to rfl.tok.  There are two special token
+              values:  Word,  representing  an  unquoted word in the
+              RFC2822 grammar; and QString,  representing  a  quoted
+              string.   In  both  cases rfl.wordval will contain the
+              text of the word or string (without quotes).
+
+       rfl.unlex()
+              Put back the last token read; the next call to rfl.lex
+              will return it again.
+
+       rfl.skipws()
+              Skip  over  any  white  space at the current position;
+              return the initial character of the next token  (which
+              is not consumed).
+
+       rfl.line()
+              Return  a  string  giving  the  remainder of the input
+              line.
+
+       Several functions take an Rfclex referring to a header line's
+       value,  parse it, and return a higher-level representation of
+       its value.
+
+       Parseparams parses a sequence of parameter  settings  of  the
+       form  (;attribute=value)* and returns a corresponding list of
+       tuples (attribute, value).  It returns nil if  no  parameters
+       are found.
+
+       Parsecontent parses the values of fields such as Content-Type
+       and Accept.  The syntax is (loosely) a sequence of comma-sep‐
+       arated  elements  of  the  form type, type/*, or type/subtype
+       followed by an optional sequence of parameters  of  the  form
+       (;attribute=value  )*.  The type/subtype form is allowed only
+       if multipart is true (non-zero).  It returns a  corresponding
+       list of Content values followed by the initial list head.
+
+       Mimefields  parses  a sequence of comma-separated elements of
+       the form word(;attr=val )* as used for instance in  the  rule
+       transfer-coding.   It  returns a corresponding list of tuples
+       (word, l) where l is an optional list of tuples (attr, val).
+
+       When producing an RFC822 header line, words  must  be  quoted
+       when  they  contain  certain  special  characters.   Quotable
+       returns true iff the string s contains any of  those  charac‐
+       ters.   Quote  returns  the  value  of s with quotes added as
+       required.
+
+       RFC822 headers have a particular syntax for dates,  different
+       from  that  of  daytime(2).   The function sec2date returns a
+       string in RFC822 date format representing the time  secs  (in
+       seconds  from  the Epoch).  Date2sec takes a string in RFC822
+       date format and returns the time in seconds from  the  Epoch.
+       Now returns the current time in seconds from the epoch (it is
+       equivalent to Daytime->now() from daytime(2)).  Time  returns
+       the current time in RFC822's date format.
+
+       The  Multipurpose  Internet  Mail  Extensions (see RFC2045-7)
+       include syntax for describing different types of media,  con‐
+       tent,  and content encodings.  Content values represent those
+       descriptions.  Its fields and operations are as follows:
+
+       generic
+              General class  of  content  (eg,  application,  image,
+              text, etc)
+
+       specific
+              Optional particular type within that class (eg, octet-
+              stream within application, or plain within text)
+
+       params Optional list of (attr, value) pairs giving parameters
+              to  the  content  type  or  encoding.   The particular
+              attribute q has a floating-point value that  specifies
+              the relative quality (utility) of a particular type or
+              encoding to a client.
+
+       mk(generic, specific, params)
+              Return a reference to a new Content value, initialised
+              with the given parameters.
+
+       c.check(ok)
+              Return  true if c is acceptable content/media/encoding
+              according to the list of allowable forms in ok.  C  is
+              always  acceptable  if  ok  is  nil  (ie, there are no
+              restrictions).  Otherwise, at least one of the Content
+              values  in ok must match c.  That is, an ok value must
+              have the same generic and  specific  types  as  c,  or
+              specify  `*'  in  one  or both positions (to match any
+              value in c).  Any params are ignored.
+
+       c.text()
+              Return  the  RFC822   syntax   for   c:   generic/spe‐
+              cific;a=v...   where the component words are quoted if
+              necessary.
+
+       Given the  name  of  a  file,  suffixclass  returns  a  tuple
+       (type, enc)  where  type  gives the MIME Content-Type of name
+       (or nil, if its type is not known), and enc  gives  the  MIME
+       Content-Encoding of name (or nil, if it is not encoded).
+
+FILES
+       /lib/mimetype
+              map between file suffix and MIME content types
+
+SOURCE
+       /appl/lib/rfc822.b
+
+                                                           RFC822(2)

@@ -1,0 +1,38 @@
+I82365(3)             Library Functions Manual             I82365(3)
+
+NAME
+       i82365  - Personal Computer Memory Card Interface Association
+       (PCMCIA) device
+
+SYNOPSIS
+       bind -a #y /dev
+
+       /dev/pcm0attr
+       /dev/pcm0ctl
+       /dev/pcm0mem
+       /dev/pcm1attr
+       /dev/pcm1ctl
+       /dev/pcm1mem
+
+DESCRIPTION
+       The  i82365  driver  provides  an  interface  to   an   Intel
+       82365-compatible  PCMCIA  interface chip.  This chip supports
+       up to 2 PCMCIA slots, 0 and 1.  Reading  pcm[01]attr  returns
+       the   contents  of  attribute  memory.   Reading  or  writing
+       pcm[01]mem  reads  or  writes  RAM  on  the  card.    Reading
+       pcm[01]ctl returns the card's status.
+
+       This  driver  must  be included to use PCMCIA devices such as
+       the NE4100 Ethernet card.  The individual card  drivers  make
+       calls to routines in the PCMCIA driver.
+
+SOURCE
+       /os/pc/devi82365.c
+
+SEE ALSO
+       plan9.ini(10.8)
+
+BUGS
+       There is no driver for the Databook PCMCIA interface chip.
+
+                                                           I82365(3)

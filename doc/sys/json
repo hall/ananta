@@ -1,0 +1,152 @@
+JSON(2)                  System Calls Manual                 JSON(2)
+
+NAME
+       json: readjson, writejson, JValue - read, write and represent
+       values in JavaScript Object Notation
+
+SYNOPSIS
+       include "json.m";
+       json := load JSON JSON->PATH;
+
+       JValue: adt {
+           pick{
+           Object =>
+               mem:   cyclic list of (string, ref JValue);
+           Array =>
+               a:     cyclic array of ref JValue;
+           String =>
+               s:     string;
+           Int =>
+               value: big;
+           Real =>
+               value: real;
+           True or
+           False or
+           Null =>
+           }
+           isarray:   fn(v: self ref JValue): int;
+           isfalse:   fn(v: self ref JValue): int;
+           isint:     fn(v: self ref JValue): int;
+           isnull:    fn(v: self ref JValue): int;
+           isnumber:  fn(v: self ref JValue): int;
+           isobject:  fn(v: self ref JValue): int;
+           isreal:    fn(v: self ref JValue): int;
+           isstring:  fn(v: self ref JValue): int;
+           istrue:    fn(v: self ref JValue): int;
+           copy:      fn(v: self ref JValue): ref Jvalue;
+           eq:        fn(v: self ref JValue, v: ref JValue): int;
+           get:       fn(v: self ref JValue, mem: string): ref JValue;
+           set:       fn(v: self ref JValue, mem: string, value: ref JValue);
+           text:      fn(v: self ref JValue): string;
+       };
+
+       init:      fn(bufio: Bufio);
+       readjson:  fn(input: ref Bufio->Iobuf): (ref JValue, string);
+       writejson: fn(output: ref Bufio->Iobuf, val: ref JValue): int;
+
+       jvarray:   fn(a: array of ref JValue): ref JValue.Array;
+       jvbig:     fn(b: big): ref JValue.Int;
+       jvfalse:   fn(): ref JValue.False;
+       jvint:     fn(i: int): ref JValue.Int;
+       jvnull:    fn(): ref JValue.Null;
+       jvobject:  fn(m: list of (string, ref JValue)): ref JValue.Object;
+       jvreal:    fn(r: real): ref JValue.Real;
+       jvstring:  fn(s: string): ref JValue.String;
+       jvtrue:    fn(): ref JValue.True;
+
+DESCRIPTION
+       JSON provides value representations, and encoding and  decod‐
+       ing  operations  for  the  JavaScript  Object Notation (JSON)
+       described by Internet RFC4627 and summarised in json(6).
+
+       Init must be called before invoking any  other  operation  of
+       the  module.   The bufio parameter must refer to the instance
+       of bufio(2) that provides the Iobuf parameters used for input
+       and output.
+
+       JValue  is  the internal representation of values transmitted
+       by the JSON encoding.  They are distinguished in a pick adt:
+
+       JValue.False
+              Represents the value false.
+
+       JValue.Null
+              Represents a null value of any type.
+
+       JValue.True
+              Represents the value true.
+
+       JValue.Int
+              Represents as a Limbo big a JavaScript number with  no
+              fractional part.
+
+       JValue.Real
+              Represents  as a Limbo real a JavaScript number with a
+              fractional part.
+
+       JValue.String
+              Represents a JavaScript string of  Unicode  characters
+              from +U'0000' to +U'FFFF'.
+
+       JValue.Array
+              Represents a JavaScript array of values of any type.
+
+       JValue.Object
+              Represents  a  tuple  of (member/property name, value)
+              pairs corresponding  to  the  value  of  a  JavaScript
+              object,  or  an associative array or table, indexed by
+              strings.  The member names must  be  unique  within  a
+              value.
+
+       Readjson  reads  a single value in JSON format from the input
+       stream and returns a tuple (val, err).  On success, val is  a
+       JValue  that  represents  the value successfully read.  If an
+       error occurs, val is nil and err contains a diagnostic.
+
+       Writejson writes to the output stream in JSON format a repre‐
+       sentation  of the value v.  It returns 0 on success and -1 on
+       error (setting the system error string).
+
+       The easiest way to create a new JValue for subsequent  output
+       is  with  one  of  the module-level functions jvarray, jvint,
+       jvobject, jvstring, and so on.  As values of a  pick  adt,  a
+       JValue  can be inspected using Limbo's tagof operator and the
+       appropriate variant accessed using a pick statement.   JValue
+       also  supports  several  groups  of  common  operations,  for
+       smaller, tidier code.  First, the set  of  enquiry  functions
+       v.isX()  return  true  if  the  value v is an instance of the
+       JavaScript type X (array, int, object, real, string, etc).  A
+       numeric  value  is  either int or real.  The other operations
+       are:
+
+       v.copy()
+              Return a (reference to) a copy of value v.  The  copy‐
+              ing is not recursive.
+
+       v.eq(w)
+              Return  true  if  the  values  of  v  and w are equal,
+              including the values of  corresponding  subcomponents,
+              recursively
+
+       v.get(mem)
+              Return  the value associated with the member named mem
+              in v; return null if there is none.
+
+       v.set(mem, value)
+              Adds or changes the value associated with  the  member
+              named  mem in v, which must be a JValue.Object( raises
+              exception json: set non-object otherwise).
+
+       v.text()
+              Return a string containing the JSON representation  of
+              v.
+
+SOURCE
+       /appl/lib/json.b
+
+SEE ALSO
+       sexprs(2), ubfa(2), json(6), sexprs(6), ubfa(6)
+       D Crockford, ``The application/json Media Type for JavaScript
+       Object Notation (JSON)'', RFC4627.
+
+                                                             JSON(2)

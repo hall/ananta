@@ -1,0 +1,127 @@
+MAN(6)                      Games Manual                      MAN(6)
+
+NAME
+       man - manual page format
+
+DESCRIPTION
+       The Inferno manual pages are stored as text files in a format
+       originally defined for use with the Unix  and  Plan  9  troff
+       command,  when  used  with  the  man  macro  package.  Within
+       Inferno, the format is interpreted by the programs of man(1).
+
+       Except in and requests, any text argument denoted  t  in  the
+       request summary may be zero to six words.  Quotes " ... " may
+       be used to include blanks in a `word'.  If t  is  empty,  the
+       special treatment is applied to the next text input line (the
+       next line that doesn't begin with dot).   In  this  way,  for
+       example,  .I  may  be used to italicize a line of more than 6
+       words, or .SM followed by .B to make small letters in  `bold'
+       font.
+
+       A prevailing indent distance is remembered between successive
+       indented paragraphs, and  is  reset  to  default  value  upon
+       reaching a non-indented paragraph.  Default units for indents
+       i are ens.
+
+       The fonts are
+
+       R      roman, the main font, preferred for diagnostics
+       I      italic, preferred for parameters, short names of  com‐
+              mands, names of manual pages, and naked function names
+       B      `bold',  actually  the  constant width font, preferred
+              for  examples,  file  names,  declarations,  keywords,
+              names  of  struct  members,  and literals (numbers are
+              rarely literals)
+       L      also the constant width font.  For  graphical  display
+              and  printing,  L=B; when converted to plain text, the
+              arguments of the macros .L, .LR, and .RL  are  printed
+              in  quotes;  preferred  only  where quotes really help
+              (e.g. lower-case literals and punctuation).
+
+       Type font and size are reset to default  values  before  each
+       paragraph, and after processing font- or size-setting macros.
+
+       The  man  format  admits equations and tables in the style of
+       Unix eqn (equation setting) and tbl (table layout) preproces‐
+       sors, but do not support arguments on .EQ and .TS macros.
+
+       These strings are predefined by man:
+
+       \*R    Trademark symbol
+       \*S    Change to default type size.
+
+FILES
+       /man/*/*
+              Source files of manual pages.
+
+SEE ALSO
+       man(1)
+
+REQUESTS
+                         Request   Cause If        no    Explanation
+                                   Break Argument                 .B
+                         t      no    t=n.t.l.*Text   t  is  `bold'.
+                         .BI  t   no    t=n.t.l. Join  words  of   t
+                         alternating    bold    and   italic.    .BR
+                         t     no    t=n.t.l. Join words of t alter‐
+                         nating        bold        and        Roman.
+                         .DT       no             Restore    default
+                         tabs.    .EE       yes            End  dis‐
+                         played                              example
+                         .EX       yes            Begin    displayed
+                         example .HP  i     yes   i=p.i.*  Set  pre‐
+                         vailing  indent to i.  Begin paragraph with
+                         hanging             indent.              .I
+                         t      no    t=n.t.l. Text   t  is  italic.
+                         .IB  t   no    t=n.t.l. Join  words  of   t
+                         alternating   italic   and   bold.   .IP  x
+                         i   yes   x=""     Same as .TP with tag  x.
+                         .IR  t      no    t=n.t.l. Join  words of t
+                         alternating   italic   and    Roman.     .L
+                         t      no    t=n.t.l. Text  t  is  literal.
+                         .LP       yes            Same as .PP.   .LR
+                         t     no             Join   2  words  of  t
+                         alternating   literal   and   Roman.    .PD
+                         d     no    d=.4v    Interparagraph    dis‐
+                         tance is d.  .PP       yes            Begin
+                         paragraph.    Set   prevailing   indent  to
+                         default.   .RE       yes            End  of
+                         relative  indent.  Set prevailing indent to
+                         amount    of     starting     .RS.      .RI
+                         t     no    t=n.t.l. Join words of t alter‐
+                         nating    Roman    and     italic.      .RL
+                         t     no             Join 2 or 3 words of t
+                         alternating   Roman   and   literal.    .RS
+                         i     yes   i=p.i.   Start relative indent,
+                         move left margin in distance i.   Set  pre‐
+                         vailing   indent   to  default  for  nested
+                         indents.  .SH t     yes   t=""     Subhead;
+                         reset      paragraph     distance.      .SM
+                         t     no    t=n.t.l. Text t is small.   .SS
+                         t     no    t=""     Secondary     subhead.
+                         .TF s   yes            Prevailing indent is
+                         wide  as string s in font L; paragraph dis‐
+                         tance is 0.  .TH n c x yes            Begin
+                         page  named n of chapter c; x is extra com‐
+                         mentary, e.g. `local', for page head.   Set
+                         prevailing indent and tabs to default.  .TP
+                         i     yes   i=p.i.   Set prevailing  indent
+                         to  i.   Restore  default  indent  if  i=0.
+                         Begin indented paragraph with  hanging  tag
+                         given  by  next  text line.  If tag doesn't
+                         fit,   place   it   on    separate    line.
+                         .1C       yes            Equalize   columns
+                         and    return    to     1-column     output
+                         .2C       yes            Start     2-column
+                         nofill output
+
+       * n.t.l. = next text line; p.i. = prevailing indent
+
+BUGS
+       There's no way to include literal double  quote  marks  "  in
+       font-alternation macros, such as
+       There  is no direct way to suppress column widows in 2-column
+       output; the column  lengths  may  be  adjusted  by  inserting
+       requests before the closing
+
+                                                              MAN(6)

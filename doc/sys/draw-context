@@ -1,0 +1,114 @@
+DRAW-CONTEXT(2)          System Calls Manual         DRAW-CONTEXT(2)
+
+NAME
+       Context - graphics environment
+
+SYNOPSIS
+       include "draw.m";
+       draw := load Draw Draw->PATH;
+
+       Context: adt
+       {
+          display: ref Display;      # frame buffer on which windows reside
+          wm:      chan of (string,
+                      chan of (string, ref Wmcontext)); # wmgr connection
+       };
+
+       # connection to window manager for one or more windows (as Images)
+       Wmcontext: adt
+       {
+          kbd:     chan of int;         # incoming characters from keyboard
+          ptr:     chan of ref Pointer; # incoming stream of mouse positions
+          ctl:     chan of string;      # commands from wm to application
+          wctl:    chan of string;      # commands from application to wm
+          images:  chan of ref Image;   # exchange of images
+          connfd:  ref Sys->FD;         # connection control
+          ctxt:    ref Draw->Context;
+       };
+
+DESCRIPTION
+       The  Context  type  encapsulates  the data types and channels
+       used by an interactive application, and establishes a context
+       for  graphics  output  and window management.  A reference to
+       the Context is passed as the first argument to an application
+       when it begins execution:
+
+       include "draw.m"
+
+       Command: module
+       {
+            init: fn(nil: ref Draw->Context; nil: list of string);
+       };
+
+       Most  programs do not create Contexts but instead inherit one
+       from their parent, typically a shell or window system.
+
+   Context interface
+       The following elements of Context are used by wm:
+
+       display
+              The Display adt to which the application is connected;
+              may be nil.  See draw-display(2).
+
+       wm     A  shared  channel through which a private channel can
+              be set up with a window manager.  A client application
+              sends a tuple containing a request string (of a format
+              defined by the window manager)  and  a  private  reply
+              channel.   It  receives a tuple in reply on that chan‐
+              nel; the tuple contains a string (eg, an  acknowledge‐
+              ment  or  diagnostic)  and  a reference to a Wmcontext
+              value containing channels by which the application can
+              interact with the window manager.
+
+   Wmcontext interface
+       The Wmcontext provides a set of channels and file descriptors
+       through which the window manager  and  application  interact.
+       The elements of the adt are used as follows:
+
+       kbd    A  channel of type int that delivers keystrokes from a
+              keyboard.
+
+       ptr    A channel of type ref  Pointer  that  delivers  events
+              from  a  pointing  device  such  as a mouse.  See dev‐
+              pointer(2).
+
+       ctl    A channel of type string that  delivers  control  mes‐
+              sages from the window manager to the application.
+
+       wctl   A channel of type string, which if initialised is used
+              by the application to send  control  messages  to  the
+              window  manager.   It is not used by the current wm(1)
+              or tkclient(2).
+
+       images A channel of type ref Image  that  allows  the  window
+              manager  and  application to exchange images (eg, when
+              resizing, or to supply a cursor image).
+
+       connfd A file descriptor that can be  used  to  provide  per-
+              client connection control.  For instance, a client can
+              store a file descriptor  open  on  a  sys-file2chan(2)
+              provided by the window manager, and the window manager
+              will shut down input to the application when the  con‐
+              nection closes (eg, if the application exits unexpect‐
+              edly).  Connfd is also used to write requests  to  the
+              window manager.  Conventionally a request is a list of
+              words formatted as by quoted in string(2).  A  request
+              starting  with  an exclamation mark (!)  if successful
+              will result in an image  being  sent  down  the  image
+              channel; the rectangle of the image indicates the rec‐
+              tangle that has been allocated on the screen. If  only
+              the  origin  is to be changed by the window manager, a
+              nil image is sent  first  (giving  the  application  a
+              chance  to suspend operations on the window), and then
+              the original image, with its origin set appropriately.
+
+       image  This is used as described above.
+
+       ctxt   Initialised with the ctxt value that provided the ini‐
+              tial connection on the wm channel.
+
+SEE ALSO
+       wm(1),   wmlib(2),   mux(1),  draw-intro(2),  ir(2),  prefab-
+       intro(2), tk(2)
+
+                                                     DRAW-CONTEXT(2)

@@ -1,0 +1,488 @@
+STYXSERVER(10.2)                                    STYXSERVER(10.2)
+
+NAME
+       Styxserver - C Styx server library
+
+SYNOPSIS
+       #include <lib9.h>
+       #include <styx.h>
+       #include <styxserver.h>
+       #define Qroot  0
+
+       #define MSGMAX ((((8192+128)*2)+3) & ~3)
+
+       extern char Enomem[];    /* out of memory */
+       extern char Eperm[];          /* permission denied */
+       extern char Enodev[];    /* no free devices */
+       extern char Ehungup[];   /* i/o on hungup channel */
+       extern char Eexist[];         /* file exists */
+       extern char Enonexist[]; /* file does not exist */
+       extern char Ebadcmd[];   /* bad command */
+       extern char Ebadarg[];   /* bad arguments */
+
+       typedef uvlong Path;
+       typedef struct Styxserver     Styxserver;
+       typedef struct Styxops Styxops;
+       typedef struct Styxfile Styxfile;
+       typedef struct Client Client;
+
+       struct Styxserver
+       {
+            Styxops *ops;
+            Path qidgen;
+            int connfd;
+            Client *clients;
+            Client *curc;
+            Styxfile *root;
+            Styxfile **ftab;
+            void *priv;    /* private */
+       };
+
+       struct Client
+       {
+            Styxserver *server;
+            Client *next;
+            int       fd;
+            char msg[MSGMAX];
+            uint      nread;         /* valid bytes in msg (including nc)*/
+            int       nc;       /* bytes consumed from front of msg by convM2S */
+            char data[MSGMAX];  /* Tread/Rread data */
+            int       state;
+            Fid       *fids;
+            char      *uname;   /* uid */
+            char      *aname;   /* attach name */
+            void      *u;
+       };
+
+       struct Styxops
+       {
+            char *(*newclient)(Client *c);
+            char *(*freeclient)(Client *c);
+
+            char *(*attach)(char *uname, char *aname);
+            char *(*walk)(Qid *qid, char *name);
+            char *(*open)(Qid *qid, int mode);
+            char *(*create)(Qid *qid, char *name, int perm, int mode);
+            char *(*read)(Qid qid, char *buf, ulong *n, vlong offset);
+            char *(*write)(Qid qid, char *buf, ulong *n, vlong offset);
+            char *(*close)(Qid qid, int mode);
+            char *(*remove)(Qid qid);
+            char *(*stat)(Qid qid, Dir *d);
+            char *(*wstat)(Qid qid, Dir *d);
+       };
+
+       struct Styxfile
+       {
+            Dir  d;
+            Styxfile *parent;
+            Styxfile *child;
+            Styxfile *sibling;
+            Styxfile *next;
+            int ref;
+            int open;
+            void *u;
+       };
+
+       void styxsetowner(char *user);
+       char *styxinit(Styxserver *server, Styxops *ops, char *port, int perm, int needfile);
+       char *styxwait(Styxserver *server);
+       char *styxprocess(Styxserver *server);
+       char *styxend(Styxserver *server);
+
+       Client *styxclient(Styxserver *server);
+
+       Styxfile *styxaddfile(Styxserver *server, Path pqid, Path qid, char *name,
+                                int mode, char *owner);
+       Styxfile *styxadddir(Styxserver *server, Path pqid, Path qid, char *name,
+                                int mode, char *owner);
+       int styxrmfile(Styxserver *server, Path qid);
+       Styxfile *styxfindfile(Styxserver *server, Path qid);
+
+       int  styxperm(Styxfile *file, char *uid, int mode);
+       long styxreadstr(ulong off, char *buf, ulong n, char *str);
+       Qid styxqid(int path, int isdir);
+       void *styxmalloc(int bytes);
+       void styxfree(void *p);
+       void styxdebug(void);
+
+DESCRIPTION
+       The C Styx server library provides a small suite of functions
+       to enable the production  of  a  file  server  based  on  the
+       Inferno Styx protocol. The following elements define the pri‐
+       mary routines in the interface:
+
+       styxinit(server, ops, port, perm, needfile)
+              Initializes  the  interface  given  a  pointer  to   a
+              Styxserver  structure  server  ,  a  callback table of
+              operations ops , a port number port  to  announce  the
+              file  service  on and the permissions perm on the root
+              directory. The default permission is  0555  (read  and
+              execute  for  user, group and others) if the latter is
+              specified as -1. If the last argument needfile is  set
+              to  true,  the  styx library will check that each path
+              number it deals with has a corresponding file  associ‐
+              ated  with it and, if it hasn't, it will issue a "file
+              does not exist" message automatically. In case  of  an
+              error, the error message is returned, otherwise nil is
+              returned to indicate success.  By default,  files  are
+              owned  by  inferno;  styxsetowner can be called before
+              styxinit to make user the default owner of files.
+
+       styxwait(server)
+              Waits for communication from a client. Return value as
+              above.
+
+       styxprocess(server)
+              Processes  the  client message after a successful call
+              to styxwait .  This may result in calls to  the  func‐
+              tions  in  the  table  provided  to styxinit .  Return
+              value as above.
+
+       styxend(server)
+              End all file service. Return value as above.
+
+       styxclient(server)
+              Returns the client whose request  is  currently  being
+              processed.
+
+       The next set of functions allow the creation of a file system
+       structure based upon the Styxfile structure. This contains  a
+       Dir  structure  d  describing  the  properties  of  the  file
+       (defined in lib9.h) and pointers to other files in  the  file
+       tree:  parent  ,  child  ,  sibling and next .  The ref field
+       counts current references to the file. The open field  counts
+       the  current number of opens on the file. Finally the u field
+       allows further fields to be tagged onto each file. It is  not
+       used by the Styx server library.
+
+       Each  file  must have a unique path number in the server. The
+       root of the tree Qroot always has path number zero. It's cor‐
+       responding  file is created during library initialization and
+       placed in the root field of the server structure.  All  other
+       files  must  be supplied with a path number to identify them.
+       Files are created/deleted as follows:
+
+       styxaddfile(server, ppath, path, name, mode, owner)
+              Add a new file (ie non-directory) with the given  path
+              path  ,  name  name , mode mode and owner owner to the
+              directory identified by the path ppath .  If  path  is
+              -1  the  library  will  generate  a unique path number
+              instead.  Returns nil if the  parent  file  with  path
+              ppath  does  not  exist, if the parent is not a direc‐
+              tory, if the path number path already is assigned to a
+              file  or if the parent already contains a file of name
+              name .
+
+       styxadddir(server, ppath, path, name, mode, owner)
+              Add a new directory with the given path  path  ,  name
+              name  ,  mode  mode  and  owner owner to the directory
+              identified by the path ppath .   Returns  nil  in  the
+              same circumstances as styxaddfile .
+
+       styxrmfile(server, path)
+              Remove  the  file or directory with path path from the
+              file server tree. If the file  is  a  directory,  it's
+              contents will be recursively removed. If the file does
+              not exist, -1 is returned, otherwise 0 is returned for
+              success.
+
+       styxfindfile(server, path)
+              Return the file structure corresponding to the file or
+              directory with path path .  Nil  is  returned  if  the
+              file does not exist.
+
+       If  the  file  system is created in this way the Styx library
+       will check read/write/execute permissions, check for  invalid
+       uses  of  files and check that path numbers exist in the file
+       system (see styxinit for the latter). If it's not feasible to
+       do  this  (for  instance  if  there is a more suitable way of
+       describing the file system in question), then all file check‐
+       ing must be done as part of the callback functions below.
+
+       The  library provides a callback mechanism so that the imple‐
+       menter of the file server can take corresponding action  when
+       a  particular  request  is  made  of the server. All of these
+       functions may return an error message which will be  communi‐
+       cated back to the client. Otherwise they should return nil to
+       indicate the success of the operation. Any of these functions
+       may be nil in which case the library performs a default oper‐
+       ation which will be described below. These routines  use  the
+       Qid  structure  defined  in  lib9.h  to  describe files. This
+       structure contains the path number( path ), a version number(
+       vers  )  typically  zero  and  a type( type ) which indicates
+       whether the file is a directory, append-only etc.
+
+       newclient(c)
+              Called whenever a new client connects to  the  server.
+              The  Client  structure  c contains mainly private data
+              but the uname field contains a user name and the aname
+              field  an  attach name if required. The u field may be
+              used to tag further data onto each client. It  is  not
+              used by the Styx server library.
+
+       freeclient(c)
+              Called whenever a client disconnects from the server.
+
+       attach(uname, aname)
+              Called  when  a  client  user  first  mounts  the file
+              server. The uname is the user id and  aname  is  typi‐
+              cally the file tree to access if the server provides a
+              choice.  The default action is to allow the attach  to
+              the root of the file system.
+
+       walk(qid, name)
+              In a directory represented by qid , find a file member
+              whose name is that given and place it's Qid in  qid  .
+              The  default  action  is to perform the walk using any
+              directory structure provided.
+
+       open(qid, mode)
+              Open the file represented by qid with mode mode .  The
+              latter  may  be  one  of OREAD, OWRITE, ORDWR etc (see
+              lib9.h). If the Qid of the newly opened file  is  dif‐
+              ferent  from  that given (a file server may understand
+              the opening of a file called "new" say to signify  the
+              creation of a directory whose Qid is returned instead)
+              place it's Qid in qid .  The default action is to nom‐
+              inally allow the open.
+
+       create(qid, name, perm, mode)
+              Create  a file in the directory given by qid with name
+              name , permissions perm and mode mode .  Place the Qid
+              of the newly created file in qid .  The default action
+              is to issue a permission denied message.
+
+       read(qid, buf, n, offset)
+              Read n bytes of the file represented by qid at  offset
+              offset and place the result in buf.
+               Place  in  n  the  actual  number of bytes read.  The
+              default action is to read  directories  but  to  issue
+              permission denied on ordinary files.
+
+       write(qid, buf, n, offset)
+              Write n bytes to the file represented by qid at offset
+              offset from the buffer buf.
+               Place in n the actual number of bytes  written.   The
+              default action is to issue permission denied.
+
+       close(qid, mode)
+              Close  the  file represented by qid .  The mode it was
+              originally opened with is given by mode .  The default
+              action is to allow the close.
+
+       remove(qid)
+              Remove  the  file  represented  by  qid .  The default
+              action is to issue a permission denied message.
+
+       stat(qid, d)
+              Place the information for the file represented by  qid
+              in  the  Dir  structure(see  lib9.h)  d .  The default
+              action is to allow the stat using any  information  in
+              the file tree.
+
+       wstat(qid, d)
+              Update the information for the file represented by qid
+              according to the Dir structure d .  The default action
+              is to disallow this with a permission denied message.
+
+       A small number of utility functions are provided:
+
+       styxperm(file, uid, mode)
+              Does  the  file/directory  file allow the user uid the
+              permission given by mode .  For example use OREAD  for
+              read permission, OWRITE for write permission and ORDWR
+              for both.
+
+       styxreadstr(off, buf, n, str)
+              Read n bytes of data from the string str at offset off
+              and place the result in buf .  Returns the actual num‐
+              ber of bytes read.
+
+       styxqid(path, isdir)
+              Returns a typical Qid structure with  the  given  path
+              number  path  and  whether  the Qid is for a directory
+              isdir .
+
+       styxmalloc(n)
+              Allocate n bytes of memory and return it.
+
+       styxfree(p)
+              Free the memory pointed to by p .
+
+       styxdebug()
+              Print out some of the actions of the server.
+
+EXAMPLE
+       A very small file server example is  illustrated.  First  the
+       include files and globals.
+
+            #include <lib9.h>
+            #include "styxserver.h"
+
+            int nq;
+            Styxserver *server;
+
+       The main processing loop:
+
+            main(int argc, char **argv)
+            {
+                 Styxserver s;
+
+                 server = &s;
+                 styxinit(&s, &ops, "6701", 100, 0555, 0);
+                 myinit(&s);
+                 for(;;) {
+                      styxwait(&s);
+                      styxprocess(&s);
+                 }
+                 return 0;
+            }
+
+       Here  the  port  number is 6701 and the root file permissions
+       are 0555 - no write permission for anyone which implies  that
+       files  and  directories  cannot be created in the root direc‐
+       tory.
+
+       The creation of the directory tree:
+
+            myinit(Styxserver *s)
+            {
+                 styxaddfile(s, Qroot, 1, "fred", 0664, "inferno");
+                 styxaddfile(s, Qroot, 2, "joe", 0664, "inferno");
+                 styxadddir(s, Qroot, 3, "adir", 0775, "inferno");
+                 styxaddfile(s, 3, 4, "bill", 0664, "inferno");
+                 styxadddir(s, Qroot, 5, "new", 0775, "inferno");
+                 styxadddir(s, 5, 6, "cdir", 0775, "inferno");
+                 styxaddfile(s, 6, 7, "cfile", 0664, "inferno");
+                 nq = 8;
+            }
+
+       This creates two files fred and joe and two directories  adir
+       and  new  at the top level.  adir contains a file called bill
+       and new contains a directory called  cdir  which  contains  a
+       file  called  cfile  .   Note  that  each  new path number is
+       unique.
+
+       The callback functions:
+
+            Styxops ops = {
+                 nil,           /* newclient */
+                 nil,           /* freeclient */
+
+                 nil,           /* attach */
+                 nil,           /* walk */
+                 nil,           /* open */
+                 mycreate,      /* create */
+                 myread,        /* read */
+                 nil,           /* write */
+                 nil,           /* close */
+                 myremove, /* remove */
+                 nil,           /* stat */
+                 nil,           /* wstat */
+            };
+
+       Here we choose the defaults most of the time.
+
+       The supplied callback routines:
+
+            char *
+            mycreate(Qid *qid, char *name, int perm, int mode)
+            {
+                 int isdir;
+                 Styxfile *f;
+
+                 isdir = perm&DMDIR;
+                 if(isdir)
+                      f = styxadddir(server, qid->path, nq++, name , perm, "inferno");
+                 else
+                      f = styxaddfile(server, qid->path, nq++, name, perm, "inferno");
+                 if(f == nil)
+                      return Eexist;
+                 *qid = f->d.qid;
+                 return nil;
+            }
+
+            char *
+            myremove(Qid qid)
+            {
+                 Styxfile *f;
+
+                 f = styxfindfile(server, qid.path);
+                 if(f != nil && (f->d.qid.type&QTDIR) && f->child != nil)
+                      return "directory not empty";
+
+                 if(styxrmfile(server, qid.path) < 0)
+                      return Enonexist;
+                 return nil;
+            }
+
+            char *
+            myread(Qid qid, char *d, ulong *n, vlong offset)
+            {
+                 if(qid.path != 1){
+                      *n = 0;
+                      return nil;
+                 }
+                 *n = styxreadstr(offset, d, *n, "abcdeghijklmn");
+                 return nil;
+            }
+
+       Permission checking for  walk  (need  execute  permission  on
+       directory),  open (the given mode must be compatible with the
+       file permissions), create and  remove  (both  of  which  need
+       write permission on directory) is done automatically whenever
+       possible. The functions mycreate and myremove below therefore
+       can omit these checks.
+
+       The  function mycreate simply creates a directory or file and
+       if the file cannot be added to the directory tree it  returns
+       a  'file exists' error string.  It sets the Qid for the newly
+       created file before returning.
+
+       The function myremove first checks to see if the file  repre‐
+       sents  a non-empty directory, in which case it disallows it's
+       removal. Otherwise it removes the file if it can find it  and
+       returns a 'file does not exist' error string if it can't.
+
+       The  function  myread  considers all files to be empty except
+       for fred which notionally  contains  abcdefghijklmn  .   Note
+       that the number of bytes read is returned in the argument n .
+
+       Once this file server is running, the root can be accessed by
+       doing for example
+
+            mount -A tcp!<address>!6701 /n/remote
+
+       under Inferno. Here <address> is the address of  the  machine
+       running the file server (or the loopback address 127.0.0.1 if
+       it's all on one machine). The -A option is  used  to  prevent
+       authentication which is not supported at the moment.  Then we
+       can do
+
+            cd /n/remote
+            ls
+            adir
+            fred
+            joe
+            new
+            ...
+
+       For a more complicated file server see  /tools/styxtest/styx‐
+       test.c.
+
+       The file /tools/styxtest/mkfile shows how to compile and link
+       the file server sources.
+
+SOURCE
+       /Nt/386/include/lib9.h
+       /tools/libstyx/styxserver.h
+       /tools/libstyx/styxserver.c
+       /tools/styxtest/styxtest.c
+       /tools/styxtest/styxtest0.c
+
+BUGS
+       Currently the library is available under Windows,  Linux  and
+       Solaris only.
+       Authentication is not supported.
+
+                                                    STYXSERVER(10.2)

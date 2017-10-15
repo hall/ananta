@@ -1,0 +1,54 @@
+GPIO(3)               Library Functions Manual               GPIO(3)
+
+NAME
+       gpio - access to GPIO registers
+
+SYNOPSIS
+       bind -a #G /dev
+
+       /dev/gpioclear
+       /dev/gpioctl
+       /dev/gpioedge
+       /dev/gpioset
+       /dev/gpiostatus
+
+DESCRIPTION
+       The  GPIO  interface  serves  a one-level directory with five
+       files that give access to the GPIO registers in  the  SA1100.
+       See  the  SA1100  handbook for details of the function of the
+       various registers.
+
+       The control file gpioctl accepts commands to  set  individual
+       bits  in the edge detect registers.  Each control message has
+       three space-separated fields:
+
+              reg pin value
+
+       where reg is a single character denoting a  register,  pin  a
+       bit  within  it,  and  val  the  value (0 or 1) for that bit.
+       Valid choices for reg are: d (GPDR), r (GRER), f (GFER),  and
+       a (GAFR).  For example, the control message
+
+              d 10 1
+
+       sets  bit  10 (following the handbook's bit-numbering conven‐
+       tions) in the GPIO pin direction register GPDR.
+
+       The read-only file gpiostatus shows the names and values  (in
+       hexadecimal) of all GPIO registers.
+
+       The  remaining  data files allow bits to be read by Sys->read
+       requests and set by Sys->write  requests.   When  read,  each
+       file  returns  the  value  of  a given register as a single 8
+       digit hexadecimal number: gpioset and gpioclear both give the
+       value  of  the  level  register, GPLR; and gpioedge gives the
+       value of the edge dectect register, GEDR.  Each write request
+       should  present  a  single  number  in textual form, which is
+       assumed to be hexadecimal by default.  The value  is  written
+       to  a  GPIO  register: gpioset corresponds to GPSR, gpioclear
+       corresponds to GPCR, and gpioedge corresponds to GEDR.
+
+SOURCE
+       /os/sa1100/devgpio.c
+
+                               SA1100                        GPIO(3)

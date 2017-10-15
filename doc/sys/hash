@@ -1,0 +1,66 @@
+HASH(2)                  System Calls Manual                 HASH(2)
+
+NAME
+       hash, HashTable - hash table
+
+SYNOPSIS
+       include "hash.m";
+       hash := load Hash Hash->PATH;
+
+       new: fn(size:int):ref HashTable;
+
+       HashTable: adt{
+            insert: fn(h:self ref HashTable, key:string, val:HashVal);
+            find: fn(h:self ref HashTable, key:string):ref HashVal;
+            delete: fn(h:self ref HashTable, key:string);
+            all: fn(h:self ref HashTable): list of HashNode;
+       };
+       HashVal: adt{
+            i: int;
+            r: real;
+            s: string;
+       };
+       HashNode: adt{
+            key: string;
+            val: ref HashVal;
+       };
+       fun1, fun2: fn(s:string, n:int):int;
+
+DESCRIPTION
+       The  hash module provides support for arrays that are indexed
+       by keys of type string.
+
+       The values may be any combination of int,  real,  or  string.
+       New  creates and returns a new HashTable with size slots. The
+       hashing works best if size is a prime number. The HashVal adt
+       contains  the data values of the hash.  The HashNode adt con‐
+       tains the key/value pair for each element in the table.
+
+       ht.insert(key, value)
+              Adds a new key/value pair to the table.  If an element
+              with  the same key already exists, it will acquire the
+              new value.
+
+       ht.find(key)
+              Search the table for an element with the given key and
+              return the value found; return nil if none was found.
+
+       ht.delete(key)
+              Removes any element with the given key from the table.
+
+       ht.all()
+              Returns  a  list  of all key/value pairs stored in the
+              table.
+
+       Fun1 and fun2 provide access to two different string  hashing
+       functions.  Fun1 is the function used internally; fun2 is the
+       same as that used in the Limbo compiler.  They  each  compute
+       the hash value of s and return a value between 0 and n-1.
+
+SOURCE
+       /appl/lib/hash.b
+
+BUGS
+       HashVal should really be a pick.
+
+                                                             HASH(2)

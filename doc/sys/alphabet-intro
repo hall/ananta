@@ -1,0 +1,149 @@
+ALPHABET-INTRO(2)        System Calls Manual       ALPHABET-INTRO(2)
+
+NAME
+       Alphabet - experimental typed shell
+
+DESCRIPTION
+   Values, type characters and signatures
+       Each  Alphabet  typeset  defines one Limbo data type, conven‐
+       tionally named Value.  It is usually  a  discriminated  union
+       (pick),  with  each  arm  of the pick representing one of the
+       types in the typeset.  Each one of these  types  is  given  a
+       character.  These  characters are used to describe all value-
+       and module-types within alphabet.  The set of typeset charac‐
+       ters implemented by a typeset is known as its alphabet.
+
+       For  example,  in  the  alphabet  root typeset (see alphabet-
+       main(2)), a string is represented by the letter  ``s'',  held
+       at the Limbo level as a ref Value.S.
+
+       Each alphabet module has a type signature which describes its
+       return type and the number and type of any flags or arguments
+       that  it  allows.  Inside an alphabet typeset, this signature
+       is represented as a simple string where the  first  character
+       (always  present)  indicates  the  return type of the module.
+       Subsequent characters up until the first minus  (``-'')  sign
+       (or  the  end  of  the string) indicate the module's required
+       argument types.  If the last character is an asterisk (*), it
+       allows  an  unlimited  repetition  of  the preceding argument
+       type.
+
+       These may be followed by any number of  options,  each  indi‐
+       cated  with a minus character, followed by the option charac‐
+       ter  and  then  the  type  characters  of  any  arguments  it
+       requires.
+
+       For instance, the following Alphabet declaration:
+            /mount [-abc] [-x /string] /wfd /string -> /status
+       can be represented by the signature ``rws-a-b-xs-c''.
+
+   Typesets and proxies
+       The root typeset (see alphabet-main(2)) is implemented inter‐
+       nally to the alphabet module. All other types are defined  by
+       external typesets.
+
+       An external alphabet typeset is conventionally represented by
+       two header files defining the interface to the  typeset,  and
+       two modules giving its implementation. Suppose we are to cre‐
+       ate a new typeset, say /foo .  We would create the  following
+       files:
+
+       /module/alphabet/foo.m
+                 Foo.m  declares  the  interface used by all modules
+                 within the typeset.  The existing typeset interface
+                 files  (for instance alphabet/grid.m, documented in
+                 alphabet-grid(2)) provide examples of this kind  of
+                 interface.
+
+       /appl/alphabet/footypes.b
+                 This  module  translates  between  internal  values
+                 (each held as a Value as  declared  in  foo.m)  and
+                 external  values  (each held as a Value as declared
+                 in the parent typeset, in this case by the alphabet
+                 module itself).  Since Limbo does not provide a way
+                 of holding an  arbitrary  type  directly,  internal
+                 values  are  instead  stored  in a table by a local
+                 proxy (see below), and referred  to  externally  by
+                 their index there.
+
+       /appl/alphabet/foo.b
+                 Foo.b  provides  the basic type-manipulation primi‐
+                 tives needed  by  the  typeset,  for  instance  the
+                 translation  from  type character to type name.  It
+                 is also a  convenient  place  to  implement  helper
+                 functions  to  make  using the typeset easier.  For
+                 instance, it is conventional for a typeset's  Value
+                 adt  to  contain one eponymously named member func‐
+                 tion for each type character, making sure that  the
+                 Value  is  actually  of that type and returning the
+                 widened type, or raising  an  exception  otherwise.
+                 For  instance,  in  the root typeset, v.s() returns
+                 the type ref Value.S, or raises an error  if  v  is
+                 not of that type.
+
+       /module/alphabet/footypes.m
+                 Footypes.m  provides  an  interface  to the typeset
+                 proxy module, footypes.b, that allows direct access
+                 to  values in the foo typeset, while still allowing
+                 manipulation  of  those  values  by   an   alphabet
+                 instance.
+
+       The  proxy module, footypes.b, must define at least one func‐
+       tion, proxy, which returns a channel through which all opera‐
+       tions  on  the  typeset  take  place.   The Proxy module (see
+       alphabet-proxy(2)) provides a generic implementation of  such
+       a  translator;  if footypes.b uses this, it needs only define
+       the mapping between values in its parent typeset and its  own
+       values.
+
+   alphabet-main(2)
+       types()   Types  is  always the first function in a module to
+                 be called.  It should do  nothing  but  return  the
+                 type signature string of the module.
+
+       init()    Init  is  called  to allow the module to initialise
+                 its global state. It is called once  only.   It  is
+                 permissible  for this function to raise a ``fail:''
+                 exception  on  failure.  The  text  following   the
+                 ``fail:'' prefix should describe the reason why.
+
+       run(errorc, r, opts, args)
+                 Run  runs an actual instance of the module. It must
+                 be re-entrant.  The signature of the  run  function
+                 varies   from   typeset  to  typeset,  but  usually
+                 includes the above arguments.  Args holds a list of
+                 the  arguments passed to the module; opts holds all
+                 the flags that have been specified.  Each  flag  is
+                 represented  with a tuple, say: (c, optargs), where
+                 c gives the option character, and optargs is a list
+                 holding any arguments the flag requires.  The argu‐
+                 ments and options passed to the module are  guaran‐
+                 teed  to  conform  with the type signature returned
+                 from types.  Note that each flag may be passed mul‐
+                 tiple times to the module.
+
+                 If the run succeeds, it should return the resulting
+                 value. If the  module  returns  a  value  that  was
+                 passed  in,  and it contains a reference-count, the
+                 count should be incremented  before  returning,  If
+                 the module succeeds, it is responsible for the dis‐
+                 posal of any arguments and option arguments that it
+                 has  been  given.   Appropriate disposal depends on
+                 the type of the argument, but v.free(0)  is  always
+                 sufficient to dispose of value v.
+
+                 If  the  run fails, it should return nil; its argu‐
+                 ments will automatically be freed in this case.
+
+                 While processing the run request, the module should
+                 send  error and debugging diagnostics to the errorc
+                 channel (it should take care never to send an empty
+                 string).   If  it  spawns any new processes, it can
+                 use the Report,  r,  (see  alphabet-reports(2))  to
+                 create new diagnostic channels for these processes.
+                 When such an diagnostic channel  is  no  longer  in
+                 use,  the module should send an empty string on it.
+                 It should take care  that  Report.start  is  called
+                 before run returns.
+
+                                                   ALPHABET-INTRO(2)

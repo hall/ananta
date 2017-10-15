@@ -1,0 +1,44 @@
+LOCKFS(4)             Kernel Interfaces Manual             LOCKFS(4)
+
+NAME
+       lockfs - exclusive access file server
+
+SYNOPSIS
+       lockfs [ -A ] [ -a alg ]... [ -p addr ] dir [ mountpoint ]
+
+DESCRIPTION
+       Lockfs  acts  as  a filesystem layer above an existing names‐
+       pace, allowing multiple-reader, exclusive  writer  access  to
+       the  files therein. Opening a file served by lockfs obtains a
+       lock on the file, or blocks until a  lock  can  be  obtained.
+       Lockfs  serves  a  single-level directory that initially con‐
+       tains the files in dir.  If the -p option is provided, lockfs
+       will  listen for incoming connections on addr, authenticating
+       them as required.  Each -a argument  provides  an  acceptable
+       algorithm  to run on the connection.  The list of all algs is
+       passed to server (see security-auth(2)).  If no -a  arguments
+       are  given,  -a  none is assumed.  If the -A option is given,
+       then no authentication will be performed.
+
+       If the -p option is not given, the lockfs file system will be
+       mounted on mountpoint, or dir if mountpoint is not given.
+
+EXAMPLE
+       Run a lock server guarding access to /lib/datafiles:
+
+              lockfs -p 'tcp!*!32454' /lib/datafiles
+
+       Mount the above server (where locksrv was originally run on a
+       server named machine.
+
+              mount -c tcp!machine!32454 /n/remote
+
+SOURCE
+       /appl/cmd/lockfs.b
+
+BUGS
+       There's no way to break a lock held by a malingering process.
+
+       Should probably support multi-level directories.
+
+                                                           LOCKFS(4)

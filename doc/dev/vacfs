@@ -1,0 +1,38 @@
+VACFS(4)              Kernel Interfaces Manual              VACFS(4)
+
+NAME
+       vacfs - mount venti archive
+
+SYNOPSIS
+       vacfs [ -Ddp ] [ -a addr ] [vac:score]
+
+DESCRIPTION
+       Vacfs  makes  the  contents of a venti archive available over
+       styx.  Standard input is used for reading  and  writing  styx
+       messages.   If  score is not specified, vacfs serves multiple
+       venti archives.  In this case the  root  directory  lists  no
+       files,  but  walking to a directory score opens the venti ar‐
+       chive with that score.  Note that the vacfs does not  support
+       writing.
+
+       -D     Print styx trace messages.
+
+       -d     Print debug messages.
+
+       -p     Disable permission checking.
+
+       -a address
+              Dial address instead of the default venti server.
+
+SOURCE
+       /appl/cmd/vacfs.b
+
+SEE ALSO
+       vacget(1), vacput(1), vcache(1), venti(2), ventisrv(8)
+
+BUGS
+       Vacfs needs more testing.
+       When  the  venti  connection  is  broken,  directories appear
+       empty.
+
+                                                            VACFS(4)

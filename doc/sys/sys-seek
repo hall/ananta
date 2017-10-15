@@ -1,0 +1,33 @@
+SYS-SEEK(2)              System Calls Manual             SYS-SEEK(2)
+
+NAME
+       seek - change file offset
+
+SYNOPSIS
+       include "sys.m";
+       sys := load Sys Sys->PATH;
+
+       seek:  fn(fd: ref FD, off: big, start: int): big;
+
+DESCRIPTION
+       Seek  sets  the 64-bit offset for the file associated with fd
+       as follows:
+
+              If start is Sys->SEEKSTART, the offset is set  to  off
+              bytes.
+
+              If  start  is Sys->SEEKRELA, the pointer is set to its
+              current location plus off.
+
+              If start is Sys->SEEKEND, the pointer is  set  to  the
+              size of the file plus off.
+
+       The new file offset value is returned.
+
+       Seeking  in a pipe is not allowed.  Seeking in a directory is
+       allowed only if the new offset is zero.
+
+SEE ALSO
+       sys-intro(2), sys-open(2), bufio(2),
+
+                                                         SYS-SEEK(2)

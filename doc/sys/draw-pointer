@@ -1,0 +1,31 @@
+DRAW-POINTER(2)          System Calls Manual         DRAW-POINTER(2)
+
+NAME
+       Pointer - state of a pointer device such as a mouse
+
+SYNOPSIS
+       include   "draw.m";
+       draw := load Draw Draw->PATH;
+
+       Pointer: adt
+       {
+           buttons:  int;
+           xy:       Point;
+       };
+
+DESCRIPTION
+       buttons   Each  button  on the device corresponds to a bit in
+                 buttons; zero bits indicate released (or  non-exis‐
+                 tent),  and  one  bits indicate pressed.  The bits,
+                 from least to most significant positions, represent
+                 the buttons from left to right.
+
+       xy        The pointer's screen coordinates.
+
+       Mux(1)  uses the cptr member of the Draw->Context adt to pass
+       pointer events through to applications.
+
+SEE ALSO
+       devpointer(2), mouse in tk(2)
+
+                                                     DRAW-POINTER(2)

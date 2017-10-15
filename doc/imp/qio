@@ -1,0 +1,269 @@
+QIO(10.2)                                                  QIO(10.2)
+
+NAME
+       qio: qget, qdiscard, qconsume, qpass, qproduce, qcopy, qopen,
+       qbread,  qread,  qbwrite,  qwrite,  qiwrite,  qfree,  qclose,
+       qhangup,   qreopen,   qlen,   qwindow,  qcanread,  qsetlimit,
+       qnoblock, qflush, qfull - queued I/O for devices
+
+SYNOPSIS
+       Queue*  qopen(int  limit,int  msg,  void  (*kick)(void*),void
+       *arg)
+
+       void    qhangup(Queue *q, char *reason)
+
+       void    qclose(Queue *q)
+
+       void    qreopen(Queue *q)
+
+       void    qfree(Queue *q)
+
+       long    qbwrite(Queue *q, Block *b)
+
+       long    qwrite(Queue *q, void *buf, int len)
+
+       int     qpass(Queue *q, Block *b)
+
+       int     qpassnolim(Queue *q, Block *b)
+
+       int     qproduce(Queue *q, void*buf, int len)
+
+       int     qiwrite(Queue *q, void *buf, int len)
+
+       Block*  qbread(Queue *q, int len)
+
+       long    qread(Queue *q, void *buf, int len)
+
+       Block*  qcopy(Queue *q, int len, ulong offset)
+
+       Block*  qget(Queue *q)
+
+       int     qconsume(Queue *q, void *buf, int len)
+
+       int     qdiscard(Queue *q, int len)
+
+       void    qflush(Queue *q)
+
+       int     qlen(Queue *q)
+
+       int     qwindow(Queue *q)
+
+       int     qcanread(Queue *q)
+
+       void    qsetlimit(Queue *q, int limit)
+
+       void    qnoblock(Queue *q, int nonblock)
+
+       int     qfull(Queue *q);
+
+DESCRIPTION
+       This  suite  of  functions provides serial data buffering for
+       device drivers.  Data is stored in a  Queue  structure  as  a
+       sequence of variable-sized Blocks; see allocb(10.2).
+
+       Qopen  initialises and returns a pointer to a new Queue, con‐
+       figuring it according to the following parameters:
+
+       limit  Set the queue limit (high water mark) in bytes.
+
+       msg    Set message mode if non-zero; otherwise,  stream  mode
+              (discussed below).
+
+       kick   Optional  flow-control  function  called  by qbread to
+              restart writers, and  by  qbwrite  (also  qiwrite)  to
+              restart readers.
+
+       arg    Argument to pass to kick
+
+       Qhangup marks q as `hung up' for the given reason (Ehungup by
+       default).  Subsequent attempts to write to the queue raise an
+       error(10.2).   Qhangup  does  not flush the queue: subsequent
+       read requests are handled normally until the  queue  empties.
+       Qread  and the other functions then return their conventional
+       values for a hungup stream: 0, -1 or a null pointer,  depend‐
+       ing  on  the  function.   After  a  few  such attempts by any
+       process, an error(10.2) is raised (typically Ehungup) on each
+       subsequent read.
+
+       If  queued  data is left unread, and not flushed by qflush or
+       qclose, the data will again be readable  following  a  subse‐
+       quent qreopen.
+
+       Qclose  also  marks  a  given q as `hung up', but removes and
+       frees any queued data Blocks.  Qclose ignores calls when q is
+       null.
+
+       Qreopen  makes  a  closed  or hung up queue available for use
+       again.  The queue's data limit is reset to  the  limit  value
+       given  when  the queue was first created by qopen, cancelling
+       the effect of any previous call to qsetlimit.
+
+       Qfree closes q with qclose and frees  it.   The  caller  must
+       ensure that no references remain; these functions do not keep
+       a reference count.
+
+   Flow control
+       The queue I/O routines provide a flow  control  mechanism  to
+       coordinate  producers  and consumers.  Each queue has a limit
+       on the number of bytes queued, its `high  water  mark',  ini‐
+       tially  set  when  the  queue  is  created, but adjustable by
+       qsetlimit, below.  The low water mark is not set  explicitly:
+       it  is  always  half  the current queue limit.  When the high
+       water mark is exceeded, writes normally block until a  reader
+       drains the queue below its low water mark; the writer is then
+       allowed to proceed.  Conversely, readers normally block  when
+       the  queue is empty, until a writer arrives with data, or the
+       queue is closed.
+
+       A queue can be given a kick function when the queue  is  cre‐
+       ated  by qopen.  The function is invoked by qread and qbread,
+       to prod an output routine when the queue falls below the low-
+       water  mark,  and by qwrite, qbwrite and qiwrite, to notify a
+       reader that a queue is no  longer  empty.   Because  kick  is
+       called from the reading (or writing) process, or an interrupt
+       handler, it must not block.
+
+       Interrupt handlers must not sleep(10.2),  and  are  therefore
+       restricted to using only the non-blocking functions described
+       below.
+
+   Stream mode and message mode
+       In stream mode, no read will return more than  one  block  of
+       data,  but  a  read can split a block that contains more data
+       than requested, leaving the remainder in a new block  at  the
+       front  of  the  Queue.  Writes of more than the maximum Block
+       size (currently 128k bytes) are split into as many Blocks  as
+       required, each written separately to the queue, in order, but
+       with possible flow-control between them.  The queue is locked
+       meanwhile,  however,  so  that data from other writers is not
+       intermingled.
+
+       In message mode, by contrast, a read will return at most  one
+       block's  worth of data, but the remainder of a partially-read
+       block will be discarded, not returned to  the  queue.   If  a
+       write  count  exceeds the maximum Block size, the excess data
+       is discarded: at most a single block can be queued.
+
+       The mode of the queue should be taken  into  account  in  the
+       descriptions   below  of  the  following  functions:  qwrite,
+       qiwrite, qbread and qconsume.  No other functions  are  aware
+       of the distinction.
+
+   Write operations (flow controlled)
+       Qwrite  copies  len  bytes  of data from buf into one or more
+       Blocks which it places on the q.  Qwrite always returns  len.
+       It can implement message mode.
+
+       Qbwrite  places  the  single Block b on the tail of q, waking
+       any sleeping reader.  If  the  queue  is  full,  the  writing
+       process  blocks until a reader has reduced the queued data to
+       the  low-water  mark;  if  the  queue  is  non-blocking  (see
+       qnoblock  below),  the  data  is  discarded  without  notice.
+       Qbwrite normally returns len, but raises  an  error(10.2)  if
+       the queue is closed (see qhangup and qclose).  The block b is
+       always freed.  Note that b can  be  empty  (zero-length),  to
+       punctuate  the data in a queue.  Qbwrite cannot handle a list
+       of Blocks; qpass must be used instead.
+
+   Non-blocking writes
+       Qproduce returns -1immediately  if q is full.  Otherwise,  it
+       queues  len bytes of data from buf in a single Block on q and
+       returns the number of bytes written.
+
+       Qpass attempts to place the list of Blocks headed by b on  q,
+       returning  the  number  of bytes written if successful.  If q
+       was full, it frees the Block list b and returns -1.
+
+       Qpassnolim puts the Block list b on q regardless of flow con‐
+       trol; it returns the number of bytes in the list b.
+
+       Qiwrite is a variant of qwrite used exclusively by the kernel
+       print function, to  allow  printing  by  interrupt  handlers;
+       qiwrite  could be used with care by other routines, but qpro‐
+       duce is preferable.  Qiwrite writes the len bytes of data  at
+       buf  into  the  q  without regard to flow control; the writer
+       never blocks.  The queue is  assumed  to  be  open.   Qiwrite
+       always returns len.  It can implement message mode.
+
+   Read operations (flow controlled)
+       Qbread blocks until data arrives on q, then returns the first
+       Block; it limits the data returned to len bytes (in the  man‐
+       ner  depending  on the mode of q).  It returns a null pointer
+       if the queue has hung up.
+
+       Qread reads a Block of up to len bytes from q  using  qbread,
+       and  copies  the  data  in the Block into buf, then frees the
+       Block and returns the number of bytes read.  Qread returns  0
+       on  end  of file or error (hangup).  It can implement message
+       mode.
+
+       Qcopy returns a Block with a copy of data from the queue (the
+       data  remains  on  the  queue).  The copy begins offset bytes
+       into the queue's data and proceeds until len bytes have  been
+       copied  or  no more data remains.  The Block's read and write
+       pointers delimit the data copied into it.  Qcopy can be  used
+       by  a reliable transport protocol to copy a packet for trans‐
+       mission, leaving the data queued for possible retransmission,
+       if unacknowledged.
+
+   Non-blocking reads
+       Qconsume returns -1 immediately if q is empty.  Otherwise, it
+       copies up to len bytes from the first Block on the queue into
+       buf,  returning the number of bytes copied.  It can implement
+       message mode.
+
+       Qget returns a null pointer immediately  if  q  is  empty  or
+       closed.  Otherwise, it returns the first Block on the queue.
+
+   Discard and flush
+       Qdiscard  removes the first len data bytes from q; it returns
+       the number of bytes actually discarded, in case the queue  is
+       shorter  than  len.   If the queue drains below the low-water
+       mark, qdiscard wakes any sleeping writers.  Since it does not
+       block, qdiscard can safely be called from interrupt handlers.
+       It is useful in transport protocol  drivers  to  remove  data
+       from the queue once acknowledged.
+
+       Qflush  discards  all  data  waiting on q, waking any waiting
+       writer.
+
+   Queue status
+       The following functions return a Queue's status.   Note  that
+       between  a  call to one of these functions and another opera‐
+       tion, the state can change  if  a  driver  allows  concurrent
+       access by either another process or an interrupt handler.
+
+       Qlen returns the number of bytes queued on q.
+
+       Qwindow  returns  the  number  of  bytes  that can be written
+       before reaching the queue's high-water mark.  A return  of  0
+       means that a write operation will certainly block; a non-zero
+       return gives no guarantees (see qfull, below).
+
+       Qcanread returns 1 if any data queued is queued. A subsequent
+       read operation will not block.
+
+       Qfull  returns  non-zero  if q is flow-controlled and a write
+       would block or a non-blocking write would  return  an  error.
+       (Note  that  the implementation allows qwindow to return non-
+       zero yet qfull to return true.)
+
+   Queue control
+       Qsetlimit sets the high water mark for the  queue  to  limit.
+       Note  that qopen saves the initial queue limit.  If the queue
+       is closed and reopened (by qreopen)  that  initial  limit  is
+       restored.
+
+       Qnoblock  sets  or  resets non-blocking mode.  If nonblock is
+       non-zero, the queue becomes non-blocking, and data written to
+       a queue beyond its high water mark is discarded by calls that
+       would otherwise block.
+
+SOURCE
+       /os/port/qio.c
+       /emu/port/qio.c
+
+SEE ALSO
+       allocb(10.2), ref(10.2)
+
+                                                           QIO(10.2)

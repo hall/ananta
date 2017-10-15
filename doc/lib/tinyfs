@@ -1,0 +1,39 @@
+TINYFS(3)             Library Functions Manual             TINYFS(3)
+
+NAME
+       tinyfs - file system for miniscule devices
+
+SYNOPSIS
+       bind -c #Fname /nvfs
+
+DESCRIPTION
+       Tinyfs  provides  file  system access to the contents of low-
+       capacity devices, ranging  from  several  hundred  bytes  (at
+       least  144  bytes) to at most the order of a kilobyte.  It is
+       provided to support file system access to small  non-volatile
+       memories,  as  for instance are found in some real-time clock
+       chips, where IDs, keys, PINs, certificates and the like might
+       be stored by either client or server.
+
+       The  file  system has only one directory, its root, which can
+       contain only files.  Once created, a write can only append to
+       a  file;  random  updates  are not allowed, although the file
+       could be truncated and rewritten.
+
+       The device specifier following the #F device name is the name
+       of  a  file  in /dev on which the tiny file system will live.
+       For instance, #Fnvram refers to /dev/nvram.  The device  must
+       allow  seek  and  write.  During the attach, the system scans
+       the device, checking the file system structure by building  a
+       table of files, and checking a checksum stored in each block;
+       inconsistent structure is reinitialised, and  thus  a  previ‐
+       ously  unused  device  will  emerge correctly formatted as an
+       empty tiny file system.
+
+FILES
+       /nvfs  conventional mount point used by init(8)
+
+SOURCE
+       /os/port/devtinyfs.c
+
+                                                           TINYFS(3)

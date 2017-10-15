@@ -1,0 +1,167 @@
+FORMAT(2)                System Calls Manual               FORMAT(2)
+
+NAME
+       format - structured data interchange
+
+SYNOPSIS
+       include "sys.m";
+       include "bufio.m";
+       include "sexprs.m";
+       include "format.m";
+       format := load Format Format->PATH;
+
+       Fmtspec: adt {
+            name:   string;
+            fields: cyclic array of Fmtspec;
+       };
+       Fmt: adt {
+            kind:   int;
+            fields: cyclic array of Fmt;
+       };
+       Fmtval: adt {
+            text:   fn(v: self Fmtval): string;
+            val:    ref Sexprs->Sexp;
+            recs:   cyclic array of array of Fmtval;
+       };
+       Fmtfile: adt {
+            spec:   array of Fmtspec;
+            descr:  array of byte;
+
+            new:    fn(spec: array of Fmtspec): Fmtfile;
+            open:   fn(f: self Fmtfile, name: string):
+                      ref Bufio->Iobuf;
+            read:   fn(f: self Fmtfile, iob: ref Bufio->Iobuf):
+                      (array of Fmtval, string);
+       };
+       init:     fn();
+       spec2se:  fn(spec: array of Fmtspec): list of ref Sexprs->Sexp;
+       spec2fmt: fn(spec: array of Fmtspec): array of Fmt;
+       se2fmt:   fn(spec: array of Fmtspec, se: ref Sexprs->Sexp):
+                    (array of Fmt, string);
+       rec2val:  fn(spec: array of Fmtspec, rec: ref Sexprs->Sexp):
+                    (array of Fmtval, string);
+
+DESCRIPTION
+       Format provides support for programs that wish to marshal and
+       unmarshal structured data. It is designed to enable a  client
+       to  request that the structure data is provided by the server
+       in a particular format, and for the  server  to  be  able  to
+       check that it is capable of providing that format.
+
+       A record consists of a set of fields, each represented by one
+       element in an sexprs(2) list. The content of a field can be a
+       simple  value, or it can hold a list containing any number of
+       sub-records,  each  holding  a  set  of  fields,  recursively
+       defined as above.
+
+       The  Fmtspec type defines the format for a field in a record.
+       Name gives the name of the field, and fields gives the struc‐
+       ture  of  the  fields  in  any sub-records it contains (for a
+       field with a simple value, this will be nil).  Thus an  array
+       of  Fmtspec values can define the structure of all the fields
+       in a record.  Here is an example structure specification:
+
+              Name, Address, Phone: con iota;
+              Number, Kind: con iota;
+              spec := array[] of {
+                   Address => Fmtspec("address", nil),
+                   Name => Fmtspec("name", nil),
+                   Phone => Fmtspec("phone", array[] of {
+                        Kind => Fmtspec("kind", nil),
+                        Number => Fmtspec("number", nil),
+                   }),
+              };
+
+       By placing each field in the  structure  specification  at  a
+       known  index,  a  link is made from the symbolic constants in
+       the program to the textual field names.
+
+       A structure specification may also be represented by  a  list
+       of S-expressions, where each member of the list names a field
+       in the structure. If a member is itself a list, it  specifies
+       a  field  containing  sub-records: its first member gives the
+       name of the field, and subsequent members specify the  fields
+       in  its  sub-records.   For  example, the above specification
+       could be written as the S-expression:
+
+              (name address (phone number kind))
+
+       The Fmt type  also  defines  a  record  structure,  but  with
+       respect  to  an existing Fmtspec structure specification.  An
+       Fmt value represents a field, and kind  holds  the  index  of
+       that field in the original structure specification.
+
+       Se2fmt  converts  from  an S-expression list, se (a structure
+       specification), to a set of Fmt  values.   The  specification
+       must be a subset of spec; i.e. each field in se must exist in
+       spec.  Se2fmt returns a tuple (f, err).  If the specification
+       is  bad,  f will be nil, and err describes the error.  Other‐
+       wise, each member of f gives a field specified  by  se.   For
+       example,  given the above structure definition, after execut‐
+       ing:
+
+                   se := Sexp.parse("(address (phone number))").t0;
+                   (f, err) := se2fmt(spec, se);
+
+       f[0].kind  will  hold  the  symbolic  constant  Address,  and
+       f[1].fields[0].kind will hold Number.
+
+       Spec2se  converts  from  a structure representation to its S-
+       expression equivalent.  Spec2fmt converts it to an  array  of
+       Fmt  structures  mirroring  it (equivalent to, but more effi‐
+       cient than, se2fmt(spec2se(spec)).t0)
+
+   Data representation
+       The above specifications do not define a format for the  rep‐
+       resentation of the actual data. For convenience however, For‐
+       mat defines its own S-expression-based data format.  In  this
+       form,  the  fields in a record are represented by items in an
+       S-expression list. A field containing sub-records  is  repre‐
+       sented as a (possibly empty) list containing the sub-records;
+       otherwise the value of a field may be an arbitrary  S-expres‐
+       sion.
+
+       For example, a record corresponding to the structure specifi‐
+       cation
+
+              (name address (phone kind number))
+
+       might look like:
+
+              ("Jonny Dawes" "24 Crag Lane"
+                   ((home "+44 7924 43535") (office "034 433 645")))
+
+       Rec2val cracks such a record, rec, into its component values,
+       checking that it is structurally compatible with the specifi‐
+       cation, spec, and returning a tuple  (fields,  err).   If  it
+       failed, fields will be nil, and err describes the error. Oth‐
+       erwise each member of fields, say v, holds the value  of  its
+       equivalent  field  in  spec.  For fields without sub-records,
+       v.val holds the field's  value;  otherwise  v.recs  holds  an
+       array  with  one  member for each sub-record, each holding an
+       array of fields defined recursively as above.
+
+       Some file servers provide files to which a format  specifica‐
+       tion  may be written, and which provide a sequence of records
+       in that format when read.  The Fmtfile type provides  support
+       for such files.  It provides the following operations:
+
+       Fmtfile.new(spec)
+              returns  a  new Fmtfile value that can be used to open
+              files and read records conforming to the given spec.
+
+       f.open(name)
+              opens such a file, writes the format specification  to
+              it,  and  returns  an  Iobuf  (see bufio(2)) ready for
+              reading the file.
+
+       f.read reads a record from the file; its return is  the  same
+              as that from rec2val.
+
+SOURCE
+       /appl/lib/format.b
+
+SEE ALSO
+       sexprs(2), bufio(2), sexprs(6)
+
+                                                           FORMAT(2)

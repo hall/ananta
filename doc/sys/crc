@@ -1,0 +1,54 @@
+CRC(2)                   System Calls Manual                  CRC(2)
+
+NAME
+       crc - Crc module
+
+SYNOPSIS
+       include "crc.m";
+       crc := load Crc Crc->PATH;
+
+       CRCstate: adt {
+            crc: int;
+            crctab: array of int;
+            reg: int;
+       };
+
+       init: fn(poly: int, reg: int): ref CRCstate;
+       crc: fn(state: ref CRCstate, buf: array of byte, nb: int): int;
+       reset: fn(state: ref CRCstate);
+
+DESCRIPTION
+       Crc provides the routines to calculate the CRC (cyclic redun‐
+       dancy check) over blocks of data.
+
+       Init initializes the module and must  be  called  first.  The
+       parameter  poly is the polynomial to use when calculating the
+       CRC value. If a value of 0 is given, the  default  polynomial
+       16redb88320  (8r035556101440) is used. The polynomial has its
+       implicit top bit set. The second parameter reg is the  number
+       with which to initialize the CRC register. This is commonly 0
+       but, for example, is 16rffffffff in the CRC32 algorithm.  The
+       final CRC value is also XORed with this number.  The function
+       returns a pointer to an adt that holds the current CRC value,
+       the auxiliary table the algorithm uses and the initial regis‐
+       ter value. These fields should not  be  accessed  directly  -
+       they are only for internal use.
+
+       Crc  calculates  the  CRC  value of the first nb bytes of the
+       array buf given the CRC state state as returned by  the  init
+       function.  It returns the current CRC value. It may be called
+       repeatedly to calculate the CRC of  a  series  of  arrays  of
+       bytes,  for  example,  when calculating the CRC value for the
+       bytes in a file.
+
+       Reset sets the CRC state to its initial  value  in  readiness
+       for  a  new  CRC calculation. It avoids the need to call init
+       again.
+
+SOURCE
+       /appl/lib/crc.b
+
+SEE ALSO
+       sum(1)
+
+                                                              CRC(2)

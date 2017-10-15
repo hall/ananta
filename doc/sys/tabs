@@ -1,0 +1,49 @@
+TABS(2)                  System Calls Manual                 TABS(2)
+
+NAME
+       tabs: mktabs, tabsctl - tabbed notebook pseudo-widget
+
+SYNOPSIS
+       include "tabs.m";
+       tabs := load Tabs Tabs->PATH;
+
+       init:        fn();
+
+       mktabs:      fn(p: ref Tk->Toplevel, book: string,
+                      tabs: array of (string, string), dflt: int):
+                      chan of string;
+
+       tabsctl:     fn(p: ref Tk->Toplevel, book: string,
+                      tabs: array of (string, string), curid: int,
+                      newid: string): int;
+
+DESCRIPTION
+       Tabs  implements a Tk extension: a user-interface device that
+       looks like a tabbed notebook.
+
+       Init should be called once to initialise the internal state.
+
+       Mktabs creates a tabbed notebook  pseudo  widget,  book,  for
+       insertion into Tk widget p.  Once created, book can be packed
+       like any other Tk widget.  Information for specific tab pages
+       is contained in the tabs array.  For each page, tabs contains
+       the name displayed in the tab and a Tk widget name.  Whenever
+       a  page  is  selected,  its widget is packed in book and dis‐
+       played.  The notebook will initially display the page indexed
+       by  dflt.   Mktabs  returns  a  Tk  event  channel.  Messages
+       received on this channel should be passed as the newid  argu‐
+       ment to tabsctl.
+
+       Tabsctl  controls  a  tabbed notebook.  Curid is the index of
+       the page currently selected in  the  notebook.   Newid  is  a
+       string  containing the index of the new page to be displayed;
+       this is usually the information received on the tabs channel.
+       The index of the newly selected page is returned.
+
+SOURCE
+       /appl/lib/tabs.b
+
+SEE ALSO
+       dividers(2), draw-context(2), tk(2), wmlib(2)
+
+                                                             TABS(2)

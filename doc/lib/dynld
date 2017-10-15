@@ -1,0 +1,54 @@
+DYNLD(3)              Library Functions Manual              DYNLD(3)
+
+NAME
+       dynld - load kernel module dynamically
+
+SYNOPSIS
+       bind -a #L /dev
+
+       /dev/dynld
+       /dev/dynsyms
+
+DESCRIPTION
+       Dynld  serves  a  directory containing two files that control
+       dynamic  loading  of  modules.   When  a  module  is  loaded,
+       dynld(10.2)),  checks  the  module's type against a type pro‐
+       vided by the driver; the types  must  match.   Currently  the
+       only  supported  module  type is that of a device driver, Dev
+       defined in dev(10.2)).
+
+       The control file dynld can only be opened by the  host  owner
+       (see eve(10.2)).  It accepts the following commands:
+
+       load dev name file [ [ tag ] dep ... ]
+              Load  a  module  for device driver name from the given
+              file.  The optional tag is typically the MD5  or  SHA1
+              hash  of the file's contents, to identify a particular
+              version of the driver.
+
+       unload dev name [ file [ tag ] ]
+              Unload the device driver identified by the given name,
+              optionally qualified by the other parameters.
+
+       When read, dynld returns a list of the currently-loaded driv‐
+       ers, one per line, most recent first.  Each line contain: the
+       module's  device type #x used in bind(1); its kernel address;
+       its total text and data size in bytes; its name when  loaded;
+       the name of the file from which it was loaded; and its tag.
+
+       Dynsyms  is  a  read-only text file that lists, one per line,
+       the symbols exported by the running kernel for use by modules
+       it  loads.   Each line contains: the symbol's kernel address,
+       its type signature, and its name.
+
+SOURCE
+       /os/port/devdynld.c
+
+SEE ALSO
+       dynld(10.2), a.out(10.6),
+
+BUGS
+       Dynld does not currently check that a driver is no longer  in
+       use before unloading it.
+
+                                                            DYNLD(3)

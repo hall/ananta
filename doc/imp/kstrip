@@ -1,0 +1,25 @@
+KSTRIP(10.1)                                            KSTRIP(10.1)
+
+NAME
+       kstrip - remove symbols from kernel images
+
+SYNOPSIS
+       kstrip file ...
+
+       kstrip -o ofile file
+
+DESCRIPTION
+       Kstrip  removes  symbol table segments from executable files,
+       rewriting the files in  place.   Stripping  a  file  requires
+       write permission on the file and the directory it is in.
+
+       If  the  -o  flag  is  given,  the  single input file file is
+       stripped and the result written to ofile.  File is unchanged.
+
+SOURCE
+       /utils/kstrip
+
+SEE ALSO
+       ksize(10.1), a.out(10.6)
+
+                                                        KSTRIP(10.1)

@@ -1,0 +1,68 @@
+IMPORT(4)             Kernel Interfaces Manual             IMPORT(4)
+
+NAME
+       import, 9export - exchange name spaces with a Plan 9 system
+
+SYNOPSIS
+       import  [  -ab ] [ -c ] [ -k keyspec ] [ -e crypt hash ] host
+       file [ localfile ]
+
+       9export [ -A ] [ -k keyspec ] [ -e crypt hash ]
+
+DESCRIPTION
+       Import dials the Plan 9 host  (which  might  be  the  current
+       host)  and makes the given file on that system visible in the
+       local name space as localfile (if  localfile  is  not  given,
+       file  is  used  as the local name).  The authentication agent
+       factotum(4) must be active.  (When Inferno is running on Plan
+       9,  Plan 9's own authentication agent can be used, by binding
+       Plan 9's /mnt/factotum to the same name in Inferno's own name
+       space.  See  fs(3).)   The remote files are accessed with the
+       permissions of the user authenticated to the remote system by
+       factotum.
+
+       If the remote file is a directory, the whole file tree rooted
+       at that directory is accessible, the local mount  point  must
+       also  be  a directory, and the -a, -b, and -c options control
+       the creation of union directories just as  for  bind(1).   By
+       default,  the  remote file replaces the local one in the name
+       space.
+
+       If the -e option is given,  the  network  connection  can  be
+       encrypted,  or provided with digests to authenticate the con‐
+       tents, or both.  Crypt is an encryption algorithm accepted by
+       ssl(3);  hash  is  one  of  its  digest algorithms.  Plan 9's
+       exportfs normally requires 'rc4_256  sha1'  on  such  connec‐
+       tions; it currently provides no negotiation of algorithms.
+
+       The  -k  option  gives a string of space separated attr=value
+       pairs that control factotum's selection of a suitable key for
+       the remote system.
+
+       9export  serves  the Plan 9 exportfs protocol on its standard
+       input, allowing a Plan  9  system  to  import  parts  of  the
+       Inferno name space in which 9export is run.  If the -A option
+       is given, the caller is not  authenticated,  line  encryption
+       and  message  authentication  are  not  done,  and the Plan 9
+       exportfs protocol starts immediately.  Otherwise, factotum(4)
+       must be accessible via /mnt/factotum as for import, and it is
+       used to run the Plan 9 authentication protocol.  The  -e  and
+       -k  options are as for import.  Normally 9export returns when
+       the client  closes  the  connection;  the  -a  option  causes
+       9export  to  return  immediately, leaving a kernel process to
+       serve the name space.  9export might be used as follows:
+
+              listen -Av 'tcp!*!exportfs' {9export&}
+
+       Beware that currently the name space is served with the  per‐
+       missions  of  the  person  running  9export, not those of the
+       caller.
+
+SOURCE
+       /appl/cmd/9export.b
+       /appl/cmd/import.b
+
+SEE ALSO
+       bind(1), factotum(2), export(4), namespace(6)
+
+                                                           IMPORT(4)

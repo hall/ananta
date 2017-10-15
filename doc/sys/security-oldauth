@@ -1,0 +1,167 @@
+SECURITY-OLDAUTH(2)      System Calls Manual     SECURITY-OLDAUTH(2)
+
+NAME
+       oldauth:  certtostr,  pktostr,  sktostr,  strtocert, strtopk,
+       strtosk, sign, verify, readauthinfo, writeauthinfo - encoding
+       for original Inferno authentication protocol
+
+SYNOPSIS
+       include "ipints.m";
+       include "crypt.m";
+       include "oldauth.m";
+       oldauth := load Oldauth Oldauth->PATH;
+
+       Certificate: adt
+       {
+           sa:     string;
+           ha:     string;
+           signer: string;
+           exp:    int;
+           sig:    ref Crypt->PKsig;
+       };
+
+       Authinfo: adt
+       {
+           mysk:   ref Crypt->SK;
+           mypk:   ref Crypt->PK;
+           owner:  string;
+           cert:   ref Certificate;
+           spk:    ref Crypt->PK;
+           alpha:  ref IPints->IPint;
+           p:      ref IPints->IPint;
+       };
+
+       sign:   fn (sk: ref Crypt->SK, signer: string, exp: int,
+                 state: ref Crypt->DigestState, ha: string): ref Certificate;
+       verify: fn (pk: ref Crypt->PK, cert: ref Certificate,
+                 state: ref Crypt->DigestState): int;
+
+       strtocert: fn(s: string): ref Certificate;
+       certtostr: fn(c: ref Certificate): string;
+       strtopk:   fn(s: string): (ref Crypt->PK, string);
+       pktostr:   fn(pk: ref Crypt->PK, owner: string): string;
+       strtosk:   fn(s: string): (ref Crypt->SK, string);
+       sktostr:   fn(sk: ref Crypt->SK, owner: string): string;
+
+       readauthinfo:   fn(filename: string): ref Authinfo;
+       writeauthinfo:  fn(filename: string, info: ref Authinfo): int;
+
+DESCRIPTION
+       Certificates,  public  keys, and private keys are passed over
+       networks and between applications using a Unicode representa‐
+       tion.   This  collection of functions provide a means to con‐
+       vert adts supplied by the system to and from  their  portable
+       textual  representation.  These routines are used by login(2)
+       and factotum(4) to implement the Inferno authentication  pro‐
+       tocol.
+
+       Public  and  private  keys  are  represented by Crypt->PK and
+       Crypt->SK (see keyring-intro(2)).  An  authentication  domain
+       is represented by the public key of the domain's signer, typ‐
+       ically in control of a keyfs(4) and running a logind(8).  Two
+       adts  associate  a  public/private  key pair with a user name
+       within a specific authentication domain:
+
+       Authinfo
+              The Authinfo adt contains an individual user's private
+              and public key, a human-readable name for the key (eg,
+              a  user  name),  the  signer's  certificate  and   the
+              signer's  public  key,  and the Diffie-Hellman parame‐
+              ters.  The signer's certificate binds the user's  pub‐
+              lic key to the given key name in the signer's domain.
+
+       Certificate
+              The  Certificate adt contains a digital signature with
+              the certification of the trusted authority (CA).   The
+              signature  covers  not only the user's public key, but
+              the key's name, the signer's name and  the  expiration
+              time  of the certificate.  Both the key's name and the
+              signer's name are local to the signer's domain.
+
+       Init must be called before using any other operation  in  the
+       module.
+
+       Sign  returns  a Certificate containing the digital signature
+       using secret key sk of a digest's state, which is the  output
+       of the hash algorithm named ha, combined with the hash of the
+       signer's name, and the certificate's expiration time (in sec‐
+       onds  from  the  Epoch).   Valid hash algorithms are sha1 and
+       md5.  The expiry time should be zero if the certificate  does
+       not expire.  Typically the state is the result of hashing
+
+              array of byte pktostr(pk, username)
+
+       for  a  given public key pk that is associated with the given
+       username by the signer.
+
+       Verify checks that the given Certificate  is  the  result  of
+       signing the given state using the secret (private) key corre‐
+       sponding to public key pk.  It returns true (non-zero) if the
+       certificate  is  valid,  including the signer's name, and the
+       expiration time; the caller must enforce the expiration  time
+       if  desired.   It  returns false (zero) if the certificate is
+       invalid.
+
+       Sign creates a digital signature of a digest  from  the  con‐
+       catenation  of:  a  message,  the  name of the signer, and an
+       expiration time.  State is the  digest  state  after  running
+       sha1, md4 or md5 over the message.  Ha is a string specifying
+       the hash algorithm to use: "sha",  "sha1",  "md4"  or  "md5".
+       Sign  extends  the  digest  to cover the signer's name (taken
+       from the private  key,  sk)  and  the  expiration  time.   It
+       returns a certificate containing the digital signature of the
+       digest, signer name, hash algorithm and signature  algorithm.
+       If any parameter is invalid, sign returns nil.  The signature
+       algorithm is implied by the type of the private key.
+
+       Verify uses public  key  pk  to  verify  a  certificate.   It
+       returns  non-zero  (true)  if  the certificate is valid; zero
+       (false) otherwise.  State is the digest state  after  running
+       the chosen digest algorithm over the message.
+
+       The  remaining  operations  fetch  and store those values and
+       convert to and from text representations for use in protocols
+       and for storage.
+
+       Strtocert takes a string argument containing a varying number
+       of newline-separated fields: a signature  algorithm,  a  hash
+       algorithm,  a  signer's  name, an expiration time, and values
+       representing a digital signature.  It returns the correspond‐
+       ing  Certificate.   If  the string is of improper format, the
+       result is nil.
+
+       Certtostr performs the inverse operation: takes the  Certifi‐
+       cate  c and produces a text string suitable for communication
+       over a network.  Note that the string  will  contain  newline
+       characters.
+
+       Strtopk and strtosk take as their arguments a string s repre‐
+       senting the public and private keys respectively.  S contains
+       an  algorithm  name,  a user name and values representing the
+       key.  Each returns a tuple (k, s), where k is  the  resulting
+       key value (ie, Crypt->PK or Crypt->SK) and s is a string giv‐
+       ing the name associated with the key, typically a user  name.
+       If  the  format  of  s is invalid, k is nil, and s contains a
+       diagnostic.
+
+       Pktostr and sktostr perform the inverse operations: they take
+       a  public  key  (secret  key)  pk or sk, the owner name to be
+       associated with that key, and produce a printable representa‐
+       tion  as  a  string.   The owner names the user that owns the
+       key; in the case of a public key, the  user  is  expected  to
+       possess the corresponding private key.
+
+       Readauthinfo  reads  a  representation  of an Authinfo from a
+       file.  It returns nil if there is a read error or  a  conver‐
+       sion error; it returns a reference to the Authinfo otherwise.
+
+       Writeauthinfo  writes  a representation of info to a file. It
+       returns -1 if the write operation fails, 0 otherwise.
+
+SOURCE
+       /appl/lib/oldauth.b
+
+SEE ALSO
+       crypt-intro(2), ipints(2), security-intro(2)
+
+                                                 SECURITY-OLDAUTH(2)

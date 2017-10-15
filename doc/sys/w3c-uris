@@ -1,0 +1,151 @@
+W3C-URIS(2)              System Calls Manual             W3C-URIS(2)
+
+NAME
+       w3c-uris - uniform resource identifiers
+
+SYNOPSIS
+       include "uris.m";
+
+       uris := load URIs URIs->PATH;
+       URI: import uris;
+
+       URI: adt
+       {
+          scheme:     string;
+          userinfo:   string;  # authority, part I
+          host:       string;  # authority, part II
+          port:       string;  # authority, part III
+          path:       string;  # starts with / if absolute
+          query:      string;  # includes ? if not nil
+          fragment:   string;  # includes # if not nil
+
+          parse:      fn(s: string): ref URI;
+          text:       fn(u: self ref URI): string;
+          addbase:    fn(base: self ref URI, rel: ref URI): ref URI;
+          authority:  fn(u: self ref URI): string;
+          copy:       fn(u: self ref URI): ref URI;
+          eq:         fn(u: self ref URI, v: ref URI): int;
+          hasauthority: fn(u: self ref URI): int;
+          isabsolute: fn(u: self ref URI): int;
+          nodots:     fn(u: self ref URI): ref URI;
+          userpw:     fn(u: self ref URI): (string, string);
+       };
+
+       init: fn();
+       dec:  fn(s: string): string;
+       enc:  fn(s: string, safe: string): string;
+
+DESCRIPTION
+       URIs  supports  the  `generic  syntax' for `Uniform' Resource
+       Identifiers (URIs), defined by RFC3986.  Each URI can have up
+       to five components in the general syntax:
+
+              scheme: //authority/path ?query #fragment
+
+       where  each  component  is optional, and can have scheme-spe‐
+       cific substructure.  For instance, in the ftp, http  schemes,
+       and  perhaps  others, the authority component has the further
+       syntax:
+
+              userinfo@host:port
+
+       The set of characters allowed  in  most  components  is  also
+       scheme-specific,  as  is their interpretation, and indeed the
+       interpretation of the component itself.
+
+       Init must be called before any other operation in the module.
+
+       URI represents a parse of a URI into  its  components,  where
+       the authority has been further split into the scheme-specific
+       but common triple of userinfo, host and port.  (The  function
+       URI.authority will reproduce the original authority component
+       if required.)  The query field starts with the `?'  character
+       that  introduces  the query component, so that an empty query
+       is represented by the string "?", and the absence of a  query
+       component  is represented by a nil value.  The fragment field
+       is handled in a similar way with  its  delimiting  `#'.   The
+       fields  representing  the other components do not include the
+       delimiters in the syntax, and all  but  query  have  percent-
+       encoded  characters  decoded.  (The query string is an excep‐
+       tion because the set of characters to escape is  application-
+       specific.   See  below  for decoding and encoding functions.)
+       URI provides the following operations:
+
+       parse(s)
+              Return a URI value representing the results of parsing
+              string  s  as  a  URI.  There is no error return.  The
+              component values have percent-escapes decoded as  dis‐
+              cussed  above.   The scheme name is converted to lower
+              case.
+
+       u.text()
+              Return the textual representation of u in the  generic
+              syntax, adding percent-encoding as required to prevent
+              characters being misinterpreted as delimiters.
+
+       u.addbase(b)
+              Resolves URI reference u with respect to a base URI b,
+              including resolving all `.'  and `..'  segments in the
+              URI's path, and returns the resulting URI value.  If u
+              is  an  absolute URI reference or b is nil, the result
+              is the same as u except that all `.'  and  `..'   seg‐
+              ments  have  been  resolved in the resulting path, and
+              leading instances of them removed.
+
+       u.authority()
+              Returns the text of the authority component of  u,  in
+              the  generic  syntax,  created from its userinfo, host
+              and port components.
+
+       u.copy()
+              Return a reference to an independent copy of u.
+
+       u.eq(v)
+              Returns true if u and v are  textually  equal  in  all
+              components  except  fragment.   Note  that u and v are
+              assumed to be in a canonical form for the  scheme  and
+              application.
+
+       u.eqf(v)
+              Returns  true  if  u  and v are textually equal in all
+              components including fragment.
+
+       u.hasauthority()
+              Returns true if any of the authority subcomponents  of
+              u are not nil; returns false otherwise.
+
+       u.isabsolute()
+              Returns  true  if  u  has  a scheme component; returns
+              false otherwise.
+
+       u.nodots()
+              Returns a new URI value in which  all  `.'   and  `..'
+              segments    have    been   resolved   (equivalent   to
+              u.addbase(nil)).
+
+       u.userpw()
+              Returns  a  tuple  (username, password)  derived  from
+              parsing  the  userinfo subcomponent of authority using
+              the deprecated but depressingly still  common  conven‐
+              tion  that  userinfo  has  the syntax ``username:pass‐
+              word''.
+
+       A reserved or otherwise special character that appears  in  a
+       URI component must be encoded using a sequence of one or more
+       strings of the form %xx where xx is the hexadecimal value  of
+       one  byte  of the character's encoding in utf(6).  A string s
+       containing such encodings can be decoded by the function dec.
+       A  string  s  can be encoded by enc, where the parameter safe
+       lists the characters that need not be escaped (where safe may
+       be  nil  or empty).  These functions are normally only needed
+       to  decode  and  encode  the  values  of  URI.query,  because
+       URI.parse  and  URI.text  above  decode  and encode the other
+       fields.
+
+SOURCE
+       /appl/lib/w3c/uris.b
+
+SEE ALSO
+       charon(1), httpd(8)
+
+                                                         W3C-URIS(2)

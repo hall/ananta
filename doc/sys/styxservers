@@ -1,0 +1,537 @@
+STYXSERVERS(2)           System Calls Manual          STYXSERVERS(2)
+
+NAME
+       styxservers - 9P (Styx) server implementation assistance
+
+SYNOPSIS
+       include "sys.m";
+       include "styx.m";
+       Tmsg, Rmsg: import Styx;
+       include "styxservers.m";
+       styxservers := load Styxservers Styxservers->PATH;
+       Styxserver, Fid, Navigator: import styxservers;
+
+       Styxserver: adt {
+           fd:      ref Sys->FD;     # file server end of connection
+           t:       ref Navigator;   # name space navigator for this server
+           msize:   int;             # negotiated 9P message size
+
+           new:     fn(fd: ref Sys->FD, t: ref Navigator, rootpath: big)
+                         :(chan of ref Tmsg, ref Styxserver);
+           reply:   fn(srv: self ref Styxserver, m: ref Rmsg): int;
+
+           # protocol operations
+           attach:  fn(srv: self ref Styxserver, m: ref Tmsg.Attach): ref Fid;
+           clunk:   fn(srv: self ref Styxserver, m: ref Tmsg.Clunk): ref Fid;
+           walk:    fn(srv: self ref Styxserver, m: ref Tmsg.Walk): ref Fid;
+           open:    fn(srv: self ref Styxserver, m: ref Tmsg.Open): ref Fid;
+           read:    fn(srv: self ref Styxserver, m: ref Tmsg.Read): ref Fid;
+           remove:  fn(srv: self ref Styxserver, m: ref Tmsg.Remove): ref Fid;
+           stat:    fn(srv: self ref Styxserver, m: ref Tmsg.Stat);
+           default: fn(srv: self ref Styxserver, gm: ref Tmsg);
+
+           replychan: chan of ref Rmsg;             # replies sent here if not nil.
+           replydirect: fn(srv: self ref Styxserver, gm: ref Rmsg): int; # called by receiver for replychan
+
+          # check validity
+           cancreate: fn(srv: self ref Styxserver, m: ref Tmsg.Create)
+                         :(ref Fid, int, ref Sys->Dir, string);
+           canopen:   fn(srv: self ref Styxserver, m: ref Tmsg.Open)
+                           :(ref Fid, int, ref Sys->Dir, string);
+           canread:   fn(srv: self ref Styxserver, m: ref Tmsg.Read)
+                         :(ref Fid, string);
+           canwrite:  fn(srv: self ref Styxserver, m: ref Tmsg.Write)
+                         :(ref Fid, string);
+           canremove: fn(srv: self ref Styxserver, m: ref Tmsg.Remove)
+                         :(ref Fid, big, string);
+
+           # fid management
+           getfid:  fn(srv: self ref Styxserver, fid: int): ref Fid;
+           newfid:  fn(srv: self ref Styxserver, fid: int): ref Fid;
+           delfid:  fn(srv: self ref Styxserver, c: ref Fid);
+           allfids: fn(srv: self ref Styxserver): list of ref Fid;
+
+           iounit:  fn(srv: self ref Styxserver): int;
+       };
+
+       Fid: adt {
+           fid:    int;       # client's fid
+           path:   big;       # file's 64-bit unique path
+           qtype:  int;       # file's qid type (eg, Sys->QTDIR if directory)
+           isopen: int;       # non-zero if file is open
+           mode:   int;       # if open, the open mode
+           uname:  string;    # user name from original attach
+           param:  string;    # attach aname from original attach
+           data:   array of byte;   # application data
+
+           clone:  fn(f: self ref Fid, nf: ref Fid): ref Fid;
+           open:   fn(f: self ref Fid, mode: int, qid: Sys->Qid);
+           walk:   fn(f: self ref Fid, qid: Sys->Qid);
+       };
+
+       Navop: adt {
+           reply:  chan of (ref Sys->Dir, string);  # channel for reply
+           path:   big;      # file or directory path
+           pick {
+           Stat =>
+           Walk =>
+               name: string;
+           Readdir =>
+               offset: int;  # index (origin 0) of first entry to return
+               count:  int;  # number of directory entries requested
+           }
+       };
+
+       Navigator: adt {
+           new:    fn(c: chan of ref Navop): ref Navigator;
+           stat:   fn(t: self ref Navigator, path: big): (ref Sys->Dir, string);
+           walk:   fn(t: self ref Navigator, parent: big, name: string)
+                      : (ref Sys->Dir, string);
+           readdir:fn(t: self ref Navigator, path: big,
+                      offset, count: int): array of ref Sys->Dir;
+       };
+
+       init:      fn(styx: Styx);
+       traceset:  fn(on: int);
+
+       readbytes: fn(m: ref Styx->Tmsg.Read, d: array of byte):
+                     ref Styx->Rmsg.Read;
+       readstr:   fn(m: ref Styx->Tmsg.Read, s: string):
+                     ref Styx->Rmsg.Read;
+       openok:    fn(uname: string, omode,
+                     perm: int, funame, fgname: string): int;
+       openmode:  fn(o: int): int;
+
+DESCRIPTION
+       When writing a file server, there are some commonly performed
+       tasks that are fiddly or  tedious  to  implement  each  time.
+       Styxservers  provides  a  framework to automate some of these
+       routine tasks.  In particular, it helps manage the fid space,
+       implements  common  default processing for protocol messages,
+       and assists walking around the directory hierarchy and  read‐
+       ing  of directories. Other tasks, such as defining the struc‐
+       ture of the name space, and reading and writing files in  it,
+       are left to the file server program itself.  Familiarity with
+       Section 5 of the  manual  which  defines  the  protocol  (see
+       intro(5)),  and  with  the  representation  of 9P messages in
+       Limbo (see styx(2)), is a prerequisite for use of  this  mod‐
+       ule.
+
+       Styxservers  does  not  define  or store any of the directory
+       hierarchy itself; instead it queries an external process  for
+       information  when  necessary, through a value of type Naviga‐
+       tor, which  encapsulates  communication  with  that  process.
+       That  process  must  be  started  up  independently  of  each
+       Styxserver; a channel to such a process  should  be  provided
+       when starting a new Styxserver.  The channel carries messages
+       of type Navop.  Styxservers-nametree(2) provides a ready-made
+       implementation  of such a process that is sufficient for many
+       applications.
+
+       Styxserver keeps tabs on the fids that are currently in  use,
+       and  remembers  some  associated information, such as the Qid
+       path of the file, whether it has been opened, etc.   It  does
+       this using values of type Fid.
+
+       Once  the  Styxservers module has been loaded, the init func‐
+       tion must be called before anything else, to  initialise  its
+       internal state. The styx argument should be an implementation
+       of the styx(2) module, which will be used to  translate  mes‐
+       sages.   Individual  Styxserver instances do not share state,
+       and are therefore independently thread-safe.
+
+   Fid representation
+       Styxservers represents each active fid as a Fid value,  which
+       has the following public members:
+
+       fid    The  integer fid value provided by the client to refer
+              to an active instance of a file in the file server, as
+              described in intro(5).
+
+       path   The  64-bit qid path that uniquely identifies the file
+              on the file server, as described in intro(5).   It  is
+              set by f.walk and f.open (see below).
+
+       qtype  The  file's  qid type; it is Sys->QTDIR if and only if
+              the fid refers to a directory.  The value  is  set  by
+              f.walk and f.open (see below).
+
+       isopen Non-zero  if and only if the fid has been opened by an
+              open(5) message.  It is initially  zero,  and  set  by
+              f.open (see below).
+
+       mode   Valid  only if the fid has been opened.  It has one of
+              the values Sys->OREAD, Sys->OWRITE, Sys->ORDWR, possi‐
+              bly  ORed with Sys->ORCLOSE, corresponding to the mode
+              with which the file was opened.  It is set  by  f.open
+              (see below).
+
+       uname  The name of the user that created the fid.
+
+       param  Set  by  Styxservers  to  the  aname  of  the  initial
+              attach(5) message, and subsequently inherited by  each
+              new  fid created by walk(5), but not otherwise used by
+              Styxservers itself, and may be changed by the applica‐
+              tion.
+
+       data   Unused  by Styxservers; for application use.  It might
+              be used, for instance, to implement a file that  gives
+              different data to different clients.
+
+       f.clone(nf)
+              Copy  the  current  state  of  all members of f except
+              f.fid,   into   nf,   and   return   nf.    Used    by
+              Styxserver.walk,  and is needed by an application only
+              if it replaces that function.
+
+       f.walk(qid)
+              Make f refer to the  file  with  the  given  qid:  set
+              f.path  and f.qtype from qid.path and qid.qtype.  Used
+              by Styxserver.walk and is  needed  by  an  application
+              only if it replaces that function.
+
+       f.open(mode, qid)
+              Mark f as `open', set f.mode to mode, and set path and
+              qtype to the path and type of qid.  Used by the imple‐
+              mentations  of  open and create messages.  The default
+              implementation of open(5) in  Styxserver  obtains  the
+              value  of  mode  from  Styxserver.canopen (below), and
+              obtains the value of qid by querying the application's
+              navigator.
+
+   Styxserver and file server state
+       Each  Styxserver  value  holds  the  state  for a single file
+       server, including its active fids, the link to  the  external
+       name  space  process,  and  other internal data.  Most of the
+       state is manipulated through the member  functions  described
+       below.   The exceptions are two read-only values: the Naviga‐
+       tor reference srv.t which can be used to access that  naviga‐
+       tor; and the file descriptor srv.fd that is the file server's
+       end of the connection to the 9P client.  Both values are ini‐
+       tially  provided  by the file serving application, but can be
+       accessed through the Styxserver value for  convenience.   The
+       file   descriptor   value   is  normally  used  only  through
+       Styxserver.reply, but will be needed directly if  the  caller
+       needs the file descriptor value as a parameter to sys-pctl(2)
+       when insulating the serving process's file  descriptors  from
+       the surrounding environment.
+
+       The  first set of functions in Styxserver provides common and
+       default actions:
+
+       Styxserver.new(fd, t, rootpath)
+              Create a new Styxserver.  It returns a tuple, say  (c,
+              srv),  and spawns a new process, which uses styx(2) to
+              read and parse 9P messages read from fd, and send them
+              down  c;  t  should  be  a  Navigator  adt  which  the
+              Styxserver can use to answer queries on the name space
+              (see  ``Navigating  file  trees'',  below).   Rootpath
+              gives the Qid path of the  root  of  the  served  name
+              space.
+
+       srv.reply(m)
+              Send  a  reply  (R-message)  to  a client. The various
+              utility methods, listed below, call this  function  to
+              make their response. When srv.replychan is not nil the
+              function sends the R-message to this  channel.  It  is
+              assumed  that a process will drain replies from it and
+              call srv.replydirect when appropriate.
+
+       srv.attach(m)
+              Respond to an attach(5) message m, creating a new  fid
+              in  the  process,  and  returning  it.  Returns nil if
+              m.fid is a duplicate of an existing fid.  The value of
+              the  attach  parameter  m.aname is copied into the new
+              fid's param field, as  is  the  attaching  user  name,
+              m.uname.
+
+       srv.clunk(m)
+              Respond  to  a  clunk(5) message m, and return the old
+              Fid.  Note that this  does  nothing  about  remove-on-
+              close  files;  that should be programmed explicitly if
+              needed.
+
+       srv.walk(m)
+              Respond to a walk(5) message  m,  querying  srv.t  for
+              information on existing files.
+
+       srv.open(m)
+              Respond  to  an  open(5) message m.  This will allow a
+              file to be opened if its permissions allow the  speci‐
+              fied mode of access.
+
+       srv.read(m)
+              Respond  to  a  read(5)  message m.  If a directory is
+              being read, the appropriate reply is made; for  files,
+              an error is given.
+
+       srv.remove(m)
+              Respond to a remove(5) message m with an error, clunk‐
+              ing the fid as it does so, and returning the old Fid.
+
+       srv.stat(m)
+              Respond to a stat(5) message m.
+
+       srv.default(gm)
+              Respond to an arbitrary T-message, gm, as  appropriate
+              (eg,  by  calling srv.walk for a walk(5) message).  It
+              responds appropriately to version(5), and  replies  to
+              Tauth  (see  attach(5)) stating that authentication is
+              not required.  Other messages  without  an  associated
+              Styxserver  function are generally responded to with a
+              ``permission denied'' error.
+
+       All the functions above  check  the  validity  of  the  fids,
+       modes,  counts and offsets in the messages, and automatically
+       reply to the client  with  a  suitable  error(5)  message  on
+       error.
+
+       The  following  further  Styxserver  operations are useful in
+       applications that override all or part of  the  default  han‐
+       dling (in particular, to process read and write requests):
+
+       srv.canopen(m)
+              Check  whether it is legal to open a file as requested
+              by message m: the fid is valid but not  already  open,
+              the  corresponding  file  exists  and  its permissions
+              allow  access  in   the   requested   mode,   and   if
+              Sys->ORCLOSE  is  requested,  the  parent directory is
+              writable  (to  allow  the  file  to  be  removed  when
+              closed).      Canopen    returns    a    tuple,    say
+              (f, mode, d, err ).  If the open request was  invalid,
+              f  will  be  nil, and the string err will diagnose the
+              error (for return to the client in an Rmsg.Error  mes‐
+              sage).   If  the request was valid: f contains the Fid
+              representing the file to be opened; mode is the access
+              mode  derived  from  m.mode,  Sys->OREAD, Sys->OWRITE,
+              Sys->ORDWR, ORed with Sys->ORCLOSE; d is a  Dir  value
+              giving  the file's attributes, obtained from the navi‐
+              gator; and err is nil.  Once the application has  done
+              what  it must to open the file, it must call f.open to
+              mark it open.
+
+       srv.cancreate(m)
+              Checks whether the creation of the file  requested  by
+              message  m  is  legal:  the fid is valid but not open,
+              refers to a directory,  the  permissions  returned  by
+              srv.t.stat  show  that  directory  is  writable by the
+              requesting user, the name does not  already  exist  in
+              that  directory,  and the mode with which the new file
+              would be opened is valid.  Cancreate returns a  tuple,
+              say  (f, mode, d, err ).   If the creation request was
+              invalid, f will be nil, and the string err will  diag‐
+              nose  the  error,  for  use  in  an error reply to the
+              client.  If the request was valid: f contains the  Fid
+              representing  the  parent  directory; mode is the open
+              mode as defined for canopen above; d is  a  Dir  value
+              containing some initial attributes for the new file or
+              directory; and err is nil.  The initial attributes set
+              in d are: d.name (the name of the file to be created);
+              d.uid and  d.muid  (the  user  that  did  the  initial
+              attach);  d.gid, d.dtype, d.dev (taken from the parent
+              directory's attributes); and  d.mode  holds  the  file
+              mode that should be attributed to the new file (taking
+              into  account  the  parent  mode,  as   described   in
+              open(5)).   The caller must supply d.qid once the file
+              has  successfully  been  created,  and   d.atime   and
+              d.mtime;  it  must also call f.open to mark f open and
+              set its path to the file's path.  If the  file  cannot
+              be  created successfully, the application should reply
+              with an error(5) message and leave f  untouched.   The
+              Fid  f  will  then  continue  to refer to the original
+              directory, and remain unopened.
+
+       srv.canread(m)
+              Checks whether read(5) message m refers to a valid fid
+              that  has  been opened for reading, and that the count
+              and file offset are non-negative.  Canread  returns  a
+              tuple,  say (f, err); if the attempted access is ille‐
+              gal, f will be nil, and err contains a description  of
+              the  error, otherwise f contains the Fid corresponding
+              to the file in question.  It is typically called by an
+              application's  implementation  of  Tmsg.Read to obtain
+              the Fid corresponding to the fid in the  message,  and
+              check the access.
+
+       srv.canwrite(m)
+              Checks  whether  message  m refers to a valid fid that
+              has been opened for writing, and that the file  offset
+              is  non-negative.   Canwrite returns a tuple (f, err);
+              if the attempted access is illegal, f will be nil, and
+              err  contains  a description of the error, otherwise f
+              contains the Fid corresponding to the  file  in  ques‐
+              tion.   It  is  typically  called  by an application's
+              implementation of Tmsg.Write to obtain the Fid  corre‐
+              sponding  to  the  fid  in  the message, and check the
+              access.
+
+       srv.canremove(m)
+              Checks whether the removal of the  file  requested  by
+              message m is legal: the fid is valid, it is not a root
+              directory, and there is write permission in the parent
+              directory.   Canremove returns a tuple (f, path, err);
+              if the attempted access is illegal, f will be nil  and
+              err  contains  a description of the error; otherwise f
+              contains the Fid for the file to be removed, and  path
+              is  the  Qid.path  for the parent directory.The caller
+              should remove the file, and in every  case  must  call
+              srv.delfid  before  replying,  because  the protocol's
+              remove operation always clunks the fid.
+
+       srv.iounit()
+              Return an appropriate value for use as the iounit ele‐
+              ment  in Rmsg.Open and Rmsg.Create replies, as defined
+              in open(5), based on the message  size  negotiated  by
+              the initial version(5) message.
+
+       The  remaining  functions  are  normally used only by servers
+       that need to override default  actions.   They  maintain  and
+       access the mapping between a client's fid values presented in
+       Tmsg messages and the Fid values that  represent  the  corre‐
+       sponding files internally.
+
+       srv.newfid(fid)
+              Create a new Fid associated with number fid and return
+              it.  Return nil if the fid is already in use  (implies
+              a client error if the server correctly clunks fids).
+
+       srv.getfid(fid)
+              Get  the  Fid  data  associated  with  numeric id fid;
+              return nil if there is none such (a malicious or erro‐
+              neous client can cause this).
+
+       srv.delfid(fid)
+              Delete  fid  from the table of fids in the Styxserver.
+              (There is no error return.)
+
+       srv.allfids()
+              Return a list of all current fids (ie, the files  cur‐
+              rently active on the client).
+
+       Newfid  is  required  when  processing auth(5), attach(5) and
+       walk(5) messages to create new fids.  Delfid is used to clunk
+       fids  when  processing  clunk(5),  remove(5), and in a failed
+       walk(5) when it specified a  new  fid.   All  other  messages
+       should  refer  only to already existing fids, and the associ‐
+       ated Fid data is fetched by getfid.
+
+   Navigating file trees
+       When a Styxserver instance needs to know about the namespace,
+       it queries an external process through a channel by sending a
+       Navop request; each such request  carries  with  it  a  reply
+       channel  through  which  the reply should be made.  The reply
+       tuple has a reference to a Sys->Dir value that is non-nil  on
+       success, and a diagnostic string that is non-nil on error.
+
+       Files  in  the  tree  are referred to by their Qid path.  The
+       requests are:
+
+       Stat
+              Find a file in the hierarchy by its  path,  and  reply
+              with  the  corresponding Dir data if found (or a diag‐
+              nostic on error).
+
+       Walk
+              Look for file name in the  directory  with  the  given
+              path.
+
+       Readdir
+              Get  information  on  selected  files in the directory
+              with the given path.  In this case, the reply  channel
+              is  used  to  send  a sequence of values, one for each
+              entry in the directory, finishing with a  tuple  value
+              (nil,nil).   The  entries to return are those selected
+              by an offset that is the index (origin 0) of the first
+              directory  entry to return, and a count of a number of
+              entries to return starting with that index.  Note that
+              both  values  are  expressed  in  units  of  directory
+              entries, not as byte counts.
+
+       Styxserver provides a  Navigator  adt  to  enable  convenient
+       access  to  this  functionality; calls into the Navigator adt
+       are bundled up into requests on the channel,  and  the  reply
+       returned.  The functions provided are:
+
+       Navigator.new(c)
+                 Create a new Navigator, sending requests down c.
+
+       t.stat(path)
+                 Find  the file with the given path.  Return a tuple
+                 (d, err), where d holds directory  information  for
+                 the  file if found; otherwise err contains an error
+                 message.
+
+       t.walk(parent, name)
+                 Find the file with name name inside  parent  direc‐
+                 tory parent.  Return a tuple as for stat.
+
+       t.readdir(path, offset, count)
+                 Return  directory  data  read  from directory path,
+                 starting at entry offset for count entries.
+
+   Other functions
+       The following functions provide some commonly used  function‐
+       ality:
+
+       readbytes(m, d)
+                 Assuming that the file in question contains data d,
+                 readbytes returns an appropriate reply  to  read(5)
+                 message  m,  taking account of m.offset and m.count
+                 when extracting data from d.
+
+       readstr(m, s)
+                 Assuming that the file in question contains  string
+                 s,  readstr returns an appropriate reply to read(5)
+                 message m, taking account of m.offset  and  m.count
+                 when  extracting data from the UTF-8 representation
+                 of s.
+
+       openok(uname, omode, perm, fuid, fgid)
+                 Does standard permission  checking,  assuming  user
+                 uname  is  trying  to  open a file with access mode
+                 omode, where the file is owned by fuid,  has  group
+                 fgid,  and  permissions  perm.   Returns true (non-
+                 zero) if permission would  be  granted,  and  false
+                 (zero) otherwise.
+
+       openmode(o)
+                 Checks  to  see  whether  the  open mode o is well-
+                 formed; if it is not, openmode returns  -1;  if  it
+                 is,  it  returns  the  mode with OTRUNC and ORCLOSE
+                 flags removed.
+
+       traceset(on)
+                 If on is true (non-zero), will  trace  9P  requests
+                 and  replies,  on standard error.  This option must
+                 be set before creating a Styxserver, to ensure that
+                 it preserves its standard error descriptor.
+
+   Constants
+       Styxservers  defines  a number of constants applicable to the
+       writing of 9P servers, including:
+
+       Einuse, Ebadfid, Eopen, Enotfound, Enot‐
+       dir, Eperm, Ebadarg, Eexists
+              These provide standard strings for commonly used error
+              conditions, to be used in Rmsg.Error replies.
+
+   Authentication
+       If authentication is required beyond  that  provided  at  the
+       link  level  (for  instance  by security-auth(2)), the server
+       application must handle Tauth itself, remember the  value  of
+       afid  in  that  message,  and  generate an Rauth reply with a
+       suitable Qid referring to a file with  Qid.qtype  of  QTAUTH.
+       Following successful authentication by read and write on that
+       file, it must associate that status with the afid.  Then,  on
+       a  subsequent  Tattach message, before calling srv .attach it
+       must check that the Tattach's afid value corresponds  to  one
+       previously authenticated, and reply with an appropriate error
+       if not.
+
+SOURCE
+       /appl/lib/styxservers.b
+
+SEE ALSO
+       styxservers-nametree(2), sys-stat(2), intro(5)
+
+                                                      STYXSERVERS(2)

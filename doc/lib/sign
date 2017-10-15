@@ -1,0 +1,71 @@
+SIGN(3)               Library Functions Manual               SIGN(3)
+
+NAME
+       sign - control use of signed modules
+
+SYNOPSIS
+       bind -a #Σ /dev
+
+       /dev/signerkey
+       /dev/signctl
+
+DESCRIPTION
+       Sign  is  a device, still experimental, to control the use of
+       signed Dis modules.  After system initialisation, any process
+       can  load any module.  Using sign, load operations can subse‐
+       quently be restricted for a process and its descendents.
+
+       Signerkey is a file that can be opened for writing  only   by
+       the  host  owner (see eve(10.2)) (but any process holding the
+       file descriptor can write to it).  The data written  must  be
+       the  textual  representation of a public key in the form pro‐
+       duced by Keyring->pktostr (see keyring-certtostr(2)).   After
+       a  successful  write, subsequent load operations will be lim‐
+       ited to Dis modules in any of the following sets:
+
+       ·      built-in modules
+
+       ·      unsigned modules found in the  kernel's  root(3)  file
+              system
+
+       ·      currently loaded unsigned modules
+
+       ·      acceptable signed modules
+
+       A  signed  Dis  module contains a signature in its header, as
+       specified by dis(6).  The signature contains  the  result  of
+       signing  the remaining data in the file (or more precisely, a
+       cryptographically secure hash of it), using a configured pub‐
+       lic  key  algorithm and the signer's secret key (for instance
+       using Keyring->sign, see keyring-sha1(2)).
+
+       A signed module is `acceptable'  if  it  was  signed  by  the
+       secret key corresponding to one of the public keys written to
+       signerkey.  There can be up to 8 such keys.  The set of  keys
+       and the secured status is shared across spawn.
+
+       Signerkey  is generally readable, and when read yields a list
+       of the keys installed, one per line, showing owner, alg,  and
+       other  attributes in attr=value format, space separated.  The
+       actual key value is not currently shown.
+
+       Signctl can be read or written only by the host owner.   Each
+       write  contains  a textual control request.  (Currently there
+       are none such.)  If security is not enabled, it is empty when
+       read.  Otherwise, it contains the number of keys loaded, as a
+       decimal integer.
+
+SOURCE
+       /emu/port/devsign.c
+       /os/port/devsign.c
+
+SEE ALSO
+       wm/rt in wm-misc(2), sys-pctl(2), dis(6), createsignerkey(8),
+       eve(10.2)
+
+DIAGNOSTICS
+       If  the  text  is not a valid public key or uses an algorithm
+       that is not configured, a write to signer fails and sets  the
+       error string.
+
+                                                             SIGN(3)

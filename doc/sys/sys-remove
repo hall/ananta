@@ -1,0 +1,22 @@
+SYS-REMOVE(2)            System Calls Manual           SYS-REMOVE(2)
+
+NAME
+       remove - remove a file
+
+SYNOPSIS
+       include "sys.m";
+       sys := load Sys Sys->PATH;
+
+       remove:   fn(file: string): int;
+
+DESCRIPTION
+       Remove removes file from the directory containing it and dis‐
+       cards the contents of the file.  The  user  must  have  write
+       permission  in the containing directory.  If file is a direc‐
+       tory, it must be empty.  Remove returns zero  if  it  deletes
+       the file, -1 otherwise.
+
+SEE ALSO
+       sys-intro(2)
+
+                                                       SYS-REMOVE(2)

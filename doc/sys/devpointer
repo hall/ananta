@@ -1,0 +1,47 @@
+DEVPOINTER(2)            System Calls Manual           DEVPOINTER(2)
+
+NAME
+       devpointer - I/O interface for the pointer device
+
+SYNOPSIS
+       include "draw.m";   # for Draw->Pointer
+       include "devpointer.m";
+       ptr := load Devpointer Devpointer->PATH;
+
+       init:      fn();
+       reader:    fn(file: string, posn: chan of ref Draw->Pointer,
+                     pid: chan of (int, string));
+       bytes2ptr: fn(buf: array of byte)    : ref Draw->Pointer;
+       ptr2bytes: fn(ptr: ref Draw->Pointer): array of byte;
+
+DESCRIPTION
+       Devpointer  reads messages from pointer devices with the same
+       data format as /dev/pointer, converting them to Pointer adts.
+
+       Init must be called before any other operation of the module.
+
+       Reader should be spawned by the caller.  It opens the pointer
+       device  specified  by  file,  and  sends a value (id, err) on
+       channel pid.  On success, id is the process ID of the spawned
+       process and err is nil; on an error, err is a diagnostic, and
+       id is undefined.  If the file was opened successfully, reader
+       continually  reads  the pointer device and sends Pointer adts
+       over the channel posn.  If file is nil, the default device is
+       /dev/pointer.
+
+       Bytes2ptr  converts  the  array of bytes buf to a Pointer and
+       returns a reference to it.  Buf  should  consist  of  exactly
+       Devpointer->Size  bytes  and  be  in  the  format returned by
+       /dev/pointer.
+
+       Ptr2bytes provides the inverse transformation  of  bytes2ptr:
+       it  packs the data into an array of bytes of appropriate for‐
+       mat, which it returns.
+
+FILES
+       /dev/pointer
+
+SEE ALSO
+       draw-intro(2), draw-pointer(2)
+
+                                 mux                   DEVPOINTER(2)

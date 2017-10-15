@@ -1,0 +1,91 @@
+IDA(2)                   System Calls Manual                  IDA(2)
+
+NAME
+       Ida:  Frag,  fragment,  consistent, reconstruct - information
+       dispersal algorithm
+
+SYNOPSIS
+       include "ida.m";
+       ida := load Ida Ida->PATH;
+
+       Frag: adt {
+           dlen: int;            # length of original data
+           m:    int;            # minimum pieces for reconstruction
+           a:    array of int;   # encoding array row for this fragment
+           enc:  array of int;   # encoded data
+
+           tag:  array of byte;  # user data, such as SHA1 hash
+           pack: fn(f: self ref Frag): array of byte;
+           unpack: fn(d: array of byte): ref Frag;
+       };
+
+       init:        fn();
+       fragment:    fn(data: array of byte, m: int): ref Frag;
+       consistent:  fn(frags: array of ref Frag): array of ref Frag;
+       reconstruct: fn(frags: array of ref Frag): (array of byte, string);
+
+DESCRIPTION
+       Ida implements Rabin's Information Dispersal Algorithm (IDA),
+       an  effective  scheme  for fault-tolerant storage and message
+       routing.   The  algorithm  breaks  an  array  of  bytes  (for
+       instance  a file or a block of data) into n pieces, in such a
+       way that the original data can be recovered using only  m  of
+       them,  where n and m are parameters.  The module provides the
+       fundamental operations.
+
+       Init must be called before invoking any  other  operation  of
+       the module.
+
+       Fragment takes an array of data, and m, the minimum number of
+       pieces required for reconstruction, and returns  a  reference
+       to  a  Frag  value  representing  one encoded fragment of the
+       data.  At least m calls must be made to  fragment  to  obtain
+       enough such fragments to be able to rebuild the data; invari‐
+       ably more fragments are  generated  to  provide  the  desired
+       level of redundancy.
+
+       Each fragment Frag has the following components:
+
+       dlen   The length in bytes of the data.
+
+       m      The minimum number of fragments for reconstruction.
+
+       a      The  row of an m×m encoding matrix that corresponds to
+              this fragment.
+
+       enc    The encoded data, represented by an array  of  integer
+              values.   Fo⌈  ⌉  bytes  of input data, the array will
+              have length ⎪__⎪.
+                          ⎪  ⎪
+
+       All those values must be stored or transmitted for later use,
+       to reconstruct the data.  The values in a are in the interval
+       [ 1, 65536 ] and those in enc are in the interval [  0, 65536
+       ].
+
+       Reconstruct takes an array frags of distinct fragments previ‐
+       ously produced by repeated  calls  to  fragment(data, m)  and
+       returns  a  tuple  (data, err).  Provided at least m suitable
+       fragments are found in frags, the data returned will be  that
+       originally  provided  to  fragment.  If the parameters of the
+       various fragments in frags  disagree,  or  some  other  error
+       occurs,  data  will be nil and err will contain a diagnostic.
+       Reconstruct assumes the fragments it receives are consistent:
+       they  represent  the  same encoding parameters, including the
+       value of m.  If it detects an  inconsistency,  it  returns  a
+       diagnostic.
+
+       Consistent  checks the consistency of a set of fragments, and
+       returns a new subset containing  only  those  fragments  that
+       agree with the majority in frags on each parameter.
+
+SOURCE
+       /appl/lib/ida/ida.b
+       /appl/lib/ida/idatab.b
+
+SEE ALSO
+       M  Rabin,  ``Efficient Dispersal of Information for Security,
+       Load Balancing, and  Fault  Tolerance'',  JACM  36(2),  April
+       1989, pp. 335-348.
+
+                                                              IDA(2)

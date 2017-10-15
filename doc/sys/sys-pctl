@@ -1,0 +1,94 @@
+SYS-PCTL(2)              System Calls Manual             SYS-PCTL(2)
+
+NAME
+       pctl - process control
+
+SYNOPSIS
+       include "sys.m";
+       sys := load Sys Sys->PATH;
+
+       pctl: fn(flags: int, movefd: list of int): int;
+
+DESCRIPTION
+       A newly spawned Limbo process (also known as a thread) shares
+       with its parent process a number of resources and properties,
+       such as file name space, open file descriptors, current work‐
+       ing directory, and so on.  Pctl controls this sharing, allow‐
+       ing  a  process  to  gain a copy of a resource rather than to
+       share it, to start with a null resource, and so on.
+
+       The set of processes sharing a property are called  a  group;
+       for  example  the  set  of processes sharing a name space are
+       called a name space group.  Each process is  a  member  of  a
+       process  group, typically the set of threads functioning as a
+       single program.  All the members of a process  group  may  be
+       terminated  at  once using the killgrp control message in the
+       prog(3) device.
+
+       A call to pctl affects the calling  process  and,  indirectly
+       according  to  flags,  any other processes sharing properties
+       with it.  The flags to pctl are:
+
+       NEWFD  Give the process a new  file  descriptor  group.   All
+              file  descriptors  are  closed  except those listed in
+              movefd, which are preserved in the new  group.   After
+              this  call,  changes  the  process makes to its set of
+              open file descriptors will not  be  visible  to  other
+              processes.
+
+       FORKFD Place  the process in a new file descriptor group con‐
+              taining a copy of the current set of file descriptors.
+              The  file  descriptors  listed in movefd are closed in
+              the old group.  After this call, changes  the  process
+              makes  to its set of open file descriptors will not be
+              visible to other processes.
+
+       NEWNS  Place the process in a new file name  space  group  in
+              which  the  current  directory is made the root direc‐
+              tory, of the new name space.  The current directory is
+              unaffected by this call.
+
+       FORKNS Place  the process in a new file name space group con‐
+              taining a copy of the current name space.  After  this
+              call,  changes  the  process  makes to its name space,
+              including chdir calls,  will  not  affect  other  pro‐
+              cesses.
+
+       NODEVS Set  the current file name space group to prevent sub‐
+              sequent access to the roots of file trees  implemented
+              by  a  device driver (ie, the use of path names begin‐
+              ning with #, as described by  intro(3)).   Even  after
+              NODEVS  the  following  devices can be attached, which
+              are either private or can  be  separately  controlled:
+              pipe(3), env(3), srv(3) and ssl(3).
+
+       NEWENV Place  the  process  in  a new empty environment group
+              containing no environment variables.  After this call,
+              changes  the process makes to its environment will not
+              affect other processes.
+
+       FORKENV
+              Place the process in a new environment group  contain‐
+              ing  a  copy  of  the  current  environment variables.
+              After this call, changes  the  process  makes  to  its
+              environment will not affect other processes.
+
+       NEWPGRP
+              Establish a new process group with a group id equal to
+              that of the pid of the calling process.
+
+       The Inferno shell sh(1) uses FORKFD when starting a  command;
+       its  pctl  built-in  (see  sh-std(1))  can  invoke  the other
+       effects when needed.  The window  manager  wm(1)  uses  NEWP‐
+       GRP|FORKFD  when  starting  a  window manager application.  A
+       network server  might  use  NEWPGRP|FORKNS|FORKFD|FORKENV  to
+       insulate itself completely from services it starts.
+
+       The  return value of pctl is the numerical process id of  the
+       calling process, which can be used for example to access  its
+       prog(3) files.
+
+SEE ALSO
+       sh-std(1), sys-intro(2)
+
+                                                         SYS-PCTL(2)

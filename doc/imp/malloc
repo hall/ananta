@@ -1,0 +1,56 @@
+MALLOC(10.2)                                            MALLOC(10.2)
+
+NAME
+       malloc, mallocz, smalloc, free, realloc, calloc - kernel mem‐
+       ory allocators
+
+SYNOPSIS
+       void* malloc(ulong size)
+
+       void* mallocz(ulong size, int clr)
+
+       void* smalloc(ulong size)
+
+       void* realloc(void *p, ulong size)
+
+       void* calloc(ulong n, ulong szelem)
+
+       void  free(void *p)
+
+DESCRIPTION
+       These functions allocate memory from the mainmem memory pool.
+       All but smalloc (which sleeps) may safely be called by inter‐
+       rupt handlers.
+
+       Malloc returns a pointer to a block of at least  size  bytes,
+       initialised  to  zero.   The  result  is  aligned on a 32-bit
+       boundary.  Mallocz is similar, but only clears the memory  if
+       clr is non-zero.
+
+       Smalloc  returns  a  pointer  to  a block of size bytes, ini‐
+       tialised to zero.  If the memory is  not  immediately  avail‐
+       able, smalloc retries every 100 milliseconds until the memory
+       is acquired.
+
+       Calloc returns a pointer to a block of  memory  of  at  least
+       n*szelem bytes, initialised to zero.
+
+       Realloc changes the size of the block pointed to by p to size
+       bytes, if possible without moving the  data,  and  returns  a
+       pointer  to  the block.  The contents are unchanged up to the
+       lesser of old and new sizes, and any new space  allocated  is
+       initialised to zero.  If p is a null pointer, realloc returns
+       the equivalent of malloc(size).
+
+       The argument to free is a pointer to a block of memory  allo‐
+       cated  by one of the routines above, which is returned to the
+       allocation pool, or a null pointer, which is ignored.
+
+DIAGNOSTICS
+       All functions except smalloc return a null pointer  if  space
+       is unavailable.
+
+SEE ALSO
+       xalloc(10.2)
+
+                                                        MALLOC(10.2)

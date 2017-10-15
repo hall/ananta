@@ -1,0 +1,167 @@
+CONF(10.6)                                                CONF(10.6)
+
+NAME
+       conf - native and hosted kernel configuration file
+
+DESCRIPTION
+       Native  and hosted Inferno kernels are built for a given tar‐
+       get platform in the host environment in  directory  /os/plat‐
+       form  or  /emu/platform.   Existing  platforms include pc and
+       ipaq for native kernels and Plan9, Linux, Nt  (for  all  ver‐
+       sions  of  Windows), and Solaris, amongst others.  Each plat‐
+       form can have different  kernels  with  different  configura‐
+       tions.   A  given  configuration  is  built in the platform's
+       directory using the mk(10.1) command:
+
+              mk 'CONF=conf'
+
+       where conf is a text file that specifies  drivers,  protocols
+       and  other  parameters  for  that  particular kernel: a parts
+       list.  The result of a successful  mk  is  an  executable  or
+       bootable  file  with  a  name  determined  by  the platform's
+       mkfile, typically iconf for all native platforms, $O.conf for
+       Plan 9, Unix and clones, and iconf.exe for Windows.
+
+       A kernel configuration file has several sections of the form
+
+              label
+                   item [ subitem ... ]
+                   ...
+
+       Each  section  begins  with  a  label at the start of a line,
+       which names a configuration category, followed by a  list  of
+       each  item  to  select from that category, one line per item,
+       with white space (ie, blank or tab) at the start of the line.
+       An  item  line  can optionally list one or more subitems that
+       must be included in the kernel to support it.   A  line  that
+       starts with a is a comment.  Empty lines are ignored.
+
+       Labels are chosen from the following set, listed in the order
+       in which they conventionally appear in a configuration file:
+
+       dev    Device drivers
+
+       ip     IP protocols (native kernels only) taken from ../ip
+
+       link   Hardware-specific parts of device drivers.
+
+       misc   Architecture-specific files;  specific  VGA  and  SCSI
+              interfaces
+
+       lib    Libraries to link with the kernel
+
+       mod    Builtin Dis modules
+
+       port   Portable components (other than drivers) from ../port
+
+       code   C code and declarations to include as-is in the gener‐
+              ated configuration file
+
+       init   Dis init program
+
+       root   List of files and directories to put  in  the  root(3)
+              file system
+
+       When an item is listed under a given label it causes a corre‐
+       sponding component to be included in the kernel.  The details
+       depend on the label, as discussed below.  Each subitem repre‐
+       sents a kernel subcomponent  required  by  the  corresponding
+       item.   Both items and subitems can be either portable (plat‐
+       form-independent) or platform-specific.  The source file  for
+       a  given  item or subitem is sought in the platform-directory
+       (for platform-specific code), and in directories ../port  and
+       ../ip,   under   control   of   the   platform's  mkfile  and
+       ../port/portmkfile (which is included by mkfile).   Resulting
+       object files are left in the platform directory.
+
+       Outside  the  dev section, each item and subitem x causes the
+       kernel image to include the code compiled from x.c,  (or  x.s
+       or  x.S for assembly-language support), or portdir/x.c, where
+       portdir is one of the portable directories  mentioned  above.
+       In  the  dev  section,  an  item x corresponds instead to the
+       driver source file devx.c in the current  (platform-specific)
+       directory  or a portable driver portdir/devx.c.  Subitems are
+       handled as in any other section.  Typically they  are  auxil‐
+       iary files that are needed by the associated driver.
+
+       For  instance, in a native kernel the portable driver for the
+       draw device uses platform-specific code from screen.c.   That
+       can be represented as follows:
+
+              dev
+                   draw screen
+
+       Each  item  x  in  the  ip  section corresponds to a protocol
+       implementation compiled from  ../ip/x.c.   Any  subitems  are
+       dealt with in the same way as in the dev section.
+
+       The  link  section provides a way for hardware-specific parts
+       of drivers to link at runtime to the hardware-invariant  part
+       of  a  device drivers.  For each item x, the kernel will call
+       the function xlink during its initialisation.  Typically that
+       function makes itself known to the device driver by calling a
+       function provided by that driver, passing the  address  of  a
+       interface-specific  data  structure  or  linkage  table.  For
+       example, ethersmc is an interface-specific component:
+
+              link
+                   ...
+                   ethersmc
+
+       and its source file ethersmc.c provides a  function  ethersm‐
+       clink that calls addethercard in the interface-invariant part
+       of the driver, devether.c:
+
+              void
+              ethersmclink(void)
+              {
+                   addethercard("smc91cXX", reset);
+              }
+
+       Similarly, during kernel initialisation, for each item  x  in
+       the mod section, the kernel calls the function xinit, to ini‐
+       tialise the corresponding built-in Limbo module.
+
+       The init section selects the first Dis  program  run  by  the
+       system.   For  native  kernels,  a  given  item  x  refers to
+       ../init/x.dis, which is automatically built from ../init/x.b.
+       For  hosted  kernels,  emuinit is normally used, referring to
+       /dis/emuinit.dis.
+
+       The lib section lists the libraries to include  when  linking
+       the  kernel,  in  an  order  that  satisfies any dependencies
+       amongst them.  Each item  x  corresponds  to  /$SYSTARG/$OBJ‐
+       TYPE/libx.a,  a target-specific library produced by compiling
+       the C source code in /libitem, where SYSTARG and OBJTYPE  are
+       set in mkfile to the target system and object types.
+
+       An item in the root section has one of the forms:
+
+              name
+              name source
+
+       where  name and source are both absolute path names rooted at
+       the Inferno source tree.  The kernel's initial root file sys‐
+       tem  (see  root(3)) will contain a file or directory with the
+       given name.  Name must exist  in  the  Inferno  root,  or  an
+       existing  source  file must be named.  In either case, if the
+       existing name refers to a file, the file  in  the  root  file
+       system  will  have  that file's current contents.  If it is a
+       directory, the root file file system will  have  a  directory
+       with  that  name,  but  the directory will contain only those
+       names listed in the configuration file as belonging  to  that
+       directory.   Source  is  often to force a target name to be a
+       directory.
+
+FILES
+       /emu/port/mkdevc
+       /emu/port/mkdevlist
+       /emu/port/mkroot
+       /os/port/mkdevc
+       /os/port/mkdevlist
+       /os/port/mkroot
+
+SEE ALSO
+       mk(10.1)
+
+                                                          CONF(10.6)

@@ -1,0 +1,151 @@
+PREFAB-COMPOUND(2)       System Calls Manual      PREFAB-COMPOUND(2)
+
+NAME
+       prefab: Compound - windows for ITV toolkit
+
+SYNOPSIS
+       include "draw.m";
+       include "prefab.m";
+       prefab := load Prefab Prefab->PATH;
+
+       Compound: adt
+       {
+           image:     ref Draw->Image;
+           environ:   ref Environ;
+           r:         Draw->Rect;
+           title:     ref Element;
+           contents:  ref Element;
+
+           iconbox:   fn(env: ref Environ,
+                      p: Draw->Point, title: string, icon,
+                      mask: ref Draw->Image):
+                      ref Compound;
+           textbox:   fn(env: ref Environ,
+                      r: Draw->Rect,  title, text: string):
+                      ref Compound;
+           layoutbox: fn(env: ref Environ,
+                      r: Draw->Rect,  title: string, lay: list of Layout):
+                      ref Compound;
+           box:       fn(env: ref Environ,
+                      p: Draw->Point, title, elist: ref Element):
+                      ref Compound;
+           draw:      fn(comp: self ref Compound);
+           redraw:      fn(comp: self ref Compound, r: Draw->Rect);
+           scroll:    fn(comp: self ref Compound, elem: ref Element,
+                      d: Draw->Point);
+           show:      fn(comp: self ref Compound, elem: ref Element): int;
+           select:    fn(comp: self ref Compound,
+                      elem: ref Element, i: int, c: chan of int):
+                      (int, int, ref Element);
+           tagselect: fn(comp: self ref Compound,
+                      elem: ref Element, i: int, c: chan of int):
+                      (int, int, ref Element);
+           highlight: fn(comp: self ref Compound,
+                      elem: ref Element, on: int);
+       };
+
+DESCRIPTION
+       Compound is the data type defining boxes drawn on the screen.
+       Each appears in a new window,  Compound.image,  and  holds  a
+       (possibly  nil) title Element and contents Element.  It occu‐
+       pies the space on the screen defined by Compound.r.  Allocat‐
+       ing  a  Compound creates a window but does not draw it; after
+       the Compound is built, Compound.draw must be called  to  make
+       it  visible.   Compounds  have a border around them, drawn in
+       Style.edgecolor and contain from top to bottom the title  (if
+       any),  a  horizontal line (if there is a title), and the con‐
+       tents.
+
+       Compound.iconbox(env, p, title, icon, mask)
+              Creates a Compound whose contents are made by  calling
+              Element.icon  (see  prefab-element(2))  using the icon
+              and mask.  The Compound's upper left corner is  at  p;
+              its  size  is  determined  by the size of the icon and
+              mask.
+
+       Compound.textbox(env, r, title, text)
+              Creates a Compound whose contents are made by  calling
+              Element.text  using  the  supplied text.  As with Ele‐
+              ment.text, the  resulting  contents  Element  will  be
+              actually  a list of text Elements if the text occupies
+              multiple lines on the screen.  The  rectangle  behaves
+              as in Element.text.
+
+       Compound.layoutbox(env, r, title, layoutlist)
+              Like  Compound.textbox,  but  based  on Element.layout
+              rather than Element.text.
+
+       Compound.box(env, p, title, element)
+              Creates a Compound whose contents  are  made  from  an
+              existing  Element.   To  build complex structures, use
+              the  Element-building  functions,  size  the   Element
+              appropriately,  and  use  Compound.box.  The result is
+              positioned with its upper left corner at p,  and  with
+              size determined by that of the Element.
+
+       However  a  Compound  is  built,  its  size computation makes
+       allowance  for  the  border  and  title.   Moreover,  if  the
+       requested size and placement makes part appear offscreen, the
+       result may be moved to display it better.
+
+       Compound.draw()
+              This function uses the description of  the  title  and
+              contents  to  paint  the on-screen image.  It takes no
+              arguments; all the  information  is  included  in  the
+              description.
+
+       Compound.redraw(r)
+              Like  Compound.draw,  but restricts the drawing to the
+              specified Rect r.
+
+       Compound.select( element, index, c ): (int, int, Element)
+              The channel c is a chan of  int  connected  to  an  IR
+              remote  control  interface, typically acquired through
+              the program's Context (see draw-context(2)).  The ele‐
+              ment  is  contained in the Compound, and may be at any
+              level of its structure.  It is most usefully  a  list,
+              but  may be a singleton, in which case it behaves like
+              a list of one element.  The arrow keys on  the  remote
+              control  scroll through the members of the list, using
+              the Style.highlightcolor associated with  each  member
+              element  to  indicate  selection.  A Select key on the
+              remote control triggers select to return a tuple (key,
+              index,  elem); key is the key code of the action (here
+              Select), index is the number of  the  element  in  the
+              list  (ignoring separators), and elem is the list mem‐
+              ber highlighted when the key was hit.  Any  other  key
+              returns  the same tuple with index -1 and the value of
+              the  key.   The  elem  returned  is  always  the  most
+              recently  highlighted,  even  if  the result was not a
+              selection.  When select returns,  it  always  restores
+              the default appearance of the list.
+
+       Compound.tagselect( element, index, c): (int, int, Element)
+              Like  Compound.select, but rather than selecting among
+              all the elements of a  list,  it  selects  among  only
+              those elements with defined tags in the structure con‐
+              tained within the specified element.
+
+       Compound.highlight(element,  on)
+              Set the highlighting to be ``on'' or ``off''  for  the
+              element within the compound.
+
+       Compound.scroll(element,  d)
+              Like  Element.scroll:  scroll  the  element within the
+              compound.  The updated  image  is  redrawn  after  the
+              scrolling.
+
+       Compound.show(element,  d)
+              Like  Element.show:  make  sure the element is visible
+              within the rectangle of the top-level Element  of  the
+              Compound,  that  is,  in effect call Element.show(Com‐
+              pound.contents, element);
+
+SOURCE
+       /libinterp/prefab.c
+       /libprefab/*.c
+
+SEE ALSO
+       prefab-element(2), prefab-environ(2), prefab-style(2)
+
+                                                  PREFAB-COMPOUND(2)

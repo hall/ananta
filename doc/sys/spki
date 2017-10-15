@@ -1,0 +1,399 @@
+SPKI(2)                  System Calls Manual                 SPKI(2)
+
+NAME
+       SPKI:  Cert,  Hash,  Key,  Name,  Seqel,  Signature, Subject,
+       Toplev, Valid - simple public key infrastructure
+
+SYNOPSIS
+       include "bufio.m";
+       include "sexprs.m";
+       include "keyring.m";
+       include "spki.m";
+       spki := load SPKI SPKI->PATH;
+
+       Hash: adt {
+           alg:    string;
+           hash:   array of byte;
+
+           sexp:   fn(h: self ref Hash): ref Sexprs->Sexp;
+           text:   fn(h: self ref Hash): string;
+           eq:     fn(h1: self ref Hash, h2: ref Hash): int;
+       };
+
+       Key: adt {
+           pk:     ref Keyring->PK;    # either pk/sk or hash might be nil
+           sk:     ref Keyring->SK;
+           nbits:  int;
+           halg:   string;             # basic signature hash algorithm
+           henc:   string;             # pre-signature encoding
+           hash:   list of ref Hash;
+
+           hashed:  fn(k: self ref Key, alg: string): array of byte;
+           hashexp: fn(k: self ref Key, alg: string): ref Hash;
+           public:  fn(k: self ref Key): ref Key;
+           sigalg:  fn(k: self ref Key): string;
+           text:    fn(k: self ref Key): string;
+           sexp:    fn(k: self ref Key): ref Sexprs->Sexp;
+           eq:      fn(k1: self ref Key, k2: ref Key): int;
+       };
+
+       Name: adt {
+           principal:  ref Key;
+           names:  list of string;
+
+           isprincipal: fn(n: self ref Name): int;
+           local:    fn(n: self ref Name): ref Name;
+           islocal:  fn(n: self ref Name): int;
+           isprefix: fn(n1: self ref Name, n2: ref Name): int;
+           text:     fn(n: self ref Name): string;
+           sexp:     fn(n: self ref Name): ref Sexprs->Sexp;
+           eq:       fn(n1: self ref Name, n2: ref Name): int;
+       };
+
+       Cert: adt {
+           e:        ref Sexprs->Sexp;   # S-expression, if originally parsed
+           issuer:   ref Name;
+           subject:  ref Subject;
+           valid:    ref Valid;
+           pick {
+           A or KH or O => # auth, keyholder or object
+               delegate:   int;
+               tag:        ref Sexprs->Sexp;
+           N =>    # name
+           }
+
+           text:     fn(c: self ref Cert): string;
+           sexp:     fn(c: self ref Cert): ref Sexprs->Sexp;
+       };
+
+       Subject: adt {
+           pick{
+           P =>
+               key:    ref Key;
+           N =>
+               name:   ref Name;
+           O =>
+               hash:   ref Hash;
+           KH =>
+               holder: ref Name;
+           T =>
+               k, n:   int;
+               subs:   cyclic list of ref Subject;
+           }
+
+           eq:     fn(s1: self ref Subject, s2: ref Subject): int;
+           principal:  fn(s: self ref Subject): ref Key;
+           text:   fn(s: self ref Subject): string;
+           sexp:   fn(s: self ref Subject): ref Sexprs->Sexp;
+       };
+
+       Signature: adt {
+           hash:   ref Hash;
+           key:    ref Key;    # find by hash if necessary
+           sa:     string;     # alg[-[encoding-]hash
+           sig:    list of (string, array of byte);
+
+           algs:   fn(s: self ref Signature): (string, string, string);
+           sexp:   fn(s: self ref Signature): ref Sexprs->Sexp;
+           text:   fn(s: self ref Signature): string;
+       };
+
+       Seqel: adt {
+           pick{
+           C =>
+               c: ref Cert;
+           K =>
+               k: ref Key;
+           O =>
+               op: string;
+               args: list of ref Sexprs->Sexp;
+           S =>
+               sig: ref Signature;
+           E =>
+               exp:    ref Sexprs->Sexp;
+           }
+
+           sexp:   fn(se: self ref Seqeql): ref Sexprs->Sexp;
+           text:   fn(se: self ref Seqel): string;
+       };
+
+       Valid: adt {
+           notbefore:  string;
+           notafter:   string;
+
+           intersect:  fn(a: self Valid, b: Valid): (int, Valid);
+           text:   fn(a: self Valid): string;
+           sexp:   fn(a: self Valid): ref Sexprs->Sexp;
+       };
+
+       Toplev: adt {
+           pick {
+           C =>
+               v:  ref Cert;
+           Sig =>
+               v:  ref Signature;
+           K =>
+               v:  ref Key;
+           Seq =>
+               v:  list of ref Seqel;
+           }
+
+           sexp:   fn(t: self ref Toplev): ref Sexprs->Sexp;
+           text:   fn(t: self ref Toplev): string;
+       };
+
+       init:   fn();
+       date2epoch: fn(s: string): int; # YYYY-MM-DD_HH:MM:SS
+       epoch2date: fn(t: int): string;
+       time2secs:  fn(s: string): int; # HH:MM:SS
+       secs2time:  fn(t: int): string;
+       sigalgs:    fn(spec: string): (string, string, string);
+
+       # parse structures
+       parse:      fn(s: ref Sexprs->Sexp): (ref Toplev, string);
+       parseseq:   fn(s: ref Sexprs->Sexp): list of ref Seqel;
+       parsecert:  fn(s: ref Sexprs->Sexp): ref Cert;
+       parsesig:   fn(s: ref Sexprs->Sexp): ref Signature;
+       parsename:  fn(s: ref Sexprs->Sexp): ref Name;
+       parsekey:   fn(s: ref Sexprs->Sexp): ref Key;
+       parsehash:  fn(s: ref Sexprs->Sexp): ref Hash;
+       parsecompound:  fn(s: ref Sexprs->Sexp): ref Name;
+       parsevalid: fn(s: ref Sexprs->Sexp): ref Valid;
+
+       # signature checking
+       checksig:   fn(c: ref Cert, sig: ref Signature): string;
+       sig2icert:  fn(sig: ref Signature, signer: string, exp: int): ref Keyring->Certificate;
+
+       # signature making
+       signcert:   fn(c: ref Cert, sigalg: string, key: ref Key):
+                        (ref Signature, string);
+       signbytes:  fn(a: array of byte, sigalg: string, key: ref Key):
+                        (ref Signature, string);
+
+       # tags
+       maketag:    fn(e: ref Sexprs->Sexp): ref Sexprs->Sexp;
+       tagintersect:  fn(t1: ref Sexprs->Sexp, t2: ref Sexprs->Sexp):
+                        ref Sexprs->Sexp;
+       tagimplies: fn(t1: ref Sexprs->Sexp, t2: ref Sexprs->Sexp): int;
+
+       # hash canonical s-expression
+       hashbytes:  fn(a: array of byte, alg: string): array of byte;
+       hashexp:    fn(e: ref Sexprs->Sexp, alg: string): array of byte;
+
+DESCRIPTION
+       SPKI provides data types and operations to help build  imple‐
+       mentations  of  the  Simple Public Key Infrastructure (SPKI).
+       It provides types for hash values, public and  private  keys,
+       local and extended names, principals and compound principles,
+       certificates,  validity  periods,   signatures,   and   proof
+       sequences.   It  also  provides  operations  on authorisation
+       tags.  Externally, SPKI represents all such things as partic‐
+       ular forms of S-expression, internally represented using Sex‐
+       prs->Sexp from sexprs(2).
+
+       Init must be called before invoking any  other  operation  of
+       the module.
+
+       Most types defined here provide several common operations:
+
+       t1.eq(t2)
+              Return true iff values t1 and t2 are equal.
+
+       t.sexp()
+              Return  an S-expression s representing the value of t.
+              Subsequently, the Sexp operation s.pack()  will  yield
+              an  array  of  bytes  containing the value t in SPKI's
+              canonical S-expression form.
+
+       t.text()
+              Return a textual representation of the value t; it  is
+              often  just  the  textual representation of the corre‐
+              sponding S-expression.
+
+       Hash is the internal representation of hash values,  contain‐
+       ing  an  algorithm  name  alg  and then the hash itself as an
+       array of bytes.  SPKI entities such as the public  key  of  a
+       principal  or  a  signed certificate are often represented by
+       the hash values of their corresponding  S-expressions,  where
+       the hash value is later used as a compact way to refer to the
+       original entity.  For example,  a  <principal>  is  either  a
+       <public-key>  or  a <hash-of-key>, where the latter refers to
+       some instance of the former.   Current  hash  algorithms  are
+       "sha1"  and  "md5.   A  Hash  value can be created from an S-
+       expression representing a SPKI <hash> element  by  parsehash.
+       It returns nil if the S-expression was ill-formed.
+
+       Key  represents  public  and  private  keys, with an optional
+       associated pre-hash encoding henc, the hash algorithm halg to
+       be used when signing, and an optional list of currently known
+       hashes of the public component of the key itself.  SPKI iden‐
+       tifies  principals  and  public keys, thus each instance of a
+       principal in the other data structures is  represented  by  a
+       Key  giving  the  corresponding  public  key, or its hash, or
+       both.  Currently the public and private (secret)  key  values
+       have  types  defined by keyring-intro(2).  A Key value can be
+       created from an S-expression representing a SPKI <public-key>
+       element  by parsekey.  It returns nil if the S-expression was
+       ill-formed.  For a given Key k:
+
+       k.ishash()
+              Returns true if k is just a hash of  a  key,  with  no
+              public or private components.
+
+       k.public()
+              Returns  the public key for k, which is simply k if it
+              is already a public key, but if it is a  private  key,
+              then a new key is returned that has only public compo‐
+              nents.  Public returns a nil value if k is just a hash
+              of a key value.
+
+       k.sigalg()
+              Returns the SPKI signature algorithm for the key.
+
+       k.hashed(alg)
+              Return  an array of bytes giving the hash of the Key k
+              using algorithm alg.  It returns nil if k.ishash()  is
+              true, and k has no associated hash value for alg.
+
+       k.hashexp(alg)
+              Similar to hashed, but returns a Hash value instead of
+              the raw data.
+
+       Name represents both local and  extended  names,  and  simple
+       principals  consisting  of  just  a key.  The field principal
+       gives the key that defines the name space in which  the  list
+       of  names is interpreted.  For simple principles, the list of
+       names is nil.  A local name has exactly one name in the list.
+       Two  parsing  functions  convert  to Name from S-expressions.
+       Parsename parses a SPKI <name> element: (name [  principal  ]
+       name  ...   ),  where principal is either a <public-key> or a
+       <hash> element.  Parsecompound accepts either a  <name>  ele‐
+       ment  as  above, or a <public-key> or its <hash>.  Both func‐
+       tions return nil if the S-expression is ill-formed.
+
+       Subject represents the subjects of SPKI name  and  authorisa‐
+       tion  certificates.   It  has several variants in a pick adt,
+       with suitable fields for each variant:
+
+       Subject.P
+              A simple principal: a key.
+
+       Subject.N
+              A group of principals or a delayed binding to a  prin‐
+              cipal: a name.
+
+       Subject.O
+              The hash of an object.
+
+       Subject.KH
+              A  keyholder  certificate, that says something about a
+              key's holder (represented by a Name).
+
+       Subject.T
+              A threshold subject, used only in  authorisation  cer‐
+              tificates.   The  n  subsidiary subjects are listed in
+              subs; of those, at least k must sign a request for  it
+              to be authorised.
+
+       Subject
+              provides  the common operations eq, sexp and text, and
+              a further operation:
+
+       s.principal()
+              If s is a simple principal or a name, return  the  Key
+              defining  the  principal,  if known; return nil other‐
+              wise.
+
+       Subjects appear only as a subsidiary item in certificates and
+       do not have a parsing function.
+
+       Cert  represents SPKI certificates.  There are four variants,
+       represented by a pick adt:  Cert.A  (authorisation);  Cert.KH
+       (keyholder); Cert.O (object); and Cert.N (name).  The follow‐
+       ing fields and operations are common to all variants:
+
+       e      original S-expression (if  created  by  parsecert)  to
+              allow hashes and signatures to be computed on the SPKI
+              canonical form of the certificate
+
+       issuer The simple principal  (represented  as  a  name)  that
+              issued  an authorisation, keyholder or object certifi‐
+              cate, or  the  <issuer-name>  of  a  name  certificate
+              (allowing  both local and extended names not just sim‐
+              ple principals).
+
+       subject
+              The Subject of the certificate.  Name certificates may
+              not have threshold subjects.
+
+       valid  Optional  restriction  on  the  certificate's validity
+              (see Valid for details).
+
+       Name certificates have only the fields above; the others have
+       several more fields:
+
+       delegate
+              True  iff  the  certificate  carries delegation rights
+              (ie, (propagate) in the S-expression representation).
+
+       tag    An S-expression that expresses the  authority  granted
+              by  the  certificate.   The expression (tag (*)) means
+              `all permissions'.
+
+       A Cert value can be created from an S-expression representing
+       a  SPKI  <cert>  element by parsecert.  It returns nil if the
+       expression was ill-formed.
+
+       SPKI tag expressions, represented internally by Sexprs->Sexpr
+       trees, form a partial order, including the pattern operations
+       (*), (* set ...  ), (* prefix ...  ), (* range ...  ), and as
+       an extension, (* suffix ...  ).  Given two tag expressions t1
+       and t2, tagintersect returns a tag expression representing t1
+       ∩  t2;  tagimplies  returns  true  iff tag t1 implies tag t2:
+       (t1∩t2)=t2.  Both functions work correctly  when  t1  and  t2
+       contain any legal combination of pattern operations.
+
+       SPKI  structures  are  converted  to  a  canonical form of S-
+       expression to be hashed or signed (with or without  hashing).
+       Hashbytes  returns an array of bytes containing the result of
+       hashing array a using hash  algorithm  alg  (either  sha1  or
+       md5).   Hashexp returns an array of bytes containing the hash
+       of the canonical form of expression e  using  hash  algorithm
+       alg.
+
+       Signature  associates hash , the Hash value of something (eg,
+       a public key) with the result of applying a public-key signa‐
+       ture algorithm sa
+        to that hash value.  The name of the algorithm has the form
+
+              alg[-[encoding-]hash]
+              with  up to three subcomponents (separated by dashes),
+              where alg is a public key algorithm  such  as  rsa  or
+              dsa,  encoding is an optional encoding to apply to the
+              value before signing, and  hash  is  the  secure  hash
+              algorithm  to  apply to the encoded value before sign‐
+              ing.  For example, the usual algorithms for  RSA  keys
+              are rsa-pkcs1-sha1 and rsa-pkcs1-md5.
+
+       Signatures  are  created by signcert, which signs a SPKI cer‐
+       tificate represented by c with key using the signature  algo‐
+       rithm  sigalg.  Key must contain both public and secret (pri‐
+       vate) components.  Any other binary data  can  be  signed  by
+       signbytes, which signs arbitrary data represented by an array
+       of bytes a.  Both functions apply any encoding and hash algo‐
+       rithms mentioned by sigalg, and return a tuple (sig,err).  On
+       success, sig refers to a Signature value  that  can  be  con‐
+       verted  to  an  S-expression using sig.sexp() and err is nil.
+       On an error, sig is nil and err contains a diagnostic.
+
+       A certificate's signature can be checked by checksig.  If sig
+       is a valid signature for certificate c, checksig returns nil.
+       If the signature is invalid, checksig returns a diagnostic.
+
+SOURCE
+       /appl/lib/spki.b
+
+SEE ALSO
+       bufio(2), sexprs(2), spki-verifier(2)
+
+                                                             SPKI(2)

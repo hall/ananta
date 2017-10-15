@@ -1,0 +1,39 @@
+SEE(9)                Kernel Developer's Manual               SEE(9)
+
+NAME
+       see - Make a portion of a widget visible.
+
+SYNOPSIS
+       see option ?pathName?
+
+DESCRIPTION
+       See  makes  sure that a portion of a widget is visible in its
+       containing view; for instance, it will  scroll  a  canvas  or
+       text  widget to ensure that the specified portion is in view.
+       The following options are supported:
+
+       -rectangle  list
+              Specifies a list with four dist coordinates describing
+              the  left,  top,  right, and bottom coordinates of the
+              rectangular region, in  coordinates  relative  to  the
+              widget  origin,  of the area that should be made visi‐
+              ble.
+
+       -point listP
+              Specifies a list with two dist coordinates  describing
+              a  point within the widget that should be made visible
+              by preference if the entirety of  the  above-specified
+              rectangle cannot be shown. Defaults to the top left of
+              the specified rectangle.
+
+       -where If this option is given, see returns a list containing
+              the  left,  top,  right  and bottom coordinates of the
+              currently visible portion of pathName.
+
+       If neither the -rectangle or the -point  options  are  given,
+       then the entire area of pathName will be made visible.
+
+SEE ALSO
+       options(9), types(9)
+
+                                                              SEE(9)

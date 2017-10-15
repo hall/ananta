@@ -1,0 +1,84 @@
+COMMAND(2)               System Calls Manual              COMMAND(2)
+
+NAME
+       command - command interface
+
+SYNOPSIS
+       include "sh.m";
+       cmd := load Command path;
+
+       PATH: con "/dis/sh.dis";
+       init: fn(ctxt: ref Draw->Context, args: list of string);
+
+DESCRIPTION
+       Command  defines the module interface for programs started by
+       the Inferno shells sh(1) and mash(1), and the window  manager
+       wm(1).  Applications to be run as commands must adhere to it,
+       and any application wishing to start another command may  use
+       it.
+
+       Every  command  must have an init function with the signature
+       shown above.  Note that Limbo rules allow a module to  expose
+       a  larger  interface  for  use by other applications (see for
+       instance sh(2)); provided it includes the form of init  shown
+       above, the module can also be invoked as a command.
+
+       Ctxt  provides  the graphics context for a windowing applica‐
+       tion, which typically passes it to wmlib(2) (eg, to titlebar)
+       or  directly to tk(2).  It is nil for commands started by the
+       shells.
+
+       The arguments to the command are passed as a simple  list  of
+       strings, args.  By convention, the name of the command or the
+       name of its .dis file heads the list.
+
+       PATH names the file containing sh(1), (on small systems, this
+       might  actually  name an instance of tiny(1)) but usually the
+       path name of another command will be given to the Limbo  load
+       operator:
+
+              include "sh.m";
+              ...
+
+              cmd := load Command "/dis/date.dis";
+              cmd->init(nil, "date" :: nil);
+
+       In  practice  more care must be taken when invoking programs.
+       In the example above, the current process executes  the  body
+       of  cmd->init and if that executes exit, raises an exception,
+       or otherwise modifies the state of the process, the caller is
+       affected.  The following is more prudent:
+
+              child(file: string, args: list of string, pidc: chan of int)
+              {
+                    pidc <-= sys->pctl(Sys->NEWFD|Sys->FORKNS|Sys->NEWPGRP,
+                          list of {0, 1, 2});
+                    cmd := load Command file;
+                    if(cmd == nil){
+                          sys->print("can't load %s: %r\n", file);
+                          exit;
+                    }
+                    cmd->init(nil, args);
+              }
+              parent()
+              {
+                    pidc := chan of int;
+                    spawn child(disfile, args, pidc);
+                    pid := <-pidc;
+                    ...
+              }
+
+       A  new  child  process runs the command only after using sys-
+       pctl to insulate the caller  from  untoward  changes  to  its
+       environment.   Note  the idiomatic use of a channel to return
+       the child's process ID to  its  parent,  which  can  then  if
+       desired  use the wait file of prog(3) to watch over the child
+       and wait for its demise.  or use the ctl file of  prog(3)  to
+       dispose  of it.  Furthermore, any state shared between parent
+       and child can safely be accessed by the child before it sends
+       the ID because the parent is blocked on the receive.
+
+SEE ALSO
+       mash(1), sh(1), wm(1), sh(2), sys-pctl(2)
+
+                                                          COMMAND(2)

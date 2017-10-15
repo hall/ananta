@@ -1,0 +1,81 @@
+QLOCK(10.2)                                              QLOCK(10.2)
+
+NAME
+       qlock,  qunlock,  canqlock,  rlock, runlock, wlock, wunlock -
+       serial synchronisation
+
+SYNOPSIS
+       void qlock(QLock *l)
+
+       void qunlock(QLock *l)
+
+       int  canqlock(QLock *l)
+
+       void rlock(RWlock *l)
+
+       void runlock(RWlock *l)
+
+       int  canrlock(RWlock *l)
+
+       void wlock(RWlock *l)
+
+       void wunlock(RWlock *l)
+
+DESCRIPTION
+       The primitive locking functions described in lock(10.2) guar‐
+       antee  mutual  exclusion,  but they implement spin locks, and
+       should not be used if the process might sleep(10.2) within  a
+       critical  section.   The following functions serialise access
+       to a resource by forming an orderly queue of processes.
+
+       Each resource to be controlled is given an  associated  QLock
+       structure;  it  is  usually  most  straightforward to put the
+       QLock in the structure that represents the resource.  It must
+       be  initialised  to zero before use (as guaranteed for global
+       variables and for structures allocated by malloc).
+
+       On return from qlock, the process has acquired  the  lock  l,
+       and  can  assume exclusive access to the associated resource.
+       If the lock is  not  immediately  available,  the  requesting
+       process  is  placed  on  a  FIFO queue of processes that have
+       requested the lock.  Processes on this list  are  blocked  in
+       the state.
+
+       Qunlock  unlocks l and schedules the first process queued for
+       it (if any).
+
+       Canqlock is a non-blocking form of qlock.  It tries to obtain
+       the  lock  l and returns true if successful, and 0 otherwise;
+       it always returns immediately.
+
+       RWlock is a form of lock for  resources  that  have  distinct
+       readers  and writers.  It allows concurrent readers but gives
+       each writer exclusive access.  A caller announces its read or
+       write intentions by choice of lock (and unlock) function; the
+       system  assumes  the  caller  will  not  modify  a  structure
+       accessed under read lock.
+
+       Rlock acquires l for reading.  The holder can read but agrees
+       not to modify the resource.  There may be several  concurrent
+       readers.  Canrlock is non-blocking: it returns non-zero if it
+       successfully acquired the lock  immediately,  and  0  if  the
+       resource was unavailable.
+
+       Runlock  returns a read lock; the last reader out enables the
+       first writer waiting (if any).
+
+       Wlock acquires a write lock.  The holder of such a  lock  may
+       assume  exclusive  access  to the resource, and is allowed to
+       modify it.
+
+       Wunlock returns a write  lock.   The  next  pending  process,
+       whether reader or writer, is scheduled.
+
+SOURCE
+       /os/port/qlock.c
+       /os/emu/port/lock.c
+
+SEE ALSO
+       lock(10.2), splhi(10.2)
+
+                                                         QLOCK(10.2)

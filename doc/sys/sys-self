@@ -1,0 +1,60 @@
+SYS-SELF(2)              System Calls Manual             SYS-SELF(2)
+
+NAME
+       SELF - reference self as a compatible module type
+
+SYNOPSIS
+       include "sys.m";
+       me := load Module SELF;
+
+DESCRIPTION
+       An  instance  of a module of one type can acquire a reference
+       to itself as any compatible module type, using the Limbo load
+       operator  with  the special built-in module name $self.  Nor‐
+       mally, applications use a synonym, the constant  SELF,  which
+       is defined by sys.m outside the declaration of the Sys module
+       (so that it need not be imported).  Note that the  result  of
+       the  load  refers to the same instance that is currently exe‐
+       cuting (ie, the same module data).
+
+       This mechanism is most often used to obtain  a  reference  to
+       the  current module instance with a restriction of its module
+       type to a compatible subtype (eg, containing a subset of  the
+       current  module's  declarations).  For example, given modules
+       of the following types:
+
+              T: module
+              {
+                  init:    fn(nil: ref Draw->Context, nil: list of string);
+                  special: fn(a, b: int);
+              };
+              S: module
+              {
+                  special: fn(x, y: int);
+              };
+              G: module
+              {
+                  init:    fn(v: S);
+              };
+
+       an instance of module T can execute both the following:
+
+              t := load T SELF;
+              s := load S SELF;
+
+       but a module of type S could not load itself as type T.
+
+       The result might typically be assigned to a  module  variable
+       of  that type (including passing as a parameter or storing in
+       an adt), as in:
+
+              g := load G "g.dis";
+              g->init(s);
+
+       See the definition and  use  of  BufioFill  in  bufio(2)  and
+       bufio-chanfill(2) for a practical example.
+
+SEE ALSO
+       ``The Limbo Programming Language'', Volume 2.
+
+                                                         SYS-SELF(2)

@@ -1,0 +1,104 @@
+AUDIO(3)              Library Functions Manual              AUDIO(3)
+
+NAME
+       audio - digital audio input and output
+
+SYNOPSIS
+       bind -a '#A' /dev
+
+       /dev/audio
+       /dev/audioctl
+
+DESCRIPTION
+       The  audio device serves a one-level directory containing two
+       files, giving access to the host or native audio device in  a
+       platform-independent way.
+
+       Audio  is  the  data  file,  which  can be read or written to
+       exchange data with the device. Audio data is  a  sequence  of
+       stereo  samples, left sample first, each of which is a 16 bit
+       little-endian two's complement integer.
+
+       Audioctl is the associated control file, which sets the char‐
+       acteristics of the device.  Reads return lines of the form
+
+       source [in out] value
+
+       source in value out value
+
+       source [in out] left value right value
+
+       source in left value right value out left value right value
+              The  qualifiers in, out and left, right are omitted if
+              they are not applicable or if the input/output  and/or
+              left/right  values are the same.  The source is one of
+              audio, aux1, aux2, line, mono,  mic,  rate,  chans  or
+              bits.   If  source  is  one  of the ports audio, aux1,
+              aux2, line, mono or mic, value represents  the  volume
+              on  a  scale  of  0 (quiet) to 100 (loud). The default
+              volume is 50 for the audio port and 0 for the  remain‐
+              der.  If the source is rate, value represents the rate
+              at which the data was recorded in Hz. The  default  is
+              22050.  If the source is chans, value is the number of
+              channels of audio data - 2 (the default)  for  stereo,
+              otherwise mono. If the source is bits, value is one of
+              4, 8 or 16, the sample size in bits.
+
+       [in out] enc format
+              Outputs the recording format on the input and/or  out‐
+              put channels.  Format is one of ulaw, alaw, pcm, pcm16
+              or adpcm
+
+       loop value
+              Value is 0 or 1 to disable or enable loopback  respec‐
+              tively.
+
+       Writes control the device with strings of a similar format as
+       that for reads.
+
+       source [in out] value
+
+       source in value out value
+
+       source [in out] left value right value
+
+       source in left value right value out left value right value
+              Set the corresponding value/volume for the  particular
+              source.   The  same  conventions  apply as in the read
+              case above. The default value of source is audio.
+
+       reset  Set all attributes to their default value.
+
+       loop value
+              Enable (1) or disable (0) loopback mode.
+
+       [in out] enc format
+              Set the recording format on the  input  and/or  output
+              channels to format.  Format is one of ulaw, alaw, pcm,
+              adpcm.
+
+       [left right] dev input
+              Set the input source of the left  and/or  right  ADCs.
+              Input is one of mic, line, aux1, loop.
+
+SOURCE
+       /emu/port/devaudio*.c
+       /emu/*/devaudio.c
+       /os/*/devaudio.c
+       /os/*/devcs4231.c
+
+SEE ALSO
+       auplay(1)
+       audio(6)
+
+BUGS
+       The  device  has  not been implemented on every platform that
+       could provide it, particularly hosted implementations.
+       /os/port/devaudio.c (a driver for  the  SB16)  implements  an
+       older interface of broadly similar form, but using volume not
+       audioctl, and supports a subset  of  the  commands  described
+       above.
+       The  device is exclusive-use and cannot mix streams from sev‐
+       eral clients.
+
+                                                            AUDIO(3)

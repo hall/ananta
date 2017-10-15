@@ -1,0 +1,36 @@
+READNUM(10.2)                                          READNUM(10.2)
+
+NAME
+       readnum, readstr - return values from read from device
+
+SYNOPSIS
+       int readstr(ulong off, char *buf, ulong n, char *str)
+
+       int  readnum(ulong  off,  char  *buf, ulong n, ulong val, int
+       size)
+
+DESCRIPTION
+       Readstr and readnum simplify the return of strings  and  num‐
+       bers  from  device  read routines, because they deal with any
+       buffering and boundary cases.  Several parameters to the read
+       call  are  often  handed  on directly to these functions: the
+       file offset, as off; the address of  the  user's  buffer,  as
+       buf; and the number of bytes requested, as n.  Both functions
+       return the number of bytes they have stored in buf, and which
+       can often be returned directly from the device read routine.
+
+       Readstr  satisfies  a  read by copying data into buf from the
+       NUL-terminated  string  in  str.   The  data  transferred  is
+       selected and limited by off, n and the length of str.
+
+       Readnum converts the unsigned integer val to a decimal repre‐
+       sentation in buf.  The value is right-justified in a field of
+       size-1  places  and  is followed by a blank.  Size can be the
+       global constant for 32-bit integers; the largest size allowed
+       is 64 bytes.
+
+SOURCE
+       /os/port/devcons.c
+       /emu/port/devcon.c
+
+                                                       READNUM(10.2)

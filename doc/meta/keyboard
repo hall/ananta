@@ -1,0 +1,99 @@
+KEYBOARD(6)                 Games Manual                 KEYBOARD(6)
+
+NAME
+       keyboard - how to type characters
+
+DESCRIPTION
+       Keyboards  are  idiosyncratic.   The differing conventions of
+       host operating systems make them more so for Inferno.  In all
+       implementations,  it  should  be obvious how to type ordinary
+       ASCII characters, backspace, tab, escape, and newline.   When
+       typing  into the Inferno environment, the key labelled Return
+       or Enter generates a  newline  (0x0A);  if  there  is  a  key
+       labelled  Line  Feed,  it generates a carriage return (0x0D);
+       Inferno eschews CRLFs.  All control characters are  typed  in
+       the  usual  way;  in particular, control-J is a line feed and
+       control-M a carriage return.
+
+       In native mode, on the PC and some other machines,  the  fol‐
+       lowing  extra  conventions  might  also  be  used.   The  key
+       labelled Caps Lock acts as an additional  control  key.   The
+       character  erase  key  generates backspace.  The key labelled
+       Del or Delete generates the  delete  character  (0x7F).   The
+       plethora  of  function  keys  generate  values in the Unicode
+       user-defined space, as  defined  by  /include/keyboard.h  and
+       /module/keyboard.m.   They are fitfully supported by applica‐
+       tions, but Page Up and Page Down are often understood  by  Tk
+       applications.
+
+       Characters  in  Inferno are runes (see utf(6)).  Any rune can
+       be typed using a compose key followed by several other  keys.
+       The compose key is implementation-dependent, and is also gen‐
+       erally near the lower right of the main key area: either  Alt
+       key  on  the  PC,  and  in  X11 implementations, whatever X11
+       regards as Alt or Meta.  After typing the compose key, type a
+       capital  and  exactly four hexadecimal characters (digits and
+       to to type a single rune with the value  represented  by  the
+       typed number.  There are shorthands for many characters, com‐
+       prising the compose key followed by a two- or three-character
+       sequence.   There are several rules guiding the design of the
+       sequences, as illustrated by  the  following  examples.   The
+       full list is too long to repeat here, but is contained in the
+       file in a format suitable for grep(1).
+
+              A repeated symbol gives  a  variant  of  that  symbol,
+              e.g., ??  yields ¿.
+
+              ASCII  digraphs  for  mathematical  operators give the
+              corresponding operator, e.g., <= yields ≤.
+
+              Two letters give the corresponding ligature, e.g.,  AE
+              yields Æ.
+
+              Mathematical  and other symbols are given by abbrevia‐
+              tions for their names, e.g., pg yields ¶.
+
+              Chess pieces are given by a w or b followed by a  let‐
+              ter  for  the  piece  (k  for king, q for queen, r for
+              rook, n for knight, b for  bishop,  or  p  for  pawn),
+              e.g., wk for a white king.
+
+              Greek  letters  are given by an asterisk followed by a
+              corresponding latin letter, e.g., *d yields δ.
+
+              Cyrillic letters are given by an at sign followed by a
+              corresponding  latin  letter  or  letters,  e.g.,  @ya
+              yields я.
+
+              Script letters are given by a dollar sign followed  by
+              the corresponding regular letter, e.g., $F yields ℱ.
+
+              A  digraph  of a symbol followed by a letter gives the
+              letter with an accent  that  looks  like  the  symbol,
+              e.g., ,c yields ç.
+
+              Two  digits  give the fraction with that numerator and
+              denominator, e.g., 12 yields ½.
+
+              The letter s followed by a character gives that  char‐
+              acter as a superscript, e.g., s1 yields ¹.
+
+              Sometimes  a  pair of characters give a symbol related
+              to the superimposition of  the  characters,  e.g.,  cO
+              yields ©.
+
+              A  mnemonic letter followed by $ gives a currency sym‐
+              bol, e.g., l$ yields £.
+
+       Note the difference between ß (ss) and  µ  (micron)  and  the
+       Greek β and μ.
+
+FILES
+       /lib/keyboard
+              sorted table of characters and keyboard sequences
+
+SEE ALSO
+       acme(1), wm-brutus(1), intro(1), unicode(1), cons(3), utf(6),
+       kbdputc(10.2)
+
+                                                         KEYBOARD(6)

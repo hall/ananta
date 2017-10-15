@@ -1,0 +1,52 @@
+WAIT(2)                  System Calls Manual                 WAIT(2)
+
+NAME
+       wait - wait for child process to exit
+
+SYNOPSIS
+       wait := load Wait Wait->PATH;
+
+       Wait: module
+       {
+          init:    fn();
+          read:    fn(fd: ref Sys->FD): (int, string, string);
+          monitor: fn(fd: ref Sys->FD): (int, chan of (int, string, string));
+          parse:   fn(status: string): (int, string, string);
+       };
+
+DESCRIPTION
+       Wait helps use the wait file of prog(3).
+
+       Init  must be called to initialise the module before invoking
+       any other function.
+
+       Read reads a single wait  record  from  file  descriptor  fd,
+       which must be open on some process p's wait file, and returns
+       a tuple (pid, module, status) where pid is the process ID  of
+       a  child of p that has exited, module is the name of the mod‐
+       ule that caused p to exit, and status is  nil  if  pid  ended
+       without  error or a status message otherwise.  If reading the
+       wait file resulted in end of file or error, pid is 0 (for end
+       of  file)  or  -1  on  error  (and status is the system error
+       string for the error).
+
+       Monitor provides a channel interface to the wait file open on
+       fd; it allows, for instance, a process to use alt to exchange
+       data with a process but also see it exit (for good  or  ill).
+       It starts a monitor process that applies read to fd and sends
+       each resulting tuple  on  a  channel.   It  returns  a  tuple
+       (pid, c)  where  pid is the process ID of the monitor process
+       (which can be used to kill it when done with it),  and  c  is
+       the  channel  on which the process sends each value it reads.
+       The tuple has the format described above for read.  The moni‐
+       tor process exits when the wait file fd yields end of file or
+       error, after sending the corresponding tuple on c.
+
+       Parse takes a complete status string as read from a wait file
+       and  returns  a  tuple (pid, module, status) as described for
+       read above.
+
+SEE ALSO
+       sh(1), prog(3)
+
+                                                             WAIT(2)

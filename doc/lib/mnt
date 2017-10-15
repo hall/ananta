@@ -1,0 +1,62 @@
+MNT(3)                Library Functions Manual                MNT(3)
+
+NAME
+       mnt - attach to 9P servers
+
+SYNOPSIS
+       #M
+
+DESCRIPTION
+       The  mount  driver  is used by Sys->mount (but not Sys->bind;
+       see sys-bind(2)) to connect the name space of  a  process  to
+       the  service  provided  by  a 9P server over a communications
+       channel.  After the mount, file operations in that portion of
+       the name space will be converted by the mount driver into the
+       appropriate 9P messages to the server,  and  its  9P  replies
+       returned as the status of the system calls.
+
+       Any  authentication  must  precede  mount,  which  does  none
+       itself; see security-intro(2) for a discussion of the authen‐
+       tication  and  security  mechanisms  provided `ready made' by
+       Inferno, but any other scheme can be  agreed  between  client
+       and  server.   The  mount system call does, however, issue an
+       attach(5) message to the server to identify the user  of  the
+       connection.  Each distinct user of a connection must mount it
+       separately; the mount driver multiplexes the  access  of  the
+       various users and their processes to the service.
+
+       File-oriented  system  calls are converted by the kernel into
+       messages in the 9P protocol.  Within the kernel, 9P is imple‐
+       mented  by procedure calls to the various kernel device driv‐
+       ers, as described in  intro(10)  and  dev(10.2).   The  mount
+       driver translates these procedure calls into remote procedure
+       calls to be transmitted as messages  over  the  communication
+       channel  to  the  server.   Each  message is implemented by a
+       write of the corresponding protocol  message  to  the  server
+       channel  followed  by a read on the server channel to get the
+       reply.  Errors in the reply message are  turned  into  system
+       call error returns.
+
+       A  sys-read(2)  or Sys->write system call on a file served by
+       the mount driver may be translated into more  than  one  mes‐
+       sage,  since  there  is a maximum data size for a 9P message.
+       The system call will return  when  the  specified  number  of
+       bytes have been transferred or a short reply is returned.
+
+       The  string  is  an  illegal file name, so this device can be
+       accessed directly only by the kernel.
+
+SEE ALSO
+       bind(1), sys-bind(2)
+
+SOURCE
+       /emu/port/devmnt.c
+       /os/port/devmnt.c
+
+BUGS
+       When mounting a service through the mount  driver,  that  is,
+       when  the  channel  being  multiplexed is itself a file being
+       served by the mount driver, large messages may be  broken  in
+       two.
+
+                                                              MNT(3)

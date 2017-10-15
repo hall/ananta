@@ -1,0 +1,85 @@
+EIA(3)                Library Functions Manual                EIA(3)
+
+NAME
+       eia - serial communication control
+
+SYNOPSIS
+       bind -a '#t' /dev
+
+       /dev/eia0
+       /dev/eia0ctl
+       /dev/eia0status
+       /dev/eia1
+       /dev/eia1ctl
+       /dev/eia1status
+       ...
+
+DESCRIPTION
+       The  serial  line  device  serves  a one-level directory that
+       gives access to the serial ports.  Each  file  set  eian  ...
+       represents  one  serial  port  and  includes a data file (eg,
+       eia0), a control file (eg, eia0ctl), and a status  file  (eg,
+       eia0status).
+
+       The  data  file  can be read and written to access the corre‐
+       sponding serial port.  Reads will block until  at  least  one
+       character is available.
+
+       The  ctl  file  accepts textual commands, via write (see sys-
+       read(2)), that control or condition the serial port for  sub‐
+       sequent IO:
+
+       bn     Set the baud rate to n.
+
+       cn     If  n  is non-zero, cause a hangup if the remote drops
+              DCD.
+
+       dn     Set DTR if n is non-zero; otherwise clear it.
+
+       en     If n is non-zero, cause a hangup if the  remote  drops
+              DSR.
+
+       f      Flush the output queue.
+
+       h      Hangup both input and output queues.
+
+       kn     Send a break lasting n milliseconds.
+
+       ln     Set number of bits per byte to n.  Legal values are 5,
+              6, 7, or 8.
+
+       mn     Obey modem CTS signal  if  n  is  non-zero;  otherwise
+              clear it.
+
+       nn     Set  the  output  queue  to non-blocking, if n is non-
+              zero; otherwise mark it as blocking (the default).  In
+              non-blocking  mode,  if  the output queue is full, new
+              output is discarded rather than block the writer until
+              the queue drains.
+
+       pc     Set parity to odd if c is o, to even if c is e; other‐
+              wise set no parity.
+
+       qn     Set the limit on input and output queues  to  n;  both
+              queues are initially set to 4k bytes.
+
+       rn     Set RTS if n is non-zero; otherwise clear it.
+
+       sn     Set  number  of stop bits to n.  Legal values are 1 or
+              2.
+
+       xn     Enable XON/XOFF flow control if n is non-zero;  other‐
+              wise disable it (the default).
+
+       Changes  to  port settings persist between a subsequent close
+       and reopen.
+
+       The status file can be read for a report of the  serial  port
+       status.
+
+SOURCE
+       /os/port/devns16552.c
+       /os/*/devuart.c
+       /os/*/devscc.c
+
+                                                              EIA(3)

@@ -1,0 +1,76 @@
+LABEL(9)              Kernel Developer's Manual             LABEL(9)
+
+NAME
+       label - Create and manipulate label widgets
+
+SYNOPSIS
+       label pathName ?options?
+
+STANDARD OPTIONS
+       -anchor        -font               -justify
+       -background    -foreground         -relief
+       -bitmap        -highlightcolor     -takefocus
+       -borderwidth   -highlightthickness -text
+       -disabledcolor -image              -underline
+
+WIDGET-SPECIFIC OPTIONS
+       -height dist
+              Specifies  a  desired  height  for the label.  If this
+              option isn't specified, the label's desired height  is
+              computed  from the size of the image or bitmap or text
+              being displayed in it.
+
+       -width dist
+              Specifies a desired width  for  the  label.   If  this
+              option  isn't  specified, the label's desired width is
+              computed from the size of the image or bitmap or  text
+              being displayed in it.
+
+DESCRIPTION
+       The label command creates a new window (given by the pathName
+       argument) and makes  it  into  a  label  widget.   Additional
+       options,  described  above,  may  be specified on the command
+       line to configure aspects of the label such as  its  colours,
+       font,  text,  and  initial relief.  The label command returns
+       its pathName argument.  At the time this command is  invoked,
+       there must not exist a window named pathName.
+
+       A label is a widget that displays a textual string, bitmap or
+       image.  If text is displayed, it must  all  be  in  a  single
+       font,  but  it can occupy multiple lines on the screen (if it
+       contains newlines) and one of the characters  may  optionally
+       be  underlined  using the underline option.  The label can be
+       manipulated in a few simple ways, such as changing its relief
+       or text, using the commands described below.
+
+WIDGET COMMAND
+       The  label  command  creates  a  new Tk command whose name is
+       pathName.  This command may be used to invoke various  opera‐
+       tions on the widget.  It has the following general form:
+              pathName option ?arg arg ...?
+       Option and the args determine the exact behaviour of the com‐
+       mand.  The following commands are possible for label widgets:
+
+       pathName cget option
+              Returns the current value of the configuration  option
+              given  by  option.   Option may have any of the values
+              accepted by the label command.
+
+       pathName configure ?option? ?value option value ...?
+              Query or modify the configuration options of the  wid‐
+              get.  If no option is specified, returns a list of all
+              of the available options for pathName.  If one or more
+              option-value  pairs  are  specified,  then the command
+              modifies the given widget option(s) to have the  given
+              value(s);   in  this case the command returns an empty
+              string.  Option may have any of the values accepted by
+              the label command.
+
+BINDINGS
+       When  a  new  label is created, it has no default event bind‐
+       ings: labels are not intended to be interactive.
+
+SEE ALSO
+       options(9), types(9)
+
+                                                            LABEL(9)

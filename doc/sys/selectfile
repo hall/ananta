@@ -1,0 +1,42 @@
+SELECTFILE(2)            System Calls Manual           SELECTFILE(2)
+
+NAME
+       selectfile - file browser
+
+SYNOPSIS
+       include "selectfile.m";
+       selectfile := load Selectfile Selectfile->PATH;
+
+       init:        fn();
+       filename: fn(ctxt: ref Draw->Context, parent: ref Draw->Image,
+                      title: string,
+                      pat: list of string,
+                      dir: string): string;
+
+DESCRIPTION
+       Selectfile  provides an interactive file browser for use by a
+       wm(1) application.  It allows a user to browse the file  sys‐
+       tem to select a file of a give type.
+
+       Init  should be called once to initialise the module's inter‐
+       nal state.
+
+       Filename makes a dialog panel for selecting a  file.   It  is
+       created in the graphics context ctxt, near the northeast cor‐
+       ner of a given parent window,  parent,  represented  by  that
+       window's  Image.   (If  the parent window is a Tk Toplevel t,
+       for instance, the appropriate value is t.image.)   If  parent
+       is  nil,  the  panel is centred on the screen.  Dir gives the
+       directory where the file search  should  begin.   Only  files
+       that  match  pat  are  displayed.  The returned string is the
+       name of the selected file, or the empty string if no file was
+       selected.
+
+SOURCE
+       /appl/lib/selectfile.b
+
+SEE ALSO
+       dialog(2),   dividers(2),  draw-context(2),  tabs(2),  tk(2),
+       wmlib(2)
+
+                                                       SELECTFILE(2)

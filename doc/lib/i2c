@@ -1,0 +1,62 @@
+I2C(3)                Library Functions Manual                I2C(3)
+
+NAME
+       i2c - basic I2C interface
+
+SYNOPSIS
+       bind -a #Jn /dev
+
+       /dev/i2c.n.ctl
+       /dev/i2c.n.data
+
+DESCRIPTION
+       I2c  serves  a  one-level  directory with two files that give
+       access to the target device with address n (given in hexadec‐
+       imal)  on  the  system's I2C bus.  N is usually determined by
+       the I2C device manufacturer.  I2C  gives  address  0  special
+       meaning as the `general call' address.  See an I2C specifica‐
+       tion for details.
+
+       The control file i2c.n.ctl accepts commands to set the  valid
+       address  range  and  subaddressing mode for the corresponding
+       data file.  The following control messages can be written  to
+       it:
+
+       a10    Force  10-bit  addressing instead of 7-bit addressing.
+              Otherwise 10-bit addressing is used only if the device
+              address n is bigger than 255.
+
+       size nbytes
+              Set  the  logical size of the target device to nbytes.
+              (By default when opened, it is 256 bytes,  enough  for
+              most  small  I2C  devices.)   IO requests will be kept
+              within this limit.  This value  is  also  returned  by
+              Sys->stat as the length of the data file.
+
+       subaddress [ n ]
+              Cause  subsequent reads and writes on the data file to
+              use  I2C  subaddressing  with  n   byte   subaddresses
+              (default:  1  byte).  N must be no larger than 4.  The
+              target device must support subaddressing.  By default,
+              the  device  is  not  subaddressed.  Setting n to zero
+              switches off subaddressing.
+
+       When read, the control file displays the current settings.
+
+       The data file i2c.n.data can be read or written  to  exchange
+       data  with  the slave device with address n (where n is given
+       in hexadecimal).  Each write request transmits the given data
+       to  the device.  Each read request sends a receive request to
+       the device and returns the resulting data.  If the I2C target
+       is  subaddressed, the current file offset is used as the sub‐
+       address; otherwise the file offset is ignored, and the device
+       typically  starts  at  0 for each transfer request.  Read and
+       write requests are  trimmed  to  the  declared  size  of  the
+       device.
+
+SOURCE
+       /os/port/devi2c.c
+       /os/*/i2c.c
+       /os/cerf405/iic.c
+
+                                                              I2C(3)

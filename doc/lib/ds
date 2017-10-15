@@ -1,0 +1,87 @@
+DS(3)                 Library Functions Manual                 DS(3)
+
+NAME
+       ds - compound device subsystems
+
+SYNOPSIS
+       bind -b #k /dev
+
+       /dev/ds
+       /dev/ds/ctl
+       /dev/ds/...
+
+DESCRIPTION
+       Ds  builds  complex  block  storage subsystems out of simpler
+       ones.  Inspired by the Plan 9 file server kernel's configura‐
+       tion  strings,  it  provides  device mirroring, partitioning,
+       interleaving, and catenation for block-oriented file systems.
+
+       It serves a two-level directory.  The top  level  contains  a
+       single  directory  ds,  which contains a control file ctl and
+       one file per configured device.
+
+       The control messages each introduce a new device, here  named
+       new.  The file arguments are interpreted in the name space of
+       the writer.
+
+       mirror new files...
+              The device new corresponds to a RAID  1  mirroring  of
+              files.   Writes  to  new  are  handled by sequentially
+              writing to the files from right to left  (the  reverse
+              of of the order in the control message).  If any write
+              fails, the write is aborted.  Reads from new are  han‐
+              dled  by sequentially reading from the files from left
+              to right until one succeeds.  The length of the mirror
+              device is the minimum of the lengths of the files.
+
+       part new file offset length
+              The  device new corresponds to the length bytes start‐
+              ing at offset in file.  If offset+length reaches  past
+              the end of file, length is silently reduced to fit.
+
+       inter new files...
+              The  device  new corresponds to the block interleaving
+              of files; an 8192-byte block size is assumed.
+
+       cat name files...
+              The device new corresponds to the catenation of files.
+
+       If the variable fsconfig is set in plan9.ini(8) then ds  will
+       read  its  configuration from the file $fsconfig on the first
+       attach.  This is useful when the machine boots from  a  local
+       file server that uses fs.
+
+EXAMPLE
+       Mirror  the  two  disks  /dev/sdC0/data and /dev/sdD0/data as
+       /dev/ds/m0;    similarly,    mirror    /dev/sdC1/data     and
+       /dev/sdD1/data as /dev/ds/m1:
+
+              echo mirror m0 /dev/sdC0/data /dev/sdD0/data >/dev/ds/ctl
+              echo mirror m1 /dev/sdC1/data /dev/sdD1/data >/dev/ds/ctl
+
+       Interleave the two mirrored disks to create /dev/ds/data:
+
+              echo inter data /dev/ds/m0 /dev/ds/m1 >/dev/ds/ctl
+
+       Run kfs(4) on the interleaved device:
+
+              disk/kfs -f /dev/ds/data
+
+       Save the configuration:
+
+              cp /dev/ds/ctl /dev/fd0disk
+              To  load the configuration automatically at boot time,
+              add this to plan9.ini:
+
+              fsconfig=/dev/fd0disk
+
+SEE ALSO
+       dossrv(4)
+
+SOURCE
+       /os/port/devds.c
+
+BUGS
+       Should be able to select block size for interleaved devices.
+
+                                                               DS(3)

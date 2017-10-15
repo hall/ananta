@@ -1,0 +1,26 @@
+DESTROY(9)            Kernel Developer's Manual           DESTROY(9)
+
+NAME
+       destroy - Destroy one or more windows
+
+SYNOPSIS
+       destroy ?window window ...?
+
+DESCRIPTION
+       This  command  deletes  the windows given by the window argu‐
+       ments, plus  all  of  their  descendants.   The  windows  are
+       destroyed  in  order,  and if an error occurs in destroying a
+       window the command aborts without  destroying  the  remaining
+       windows.
+
+       The Destroy event is fired for each window destroyed, includ‐
+       ing descendants.
+
+       If the window ``.'' is specified, it is unmapped rather  than
+       destroyed and the Destroy event is not fired on it.  However,
+       all of its decendants are destroyed as normal.
+
+SEE ALSO
+       bind(9)
+
+                                                          DESTROY(9)

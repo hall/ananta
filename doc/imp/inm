@@ -1,0 +1,69 @@
+INM(10.1)                                                  INM(10.1)
+
+NAME
+       inm - Inferno name list (symbol table)
+
+SYNOPSIS
+       inm [ -aghnsu ] file ...
+
+DESCRIPTION
+       Inm prints the name list of each executable or object file in
+       the  argument  list.   If  the  file  is  an   archive   (see
+       iar(10.1)),  the  name  list  of  each file in the archive is
+       printed.  If more than one file  is  given  in  the  argument
+       list,  the  name  of each file is printed at the beginning of
+       each line.
+
+       Each symbol name is preceded by its hexadecimal value (blanks
+       if undefined) and one of the letters
+
+       T      text segment symbol
+
+       t      static text segment symbol
+
+       L      leaf function text segment symbol
+
+       l      static leaf function text segment symbol
+
+       D      data segment symbol
+
+       d      static data segment symbol
+
+       B      bss segment symbol
+
+       b      static bss segment symbol
+
+       a      automatic (local) variable symbol
+
+       p      function parameter symbol
+
+       z      source file name
+
+       Z      source file line offset
+
+       f      source file name components
+
+       The output is sorted alphabetically.
+
+       Options are:
+
+       -a     Print  all  symbols;  normally only user-defined text,
+              data, and bss segment symbols are printed.
+
+       -g     Print only global (T, L, D, B) symbols.
+
+       -h     Do not print file name headers with output lines.
+
+       -n     Sort according to the address of the symbols.
+
+       -s     Don't sort; print in symbol-table order.
+
+       -u     Print only undefined symbols.
+
+SOURCE
+       /utils/nm
+
+SEE ALSO
+       iar(10.1), 2l(10.1), acid(10.1), a.out(10.6)
+
+                                                           INM(10.1)

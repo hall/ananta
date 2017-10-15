@@ -1,0 +1,48 @@
+SRV(2)                   System Calls Manual                  SRV(2)
+
+NAME
+       srv - network name and address translation when hosted
+
+SYNOPSIS
+       include "srv.m"
+       srv := load Srv Srv->PATH;
+       Srv: module
+       {
+         init:  fn();
+         iph2a: fn(host: string): list of string;
+         ipa2h: fn(addr: string): list of string;
+         ipn2p: fn(protocol, service: string): string;
+       };
+
+DESCRIPTION
+       Srv  provides  access to the host operating system's name and
+       address translation when Inferno is running hosted.  The mod‐
+       ule's  implementation is usually built-in to emu(1), and then
+       only on some platforms.  It uses the Internet name resolution
+       services  of  the host operating system (eg, gethostbyname on
+       Unix systems).  Its services are normally  only  used  inter‐
+       nally  by  cs(8)  and  dns(8), and even they give priority to
+       data in services(6) and dns(6) if available.   Other  Inferno
+       applications normally give network addresses to the functions
+       of dial(2), and they are then translated automatically, using
+       the services of cs(8).
+
+       Init must be called before any other function is used.
+
+       Given  a  host  name,  iph2a  returns  a list of its Internet
+       addresses (if any).  Given an Internet address, ipa2h returns
+       a  list  of  host names (if any) that have that address.  The
+       results are only as accurate as the host system's  name  ser‐
+       vice.
+
+       Ipn2p  returns  the  port  number (as a string) for the given
+       service when accessed using a  particular  protocol  protocol
+       (typically tcp or udp).
+
+SOURCE
+       /emu/port/srv.c
+
+SEE ALSO
+       sys-file2chan(2), cs(8), dns(8)
+
+                                                              SRV(2)

@@ -1,0 +1,35 @@
+PSLIB(2)                 System Calls Manual                PSLIB(2)
+
+NAME
+       pslib - postscript generation
+
+SYNOPSIS
+       include "pslib.m";
+       pslib := load Pslib Pslib->PATH;
+
+       init: fn(bufio: Bufio);
+       writeimage: fn(f: ref Bufio->Iobuf,
+                      img: ref Draw->Image, dpi: int): string;
+
+DESCRIPTION
+       Pslib must first be initialised by calling Init with a loaded
+       Bufio module.  Writeimage writes a Postscript file containing
+       the data within img to f, which should first have been opened
+       for writing by bufio.  Dpi is a value  specifying  the  pixel
+       width of pixels in img; the width (and height) of dpi dots in
+       img will be one inch when the Postscript is rendered.
+
+SOURCE
+       /appl/lib/pslib.b
+
+SEE ALSO
+       bufio(2), draw-image(2)
+
+BUGS
+       The resulting Postscript is really only suitable for  use  as
+       encapsulated  Postscript, as there's no way to set the desti‐
+       nation paper size.
+
+       There should be many more useful functions in this module.
+
+                                                            PSLIB(2)

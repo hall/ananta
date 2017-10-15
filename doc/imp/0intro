@@ -1,0 +1,61 @@
+INTRO(10)                                                  INTRO(10)
+
+NAME
+       intro - introduction to hosted and native implementation
+
+DESCRIPTION
+       Inferno  provides  a collection of compiler suites, libraries
+       and two closely-related kernels to span a range of  host  and
+       native  platforms.  Section 10 of this manual is divided into
+       subsections numbered in the same way as the main manual: 10.1
+       for  commands, 10.2 for library and kernel routines, and 10.6
+       for file formats.
+
+       Section 10.1 describes the various compiler and utility  com‐
+       mands  provided  to support compilation and cross-compilation
+       of native kernels.  These are derived  from  similarly  named
+       programs  of  the  system Plan 9 from Bell Labs, converted to
+       ANSI C to provide  a  consistent,  portable  environment  for
+       cross-compiling any native kernel on any host platform.
+
+       Section  10.2  describes  the functions publicly available to
+       the authors of kernel code, particularly device drivers (real
+       and virtual).  This section will eventually be much expanded,
+       but this makes a start.  See the description of  the  conven‐
+       tional header files below.
+
+       Section  10.6  describes  include the native object file for‐
+       mats, the Inferno (Plan 9) object library  (archive)  format,
+       and system configuration files.
+
+       Section  10.8 describes bootstrap programs and procedures for
+       native Inferno systems.
+
+   Native kernel declarations
+       The SYNOPSIS subsections in section  10.2  do  not  show  the
+       header  files  needed  for  the standard kernel declarations.
+       The primary combinations summarised below:
+
+              #include "u.h"
+              #include "../port/lib.h"
+              #include "mem.h"
+              #include "dat.h"
+              #include "fns.h"
+              #include "../port/error.h"
+
+              furthermore, added in IP code:
+              #include "../ip/ip.h"
+
+              furthermore, in hardware device drivers:
+              #include "io.h"
+              #include "ureg.h"
+
+              furthermore, in network interfaces or ether drivers:
+              #include "../port/netif.h"
+
+       There might also be specific include files needed by  drivers
+       on  particular  platforms or to use specialised kernel inter‐
+       faces.  The easiest method is to check the source of  likely-
+       looking drivers nearby.
+
+                                                           INTRO(10)

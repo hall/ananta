@@ -1,0 +1,73 @@
+DRAW-FONT(2)             System Calls Manual            DRAW-FONT(2)
+
+NAME
+       Font - character images for Unicode text
+
+SYNOPSIS
+       include   "draw.m";
+       draw := load Draw Draw->PATH;
+
+       Font: adt
+       {
+           name:    string;
+           height:  int;
+           ascent:  int;
+           display: ref Display;
+
+           open:    fn(d: ref Display, file:  string):        ref Font;
+           build:   fn(d: ref Display, name, desc: string):   ref Font;
+           width:   fn(f: self ref Font, str: string):        int;
+       };
+
+DESCRIPTION
+       The Font type defines the appearance of characters drawn with
+       the Image.text primitive (see draw-image(2)).  Fonts are usu‐
+       ally  read  from  files and are selected based on their size,
+       their style, the portion of Unicode space they represent, and
+       so on.
+
+       Fonts  are  built  from a series of subfonts that define con‐
+       tiguous portions of the Unicode character space, such as  the
+       ASCII or the Greek alphabet.  Font files are textual descrip‐
+       tions of the allocation of characters in the various  regions
+       of  the  Unicode space; see font(6) for the format.  Subfonts
+       are not visible from Limbo.
+
+       A default font, named *default*, is always available.
+
+       The type incorporates:
+
+       ascent, height
+                 These define the vertical sizes  of  the  font,  in
+                 pixels.   The  ascent is the distance from the font
+                 baseline to the top of a line of text; height gives
+                 the  interline  spacing, that is, the distance from
+                 one baseline to the next.
+
+       name      This field identifies the font, either the name  of
+                 the   file   from  which  the  font  was  read,  or
+                 "*default*" for the default font.
+
+       display   Tells on which display the font resides.
+
+       open(d, file)
+                 The open method creates a Font by reading the  con‐
+                 tents  of  the named file.  Fonts are cached, so an
+                 open request may return a pointer  to  an  existing
+                 Font,   without   rereading  the  file.   The  name
+                 "*default*" always describes a defined font.  Fonts
+                 are  created  for  an instance of a Display object,
+                 even though the  creation  functions  are  in  type
+                 Font.
+
+       build(d, name, desc)
+                 Build creates a Font object by reading the descrip‐
+                 tion from the string desc rather than a file.  Name
+                 specifies the name of the font to be created.
+
+       f.width( str )
+                 The  width  method returns the width in pixels that
+                 str would occupy if drawn by Image.text in the Font
+                 f.
+
+                                                        DRAW-FONT(2)

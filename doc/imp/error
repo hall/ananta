@@ -1,0 +1,120 @@
+ERROR(10.2)                                              ERROR(10.2)
+
+NAME
+       error,  nexterror,  poperror, waserror - error handling func‐
+       tions
+
+SYNOPSIS
+       void  error(char*)
+
+       void  nexterror(void)
+
+       void  poperror(void)
+
+       int   waserror(void)
+
+DESCRIPTION
+       The kernel handles error conditions  using  non-local  gotos,
+       similar  to  setjmp/longjmp  in  ANSI C, but using a stack of
+       error labels to implement nested  exception  handling.   This
+       simplifies many of the internal interfaces by eliminating the
+       need for returning and checking error codes at every level of
+       the  call  stack, at the cost of requiring kernel routines to
+       adhere to a strict discipline.
+
+       Each kernel process (see kproc(10.2))  has  in  its  defining
+       Proc structure a stack of labels, currently 32 elements deep.
+       A kernel function that must perform a clean  up  or  recovery
+       action on an error makes a stylised call to waserror, nexter‐
+       ror and poperror:
+
+              if(waserror()){
+                   /* recovery action */
+                   nexterror();
+              }
+              /* normal action */
+              poperror();
+
+       When called in the normal course of events,  waserror  regis‐
+       ters  an  error  handling block by pushing its label onto the
+       stack, and returns zero.  The return value of waserror should
+       be  tested  as  shown above.  If non-zero (true), the calling
+       function should perform the needed error recovery, ended by a
+       call to nexterror to transfer control to the next location on
+       the error stack.  Typical recovery actions include deallocat‐
+       ing  memory,  unlocking  resources, and resetting state vari‐
+       ables.
+
+       Within the recovery block, after handling an error condition,
+       there  must  normally be a call to nexterror to transfer con‐
+       trol to any error recovery lower down in the stack.  The main
+       exception  is  in  the outermost function in a process, which
+       must not call nexterror (there being nothing further  on  the
+       stack),  but calls pexit (see kproc(10.2)) instead, to termi‐
+       nate the process.
+
+       When the need to recover a particular resource has passed,  a
+       function that has called waserror must remove the correspond‐
+       ing label from the stack by calling poperror.  This  must  be
+       done  before returning from the function; otherwise, a subse‐
+       quent call to error will return  to  an  obsolete  activation
+       record, with unpredictable but unpleasant consequences.
+
+       Error  copies  the  given  error message, which is limited to
+       ERRMAX bytes, into the Osenv.errstr of the  current  process,
+       enables  interrupts  by  calling  spllo  (native  only),  and
+       finally calls nexterror to start invoking the recovery proce‐
+       dures    currently    stacked   by   waserror.    The   files
+       /os/port/error.h and /emu/port/error.h offer a wide selection
+       of  predefined  error messages, suitable for almost any occa‐
+       sion.  The message set by the most recent call to  error  can
+       be obtained within the kernel by examining up->env->error and
+       in an application, by using the directive of sys-print(2).
+
+       A complex function can have nested error handlers.  A  waser‐
+       ror  block will follow the acquisition of a resource, releas‐
+       ing it on error before calling nexterror, and a poperror will
+       precede its release in the normal case.  For example:
+
+              void
+              outer(Thing *t)
+              {
+                  qlock(t);
+                  if(waserror()){      /* A */
+                      qunlock(t);
+                      nexterror();
+                  }
+                  m = mallocz(READSTR, 0);
+                  if(m == nil)
+                      error(Enomem);
+                  if(waserror()){     /* B */
+                      free(m);
+                      nexterror();    /* invokes A */
+                  }
+                  inner(t);
+                  poperror();         /* pops B */
+                  free(m);
+                  poperror();         /* pops A */
+                  qunlock(t);
+              }
+
+              void
+              inner(Thing *t)
+              {
+                  if(t->bad)
+                      error(Egreg);   /* error() call returns to B */
+                  t->valid++;
+              }
+
+SOURCE
+       /os/port/proc.c
+       /emu/port/main.c
+
+CAVEATS
+       The  description  above  has  many instances of should, will,
+       must and must not.
+
+SEE ALSO
+       panic(10.2)
+
+                                                         ERROR(10.2)

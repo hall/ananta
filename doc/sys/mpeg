@@ -1,0 +1,49 @@
+MPEG(2)                  System Calls Manual                 MPEG(2)
+
+NAME
+       mpeg - interface to the mpeg device driver
+
+SYNOPSIS
+       include "draw.m";
+       include "mpeg.m";
+       mpeg:= load Mpeg Mpeg->PATH;
+
+       play:     fn(d:       ref Display,
+                      w:       ref Image,
+                      dopaint: int,
+                      r:       Rect,
+                      file:    string,
+                      notify:  chan of string): string;
+       ctl:      fn(msg: string): int;
+       keycolor: fn(d: ref Display): ref Image;
+
+DESCRIPTION
+       Mpeg provides a primitive interface to the mpeg(3) device.
+
+       Play plays the specified MPEG file in rectangle r within win‐
+       dow w on display d.   The  dopaint  flag  specifies  whether,
+       before  playing  the  movie,  to paint the rectangle with the
+       chroma key colour of the device.
+
+       Notify is a channel upon which to receive errors and  status.
+       If  notify  is  nil,  play  runs synchronously, returning the
+       empty string ("") when the movie completes, or a  description
+       of any error.  If notify is not nil, play spawns an asynchro‐
+       nous process to play the movie and returns the  empty  string
+       immediately;  the  process  returns  the status on the notify
+       channel when the movie completes.
+
+       Ctl writes msg, the string given as an argument, to the  MPEG
+       control interface /dev/mpegctl.
+
+       Keycolor  uses the Display d to create a single-pixel, repli‐
+       cated off screen Image of colour Chroma (16r05).
+
+FILES
+       /dev/mpeg
+       /dev/mpegctl
+
+SOURCE
+       /appl/lib/mpeg.b
+
+                                                             MPEG(2)

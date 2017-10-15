@@ -1,0 +1,40 @@
+ENV(2)                   System Calls Manual                  ENV(2)
+
+NAME
+       env - environment module
+
+SYNOPSIS
+       include "env.m";
+       env = load Env Env->PATH;
+
+       getenv: fn(var: string): string;
+       setenv: fn(var: string, val: string): int;
+       getall: fn(): list of (string, string);
+       clone:  fn(): int;
+       new:    fn(): int;
+
+DESCRIPTION
+       Env provides an interface to manipulate environment variables
+       which may then be shared between processes.   Getenv  returns
+       the value of the environment variable var passed as a parame‐
+       ter, or nil if the variable is not set. It does this by read‐
+       ing  the  contents of /env/var.  Setenv sets the value of the
+       environment variable var to val.  The value  may  be  nil  to
+       unset the variable. It does this by writing the string val to
+       /env/var.  The routine returns a negative number if it  fails
+       to  set  the variable for any reason.  Getall returns all the
+       variables in the current environment as a list of  (variable,
+       value)  pairs.   Clone  copies  the  current  environment and
+       places the process in a new environment  group.  Changes  now
+       made  to  the  environment will not affect the environment of
+       other processes.  New places the process in a new empty envi‐
+       ronment  group. Changes made in this new environment will not
+       affect other processes.
+
+SOURCE
+       /appl/lib/env.b
+
+SEE ALSO
+       env(1), sys-pctl(2), env(3)
+
+                                                              ENV(2)

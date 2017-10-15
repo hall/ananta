@@ -1,0 +1,44 @@
+DBSRV(7)          Miscellaneous Information Manual          DBSRV(7)
+
+NAME
+       dbsrv - ODBC database server
+
+SYNOPSIS
+       lib/dbsrv alg ...
+
+DESCRIPTION
+       Dbsrv is normally configured to be run by svc(8) on a machine
+       that acts as database server, for access through  the  module
+       db(7).
+
+       The  incoming  call  is  authenticated  by  security-auth(2).
+       After successful authorisation, the client can request that a
+       digest  and/or encryption algorithm be applied to protect the
+       data exchanged with the server.  Each alg names a  digest  or
+       encryption algorithm that the server will allow the client to
+       use, in any form accepted by ssl(3); the  special  name  none
+       means that ssl need not be used.
+
+       The  implementation  of dbsrv relies on a program external to
+       Inferno, infdb, which translates between the  db(7)  internal
+       format  for requests, and data base access calls on the host.
+       Dbsrv invokes infdb using the cmd(3) device.  Currently infdb
+       is  implemented only under Windows/NT, giving access via ODBC
+       to a Microsoft Access data base.
+
+FILES
+       /cmd   host command execution
+
+       /Nt/386/bin/infdb.exe
+              Windows executable for ODBC interface
+
+       /usr/user/keyring/default
+              server's authentication data when svc(8) run as user
+
+SOURCE
+       /appl/lib/dbsrv.b
+
+SEE ALSO
+       db(7), svc(8)
+
+                                 emu                        DBSRV(7)

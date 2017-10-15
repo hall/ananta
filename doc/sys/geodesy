@@ -1,0 +1,128 @@
+GEODESY(2)               System Calls Manual              GEODESY(2)
+
+NAME
+       geodesy - Geodesy module
+
+SYNOPSIS
+       include "geodesy.m";
+       geodesy := load Geodesy Geodesy->PATH;
+
+       # easting, northing
+       Eano: adt{
+            e: real;
+            n: real;
+       };
+
+       # latitude, longitude in radians
+       Lalo: adt{
+            la: real;
+            lo: real;
+       };
+
+       OSGB36, Ireland65, ED50, WGS84, ITRS2000, ETRS89: con iota;
+
+       Natgrid, IrishNatgrid, UTMEur, UTM: con iota;
+
+       init: fn(d: int, t: int, z: int);
+       format: fn(d: int, t: int, z: int);
+       os2en: fn(s: string): (int, Eano);
+       en2os: fn(en: Eano): string;
+       str2lalo: fn(s: string): (int, Lalo);
+       lalo2str: fn(lalo: Lalo): string;
+       str2en: fn(s: string): (int, Eano);
+       en2lalo: fn(en: Eano): Lalo;
+       lalo2en: fn(lalo: Lalo): Eano;
+       datum2datum: fn(lalo: Lalo, f: int, t: int): Lalo;
+
+DESCRIPTION
+       Geodesy  provides  routines  to  deal with (some) terrestrial
+       coordinate systems.
+
+       Eastings and northings are defined by the Eano  adt  and  are
+       measured  in  metres and latitude and longitude (which should
+       be in radians) by the Lalo adt. Latitude is in the range -π/2
+       to π/2 radians and longitude in the range -π to π radians.
+
+       OSGB36  (Ordnance Survey Great Britain 1936), Ireland65 (Ire‐
+       land 1965), ED50 (European Datum 1950), WGS84 (World Geodetic
+       System  1984),  ITRS2000 (International Terrestrial Reference
+       System 2000), and ETRS89 (European Terrestrial Reference Sys‐
+       tem 1989) are the current datums defined. Helmert transforma‐
+       tions are used to convert between them. Note  that  Ireland65
+       and  ED50  are currently not supported and WGS84 and ITRS2000
+       are considered equivalent.
+
+       Natgrid (National Grid), IrishNatgrid (Irish National  Grid),
+       UTMEur  (European  Universal  Transverse  Mercator),  and UTM
+       (Universal Transverse Mercator) are  the  current  transverse
+       Mercator projections supported.
+
+       The following functions are provided
+
+       init   The  module  should  always  be initialized first. The
+              parameters are the  required  datum  (default  WGS84),
+              transverse  Mercator  projection (default Natgrid) and
+              UTM zone (default 30) if appropriate. Negative  values
+              or out of range values are ignored.
+
+       format Parameters  as  above.  Alters the current settings at
+              any time though care must be taken to ensure  existing
+              coordinates  are  still  treated  as in their original
+              form.
+
+       os2en  Converts an Ordnance Survey National Grid reference to
+              an  easting,  northing.   The  formats  XYen,  XYeenn,
+              XYeeennn,  XYeeeennnn,  XYeeeeennnnn,  eenn,   eeennn,
+              eeeennnn,  eeeeennnnn  and  eeeeeennnnnn  are allowed.
+              Here X and Y are upper case letters, e is  an  easting
+              digit  and  n  is  a northing digit. The reference can
+              therefore be rounded  to  the  nearest  decakilometre,
+              kilometre,  hectometre,  decametre or metre. The first
+              element of the returned tuple is zero  if  the  string
+              has an incorrect format.
+
+       en2os  Converts  an  easting,  northing to an OS reference in
+              the form XYeeeeennnnn as  above.
+
+       str2lalo
+              Converts a latitude/longitude string  to  a  latitude,
+              longitude.  The  string may have the formats deg[N|S],
+              deg:min[N|S]   or   deg:min:sec[N|S]   for   latitude,
+              deg[E|W],  deg:min[E|W] or deg:min:sec[E|W] for longi‐
+              tude. The latitude  must  come  first,  then  optional
+              white space, then the longitude.  Degrees, minutes and
+              seconds may be integer  or  real.  Format  errors  are
+              indicated as in os2en.
+
+       lalo2str
+              Converts  a  latitude,  longitude  to string format as
+              above. Seconds are given to two decimal places.
+
+       str2en Converts a string in OS or  latitude/longitude  format
+              as above to an easting, northing.  Format errors indi‐
+              cated as in os2en.
+
+       en2lalo
+              Converts an easting, northing to  latitude,  longitude
+              using  the  current  transverse Mercator projection.If
+              the latter is UTM or UTMEur the current  zone  setting
+              will be used.
+
+       lalo2en
+              Converts  latitude,  longitude to an easting, northing
+              using the current transverse Mercator projection.
+
+       datum2datum
+              Approximate (Helmert) transformation  of  a  latitude,
+              longitude  between  any  of OSGB36, WGS84, ITRS2000 or
+              ETRS89.  The `from' datum appears first in the parame‐
+              ter list.
+
+SOURCE
+       /module/math/geodesy.m
+       /appl/math/geodesy.b
+
+BUGS
+       The module is heavily biased towards Great Britain.
+
+                                                          GEODESY(2)

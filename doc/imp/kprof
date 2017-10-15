@@ -1,0 +1,28 @@
+KPROF(10.1)                                              KPROF(10.1)
+
+NAME
+       kprof - display kernel profiling data
+
+SYNOPSIS
+       kprof kernel kpdata
+
+DESCRIPTION
+       Kprof  presents  the data accumulated by the kernel profiling
+       device, kprof(3).  The symbol table is taken  from  the  file
+       kernel,  the  executable  file of the operating system kernel
+       that was profiled.  The data file kpdata is usually a copy of
+       /dev/kpdata from the device running the profiling kernel.
+
+       The  symbol  table  is  read  and correlated with the profile
+       data.  For each symbol, the time (in milliseconds) spent exe‐
+       cuting  between  that  symbol  and  the  next  is printed (in
+       decreasing order), together with the percentage of the  total
+       time.
+
+SOURCE
+       /utils/kprof
+
+SEE ALSO
+       kprof(3)
+
+                                                         KPROF(10.1)

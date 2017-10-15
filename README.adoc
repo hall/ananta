@@ -1,0 +1,71 @@
+= inf: one hell of an operating system
+
+*inf* is a fork of http://www.inferno-os.info/inferno/[_Inferno_]
+(a distributed operating system originally developed at
+http://www.bell-labs.com/[Bell Labs] and currently maintained by
+http://www.vitanuova.com/[Vita Nuova]) aimed at modernization for mass
+adoption.
+
+Applications are written in
+http://www.vitanuova.com/inferno/limbo.html[Limbo] (a concurrent
+programming language) and compiled to Dis (portable virtual machine
+code) to run anywhere on a network in a portable environment that is a
+complete operating system.
+
+The design has three principles:
+
+ - All resources are named and accessed like files.
+
+ - A single local namespace joins resources provided by remote services.
+
+ - One communication protocol (Styx) allows uniform access to these resources. 
+
+In this manner, programs can access resources using only the file
+operations `open`, `read`, `write`, and `close`.
+
+NOTE: That is to say, networked participants only need to communicate
+with Styx instead of http(s)/dav, smtp, imap/pop, ssh/scp, tcp/ip/udp,
+ftp, ssl/tls, smb, ntp, ppp, ldap, dhcp, dns, sip, mac, ...
+
+
+*inf* works on the following system/architecture pairs:
+
+[cols="s,5*^"]
+|===
+|           | 386 | mips | power | sparc | s800
+
+|FreeBSD    |  h  |      |       |       |
+|HP/UX      |     |      |       |       |  p
+|Irix       |     |   h  |       |       |
+|Linux      |  h  |      |       |       |
+|MacOSX     |  h  |      |   h   |       |
+|NetBSD     |  h  |      |       |       |
+|Plan 9     |  h  |   h  |   h   |   h   |
+|Solaris    |  p  |      |       |   h   |
+|Unixware   |     |      |       |       |
+|Windows    |     |      |       |       |
+|===
+
+    h - hosted (with emu)
+    n - native
+    p - partial support
+
+
+.To install
+
+ . edit the `mkconfig` file
+
+ . if you do not have `mk`, run `./makemk.sh` to build it.
+
+ . set `PATH` to include the `$ROOT/bin/` directory.
+
+ . run `mk install`
+
+This will create and install the libraries, limbo compiler, emu (if
+running hosted), and auxiliary commands.
+
+Now execute `emu` and you should see the `rc` prompt awaiting your input:
+
+    ;
+
+

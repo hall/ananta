@@ -1,5 +1,3 @@
-<../fonts
-
 all:V: limbo.pdf addendum.pdf
 
 limbo.ps:D:	limbo.ms limbo.rc synsum mkfile

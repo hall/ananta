@@ -1,7 +1,5 @@
-<../fonts.pal
-
 tk.ps:D:	tk.ms f1.ps f2.ps mkfile
-	{echo $FONTS; cat tk.ms} | tbl | troff -mpm -mpictures | dpost >$target
+	cat tk.ms | tbl | troff -mpm -mpictures | dpost >$target
 #%.ps:	%.gif mkfile
 #	fb/gif2pic $stem.gif | fb/pic2ps -c >$stem.ps
 #%.ps:	%.gif mkfile

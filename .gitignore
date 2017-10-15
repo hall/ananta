@@ -1,4 +1,5 @@
 **/bin
+*.pdf
 *.out
 *.o
 *.a

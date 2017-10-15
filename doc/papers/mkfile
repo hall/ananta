@@ -1,4 +1,3 @@
-<fonts.pal
 NPROC = 1
 FILES = \
 	title.ps \
@@ -29,33 +28,22 @@ DIRS = \
 	perform \
 #	limbotk \
 
-PRE=$FONTS'.ps 9
-.nr PS 9
-.vs 11
-.nr VS 11
-.nr dP 1
-.nr dV 1p
-.nr dT 4
-.nr XT 4
-'
-
 all:V: dirs
 
 print:V: \
 	title.ps \
 
-dirs:V:	$FILES $DIRS mkfile fonts
+dirs:V:	$FILES $DIRS mkfile
 	for(i in $DIRS) @{
 		cd $i
 		mk
 	}
 
 %.ps:D:	%.ms
-	{ echo $PRE; cat $stem.ms } | tbl | troff -mpm | lp -dstdout > $target
+	cat $stem.ms | tbl | troff -mpm | lp -dstdout > $target
 
 gridinstall.ps:D:	gridinstall.ms
-	PRE=''
-	{ echo $PRE; cat gridinstall.ms } | tbl | troff -ms | lp -dstdout > $target
+	cat gridinstall.ms | tbl | troff -ms | lp -dstdout > $target
 
 title.ps:D:	title
 	troff $prereq | lp -dstdout > $target

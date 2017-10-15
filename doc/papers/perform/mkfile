@@ -1,7 +1,5 @@
-<../fonts.pal
-
 %.ps:D:	%.ms
-	{ echo $FONTS; cat $stem.ms } | grap | pic | tbl | troff -mpm | lp -dstdout > $target
+	cat $stem.ms | grap | pic | tbl | troff -mpm | lp -dstdout > $target
 
 FILES = \
 	perform.ps \

@@ -23,7 +23,7 @@ CFLAGS=	$CFLAGS -I../include
 
 lex.$O:	../cc/macbody ../cc/lexbody
 
-$ROOT/$OBJDIR/lib/libcc.a:
+$LIBDIR/libcc.a:
 	cd ../cc
 	mk $MKFLAGS install
 	mk $MKFLAGS clean

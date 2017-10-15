@@ -7,22 +7,22 @@
 #	- utilities
 
 EMUDIRS=\
-	lib9\
-	libbio\
-	libmp\
-	libsec\
-	libmath\
+	$INCDIR/lib9\
+	$INCDIR/libbio\
+	$INCDIR/libmp\
+	$INCDIR/libsec\
+	$INCDIR/libmath\
 	utils/iyacc\
-	limbo\
-	libinterp\
-	libkeyring\
-	libdraw\
-	libprefab\
-	libtk\
-	libfreetype\
-	libmemdraw\
-	libmemlayer\
-	libdynld\
+	$INCDIR/limbo\
+	$INCDIR/libinterp\
+	$INCDIR/libkeyring\
+	$INCDIR/libdraw\
+	$INCDIR/libprefab\
+	$INCDIR/libtk\
+	$INCDIR/libfreetype\
+	$INCDIR/libmemdraw\
+	$INCDIR/libmemlayer\
+	$INCDIR/libdynld\
 	utils/data2c\
 	utils/ndate\
 	emu\
@@ -57,15 +57,10 @@ kernelclean:V:	kernel/clean-$HOSTMODEL
 kernelinstall:V:        kernel/install-$HOSTMODEL
 kernelinstallall:V:     kernel/installall-$HOSTMODEL
 kernelnuke:V:   kernel/nuke-$HOSTMODEL
-nuke:V:         nuke-$HOSTMODEL
+nuke:V:
+	rm -f $BINDIR/*
+	rm -f $LIBDIR/*.a
 
-cleandist:V: clean
-	rm -f $ROOT/$OBJDIR/lib/lib*.a
-
-nukedist:V: nuke
-	rm -f $ROOT/$OBJDIR/bin/*.exe
-	rm -f $ROOT/$OBJDIR/lib/lib*.a
-	
 &-Posix:QV:
 	for j in $DIRS utils tools
 	do

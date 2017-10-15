@@ -1,10 +1,10 @@
-<../../mkconfig
+<$ROOT/mkconfig
 
 TARG=iyacc
 
 OFILES=	yacc.$O\
 
-HFILES= ../../include/bio.h\
+HFILES= $ROOT/include/bio.h\
 
 LIBS=bio 9		# libbio.a uses lib9.a so order matters.
 

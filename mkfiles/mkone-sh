@@ -1,8 +1,8 @@
-libs=${LIBS:%=$ROOT/$OBJDIR/lib/lib%.a}
+libs=${LIBS:%=$LIBDIR/lib%.a}
 
 all:V:	$O.out
 
-install:V:	$BIN/$TARG
+install:V:	$BINDIR/$TARG
 
 installall:V:
 	for objtype in $CPUS
@@ -38,5 +38,5 @@ clean-std:V:
 nuke-std:V:	clean-std
 	rm -f y.tab.? y.debug y.output
 
-$BIN/%:	$O.out
-	rm -f $BIN/$stem && cp $O.out $BIN/$stem
+$BINDIR/%:	$O.out
+	rm -f $BINDIR/$stem && cp $O.out $BINDIR/$stem

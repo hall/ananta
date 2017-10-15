@@ -1,0 +1,21 @@
+<$ROOT/mkconfig
+
+LIB=libprefab.a
+
+OFILES=\
+	box.$O\
+	compound.$O\
+	element.$O\
+	elistelement.$O\
+	iconbox.$O\
+	iconelement.$O\
+	textbox.$O\
+	textelement.$O\
+
+HFILES=\
+	$INCDIR/draw.h\
+	$INCDIR/prefab.h\
+
+<$ROOT/mkfiles/mksyslib-$SHELLTYPE
+
+$OFILES:	$MODDIR/prefab.m

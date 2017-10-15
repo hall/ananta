@@ -1,7 +1,6 @@
 #
 #	Rules for updating a library with rc
 #
-LIBDIR=$ROOT/$OBJDIR/lib
 LIBRARY=$LIBDIR/$LIB
 LIBOBJ=${OFILES:%=$LIBRARY(%)}
 

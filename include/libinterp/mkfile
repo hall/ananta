@@ -1,0 +1,129 @@
+<$ROOT/mkconfig
+
+LIB=libinterp.a
+
+OFILES=\
+	alt.$O\
+	comp-$OBJTYPE.$O\
+	conv.$O\
+	crypt.$O\
+	dec.$O\
+	dlm-$TARGMODEL.$O\
+	draw.$O\
+	freetype.$O\
+	gc.$O\
+	geom.$O\
+	heap.$O\
+	heapaudit.$O\
+	ipint.$O\
+	link.$O\
+	load.$O\
+	loader.$O\
+	math.$O\
+#	prefab.$O\
+	raise.$O\
+	readmod.$O\
+	runt.$O\
+	sign.$O\
+	stack.$O\
+	tk.$O\
+	validstk.$O\
+	xec.$O\
+	das-$OBJTYPE.$O\
+	keyring.$O\
+	string.$O\
+
+HFILES=\
+	$INCDIR/interp.h\
+	$INCDIR/isa.h\
+	runt.h\
+	tab.h\
+
+MODULES=\
+	$MODDIR/runt.m\
+	$MODDIR/sys.m\
+	$MODDIR/draw.m\
+	$MODDIR/prefab.m\
+	$MODDIR/math.m\
+	$MODDIR/tk.m\
+	$MODDIR/keyring.m\
+	$MODDIR/loader.m\
+	$MODDIR/freetype.m\
+	$MODDIR/ipints.m\
+	$MODDIR/crypt.m\
+	keyringif.m\
+
+<$ROOT/mkfiles/mksyslib-$SHELLTYPE
+
+runt.h:D: $MODULES
+	rm -f $target && limbo -a -I$MODDIR $MODDIR/runt.m > $target
+
+sysmod.h:D: $MODULES
+	rm -f $target && limbo -t Sys -I$MODDIR $MODDIR/runt.m > $target
+
+keyring.h:D: $MODULES
+	rm -f $target && limbo -t Keyring -I$MODDIR keyringif.m > $target
+
+drawmod.h:D: $MODULES
+	rm -f $target && limbo -t Draw -I$MODDIR $MODDIR/runt.m > $target
+
+prefabmod.h:D: $MODULES
+	rm -f $target && limbo -t Prefab -I$MODDIR $MODDIR/runt.m > $target
+
+tkmod.h:D: $MODULES
+	rm -f $target && limbo -t Tk -I$MODDIR $MODDIR/runt.m > $target
+
+mathmod.h:D: $MODULES
+	rm -f $target && limbo -t Math -I$MODDIR $MODDIR/runt.m > $target
+
+loadermod.h:D: $MODULES
+	rm -f $target && limbo -t Loader -I$MODDIR $MODDIR/runt.m > $target
+
+freetypemod.h:D: $MODULES
+	rm -f $target && limbo -t Freetype -I$MODDIR $MODDIR/runt.m > $target
+
+ipintsmod.h:D:	$MODULES
+	rm -f $target && limbo -t IPints -I$MODDIR $MODDIR/ipints.m > $target
+
+benchmod.h:D: ../module/bench.m
+	rm -f $target && limbo -t Bench -I$MODDIR $MODDIR/bench.m > $target
+
+cryptmod.h:D:	$MODULES
+	rm -f $target && limbo -t Crypt -I$MODDIR $MODDIR/runt.m > $target
+
+keyringif.h:D:	$MODULES keyringif.m
+	rm -f $target && limbo -a -I$MODDIR keyringif.m > $target
+
+
+bench.h:D:../module/bench.m
+	rm -f $target && limbo -a -I$MODULES $MODDIR/bench.m > $target
+
+xec.$O:		optab.h  $INCDIR/pool.h
+tk.$O:		$INCDIR/tk.h  $INCDIR/pool.h
+draw.$O: 	$INCDIR/draw.h $INCDIR/drawif.h
+prefab.$O: 	$INCDIR/draw.h\
+		$INCDIR/prefab.h
+
+runt.$O:	sysmod.h
+prefab.$O:	prefabmod.h
+draw.$O:	drawmod.h
+tk.$O:		$INCDIR/draw.h tkmod.h
+math.$O:	mathmod.h
+keyring.$O:	keyring.h ipint.h keyringif.h
+crypt.$O:	ipint.h runt.h cryptmod.h
+ipint.$O:	ipint.h ipintsmod.h
+loader.$O:	loadermod.h
+freetype.$O:	freetypemod.h $INCDIR/freetype.h
+math.$O:	$INCDIR/mathi.h
+
+das-spim.c:N:	das-mips.c
+comp-spim.c:N:	comp-mips.c
+
+# optab.h:	$INCDIR/isa.h mkoptab
+#	$SHELLNAME mkoptab > $target
+
+#	Do not remove optab.h, because the script that builds
+#	it works only on UNIX and Plan 9.
+
+nuke:EV:	nuke-std
+	rm -f runt.h sysmod.h drawmod.h prefabmod.h tkmod.h mathmod.h keyring.h readimagemod.h loadermod.h freetypemod.h cryptmod.h keyringif.h ipintsmod.h

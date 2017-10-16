@@ -1,6 +1,6 @@
 = inf: one hell of an operating system
 
-*inf* is a fork of http://www.inferno-os.info/inferno/[_Inferno_]
+*inf* is a derivative of http://www.inferno-os.info/inferno/[Inferno]
 (a distributed operating system originally developed at
 http://www.bell-labs.com/[Bell Labs] and currently maintained by
 http://www.vitanuova.com/[Vita Nuova]) aimed at modernization for mass
@@ -14,10 +14,8 @@ complete operating system.
 
 The design has three principles:
 
- - All resources are named and accessed like files.
-
+ - All resources are named and accessed as files.
  - A single local namespace joins resources provided by remote services.
-
  - One communication protocol (Styx) allows uniform access to these resources. 
 
 In this manner, programs can access resources using only the file
@@ -51,7 +49,7 @@ ftp, ssl/tls, smb, ntp, ppp, ldap, dhcp, dns, sip, mac, ...
     p - partial support
 
 
-.To install
+To install
 
  . edit the `mkconfig` file
 

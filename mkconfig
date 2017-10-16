@@ -1,14 +1,13 @@
 # Edit the following variables.
 ############################################################
-# On Nt systems, the ROOT path MUST be of the form `drive:/path'
+# On Windows, this MUST be of the form `drive:/path'
 ROOT=/home/bryton/repos/inferno
 
-# Specify the flavour of Tk (std for standard builds)
-TKSTYLE=std
+TKSTYLE=std       # Specify the version of Tk (std, ...)
 
-# Except for building kernels, SYSTARG must always be the same as SYSHOST
-SYSHOST=Linux        # build  system (Hp, Inferno, Irix, Linux, MacOSX, Nt, Plan9, Solaris)
-SYSTARG=$SYSHOST     # target system (Hp, Inferno, Irix, Linux,         Nt, Plan9, Solaris)
+# Except for building kernels, SYSTARG must be SYSHOST
+SYSHOST=Linux     # build  system (Hp, Inferno, Irix, Linux, MacOSX, Nt, Plan9, Solaris)
+SYSTARG=$SYSHOST  # target system (Hp, Inferno, Irix, Linux,         Nt, Plan9, Solaris)
 
 OBJTYPE=386       # target system architecture (386, arm, mips, power, s800, sparc, ...)
 #OBJTYPE=$objtype # plan9 sets $objtype automatically
@@ -23,3 +22,4 @@ MODDIR=$ROOT/modules
 
 <$ROOT/arch/$SYSHOST/mkhost          # variables appropriate for host system
 <$ROOT/arch/$SYSTARG/$OBJTYPE/mkfile # variables used to build target object type
+

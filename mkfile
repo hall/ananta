@@ -33,7 +33,6 @@ KERNEL_DIRS=\
 
 # mkconfig is included at this point to allow it to override
 #the preceding declarations (particularly KERNEL_DIRS) if need be
-
 <mkconfig
 
 DIRS=\
@@ -43,110 +42,89 @@ DIRS=\
 foo:QV:
 	echo mk all, clean, install, installall or nuke
 
-all:V:		all-$HOSTMODEL
-clean:V:	clean-$HOSTMODEL
-install:V:	nuke install-$HOSTMODEL
-installall:V:	installall-$HOSTMODEL
-emu:V:	        emu/all-$HOSTMODEL
-emuinstall:V:	emu/install-$HOSTMODEL
-emuclean:V:	emu/clean-$HOSTMODEL
-emunuke:V:	emu/nuke-$HOSTMODEL
-kernel:V:	kernel/all-$HOSTMODEL
-kernelall:V:	kernel/all-$HOSTMODEL
-kernelclean:V:	kernel/clean-$HOSTMODEL
+all:V:                  all-$HOSTMODEL
+clean:V:                clean-$HOSTMODEL
+install:V:              nuke install-$HOSTMODEL
+installall:V:           installall-$HOSTMODEL
+emu:V:                  emu/all-$HOSTMODEL
+emuinstall:V:           emu/install-$HOSTMODEL
+emuclean:V:             emu/clean-$HOSTMODEL
+emunuke:V:              emu/nuke-$HOSTMODEL
+kernel:V:               kernel/all-$HOSTMODEL
+kernelall:V:            kernel/all-$HOSTMODEL
+kernelclean:V:          kernel/clean-$HOSTMODEL
 kernelinstall:V:        kernel/install-$HOSTMODEL
 kernelinstallall:V:     kernel/installall-$HOSTMODEL
-kernelnuke:V:   kernel/nuke-$HOSTMODEL
+kernelnuke:V:           kernel/nuke-$HOSTMODEL
 nuke:V:
 	rm -f $BINDIR/*
 	rm -f $LIBDIR/*.a
 
 &-Posix:QV:
-	for j in $DIRS utils tools
-	do
+	for j in $DIRS utils tools; do
 		echo "(cd $j; mk $MKFLAGS $stem)"
 		(cd $j; mk $MKFLAGS $stem) || exit 1
 	done
-
 &-Nt:QV:
-	for (j in $DIRS utils tools)
-	{
+	for (j in $DIRS utils tools) {
 		echo '@{builtin cd' $j '; mk $MKFLAGS $stem}'
 		@{builtin cd $j; mk.exe $MKFLAGS $stem }
 	}
-
 &-Inferno:QV:
-	for (j in $DIRS utils)
-	{
+	for (j in $DIRS utils) {
 		echo '@{builtin cd' $j '; mk $MKFLAGS $stem}'
 		@{builtin cd $j; mk $MKFLAGS $stem }
 	}
-
 &-Plan9:QV:
-	for (j in $DIRS utils)
-	{
+	for (j in $DIRS utils) {
 		echo '@{builtin cd' $j '; mk $MKFLAGS $stem}'
 		@{builtin cd $j; mk $MKFLAGS $stem }
 	}
 
 emu/&-Posix:QV:
-	for j in $EMUDIRS
-	do
+	for j in $EMUDIRS; do
 		echo "(cd $j; mk $MKFLAGS $stem)"
 		(cd $j; mk $MKFLAGS $stem) || exit 1
 	done
-
 emu/&-Nt:QV:
-	for (j in $EMUDIRS)
-	{
+	for (j in $EMUDIRS) {
 		echo '@{builtin cd' $j '; mk $MKFLAGS $stem}'
 		@{builtin cd $j; mk $MKFLAGS $stem }
 	}
-
 emu/&-Plan9:QV:
-	for (j in $EMUDIRS)
-	{
+	for (j in $EMUDIRS) {
 		echo '@{builtin cd' $j '; mk $MKFLAGS $stem}'
 		@{builtin cd $j; mk $MKFLAGS $stem }
 	}
 
 kernel/&-Posix:QV:
-	for j in $KERNEL_DIRS
-	do
+	for j in $KERNEL_DIRS; do
 		echo "(cd $j; mk $MKFLAGS $stem)"
 		(cd $j; mk $MKFLAGS $stem) || exit 1
 	done
-
 kernel/&-Nt:QV:
-	for (j in $KERNEL_DIRS)
-	{
+	for (j in $KERNEL_DIRS) {
 		echo '@{builtin cd' $j '; mk $MKFLAGS $stem}'
 		@{builtin cd $j; mk $MKFLAGS $stem }
 	}
-
 kernel/&-Inferno:QV:
-	for (j in $KERNEL_DIRS)
-	{
+	for (j in $KERNEL_DIRS) {
 		echo '@{builtin cd' $j '; mk $MKFLAGS $stem}'
 		@{builtin cd $j; mk $MKFLAGS $stem }
 	}
-
 kernel/&-Plan9:QV:
-	for (j in $KERNEL_DIRS)
-	{
+	for (j in $KERNEL_DIRS) {
 		echo '@{builtin cd' $j '; mk $MKFLAGS $stem}'
 		@{builtin cd $j; mk $MKFLAGS $stem }
 	}
 
 mkdirs:V:	mkdirs-$SHELLTYPE
-
 mkdirs-rc:V:
 	mkdir -p `{cat lib/emptydirs}
 	chmod 555 mnt/* n/client/* n/*
-
 mkdirs-sh:V:
 	mkdir -p `cat lib/emptydirs`
 	chmod 555 mnt/* n/client/* n/*
-
 mkdirs-nt:V:
 	mkdir -p `{cmd /c type lib\emptydirs}
+

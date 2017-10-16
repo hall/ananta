@@ -1,2 +1,0 @@
-acme.ps:D:	acme.ms
-	cat acme.ms | troff -mpm -mpictures -mnihongo | lp -dstdout >acme.ps

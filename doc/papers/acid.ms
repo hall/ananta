@@ -1,2519 +1,1327 @@
-.am DS
-.ft I
-..
-.am DE
-.ft R
-..
-.ta 1i 2.3i 4.5i  (optional to set tabs)
 .TL
-Acid Reference Manual
+Acid: A Debugger Built From A Language
 .AU
-Phil Winterbottom
-philw@plan9.bell-labs.com
+.I "Phil Winterbottom"
+.AI
+.I "Lucent Technologies Inc"
+.AB
 .FS
 \l'1i'
 .br
-Previously appeared with minor differences as the
-``Acid Manual'' in
-.I "Plan 9 Programmer's Manual, Volume 2 (Second Edition)".
+Originally appeared in
+.I
+Proc. of the Winter 1994 USENIX Conf.,
+.R
+pp. 211-222,
+San Francisco, CA;
+and subsequently in the
+.I "Plan 9 Programmer's Manual, Volume 2 (Second Edition)" .
 .FE
-.SH
+Acid is an unusual source-level symbolic debugger for Plan 9. It is implemented
+as a language interpreter with specialized primitives that provide
+debugger support.  Programs written in the language manipulate
+one or more target processes; variables in the language represent the
+symbols, state, and resources of those processes. 
+This structure allows complex
+interaction between the debugger and the target program and
+provides a convenient method of parameterizing differences between
+machine architectures.
+Although some effort is required to learn
+the debugging language, the richness and flexibility of the
+debugging environment encourages new ways of reasoning about the way
+programs run and the conditions under which they fail.
+.AE
+.NH
 Introduction
 .PP
-Acid is a general purpose, source level symbolic debugger.
-The debugger is built around a simple command language. 
-The command language, distinct from the language of the program being debugged,
-provides a flexible user interface that allows the debugger
-interface to be customized for a specific application or architecture.
-Moreover, it provides an opportunity to write test and
-verification code independently of a program's source code.
-Acid is able to debug multiple
-processes provided they share a common set of symbols, such as the processes in
-a threaded program.
+The size and complexity
+of programs have increased in proportion to processor speed and memory but
+the interface between debugger and programmer has changed little.
+Graphical user interfaces have eased some of the tedious
+aspects of the interaction. A graphical interface is a convenient
+means for navigating through source and data structures but provides
+little benefit for process control.
+The introduction of a new concurrent language, Alef [Win93], emphasized the
+inadequacies of the existing Plan 9 [Pike90] debugger
+.I db ,
+a distant relative of
+.I adb ,
+and made it clear that a new debugger was required.
 .PP
-Like other language-based solutions, Acid presents a poor user interface but
-provides a powerful debugging tool.
-Application of Acid to hard problems is best approached by writing functions off-line
-(perhaps loading them with the
-.CW include
-function or using the support provided by
-.I acme (1)),
-rather than by trying to type intricate Acid operations
-at the interactive prompt.
+Current debuggers like
+.I dbx ,
+.I sdb ,
+and
+.I gdb
+are limited to answering only the questions their authors
+envisage.  As a result, they supply a plethora
+of specialized commands, each attempting to anticipate
+a specific question a user may ask.
+When a debugging situation arises that is beyond the scope
+of the command set, the tool is useless.
+Further,
+it is often tedious or impossible to reproduce an anomalous state
+of the program, especially when
+the state is embedded in the program's data structures.
 .PP
-Acid allows the execution of a program to be controlled by operating on its
-state while it is stopped and by monitoring and controlling its execution
-when it is running. Each program action that causes a change 
-of execution state is reflected by the execution
-of an Acid function, which may be user defined.
-A library of default functions provides the functionality of a normal debugger.
+Acid applies some ideas found in CAD software used for
+hardware test and simulation.
+It is based on the notion that the state and resources of a program
+are best represented and manipulated by a language. The state and resources,
+such as memory, registers, variables, type information and source code
+are represented by variables in the language.
+Expressions provide a computation mechanism and control
+statements allow repetitive or selective interpretation based
+on the result of expression evaluation.
+The heart of the Acid debugger is an interpreter for a small typeless
+language whose operators mirror the operations
+of C and Alef, which in turn correspond well to the basic operations of
+the machine. The interpreter itself knows nothing of the underlying
+hardware; it deals with the program state and resources
+in the abstract.
+Fundamental routines to control
+processes, read files, and interface to the system are implemented
+as builtin functions available to the interpreter.
+The actual debugger functionality is coded
+in Acid; commands are implemented as Acid functions.
 .PP
-On Plan 9, a process is controlled by writing messages to a control file in the
-.I proc (3)
-file system. Each control message has a corresponding Acid function, which
-sends the message to the process. These functions take a process id
-.I pid ) (
-as an
-argument. The memory and text file of the program may be manipulated using
-the indirection operators. The symbol table, including source cross reference,
-is available to an Acid program. The combination allows complex operations
-to be performed both in terms of control flow and data manipulation.
-.SH
-Input format and \f(CWwhatis\fP
+This language-based approach has several advantages.
+Most importantly, programs written in Acid, including most of the
+debugger itself, are inherently portable.
+Furthermore, Acid avoids the limitations other debuggers impose when
+debugging parallel programs.  Instead of embedding a fixed
+process model in the debugger, Acid allows the
+programmer to adapt the debugger to handle an
+arbitrary process partitioning or program structure. 
+The ability to
+interact dynamically with an executing process provides clear advantages
+over debuggers constrained to probe a static image.
+Finally, the Acid language is a powerful vehicle for expressing
+assertions about logic, process state, and the contents of data structures.
+When combined with dynamic interaction it allows a
+limited form of automated program verification without requiring
+modification or recompilation of the source code.
+The language is also an
+excellent vehicle for preserving a test suite for later regression testing.
 .PP
-Comments start with
-.CW //
-and continue to the end of the line.
-Input is a series of statements and expressions separated by semicolons.
-At the top level of the interpreter, the builtin function
-.CW print
-is called automatically to display the result of all expressions except function calls.
-A unary
-.CW +
-may be used as a shorthand to force the result of a function call to be printed.
+The debugger may be customized by its users; standard
+functions may be modified or extended to suit a particular application
+or preference.
+For example, the kernel developers in our group require a
+command set supporting assembler-level debugging while the application
+programmers prefer source-level functionality.
+Although the default library is biased toward assembler-level debugging,
+it is easily modified to provide a convenient source-level interface.
+The debugger itself does not change; the user combines primitives
+and existing Acid functions in different ways to
+implement the desired interface.
+.NH
+Related Work
 .PP
-Also at the top level, newlines are treated as semicolons
-by the parser, so semicolons are unnecessary when evaluating expressions.
+DUEL [Gol93], an extension to
+.I gdb
+[Stal91], proposes using a high level expression evaluator to solve
+some of these problems. The evaluator provides iterators to loop over data
+structures and conditionals to control evaluation of expressions.
+The author shows that complex state queries can be formulated
+by combining concise expressions but this only addresses part of the problem.
+A program is a dynamic entity; questions asked when the program is in
+a static state are meaningful only after the program has been `caught' in
+that state. The framework for manipulating the program is still as
+primitive as the underlying debugger. While DUEL provides a means to
+probe data structures it entirely neglects the most beneficial aspect
+of debugging languages: the ability to control processes. Acid is structured
+around a thread of control that passes between the interpreter and the
+target program.
 .PP
-When Acid starts, it loads the default program modules,
-enters interactive mode, and prints a prompt. In this state Acid accepts
-either function definitions or statements to be evaluated.
-In this interactive mode
-statements are evaluated immediately, while function definitions are
-stored for later invocation.
+The NeD debugger [May92] is a set of extensions to TCL [Ous90] that provide
+debugging primitives. The resulting language, NeDtcl, is used to implement
+a portable interface between a conventional debugger, pdb [May90], and
+a server that executes NeDtcl programs operating on the target program.
+Execution of the NeDtcl programs implements the debugging primitives
+that pdb expects.
+NeD is targeted at multi-process debugging across a network,
+and proves the flexibility of a language as a means of
+communication between debugging tools. Whereas NeD provides an interface
+between a conventional debugger and the process it debugs, Acid is the
+debugger itself. While NeD has some of the ideas
+found in Acid it is targeted toward a different purpose. Acid seeks to
+integrate the manipulation of a program's resources into the debugger
+while NeD provides a flexible interconnect between components of
+the debugging environment. The choice of TCL is appropriate for its use
+in NeD but is not suitable for Acid. Acid relies on the coupling of the type
+system with expression evaluation, which are the root of its design,
+to provide the debugging primitives.
 .PP
-The
-.CW whatis
-operator can be used to report the state of identifiers known to the interpreter.
-With no argument,
-.CW whatis
-reports the name of all defined Acid functions; when supplied with an identifier
-as an argument it reports any variable, function, or type definition
-associated with the identifier.
-Because of the way the interpreter handles semicolons,
-the result of a
-.CW whatis
-statement can be returned directly to Acid without adding semicolons.
-A syntax error or interrupt returns Acid to the normal evaluation
-mode; any partially evaluated definitions are lost.
-.SH
-Using the Library Functions
+Dalek [Ols90] is an event based language extension to gdb. State transitions
+in the target program cause events to be queued for processing by the
+debugging language.
 .PP
-After loading the program binary, Acid loads the portable and architecture-specific
-library functions  that form the standard debugging environment.
-These files are Acid source code and are human-readable.
-The following example uses the standard debugging library to show how
-language and program interact:
-.P1
-% acid /bin/ls
-/bin/ls:mips plan 9 executable
-
-/sys/lib/acid/port
-/sys/lib/acid/mips
-acid: new()
-75721: system call  _main ADD  $-0x14,R29
-75721: breakpoint   main+0x4   MOVW  R31,0x0(R29)
-acid: bpset(ls)
-acid: cont()
-75721: breakpoint   ls    ADD  $-0x16c8,R29
-acid: stk()
-At pc:0x0000141c:ls /sys/src/cmd/ls.c:87
-ls(s=0x0000004d,multi=0x00000000) /sys/src/cmd/ls.c:87
-    called from main+0xf4 /sys/src/cmd/ls.c:79
-main(argc=0x00000000,argv=0x7ffffff0) /sys/src/cmd/ls.c:48
-    called from _main+0x20 /sys/src/libc/mips/main9.s:10
-acid: PC
-0xc0000f60
-acid: *PC
-0x0000141c
-acid: ls
-0x0000141c
-.P2
-The function
-.CW new()
-creates a new process and stops it at the first instruction.
-This change in state is reported by a call to the
-Acid function
-.CW stopped ,
-which is called by the interpreter whenever the debugged program stops.
-.CW Stopped
-prints the status line giving the pid, the reason the program stopped
-and the address and instruction at the current PC.
-The function
-.CW bpset
-makes an entry in the breakpoint table and plants a breakpoint in memory.
-The
-.CW cont
-function continues the process, allowing it to run until some condition
-causes it to stop. In this case the program hits the breakpoint placed on
-the function
-.CW ls
-in the C program. Once again the
-.CW stopped
-routine is called to print the status of the program. The function
-.CW stk
-prints a C stack trace of the current process. It is implemented using
-a builtin Acid function that returns the stack trace as a list; the code
-that formats the information is all written in Acid. 
-The Acid variable
-.CW PC
-holds the address of the 
-cell where the current value of the processor register
-.CW PC
-is stored. By indirecting through
-the value of
-.CW PC
-the address where the program is stopped can be found.
-All of the processor registers are available by the same mechanism.
-.SH
-Types
+Acid has many of the advantages of same process or
+.I local
+.I agent
+debuggers, like Parasight [Aral], without the need for dynamic linking or
+shared memory.
+Acid improves on the ideas of these other systems by completely integrating
+all aspects of the debugging process into the language environment. Of
+particular importance is the relationship between Acid variables,
+program symbols, source code, registers and type information. This
+integration is made possible by the design of the Acid language.
 .PP
-An Acid variable has one of four types:
+Interpreted languages such as Lisp and Smalltalk are able to provide
+richer debugging environments through more complete information than
+their compiled counterparts. Acid is a means to gather and represent
+similar information about compiled programs through cooperation
+with the compilation tools and library implementers.
+.NH
+Acid the Language
+.PP
+Acid is a small interpreted language targeted to its debugging task.
+It focuses on representing program state and addressing data rather than
+expressing complex computations. Program state is
+.I addressable
+from an Acid program.
+In addition to parsing and executing expressions and providing
+an architecture-independent interface to the target process,
+the interpreter supplies a mark-and-scan garbage collector
+to manage storage.
+.PP
+Every Acid session begins with the loading of the Acid libraries.
+These libraries contain functions, written in Acid, that provide
+a standard debugging environment including breakpoint management,
+stepping by instruction or statement, stack tracing, and
+access to variables, memory, and registers.
+The library contains 600 lines of Acid code and provides
+functionality similar to
+.I dbx .
+Following the loading of the system library, Acid loads
+user-specified libraries; this load sequence allows the
+user to augment or override the standard commands
+to customize the debugging environment.  When all libraries
+are loaded, Acid issues an interactive prompt and begins
+evaluating expressions entered by the user.  The Acid `commands'
+are actually invocations of builtin primitives or previously defined
+Acid functions. Acid evaluates each expression as it is entered and
+prints the result.
+.NH
+Types and Variables
+.PP
+Acid variables are of four basic types:
 .I integer ,
+.I string ,
 .I float ,
-.I list ,
-or
-.I string .
-The type of a variable is inferred from the type of the right-hand
-side of the assignment expression which last set its value.
-Referencing a variable that has not yet
-been assigned draws a "used but not set" error. Many of the operators may
-be applied to more than
-one type; for these operators the action of the operator is determined by
-the types of its operands. The action of each operator is defined in the
-.I Expressions
-section of this manual.
-.SH
-Variables
-.PP
-Acid has three kinds of variables: variables defined by the symbol table
-of the debugged program, variables that are defined and maintained
-by the interpreter as the debugged program changes state, and variables
-defined and used by Acid programs.
-.PP
-Some examples of variables maintained by the interpreter are the register
-pointers listed by name in the Acid list variable
-.CW registers ,
-and the symbol table listed by name and contents in the Acid variable
-.CW symbols .
-.PP
-The variable
-.CW pid
-is updated by the interpreter to select the most recently created process
-or the process selected by the
-.CW setproc
-builtin function.
-.SH 1
-Formats
-.PP
-In addition to a type, variables have formats. The format is a code
-letter that determines the printing style and the effect of some of the
-operators on that variable. The format codes are derived from the format
-letters used by
-.I db (1).
-By default, symbol table variables and numeric constants
-are assigned the format code
-.CW X ,
-which specifies 32-bit hexadecimal.
-Printing a variable with this code yields the output
-.CW 0x00123456 .
-The format code of a variable may be changed from the default by using the 
-builtin function
-.CW fmt .
-This function takes two arguments, an expression and a format code. After
-the expression is evaluated the new format code is attached to the result
-and forms the return value from
-.CW fmt .
-The backslash operator is a short form of
-.CW fmt .
-The format supplied by the backslash operator must be the format character
-rather than an expression.
-If the result is assigned to a variable the new format code is maintained
-in the variable. For example:
-.P1
-acid: x=10
-acid: print(x)
-0x0000000a 
-acid: x = fmt(x, 'D')
-acid: print(x, fmt(x, 'X'))
-10 0x0000000a
-acid: x
-10
-acid: x\eo
-12
-.P2
-The supported format characters are:
-.RS
-.IP \f(CWo\fP
-Print two-byte integer in octal.
-.IP \f(CWO\fP
-Print four-byte integer in octal.
-.IP \f(CWq\fP
-Print two-byte integer in signed octal.
-.IP \f(CWQ\fP
-Print four-byte integer in signed octal.
-.IP \f(CWB\fP
-Print four-byte integer in binary.
-.IP \f(CWd\fP
-Print two-byte integer in signed decimal.
-.IP \f(CWD\fP
-Print four-byte integer in signed decimal.
-.IP \f(CWY\fP
-Print eight-byte integer in signed decimal.
-.IP \f(CWx\fP
-Print two-byte integer in hexadecimal.
-.IP \f(CWX\fP
-Print four-byte integer in hexadecimal.
-.IP \f(CWu\fP
-Print two-byte integer in unsigned decimal.
-.IP \f(CWU\fP
-Print four-byte integer in unsigned decimal.
-.IP \f(CWZ\fP
-Print eight-byte integer in unsigned decimal.
-.IP \f(CWf\fP
-Print single-precision floating point number.
-.IP \f(CWF\fP
-Print double-precision floating point number.
-.IP \f(CWg\fP
-Print a single precision floating point number in string format.
-.IP \f(CWG\fP
-Print a double precision floating point number in string format.
-.IP \f(CWb\fP
-Print byte in hexadecimal.
-.IP \f(CWc\fP
-Print byte as an ASCII character.
-.IP \f(CWC\fP
-Like
-.CW c ,
-with
-printable ASCII characters represented normally and
-others printed in the form \f(CW\ex\fInn\fR.
-.IP \f(CWs\fP
-Interpret the addressed bytes as UTF characters
-and print successive characters until a zero byte is reached.
-.IP \f(CWr\fP
-Print a two-byte integer as a rune.
-.IP \f(CWR\fP
-Print successive two-byte integers as runes
-until a zero rune is reached.
-.IP \f(CWY\fP
-Print successive eight-byte integers in hexadecimal.
-.IP \f(CWi\fP
-Print as machine instructions.
-.IP \f(CWI\fP
-As
-.CW i
-above, but print the machine instructions in
-an alternate form if possible:
-.CW sunsparc
 and
-.CW mipsco
-reproduce the manufacturers' syntax.
-.IP \f(CWa\fP
-Print the value in symbolic form.
-.RE
-.SH
-Complex types
-.PP
-Acid permits the definition of the layout of memory.
-The usual method is to use the
-.CW -a
-flag of the compilers to produce Acid-language descriptions of data structures (see
-.I 2c (1))
-although such definitions can be typed interactively.
-The keywords
-.CW complex ,
-.CW adt ,
-.CW aggr ,
+.I list .
+The type of a variable is inferred by the type of the right-hand side of
+an assignment expression.
+Many of the operators can be applied to more than
+one type; for these operators the action of the operator is determined
+by the type of its operands.
+For example,
+the
+.CW +
+operator adds
+.I integer
 and
-.CW union
-are all equivalent; the compiler uses the synonyms to document the declarations.
-A complex type is described as a set of members, each containing a format letter,
-an offset in the structure, and a name.  For example, the C structure
-.P1
-struct List {
-	int         type;
-	struct List *next;
-};
-.P2
-is described by the Acid statement
-.P1
-complex List {
-	'D'	0	type;
-	'X'	4	next;
-};
-.P2
-.SH
-Scope
+.I float
+operands, and concatenates
+.I string
+and
+.I list
+operands.
+Lists are the only complex type in Acid; there are no arrays, structures
+or pointers. Operators provide
+.CW head ,
+.CW tail ,
+.CW append
+and
+.CW delete
+operations.
+Lists can also be indexed like arrays.
 .PP
-Variables are global unless they are either parameters to functions
-or are declared as
+Acid has two levels of scope: global and local.
+Function parameters and variables declared in a function body
+using the
 .CW local
-in a function body. Parameters and local variables are available only in
-the body of the function in which they are instantiated.
-Variables are dynamically bound: if a function declares a local variable
-with the same name as a global variable, the global variable will be hidden
-whenever the function is executing.
-For example, if a function
-.CW f
-has a local called
-.CW main ,
-any function called below
-.CW f
-will see the local version of
-.CW main ,
-not the external symbol.
-.SH 1
-Addressing
+keyword are created at entry to the function and
+exist for the lifetime of a function.
+Global variables are created by assignment and need not be declared.
+All variables and functions in the program
+being debugged are entered in the Acid symbol table as global
+variables during Acid initialization.
+Conflicting variable names are resolved by prefixing enough `$' characters
+to make them unique.
+Syntactically, Acid variables and target program
+symbols are referenced identically.
+However, the variables are managed differently in the Acid
+symbol table and the user must be aware of this distinction.
+The value of an Acid variable is stored in the symbol
+table; a reference returns the value.
+The symbol table entry for a variable or function in the target
+program contains the address of that symbol in the image
+of the program.  Thus, the value of a program variable is
+accessed by indirect reference through the Acid
+variable that has the same name; the value of an Acid variable is the
+address of the corresponding program variable.
+.NH
+Control Flow
 .PP
-Since the symbol table specifies addresses,
-to access the value of program variables
-an extra level of indirection
-is required relative to the source code.
-For consistency, the registers are maintained as pointers as well; Acid variables with the names
-of processor registers point to cells holding the saved registers.
-.PP
-The location in a file or memory image associated with
-an address is calculated from a map
-associated with the file.
-Each map contains one or more quadruples (\c
-.I t ,
-.I b ,
-.I e ,
-.I f \|),
-defining a segment named
-.I t
-(usually 
-.CW text ,
-.CW data ,
-.CW regs ,
-or
-.CW fpregs )
-mapping addresses in the range
-.I b
-through
-.I e
-to the part of the file
-beginning at
-offset
-.I f .
-The memory model of a Plan 9 process assumes
-that segments are disjoint.  There
-can be more than one segment of a given type (e.g., a process
-may have more than one text segment) but segments
-may not overlap.
-An address
-.I a
-is translated
-to a file address
-by finding a segment
-for which
-.I b
-+
-.I a
-<
-.I e ;
-the location in the file
-is then
-.I address
-+
-.I f
-\-
-.I b .
-.PP
-Usually,
-the text and initialized data of a program
-are mapped by segments called 
-.CW text
+The
+.CW while
 and
-.CW data .
-Since a program file does not contain bss, stack, or register data,
-these data are
-not mapped by the data segment.
-The text segment is mapped similarly in the memory image of
-a normal (i.e., non-kernel) process.
-However, the segment called 
-.CW *data
-maps memory from the beginning to the end of the program's data space.
-This region contains the program's static data, the bss, the
-heap and the stack.  A segment
-called
-.CW *regs
-maps the registers;
-.CW *fpregs
-maps the floating point registers (if they exist).
-.PP
-Sometimes it is useful to define a map with a single segment
-mapping the region from 0 to 0xFFFFFFFF; such a map
-allows the entire file to be examined
-without address translation.  The builtin function
-.CW map
-examines and modifies Acid's map for a process.
-.SH 1
-Name Conflicts
-.PP
-Name conflicts between keywords in the Acid language, symbols in the program,
-and previously defined functions are resolved when the interpreter starts up.
-Each name is made unique by prefixing enough
-.CW $
-characters to the front of the name to make it unique. Acid reports
-a list of each name change at startup. The report looks like this:
+.CW loop
+statements implement looping.
+The former
+is similar to the same statement in C.
+The latter evaluates starting and ending expressions yielding
+integers and iterates while an incrementing loop index
+is within the bounds of those expressions.
 .P1
-/bin/sam: mips plan 9 executable
-/lib/acid/port
-/lib/acid/mips
-Symbol renames:
-	append=$append T/0xa4e40
+acid: i = 0; loop 1,5 do print(i=i+1)
+0x00000001
+0x00000002
+0x00000003
+0x00000004
+0x00000005
 acid:
 .P2
-The symbol
-.CW append
-is both a keyword and a text symbol in the program. The message reports
-that the text symbol is now named
-.CW $append .
-.SH
-Expressions
+The traditional
+.CW if-then-else 
+statement implements conditional execution.
+.NH
+Addressing
 .PP
-Operators have the same
-binding and precedence as in C.
-For operators of equal precedence, expressions are evaluated from left to right. 
-.SH 1
-Boolean expressions
+Two indirection operators allow Acid to access values in
+the program being debugged.
+The
+.CW *
+operator fetches a value from the memory image of an
+executing process;
+the
+.CW @
+operator fetches a value from the text file of the process.
+When either operator appears on the left side of an assignment, the value
+is written rather than read.
 .PP
-If an expression is evaluated for a boolean condition the test
-performed depends on the type of the result. If the result is of
-.I integer
-or
-.I floating
-type the result is true if the value is non-zero. If the expression is a
-.I list
-the result is true if there are any members in the list.
-If the expression is a
-.I string
-the result is true if there are any characters in the string.
-.DS
-	primary-expression:
-		identifier
-		identifier \f(CW:\fP identifier
-		constant
-		\f(CW(\fP expression \f(CW)\fP
-		\f(CW{\fP elist \f(CW}\fP
-
-	elist:
-		expression
-		elist , expression
-.DE
-An identifier may be any legal Acid variable. The colon operator returns the
-address of parameters or local variables in the current stack of a program.
+The indirection operator must know the size of the object
+referenced by a variable.
+The Plan 9 compilers neglect to include this
+information in the program symbol table, so Acid cannot
+derive this information implicitly.
+Instead Acid variables have formats.
+The format is a code
+letter specifying the printing style and the effect of some of the
+operators on that variable.
+The indirection operators look at the format code to determine the
+number of bytes to read or write.
+The format codes are derived from the format letters used by
+.I db .
+By default, symbol table variables and numeric constants
+are assigned the format code
+.CW 'X'
+which specifies 32-bit hexadecimal.
+Printing such a variable yields output of the form
+.CW 0x00123456 .
+An indirect reference through the variable fetches 32 bits
+of data at the address indicated by the variable.
+Other formats specify various data types, for example
+.CW i
+an instruction,
+.CW D
+a signed 32 bit decimal,
+.CW s
+a null-terminated string.
+The
+.CW fmt
+function
+allows the user to change the format code of a variable
+to control the printing format and
+operator side effects.
+This function evaluates the expression supplied as the first
+argument, attaches the format code supplied as the second
+argument to the result and returns that value.
+If the result is assigned to a variable,
+the new format code applies to
+that variable.  For convenience, Acid provides the
+.CW \e
+operator as a shorthand infix form of
+.CW fmt .
 For example:
 .P1
-*main:argc
+acid: x=10
+acid: x				 // print x in hex
+0x0000000a 
+acid: x = fmt(x, 'D')		 // make x type decimal
+acid: print(x, fmt(x, 'X'), x\eX) // print x in decimal & hex
+10 0x0000000a 0x0000000a
+acid: x				 // print x in decimal
+10
+acid: x\eo			 // print x in octal
+000000000012
 .P2
-prints the number of arguments passed into main. Local variables and parameters
-can only be referenced after the frame has been established. It may be necessary to
-step a program over the first few instructions of a breakpointed function to properly set
-the frame.
-.PP
-Constants follow the same lexical rules as C.
-A list of expressions delimited by braces forms a list constructor.
-A new list is produced by evaluating each expression when the constructor is executed.
-The empty list is formed from
-.CW {} .
-.P1
-acid: x = 10
-acid: l = { 1, x, 2\eD }
-acid: x = 20
-acid: l
-{0x00000001 , 0x0000000a , 2 }
-.P2
-.SH 1
-Lists
-.PP
-Several operators manipulate lists.
-.DS
-	list-expression:
-		primary-expression
-		\f(CWhead\fP primary-expression
-		\f(CWtail\fP primary-expression
-		\f(CWappend\fP expression \f(CW,\fP primary-expression
-		\f(CWdelete\fP expression \f(CW,\fP primary-expression
-.DE
-The
-.I primary-expression
-for
-.CW head
+The 
+.CW ++
 and
-.CW tail
-must yield a value of type
-.I list .
-If there are no elements in the list the value of
-.CW head
-or
-.CW tail
-will be the empty list. Otherwise
-.CW head
-evaluates to the first element of the list and
-.CW tail
-evaluates to the rest.
+.CW --
+operators increment or decrement a variable by an amount
+determined by its format code.  Some formats imply a non-fixed size.
+For example, the
+.CW i
+format code disassembles an instruction into a string.
+On a 68020, which has variable length instructions:
 .P1
-acid: head {}
-{}
-acid: head {1, 2, 3, 4}
-0x00000001 
-acid: tail {1, 2, 3, 4}
-{0x00000002 , 0x00000003 , 0x00000004 }
+acid: p=main\ei                     // p=addr(main), type INST
+acid: loop 1,5 do print(p\eX, @p++) // disassemble 5 instr's
+0x0000222e LEA	0xffffe948(A7),A7
+0x00002232 MOVL	s+0x4(A7),A2
+0x00002236 PEA	0x2f($0)
+0x0000223a MOVL	A2,-(A7)
+0x0000223c BSR	utfrrune
+acid:
 .P2
-The first operand of
-.CW append 
-and
-.CW delete
-must be an expression that yields a
-.I list .
-.CW Append
-places the result of evaluating
-.I primary-expression
-at the end of the list.
-The
-.I primary-expression
-supplied to
-.CW delete
-must evaluate to an integer;
-.CW delete
-removes the 
-.I n 'th
-item from the list, where
-.I n
-is integral value of
-.I primary-expression.
-List indices are zero-based.
+Here,
+.CW main
+is the address of the function of the same name in the program under test.
+The loop retrieves the five instructions beginning at that address and
+then prints the address and the assembly language representation of each.
+Notice that the stride of the increment operator varies with the size of
+the instruction: the
+.CW MOVL
+at 
+.CW 0x0000223a
+is a two byte instruction while all others are four bytes long.
+.PP
+Registers are treated as normal program variables referenced
+by their symbolic assembler language names.
+When a
+process stops, the register set is saved by the kernel
+at a known virtual address in the process memory map.
+The Acid variables associated with the registers point
+to the saved values and the
+.CW *
+indirection operator can then be used to read and write the register set.
+Since the registers are accessed via Acid variables they may
+be used in arbitrary expressions.
 .P1
-	acid: append {1, 2}, 3
-	{0x00000001 , 0x00000002 , 0x00000003 }
-	acid: delete {1, 2, 3}, 1
-	{0x00000001 , 0x00000003 }
+acid: PC                            // addr of saved PC
+0xc0000f60 
+acid: *PC
+0x0000623c                          // contents of PC
+acid: *PC\ea
+main
+acid: *R1=10                        // modify R1
+acid: asm(*PC+4)                    // disassemble @ PC+4
+main+0x4 0x00006240 	MOVW	R31,0x0(R29)
+main+0x8 0x00006244 	MOVW	$setR30(SB),R30
+main+0x10 0x0000624c 	MOVW	R1,_clock(SB)
 .P2
-.PP
-Assigning a list to a variable copies a reference to the list; if a list variable
-is copied it still points at the same list.  To copy a list, the elements must
-be copied piecewise using
-.CW head
-and
-.CW append .
-.SH 1
-Operators
-.PP
-.DS
-	postfix-expression:
-		list-expression
-		postfix-expression \f(CW[\fP expression \f(CW]\fP
-		postfix-expression \f(CW(\fP argument-list \f(CW)\fP
-		postfix-expression \f(CW.\fP tag
-		postfix-expression \f(CW->\fP tag 
-		postfix-expression \f(CW++\fP
-		postfix-expression \f(CW--\fP
-
-	argument-list:
-		expression
-		argument-list , expression
-.DE
+Here, the saved
+.CW PC
+is stored at address
+.CW 0xc0000f60 ;
+its current content is
+.CW 0x0000623c .
 The
-.CW [
-.I expression
-.CW ]
-operator performs indexing.
-The indexing expression must result in an expression of
-.I integer
-type, say
-.I n .
-The operation depends on the type of
-.I postfix-expression .
-If the
-.I postfix-expression
-yields an
-.I integer
-it is assumed to be the base address of an array in the memory image.
-The index offsets into this array; the size of the array members is
-determined by the format associated with the
-.I postfix-expression .
-If the 
-.I postfix-expression
-yields a
-.I string
-the index operator fetches the
-.I n 'th
-character
-of the string. If the index points beyond the end
-of the string, a zero is returned.
-If the
-.I postfix-expression
-yields a
+.CW a ' `
+format code converts this value to a string specifying
+the address as an offset beyond the nearest symbol.
+After setting the value of register
+.CW 1 ,
+the example uses the
+.CW asm
+command to disassemble a short section of code beginning
+at four bytes beyond the current value of the
+.CW PC .
+.NH
+Process Interface
+.PP
+A program executing under Acid is monitored through the
+.I proc
+file system interface provided by Plan 9.
+Textual messages written to the
+.CW ctl
+file control the execution of the process.
+For example writing
+.CW waitstop
+to the control file causes the write to block until the target
+process enters the kernel and is stopped. When the process is stopped
+the write completes. The
+.CW startstop
+message starts the target process and then does a
+.CW waitstop
+action.
+Synchronization between the debugger and the target process is determined
+by the actions of the various messages. Some operate asynchronously to the
+target process and always complete immediately, others block until the
+action completes. The asynchronous messages allow Acid to control
+several processes simultaneously.
+.PP
+The interpreter has builtin functions named after each of the control
+messages. The functions take a process id as argument.
+Any time a control message causes the program to execute instructions 
+the interpreter performs two actions when the control operation has completed.
+The Acid variables pointing at the register set are fixed up to point
+at the saved registers, and then
+the user defined function
+.CW stopped
+is executed.
+The 
+.CW stopped
+function may print the current address,
+line of source or instruction and return to interactive mode. Alternatively
+it may traverse a complex data structure, gather statistics and then set
+the program running again.
+.PP
+Several Acid variables are maintained by the debugger rather than the
+programmer.
+These variables allow generic Acid code to deal with the current process,
+architecture specifics or the symbol table.
+The variable
+.CW pid
+is the process id of the current process Acid is debugging.
+The variable
+.CW symbols
+contains a list of lists where each sublist contains the symbol
+name, its type and the value of the symbol.
+The variable
+.CW registers
+contains a list of the machine-specific register names. Global symbols in the target program
+can be referenced directly by name from Acid. Local variables
+are referenced using the colon operator as \f(CWfunction:variable\fP.
+.NH
+Source Level Debugging
+.PP
+Acid provides several builtin functions to manipulate source code.
+The
+.CW file
+function reads a text file, inserting each line into a list.
+The
+.CW pcfile
+and
+.CW pcline
+functions each take an address as an argument.
+The first
+returns a string containing the name of the source file
+and the second returns an integer containing the line number
+of the source line containing the instruction at the address.
+.P1
+acid: pcfile(main)		// file containing main
+main.c
+acid: pcline(main)		// line # of main in source
+11
+acid: file(pcfile(main))[pcline(main)]	// print that line
+main(int argc, char *argv[])
+acid: src(*PC)			// print statements nearby
+ 9
+ 10 void
+>11 main(int argc, char *argv[])
+ 12 {
+ 13	int a;
+.P2
+In this example, the three primitives are combined in an expression to print
+a line of source code associated with an address.
+The
+.CW src
+function prints a few lines of source
+around the address supplied as its argument. A companion routine,
+.CW Bsrc ,
+communicates with the external editor
+.CW sam .
+Given an address, it loads the corresponding source file into the editor
+and highlights the line containing the address.  This simple interface
+is easily extended to more complex functions.
+For example, the
+.CW step
+function can select the current file and line in the editor
+each time the target program stops, giving the user a visual
+trace of the execution path of the program. A more complete interface
+allowing two way communication between Acid and the
+.CW acme
+user interface [Pike93] is under construction. A filter between the debugger
+and the user interface provides interpretation of results from both
+sides of the interface. This allows the programming environment to
+interact with the debugger and vice-versa, a capability missing from the
+.CW sam
+interface.
+The
+.CW src
+and
+.CW Bsrc
+functions are both written in Acid code using the file and line primitives.
+Acid provides library functions to step through source level
+statements and functions. Furthermore, addresses in Acid expressions can be
+specified by source file and line.
+Source code is manipulated in the Acid
 .I list
-then the indexing operation returns the
-.I n 'th
-item of the list.
-If the list contains less than
-.I n
-items the empty list
-.CW {}
-is returned.
+data type.
+.NH
+The Acid Library
+.PP
+The following examples define some useful commands and
+illustrate the interaction of the debugger and the interpreter.
+.P1
+defn bpset(addr)                          // set breakpoint
+{
+	if match(addr, bplist) >= 0 then
+		print("bkpoint already set:", addr\ea, "\en");
+	else {
+		*fmt(addr, bpfmt) = bpinst;   // plant it
+		bplist = append bplist, addr; // add to list
+	}
+}
+.P2
+The
+.CW bpset
+function plants a break point in memory. The function starts by
+using the
+.CW match
+builtin to
+search the breakpoint list to determine if a breakpoint is already
+set at the address.
+The indirection operator, controlled by the format code returned
+by the
+.CW fmt
+primitive, is used to plant the breakpoint in memory.
+The variables
+.CW bpfmt
+and
+.CW bpinst
+are Acid global variables containing the format code specifying
+the size of the breakpoint instruction and the breakpoint instruction
+itself.
+These
+variables are set by architecture-dependent library code
+when the debugger first attaches to the executing image.
+Finally the address of the breakpoint is
+appended to the breakpoint list,
+.CW bplist .
+.P1
+defn step()				// single step
+{
+	local lst, lpl, addr, bput;
+
+	bput = 0;			// sitting on bkpoint
+	if match(*PC, bplist) >= 0 then {	
+		bput = fmt(*PC, bpfmt);	// save current addr
+		*bput = @bput;		// replace it
+	}
+
+	lst = follow(*PC);		// get follow set
+
+	lpl = lst;
+	while lpl do {			// place breakpoints
+		*(head lpl) = bpinst;
+		lpl = tail lpl;
+	}
+
+	startstop(pid);			// do the step
+
+	while lst do {			// remove breakpoints
+		addr = fmt(head lst, bpfmt);
+		*addr = @addr;		// replace instr.
+		lst = tail lst;
+	}
+	if bput != 0 then
+		*bput = bpinst;		// restore breakpoint
+}
+.P2
+The
+.CW step
+function executes a single assembler instruction.
+If the
+.CW PC
+is sitting
+on a breakpoint, the address and size of
+the breakpoint are saved.
+The breakpoint instruction
+is then removed using the
+.CW @
+operator to fetch
+.CW bpfmt
+bytes from the text file and to place it into the memory
+of the executing process using the
+.CW *
+operator.
+The
+.CW follow
+function is an Acid
+builtin which returns a follow-set: a list of instruction addresses which
+could be executed next.
+If the instruction stored at the
+.CW PC
+is a branch instruction, the
+list contains the addresses of the next instruction and
+the branch destination; otherwise, it contains only the
+address of the next instruction.
+The follow-set is then used to replace each possible following
+instruction with a breakpoint instruction.  The original
+instructions need not be saved; they remain
+in their unaltered state in the text file.
+The
+.CW startstop
+builtin writes the `startstop' message to the
+.I proc
+control file for the process named
+.CW pid .
+The target process executes until some condition causes it to
+enter the kernel, in this case, the execution of a breakpoint.
+When the process blocks, the debugger regains control and invokes the
+Acid library function
+.CW stopped
+which reports the address and cause of the blockage.
+The
+.CW startstop
+function completes and returns to the
+.CW step
+function where
+the follow-set is used to replace the breakpoints placed earlier.
+Finally, if the address of the original
+.CW PC
+contained a breakpoint, it is replaced.
+.PP
+Notice that this approach to process control is inherently portable;
+the Acid code is shared by the debuggers for all architectures.
+Acid variables and builtin functions provide a transparent interface
+to architecture-dependent values and functions.  Here the breakpoint
+value and format are referenced through Acid variables and the
+.CW follow
+primitive masks the differences in the underlying instruction set.
 .PP
 The
-.CW ++
-and
-.CW --
-operators increment and decrement integer variables.
-The amount of increment or decrement depends on the format code. These postfix
-operators return the value of the variable before the increment or decrement
-has taken place.
-.DS
-	unary-expression:
-		postfix-expression
-		\f(CW++\fP unary-expression
-		\f(CW--\fP unary-expression
-
-	unary-operator: one of
-		\f(CW*\fP \f(CW@\fP \f(CW+\fP \f(CW-\fP ~ \f(CW!\fP
-.DE
-The operators
-.CW *
-and
-.CW @
-are the indirection operators.
-.CW @
-references a value from the text file of the program being debugged.
-The size of the value depends on the format code. The
-.CW *
-operator fetches a value from the memory image of a process. If either
-operator appears on the left-hand side of an assignment statement, either the file
-or memory will be written. The file can only be modified when Acid is invoked
-with the
-.CW -w
-option.
-The prefix
-.CW ++
-and
-.CW --
-operators perform the same operation as their postfix counterparts but
-return the value after the increment or decrement has been performed. Since the
-.CW ++
-and
-.CW *
-operators fetch and increment the correct amount for the specified format,
-the following function prints correct machine instructions on a machine with
-variable length instructions, such as the 68020 or 386:
+.CW next
+function, similar to the
+.I dbx
+command of the same name,
+is a simpler example.
+This function steps through
+a single source statement but steps over function calls.
 .P1
-	defn asm(addr)
-	{
-		addr = fmt(addr, 'i');
-		loop 1, 10 do
-			print(*addr++, "\en");
+defn next()
+{
+	local sp, bound;
+
+	sp = *SP;			// save starting SP
+	bound = fnbound(*PC);		// begin & end of fn.
+	stmnt();			// step 1 statement
+	pc = *PC;
+	if pc >= bound[0] && pc < bound[1] then
+		return {};
+
+	while (pc<bound[0] || pc>bound[1]) && sp>=*SP do {
+		step();
+		pc = *PC;
 	}
+	src(*PC);
+}
 .P2
-The operators
-.CW ~
-and
-.CW !
-perform bitwise and logical negation respectively. Their operands must be of
-.I integer
-type.
-.DS
-	cast-expression:
-		unary-expression
-		unary-expression \f(CW\e\fP format-char
-		\f(CW(\fP complex-name \f(CW)\fP unary-expression		
-.DE
-A unary expression may be preceded by a cast. The cast has the effect of
-associating the value of 
-.I unary-expression
-with a complex type structure.
-The result may then be dereferenced using the
+The
+.CW next
+function
+starts by saving the current stack pointer in a local variable.
+It then uses the Acid library function
+.CW fnbound
+to return the addresses of the first and last instructions in
+the current function in a list.
+The
+.CW stmnt
+function executes a single source statement and then uses
+.CW src
+to print a few lines of source around the new
+.CW PC .
+If the new value of the
+.CW PC
+remains in the current function,
+.CW next
+returns.
+When the executed statement is a function call or a return
+from a function, the new value of the
+.CW PC
+is outside the bounds calculated by
+.CW fnbound 
+and the test of the
+.CW while
+loop is evaluated.
+If the statement was a return, the new value of the stack pointer
+is greater than the original value and the loop completes without
+execution.
+Otherwise, the loop is entered and instructions are continually
+executed until the value of the
+.CW PC
+is between the bounds calculated earlier.  At that point, execution
+ceases and a few lines of source in the vicinity of the
+.CW PC
+are printed.
+.PP
+Acid provides concise and elegant expression for control and
+manipulation of target programs. These examples demonstrate how a
+few well-chosen primitives can be combined to create a rich debugging environment.
+.NH
+Dealing With Multiple Architectures
+.PP
+A single binary of Acid may be used to debug a program running on any
+of the five processor architectures supported by Plan 9.  For example,
+Plan 9 allows a user on a MIPS to import the
+.I proc
+file system from an i486-based PC and remotely debug a program executing
+on that processor.
+.PP
+Two levels of abstraction provide this architecture independence.
+On the lowest level, a Plan 9 library supplies functions to
+decode the file header of the program being debugged and
+select a table of system parameters
+and a jump vector of architecture-dependent
+functions based on the magic number.
+Among these functions are byte-order-independent
+access to memory and text files, stack manipulation, disassembly,
+and floating point number interpretation.
+The second level of abstraction is supplied by Acid.
+It consists of primitives and approximately 200 lines
+of architecture-dependent Acid library code that interface the
+interpreter to the architecture-dependent library.
+This layer performs functions such as mapping register names to
+memory locations, supplying breakpoint values and sizes,
+and converting processor specific data to Acid data types.
+An example of the latter is the stack trace function
+.CW strace ,
+which uses the stack traversal functions in the
+architecture-dependent library to construct a list of lists describing
+the context of a process.  The first level of list selects
+each function in the trace; subordinate lists contain the
+names and values of parameters and local variables of
+the functions.  Acid commands and library functions that
+manipulate and display process state information operate
+on the list representation and are independent of the
+underlying architecture.
+.NH
+Alef Runtime
+.PP
+Alef is a concurrent programming language,
+designed specifically for systems programming, which supports both
+shared variable and message passing paradigms.
+Alef borrows the C expression syntax but implements
+a substantially different type system.
+The language provides a rich set of 
+exception handling, process management, and synchronization
+primitives, which rely on a runtime system.
+Alef program bugs are often deadlocks, synchronization failures,
+or non-termination caused by locks being held incorrectly.
+In such cases, a process stalls deep
+in the runtime code and it is clearly
+unreasonable to expect a programmer using the language
+to understand the detailed
+internal semantics of the runtime support functions.
+.PP
+Instead, there is an Alef support library, coded in Acid, that
+allows the programmer to interpret the program state in terms of
+Alef operations.  Consider the example of a multi-process program
+stalling because of improper synchronization.  A stack trace of
+the program indicates that it is waiting for an event in some
+obscure Alef runtime
+synchronization function.
+The function itself is irrelevant to the
+programmer; of greater importance is the identity of the
+unfulfilled event.
+Commands in the Alef support library decode
+the runtime data structures and program state to report the cause
+of the blockage in terms of the high-level operations available to
+the Alef programmer.  
+Here, the Acid language acts
+as a communications medium between Alef implementer and Alef user.
+.NH
+Parallel Debugging
+.PP
+The central issue in parallel debugging is how the debugger is
+multiplexed between the processes comprising
+the program.
+Acid has no intrinsic model of process partitioning; it
+only assumes that parallel programs share a symbol table,
+though they need not share memory.
+The
+.CW setproc
+primitive attaches the debugger to a running process
+associated with the process ID supplied as its argument
+and assigns that value to the global variable
+.CW pid ,
+thereby allowing simple rotation among a group of processes.
+Further, the stack trace primitive is driven by parameters
+specifying a unique process context, so it is possible to
+examine the state of cooperating processes without switching
+the debugger focus from the process of interest.
+Since Acid is inherently extensible and capable of
+dynamic interaction with subordinate processes, the
+programmer can define Acid commands to detect and control
+complex interactions between processes.
+In short, the programmer is free to specify how the debugger reacts
+to events generated in specific threads of the program.
+.PP
+The support for parallel debugging in Acid depends on a crucial kernel
+modification: when the text segment of a program is written (usually to
+place a breakpoint), the segment is cloned to prevent other threads
+from encountering the breakpoint.  Although this incurs a slight performance
+penalty, it is of little importance while debugging.
+.NH
+Communication Between Tools
+.PP
+The Plan 9 Alef and C compilers do not
+embed detailed type information in the symbol table of an
+executable file.
+However, they do accept a command line option causing them to
+emit descriptions of complex data types
+(e.g., aggregates and abstract data types)
+to an auxiliary file.
+The vehicle for expressing this information is Acid source code.
+When an Acid debugging session is 
+subsequently started, that file is loaded with the other Acid libraries.
+.PP
+For each complex object in the program the compiler generates
+three pieces of Acid code.
+The first is a table describing the size and offset of each
+member of the complex data type.  Following is an Acid function,
+named the same as the object, that formats and prints each member.
+Finally, Acid declarations associate the
+Alef or C program variables of a type with the functions
+to print them.
+The three forms of declaration are shown in the following example:
+.P1
+struct Bitmap {
+	Rectangle    0 r;
+	Rectangle   16 clipr;
+	'D'   32 ldepth;
+	'D'   36 id;
+	'X'   40 cache;
+};
+.P2
+.P1
+defn
+Bitmap(addr) {
+	complex Bitmap addr;
+	print("Rectangle r {\en");
+	Rectangle(addr.r);
+	print("}\en");
+	print("Rectangle clipr {\en");
+	Rectangle(addr.clipr);
+	print("}\en");
+	print("	ldepth	", addr.ldepth, "\en");
+	print("	id	", addr.id, "\en");
+	print("	cache	", addr.cache, "\en");
+};
+
+complex Bitmap darkgrey;
+complex Bitmap Window_settag:b;
+.P2
+The
+.CW struct
+declaration specifies decoding instructions for the complex type named
+.CW Bitmap .
+Although the syntax is superficially similar to a C structure declaration,
+the semantics differ markedly: the C declaration specifies a layout, while
+the Acid declaration tells how to decode it.
+The declaration specifies a type, an offset, and name for each
+member of the complex object. The type is either the name of another
+complex declaration, for example,
+.CW Rectangle ,
+or a format code.
+The offset is the number of bytes from the start
+of the object to the member
+and the name is the member's name in the Alef or C declaration.
+This type description is a close match for C and Alef, but is simple enough
+to be language independent.
+.PP
+The
+.CW Bitmap
+function expects the address of a
+.CW Bitmap
+as its only argument.
+It uses the decoding information contained in the
+.CW Bitmap
+structure declaration to extract, format, and print the
+value of each member of the complex object pointed to by
+the argument.
+The Alef compiler emits code to call other Acid functions
+where a member is another complex type; here,
+.CW Bitmap
+calls
+.CW Rectangle
+to print its contents.
+.PP
+The
+.CW complex
+declarations associate Alef variables with complex types.
+In the example,
+.CW darkgrey
+is the name of a global variable of type
+.CW Bitmap
+in the program being debugged.
+Whenever the name
+.CW darkgrey
+is evaluated by Acid, it automatically calls the
+.CW Bitmap
+function with the address of
+.CW darkgrey
+as the argument.
+The second
+.CW complex
+declaration associates a local variable or parameter named
+.CW b
+in function
+.CW Window_settag
+with the
+.CW Bitmap
+complex data type.
+.PP
+Acid borrows the C operators
 .CW .
 and
 .CW ->
-operators.
+to access the decoding parameters of a member of a complex type.
+Although this representation is sufficiently general for describing
+the decoding of both C and Alef complex data types, it may
+prove too restrictive for target languages with more complicated
+type systems.
+Further, the assumption that the compiler can select the proper
+Acid format code for each basic type in the language is somewhat
+naive.  For example, when a member of a complex type is a pointer,
+it is assigned a hexadecimal type code; integer members are always 
+assigned a decimal type code.
+This heuristic proves inaccurate when an integer field is a
+bit mask or set of bit flags which are more appropriately displayed
+in hexadecimal or octal.
+.NH
+Code Verification
 .PP
-An Acid variable may be associated with a complex type
-to enable accessing the type's members:
+Acid's ability to interact dynamically with
+an executing program allows passive test and
+verification of the target program.  For example,
+a common concern is leak detection in programs using
+.CW malloc .
+Of interest are two items: finding memory that was allocated
+but never freed and detecting bad pointers passed to
+.CW free .
+An auxiliary Acid library contains Acid functions to
+monitor the execution of a program and detect these
+faults, either as they happen or in the automated
+post-mortem analysis of the memory arena.
+In the following example, the
+.CW sort
+command is run under the control of the
+Acid memory leak library.
 .P1
-acid: complex List {
-	'D'	0	type;
-	'X'	4	next;
-};
-acid: complex List lhead
-acid: lhead.type
-10
-acid: lhead = ((List)lhead).next
-acid: lhead.type
--46
-.P2
-Note that the
-.CW next
-field cannot be given a complex type automatically.
-.PP
-When entered at the top level of the interpreter,
-an expression of complex type
-is treated specially.
-If the type is called
-.CW T
-and an Acid function also called
-.CW T
-exists,
-then that function will be called with the expression as its argument.
-The compiler options
-.CW -a
-and
-.CW -aa
-will generate Acid source code defining such complex types and functions; see
-.I 2c (1).
-.PP
-A
-.I unary-expression
-may be qualified with a format specifier using the
-.CW \e
-operator. This has the same effect as passing the expression to the
-.CW fmt
-builtin function.
-.DS
-	multiplicative-expression:
-		cast-expression
-		multiplicative-expression \f(CW*\fP multiplicative-expression
-		multiplicative-expression \f(CW/\fP multiplicative-expression
-		multiplicative-expression \f(CW%\fP multiplicative-expression
-.DE
-These operate on
-.I integer
-and 
-.I float
-types and perform the expected operations:
-.CW *
-multiplication,
-.CW /
-division,
-.CW %
-modulus.
-.DS
-	additive-expression:
-		multiplicative-expression
-		additive-expression \f(CW+\fP multiplicative-expression
-		additive-expression \f(CW-\fP multiplicative-expression
-.DE
-These operators perform as expected for
-.I integer
-and 
-.I float
-operands.
-Unlike in C,
-.CW +
-and
-.CW -
-do not scale the addition based on the format of the expression.
-This means that
-.CW i=i+1
-will always add 1 but
-.CW i++
-will add the size corresponding to the format stored with
-.CW i .
-If both operands are of either
-.I string
-or
-.I list
-type then addition is defined as concatenation. 
-Adding a string and an integer is treated as concatenation
-with the Unicode character corresponding to the integer.
-Subtraction is undefined for strings and lists.
-.DS
-	shift-expression:
-		additive-expression
-		shift-expression \f(CW<<\fP additive-expression
-		shift-expression \f(CW>>\fP additive-expression
-.DE
-The
-.CW >>
-and
-.CW <<
-operators perform bitwise right and left shifts respectively. Both
-require operands of
-.I integer
-type.
-.DS
-	relational-expression:
-		relational-expression \f(CW<\fP shift-expression
-		relational-expression \f(CW>\fP shift-expression
-		relational-expression \f(CW<=\fP shift-expression
-		relational-expression \f(CW>=\fP shift-expression
-
-	equality-expression:
-		relational-expression
-		relational-expression \f(CW==\fP equality-expression
-		relational-expression \f(CW!=\fP equality-expression
-.DE
-The comparison operators are
-.CW <
-(less than),
-.CW >
-(greater than),
-.CW <=
-(less than or equal to),
-.CW >=
-(greater than or equal to),
-.CW ==
-(equal to) and
-.CW !=
-(not equal to). The result of a comparison is 0
-if the condition is false, otherwise 1. The relational operators can only be
-applied to operands of
-.I integer
-and
-.I float
-type. The equality operators apply to all types.  Comparing mixed types is legal.
-Mixed integer and float compare on the integral value.  Other mixtures are always unequal.
-Two lists are equal if they
-have the same number of members and a pairwise comparison of the members results
-in equality.
-.DS
-	AND-expression:
-		equality-expression
-		AND-expression \f(CW&\fP equality-expression
-
-	XOR-expression:
-		AND-expression
-		XOR-expression \f(CW^\fP AND-expression
-
-	OR-expression:
-		XOR-expression
-		OR-expression \f(CW|\fP XOR-expression
-.DE
-These operators perform bitwise logical operations and apply only to the
-.I integer
-type.
-The operators are
-.CW &
-(logical and),
-.CW ^
-(exclusive or) and
-.CW |
-(inclusive or).
-.DS
-	logical-AND-expression:
-		OR-expression
-		logical-AND-expression \f(CW&&\fP OR-expression
-
-	logical-OR-expression:
-		logical-AND-expression
-		logical-OR-expression \f(CW||\fP logical-AND-expression
-.DE
-The
-.CW &&
-operator returns 1 if both of its operands evaluate to boolean true, otherwise 0.
-The
-.CW ||
-operator returns 1 if either of its operands evaluates to boolean true,
-otherwise 0.
-.SH
-Statements
-.PP
-.DS
-	\f(CWif\fP expression \f(CWthen\fP statement \f(CWelse\fP statement
-	\f(CWif\fP expression \f(CWthen\fP statement
-.DE
-The
-.I expression
-is evaluated as a boolean. If its value is true the statement after
+helix% acid -l malloc /bin/sort
+/bin/sort: mips plan 9 executable
+/lib/acid/port
+/lib/acid/mips
+/lib/acid/malloc
+acid: go()
+now
+is
 the
-.CW then
-is executed, otherwise the statement after the
-.CW else
-is executed. The 
-.CW else
-portion may be omitted.
-.DS
-	\f(CWwhile\fP expression \f(CWdo\fP statement
-.DE
-In a while loop, the
-.I statement
-is executed while the boolean
-.I expression
-evaluates
-true.
-.DS
-	\f(CWloop\fP startexpr, endexpr \f(CWdo\fP statement
-.DE
-The two expressions
-.I startexpr
-and
-.I endexpr
-are evaluated prior to loop entry.
-.I Statement
-is evaluated while the value of
-.I startexpr
-is less than or equal to
-.I endexpr .
-Both expressions must yield
-.I integer
-values. The value of
-.I startexpr
+time
+<ctrl-d>
 is
-incremented by one for each loop iteration.
-Note that there is no explicit loop variable; the
-.I expressions
-are just values.
-.DS
-	\f(CWreturn\fP expression
-.DE
-.CW return
-terminates execution of the current function and returns to its caller.
-The value of the function is given by expression. Since
-.CW return
-requires an argument, nil-valued functions should return the empty list
-.CW {} .
-.DS
-	\f(CWlocal\fP variable
-.DE
-The
-.CW local
-statement creates a local instance of
-.I variable ,
-which exists for the duration
-of the instance of the function in which it is declared. Binding is dynamic: the local variable,
-rather than the previous value of
-.I variable ,
-is visible to called functions.
-After a return from the current function the previous value of
-.I variable
-is
-restored.
-.PP
-If Acid is interrupted, the values of all local variables are lost,
-as if the function returned.
-.DS
-	\f(CWdefn\fP function-name \f(CW(\fP parameter-list \f(CW)\fP body
-
-	parameter-list:
-		variable
-		parameter-list , variable
-
-	body:
-		\f(CW{\fP statement \f(CW}\fP
-.DE
-Functions are introduced by the
-.CW defn
-statement. The definition of parameter names suppresses any variables
-of the same name until the function returns. The body of a function is a list
-of statements enclosed by braces.
-.SH
-Code variables
-.PP
-Acid permits the delayed evaluation of a parameter to a function.  The parameter
-may then be evaluated at any time with the
-.CW eval
-operator.  Such parameters are called
-.I "code variables
-and are defined by prefixing their name with an asterisk in their declaration.
-.PP
-For example, this function wraps up an expression for later evaluation:
-.P1
-acid: defn code(*e) { return e; }
-acid: x = code(v+atoi("100")\eD)
-acid: print(x)
-(v+atoi("100"))\eD;
-acid: eval x
-<stdin>:5: (error) v used but not set
-acid: v=5
-acid: eval x
-105
+now
+the
+time
+27680 : breakpoint	_exits+0x4	MOVW	$0x8,R1
+acid: 
 .P2
-.SH
-Source Code Management
-.PP
-Acid provides the means to examine source code. Source code is
-represented by lists of strings. Builtin functions provide mapping
-from address to lines and vice-versa. The default debugging environment
-has the means to load and display source files.
-.SH
-Builtin Functions
-.PP
-The Acid interpreter has a number of builtin functions, which cannot be redefined.
-These functions perform machine- or operating system-specific functions such as
-symbol table and process management.
-The following section presents a description of each builtin function.
-The notation
-.CW {}
-is used to denote the empty list, which is the default value of a function that
-does not execute a
-.CW return 
-statement.
-The type and number of parameters for each function are specified in the
-description; where a parameter can be of any type it is specified as type
-.I item .
-.de Ip
-.KS
-.LP
-.tl '\f2\\$1\fP\ \ \f(CW\\$2(\f2\\$3\f(CW)\f1''\\$4'
-.IP
-..
-.de Ex
-.KE
-.KS
-.IP
-.ft CW
-.ta 4n +4n +4n +4n +4n +4n +4n +4n +4n +4n +4n +4n +4n +4n +4n +4n
-.nf
-.in +4n
-.br
-..
-.de Ee
-.fi
-.ft 1
-.br
-.KE
-..
-.\"
-.\"
-.\"
-.Ip integer access string "Check if a file can be read
-.CW Access
-returns the integer 1 if the file name in
-.I string
-can be read by the builtin functions
-.CW file ,
-.CW readfile ,
-or
-.CW include ,
-otherwise 0. A typical use of this function is to follow
-a search path looking for a source file; it is used by
-.CW findsrc .
-.Ex
-if access("main.c") then
-	return file("main.c");
-.Ee
-.\"
-.\"
-.\"
-.Ip float atof string "Convert a string to float
-.CW atof
-converts the string supplied as its argument into a floating point
-number. The function accepts strings in the same format as the C
-function of the same name. The value returned has the format code
-.CW f .
-.CW atof
-returns the value 0.0 if it is unable to perform the conversion.
-.Ex
-acid: +atof("10.4e6")
-1.04e+07
-.Ee
-.\"
-.\"
-.\"
-.Ip integer atoi string "Convert a string to an integer
-.CW atoi
-converts the argument
-.i string
-to an integer value.
-The function accepts strings in the same format as the C function of the
-same name. The value returned has the format code
-.CW D .
-.CW atoi
-returns the integer 0 if it is unable to perform a conversion.
-.Ex
-acid: +atoi("-1255")
--1255
-.Ee
-.\"
-.\"
-.\"
-.Ip \f(CW{}\fP error string "Generate an interpreter error
-.CW error
-generates an error message and returns the interpreter to interactive
-mode. If an Acid program is running, it is aborted.
-Processes being debugged are not affected. The values of all local variables are lost.
-.CW error
-is commonly used to stop the debugger when some interesting condition arises
-in the debugged program.
-.Ex
-while 1 do {
-	step();
-	if *main != @main then
-		error("memory corrupted");
-}
-.Ee
-.\"
-.\"
-.\"
-.Ip list file string "Read the contents of a file into a list
-.CW file
-reads the contents of the file specified by
-.I string
-into a list.
-Each element in the list is a string corresponding to a line in the file.
-.CW file
-breaks lines at the newline character, but the newline
-characters are not returned as part each string.
-.CW file
-returns the empty list if it encounters an error opening or reading the data.
-.Ex
-acid: print(file("main.c")[0])
-#include	<u.h>
-.Ee
-.\"
-.\"
-.\"
-.Ip integer filepc string "Convert source address to text address
-.CW filepc
-interprets its
-.I string
-argument as a source file address in the form of a file name and line offset.
-.CW filepc
-uses the symbol table to map the source address into a text address
-in the debugged program. The
-.I integer
-return value has the format
-.CW X .
-.CW filepc
-returns an address of -1 if the source address is invalid.
-The source file address uses the same format as
-.I acme (1).
-This function is commonly used to set breakpoints from the source text.
-.Ex
-acid: bpset(filepc("main:10"))
-acid: bptab()
-	0x00001020 usage  ADD	$-0xc,R29
-.Ee
-.\"
-.\"
-.\"
-.Ip item fmt item,fmt "Set print, \f(CW@\fP and \f(CW*\fP formats
-.CW fmt
-evaluates the expression
-.I item
-and sets the format of the result to
-.I fmt .
-The format of a value determines how it will be printed and
-what kind of object will be fetched by the
-.CW *
-and
-.CW @
-operators. The
-.CW \e
-operator is a short-hand form of the
-.CW fmt
-builtin function. The
-.CW fmt
-function leaves the format of the
-.I item
-unchanged.
-.Ex
-acid: main=fmt(main, 'i') // as instructions
-acid: print(main\eX, "\et", *main)
-0x00001020 ADD	$-64,R29
-.Ee
-.\"
-.\"
-.\"
-.Ip list fnbound integer "Find start and end address of a function
-.CW fnbound
-interprets its
-.I integer
-argument as an address in the text of the debugged program.
-.CW fnbound
-returns a list containing two integers corresponding to
-the start and end addresses of the function containing the supplied address.
-If the
-.I integer
-address is not in the text segment of the program then the empty list is returned.
-.CW fnbound
-is used by
-.CW next
-to detect stepping into new functions.
-.Ex
-acid: print(fnbound(main))
-{0x00001050, 0x000014b8}
-.Ee
-.\"
-.\"
-.\"
-.Ip \f(CW{}\fP follow integer "Compute follow set
-The follow set is defined as the set of program counter values that could result
-from executing an instruction.
-.CW follow
-interprets its
-.I integer
-argument as a text address, decodes the instruction at
-that address and, with the current register set, builds a list of possible
-next program counter values. If the instruction at the specified address
-cannot be decoded
-.CW follow
-raises an error.
-.CW follow
-is used to plant breakpoints on
-all potential paths of execution. The following code fragment
-plants breakpoints on top of all potential following instructions.
-.Ex
-lst = follow(*PC);
-while lst do
-{
-	*head lst = bpinst;
-	lst = tail lst;
-}
-.Ee
-.\"
-.\"
-.\"
-.Ip \f(CW{}\fP include string "Take input from a new file
-.CW include
-opens the file specified by
-.I string
-and uses its contents as command input to the interpreter.
-The interpreter restores input to its previous source when it encounters
-either an end of file or an error.
-.CW include
-can be used to incrementally load symbol table information without
-leaving the interpreter.
-.Ex
-acid: include("/sys/src/cmd/acme/syms")
-.Ee
-.\"
-.\"
-.\"
-.Ip \f(CW{}\fP interpret string "Take input from a string
-.CW interpret
-evaluates the
-.I string
-expression and uses its result as command input for the interpreter.
-The interpreter restores input to its previous source when it encounters
-either the end of string or an error. The
-.CW interpret
-function allows Acid programs to write Acid code for later evaluation.
-.Ex
-acid: interpret("main+10;")
-0x0000102a
-.Ee
-.\"
-.\"
-.\"
-.Ip string itoa integer "Convert integer to string
-.CW itoa
-takes an integer argument and converts it into an ASCII string
-in the
-.CW D
-format. This function is commonly used to build
-.CW rc
-command lines.
-.Ex
-acid: rc("cat /proc/"+itoa(pid)+"/segment")
-Stack    7fc00000 80000000    1
-Data     00001000 00009000    1
-Data     00009000 0000a000    1
-Bss      0000a000 0000c000    1
-.Ee
-.\"
-.\"
-.\"
-.Ip \f(CW{}\fP kill integer "Kill a process
-.CW kill
-writes a kill control message into the control file of the process
-specified by the
-.I integer
-pid.
-If the process was previously installed by
-.CW setproc
-it will be removed from the list of active processes.
-If the
-.I integer
-has the same value as
-.CW pid ,
-then
-.CW pid
-will be set to 0.
-To continue debugging, a new process must be selected using
-.CW setproc .
-For example, to kill all the active processes:
-.Ex
-while proclist do {
-	kill(head proclist);
-	proclist = tail proclist;
-}
-.Ee
-.\"
-.\"
-.\"
-.Ip list map list "Set or retrieve process memory map
-.CW map
-either retrieves all the mappings associated with a process or sets a single
-map entry to a new value.
-If the
-.I list
-argument is omitted then
-.CW map
-returns a list of lists. Each sublist has four values and describes a
-single region of contiguous addresses in the
-memory or file image of the debugged program. The first entry is the name of the
-mapping. If the name begins with
-.CW *
-it denotes a map into the memory of an active process.
-The second and third values specify the base and end
-address of the region and the fourth number specifies the offset in the file
-corresponding to the first location of the region.
-A map entry may be set by supplying a list in the same format as the sublist
-described above. The name of the mapping must match a region already defined
-by the current map.
-Maps are set automatically for Plan 9 processes and some kernels; they may
-need to be set by hand for other kernels and programs that run on bare hardware.
-.Ex
-acid: map({"text", _start, end, 0x30})
-.Ee
-.\"
-.\"
-.\"
-.Ip integer match item,list "Search list for matching value
-.CW match
-compares each item in
-.I list
-using the equality operator
-.CW ==
-with
-.I item .
 The
-.I item
-can be of any type. If the match succeeds the result is the integer index
-of the matching value, otherwise -1.
-.Ex
-acid: list={8,9,10,11}
-acid: print(list[match(10, list)]\eD)
-10
-.Ee
-.\"
-.\"
-.\"
-.Ip \f(CW{}\fP newproc string "Create a new process
-.CW newproc
-starts a new process with an argument vector constructed from
-.I string .
-The argument vector excludes the name of the program to execute and
-each argument in
-.I string
-must be space separated. A new process can accept no more
-than 512 arguments. The internal variable
-.CW pid
-is set to the pid of the newly created process. The new pid
-is also appended to the list of active processes stored in the variable
-.CW proclist .
-The new process is created then halted at the first instruction, causing
-the debugger to call
-.CW stopped .
-The library functions
-.CW new
+.CW go
+command creates a process and plants
+breakpoints at the entry to
+.CW malloc
 and
-.CW win
-should be used to start processes when using the standard debugging
-environment.
-.Ex
-acid: newproc("-l .")
-56720: system call	_main	ADD	$-0x14,R29
-.Ee
-.\"
-.\"
-.\"
-.Ip string pcfile integer "Convert text address to source file name
-.CW pcfile
-interprets its
-.I integer
-argument as a text address in the debugged program. The address and symbol table
-are used to generate a string containing the name of the source file
-corresponding to the text address. If the address does not lie within the
-program the string
-.CW ?file?
-is returned.
-.Ex
-acid: print("Now at ", pcfile(*PC), ":", pcline(*PC))
-Now at ls.c:46 
-.Ee
-.\"
-.\"
-.\"
-.Ip integer pcline integer "Convert text address to source line number
-.CW pcline
-interprets its
-.I integer
-argument as a text address in the debugged program. The address and symbol table
-are used to generate an integer containing the line number in the source file
-corresponding to the text address. If the address does not lie within the
-program the integer 0 is returned.
-.Ex
-acid: +file("main.c")[pcline(main)]
-main(int argc, char *argv[])
-.Ee
-.\"
-.\"
-.\"
-.Ip \f(CW{}\fP print item,item,... "Print expressions
-.CW print
-evaluates each
-.I item
-supplied in its argument list and prints it to standard output. Each
-argument will be printed according to its associated format character.
-When the interpreter is executing, output is buffered and flushed every
-5000 statements or when the interpreter returns to interactive mode.
-.CW print
-accepts a maximum of 512 arguments.
-.Ex
-acid: print(10, "decimal ", 10\eD, "octal ", 10\eo)
-0x0000000a decimal 10 octal 000000000012 
-acid: print({1, 2, 3})
-{0x00000001 , 0x00000002 , 0x00000003 }
-acid: print(main, main\ea, "\et", @main\ei)
-0x00001020 main	ADD	$-64,R29
-.Ee
-.\"
-.\"
-.\"
-.Ip \f(CW{}\fP printto string,item,item,... "Print expressions to file
-.CW printto
-offers a limited form of output redirection. The first
-.I string
-argument is used as the path name of a new file to create.
-Each
-.I item
-is then evaluated and printed to the newly created file. When all items
-have been printed the file is closed.
-.CW printto
-accepts a maximum of 512 arguments.
-.Ex
-acid: printto("/env/foo", "hello")
-acid: rc("echo -n $foo")
-hello
-.Ee
-.\"
-.\"
-.\"
-.Ip string rc string "Execute a shell command
-.CW rc
-evaluates
-.I string
-to form a shell command. A new command interpreter is started
-to execute the command. The Acid interpreter blocks until the command
-completes. The return value is the empty string
-if the command succeeds, otherwise the exit status of the failed command.
-.Ex
-acid: rc("B "+itoa(-pcline(addr))+" "+pcfile(addr));
-.Ee
-.\"
-.\"
-.\"
-.Ip string readfile string "Read file contents into a string
-.CW readfile
-takes the contents of the file specified by
-.I string
-and returns its contents as a new string.
-If
-.CW readfile
-encounters a zero byte in the file, it terminates.
-If
-.CW readfile
-encounters an error opening or reading the file then the empty list
-is returned.
-.CW readfile
-can be used to read the contents of device files whose lines are not
-terminated with newline characters.
-.Ex
-acid: ""+readfile("/dev/label")
-helix
-.Ee
-.\"
-.\"
-.\"
-.Ip string reason integer "Print cause of program stoppage
-.CW reason
-uses machine-dependent information to generate a string explaining
-why a process has stopped. The
-.I integer
-argument is the value of an architecture dependent status register,
-for example
-.CW CAUSE
-on the MIPS.
-.Ex
-acid: print(reason(*CAUSE))
-system call
-.Ee
-.\"
-.\"
-.\"
-.Ip integer regexp pattern,string "Regular expression match
-.CW regexp
-matches the
-.I pattern
-string supplied as its first argument with the 
-.I string
-supplied as its second.
-If the pattern matches the result is the value 1, otherwise 0.
-.Ex
-acid: print(regexp(".*bar", "foobar"))
-1
-.Ee
-.\"
-.\"
-.\"
-.Ip \f(CW{}\fP setproc integer "Set debugger focus
-.CW setproc
-selects the default process used for memory and control operations. It effectively
-shifts the focus of control between processes. The 
-.I integer
-argument specifies the pid of the process to look at.
-The variable
-.CW pid
-is set to the pid of the selected process. If the process is being
-selected for the first time its pid is added to the list of active
-processes
-.CW proclist .
-.Ex
-acid: setproc(68382)
-acid: procs()
->68382: Stopped at main+0x4 setproc(68382)
-.Ee
-.\"
-.\"
-.\"
-.Ip \f(CW{}\fP start integer "Restart execution
-.CW start
-writes a
-.CW start
-message to the control file of the process specified by the pid
-supplied as its
-.I integer
-argument.
-.CW start
-draws an error if the process is not in the
-.CW Stopped
-state.
-.Ex
-acid: start(68382)
-acid: procs()
->68382: Running at main+0x4 setproc(68382)
-.Ee
-.\"
-.\"
-.\"
-.Ip \f(CW{}\fP startstop integer "Restart execution, block until stopped
-.CW startstop
-performs the same actions as a call to
-.CW start
-followed by a call to
-.CW stop .
+.CW free .
+The program is then started and continues until it
+exits or stops.  If the reason for stopping is anything
+other than the breakpoints in
+.CW malloc
+and
+.CW free ,
+Acid prints the usual status information and returns to the
+interactive prompt.
+.PP
+When the process stops on entering
+.CW malloc ,
+the debugger must capture and save the address that
+.CW malloc
+will return.
+After saving a stack
+trace so the calling routine can be identified, it places
+a breakpoint at the return address and restarts the program.
+When
+.CW malloc
+returns, the breakpoint stops the program,
+allowing the debugger
+to grab the address of the new memory block from the return register.
+The address and stack trace are added to the list of outstanding
+memory blocks, the breakpoint is removed from the return point, and
+the process is restarted.
+.PP
+When the process stops at the beginning of
+.CW free ,
+the memory address supplied as the argument is compared to the list
+of outstanding memory blocks.  If it is not found an error message
+and a stack trace of the call is reported; otherwise, the
+address is deleted from the list.
+.PP
+When the program exits, the list of outstanding memory blocks contains
+the addresses of all blocks that were allocated but never freed.
 The
-.I integer
-argument specifies the pid of the process to control. The process
-must be in the
-.CW Stopped
-state.
-Execution is restarted, the debugger then waits for the process to
-return to the
-.CW Stopped
-state. A process will stop if a startstop message has been written to its control
-file and any of the following conditions becomes true: the process executes or returns from
-a system call, the process generates a trap or the process receives a note.
-.CW startstop
-is used to implement single stepping.
-.Ex
-acid: startstop(pid)
-75374: breakpoint	ls	ADD	$-0x16c8,R29
-.Ee
-.\"
-.\"
-.\"
-.Ip string status integer "Return process state
-.CW status
-uses the pid supplied by its
-.I integer
-argument to generate a string describing the state of the process.
-The string corresponds to the state returned by the
-sixth column of the
-.I ps (1)
+.CW leak
+library function traverses the list producing a report describing
+the allocated blocks.
+.P1 1m
+acid: leak()
+Lost a total of 524288 bytes from:
+    malloc() malloc.c:32 called from dofile+0xe8 sort.c:217 
+    dofile() sort.c:190 called from main+0xac sort.c:161 
+    main() sort.c:128 called from _main+0x20 main9.s:10 
+Lost a total of 64 bytes from:
+    malloc() malloc.c:32 called from newline+0xfc sort.c:280 
+    newline() sort.c:248 called from dofile+0x110 sort.c:222 
+    dofile() sort.c:190 called from main+0xac sort.c:161 
+    main() sort.c:128 called from _main+0x20 main9.s:10 
+Lost a total of 64 bytes from:
+    malloc() malloc.c:32 called from realloc+0x14 malloc.c:129 
+    realloc() malloc.c:123 called from bldkey+0x358 sort.c:1388 
+    buildkey() sort.c:1345 called from newline+0x150 sort.c:285 
+    newline() sort.c:248 called from dofile+0x110 sort.c:222 
+    dofile() sort.c:190 called from main+0xac sort.c:161 
+    main() sort.c:128 called from _main+0x20 main9.s:10
+acid: refs()
+data...bss...stack...
+acid: leak()
+acid: 
+.P2
+The presence of a block in the allocation list does not imply
+it is there because of a leak; for instance, it may have been
+in use when the program terminated.
+The
+.CW refs()
+library function scans the
+.I data ,
+.I bss ,
+and
+.I stack
+segments of the process looking for pointers
+into the allocated blocks.  When one is found, the block is deleted from
+the outstanding block list.
+The
+.CW leak
+function is used again to report the
+blocks remaining allocated and unreferenced.
+This strategy proves effective in detecting
+disconnected (but non-circular) data structures.
+.PP
+The leak detection process is entirely passive.
+The program is not
+specially compiled and the source code is not required.
+As with the Acid support functions for the Alef runtime environment,
+the author of the library routines has encapsulated the
+functionality of the library interface
+in Acid code.
+Any programmer may then check a program's use of the
+library routines without knowledge of either implementation.
+The performance impact of running leak detection is great
+(about 10 times slower),
+but it has not prevented interactive programs like
+.CW sam
+and the
+.CW 8½
+window system from being tested.
+.NH
+Code Coverage
+.PP
+Another common component of software test uses 
+.I coverage 
+analysis.
+The purpose of the test is to determine which paths through the code have
+not been executed while running the test suite.
+This is usually
+performed by a combination of compiler support and a reporting tool run
+on the output generated by statements compiled into the program.
+The compiler emits code that
+logs the progress of the program as it executes basic blocks and writes the
+results to a file. The file is then processed by the reporting tool 
+to determine which basic blocks have not been executed.
+.PP
+Acid can perform the same function in a language independent manner without
+modifying the source, object or binary of the program. The following example
+shows
+.CW ls
+being run under the control of the Acid coverage library.
+.P1
+philw-helix% acid -l coverage /bin/ls
+/bin/ls: mips plan 9 executable
+/lib/acid/port
+/lib/acid/mips
+/lib/acid/coverage
+acid: coverage()
+acid
+newstime
+profile
+tel
+wintool
+2: (error) msg: pid=11419 startstop: process exited
+acid: analyse(ls)
+ls.c:102,105
+	102:     return 1;
+	103: }
+	104: if(db[0].qid.path&CHDIR && dflag==0){
+	105:     output();
+ls.c:122,126
+	122:     memmove(dirbuf+ndir, db, sizeof(Dir));
+	123:     dirbuf[ndir].prefix = 0;
+	124:     p = utfrrune(s, '/');
+	125:     if(p){
+	126:         dirbuf[ndir].prefix = s;
+.P2
+The
+.CW coverage
+function begins by looping through the text segment placing
+breakpoints at the entry to each basic block. The start of each basic
+block is found using the Acid builtin function
+.CW follow .
+If the list generated by
+.CW follow 
+contains more than one
+element, then the addresses mark the start of basic blocks. A breakpoint
+is placed at each address to detect entry into the block. If the result
+of
+.CW follow
+is a single address then no action is taken, and the next address is
+considered. Acid maintains a list of
+breakpoints already in place and avoids placing duplicates (an address may be
+the destination of several branches).
+.PP
+After placing the breakpoints the program is set running.
+Each time a breakpoint is encountered
+Acid deletes the address from the breakpoint list, removes the breakpoint
+from memory and then restarts the program.
+At any instant the breakpoint list contains the addresses of basic blocks
+which have not been executed. 
+The
+.CW analyse
+function reports the lines of source code bounded by basic blocks
+whose addresses are have not been deleted from the breakpoint list.
+These are the basic blocks which have not been executed.
+Program performance is almost unaffected since each breakpoint is executed
+only once and then removed.
+.PP
+The library contains a total of 128 lines of Acid code.
+An obvious extension of this algorithm could be used to provide basic block
+profiling.
+.NH
+Conclusion
+.PP
+Acid has two areas of weakness. As with
+other language-based tools like
+.I awk ,
+a programmer must learn yet another language to step beyond the normal
+debugging functions and use the full power of the debugger.
+Second, the command line interface supplied by the
+.I yacc
+parser is inordinately clumsy.
+Part of the problem relates directly to the use of
+.I yacc
+and could be circumvented with a custom parser.
+However, structural problems would remain: Acid often requires
+too much typing to execute a simple
 command.
-A process must be in the
-.CW Stopped
-state to modify its memory or registers.
-.Ex
-acid: ""+status(pid)
-Stopped
-.Ee
-.\"
-.\"
-.\"
-.Ip \f(CW{}\fP stop integer "Wait for a process to stop
-.CW stop
-writes a
-.CW stop
-message to the control file of the process specified by the
-pid supplied as its
-.I integer
-argument.
-The interpreter blocks until the debugged process enters the
-.CW Stopped
-state.
-A process will stop if a stop message has been written to its control
-file and any of the following conditions becomes true: the process executes or returns from
-a system call, the process generates a trap, the process is scheduled or the
-process receives a note.
-.CW stop
-is used to wait for a process to halt before planting a breakpoint since Plan 9
-only allows a process's memory to be written while it is in the
-.CW Stopped
-state.
-.Ex
-defn bpset(addr) {
-	if (status(pid)!="Stopped") then {
-		print("Waiting...\en");
-		stop(pid);
-	}
-	...
-}
-.Ee
-.\"
-.\"
-.\"
-.Ip list strace pc,sp,linkreg "Stack trace
-.CW strace
-generates a list of lists corresponding to procedures called by the debugged
-program. Each sublist describes a single stack frame in the active process.
-The first element is an
-.I integer
-of format
-.CW X
-specifying the address of the called function. The second element is the value
-of the program counter when the function was called. The third and fourth elements
-contain lists of parameter and automatic variables respectively.
-Each element of these lists
-contains a string with the name of the variable and an
-.I integer
-value of format
-.CW X
-containing the current value of the variable.
-The arguments to
-.CW strace
-are the current value of the program counter, the current value of the
-stack pointer, and the address of the link register. All three parameters
-must be integers.
-The setting of 
-.I linkreg
-is architecture dependent. On the MIPS linkreg is set to the address of saved
-.CW R31 ,
-on the SPARC to the address of saved
-.CW R15 .
-For the other architectures
-.I linkreg
-is not used, but must point to valid memory.
-.Ex
-acid: print(strace(*PC, *SP, linkreg))
-{{0x0000141c, 0xc0000f74,
-{{"s", 0x0000004d}, {"multi", 0x00000000}}, 
-{{"db", 0x00000000}, {"fd", 0x000010a4},
-{"n", 0x00000001}, {"i", 0x00009824}}}}
-.Ee
-.\"
-.\"
-.\"
-.Ip \f(CW{}\fP waitstop integer "Wait for a process to stop
-.CW waitstop
-writes a waitstop message to the control file of the process specified by the
-pid supplied as its
-.I integer
-argument.
-The interpreter will remain blocked until the debugged process enters the
-.CW Stopped
-state.
-A process will stop if a waitstop message has been written to its control
-file and any of the following conditions becomes true: the process generates a trap
-or receives a note. Unlike
-.CW stop ,
-the
-.CW waitstop
-function is passive; it does not itself cause the program to stop.
-.Ex
-acid: waitstop(pid)
-75374: breakpoint	ls	ADD	$-0x16c8,R29
-.Ee
-.\"
-.\"
-.\"
-.SH
-Library Functions
+A debugger should prostitute itself to its users, doing whatever
+is wanted with a minimum of encouragement; commands should be
+concise and obvious. The language interface is more consistent than
+an ad hoc command interface but is clumsy to use.
+Most of these problems are addressed by an Acme interface
+which is under construction. This should provide the best of
+both worlds: graphical debugging and access to the underlying acid
+language when required.
 .PP
-A standard debugging environment is provided by modules automatically
-loaded when
-Acid is started.
-These modules are located in the directory
-.CW /sys/lib/acid .
-These functions may be overridden, personalized, or added to by code defined in
-.CW $home/lib/acid .
-The implementation of these functions can be examined using the
-.CW whatis
-operator and then modified during debugging sessions.
-.\"
-.\"
-.\"
-.Ip \f(CW{}\fP Bsrc integer "Load text editor with source
-.CW Bsrc
-interprets the
-.I integer
-argument as a text address. The text address is used to produce a pathname
-and line number suitable for the external
-.CW B
-command
-of the text editor
-(eg,
-.I acme (1)).
-.CW Bsrc
-builds a shell
-command to invoke
-.CW B ,
-which either selects an existing source file or loads a new source file into
-the editor.
-The line of source corresponding to the text address is then selected.
-In the following example
-.CW stopped
-is redefined so that
-the editor
-follows and displays the source line currently being executed.
-.Ex
-defn stopped(pid) {
-	pstop(pid);
-	Bsrc(*PC);
-}
-.Ee
-.\"
-.\"
-.\"
-.Ip \f(CW{}\fP Fpr "" "Display double precision floating registers
-For machines equipped with floating point,
-.CW Fpr
-displays the contents of the floating point registers as double precision
-values.
-.Ex
-acid: Fpr()
-F0   0.	F2   0.
-F4   0.	F6   0.
-F8   0.	F10  0.
-\&...
-.Ee
-.\"
-.\"
-.\"
-.Ip \f(CW{}\fP Ureg integer "Display contents of Ureg structure
-.CW Ureg
-interprets the integer passed as its first argument as the address of a
-kernel
-.CW Ureg
-structure. Each element of the structure is retrieved and printed.
-The size and contents of the
-.CW Ureg
-structure are architecture dependent.
-This function can be used to decode the first argument passed to a
-.I notify (2)
-function after a process has received a note.
-.Ex
-acid: Ureg(*notehandler:ur)
-	status	0x3000f000
-	pc	0x1020
-	sp	0x7ffffe00
-	cause	0x00004002
-\&...
-.Ee
-.\"
-.\"
-.\"
-.Ip \f(CW{}\fP acidinit "" "Interpreter startup
-.CW acidinit
-is called by the interpreter after all
-modules have been loaded at initialization time.
-It is used to set up machine specific variables and the default source path.
-.CW acidinit
-should not be called by user code.
-.KE
-.\"
-.\"
-.\"
-.Ip \f(CW{}\fP addsrcdir string "Add element to source search path
-.CW addsrcdir
-interprets its string argument as a new directory
-.CW findsrc
-should search when looking for source code files.
-.CW addsrcdir
-draws an error if the directory is already in the source search path. The search
-path may be examined by looking at the variable
-.CW srcpath .
-.Ex
-acid: rc("9fs fornax")
-acid: addsrcpath("/n/fornax/sys/src/cmd")
-.Ee
-.\"
-.\"
-.\"
-.Ip \f(CW{}\fP asm integer "Disassemble machine instructions
-.CW asm
-interprets its integer argument as a text address from which to disassemble
-machine instructions.
-.CW asm
-prints the instruction address in symbolic and hexadecimal form, then prints
-the instructions with addressing modes. Up to twenty instructions will
-be disassembled.
-.CW asm
-stops disassembling when it reaches the end of the current function.
-Instructions are read from the file image using the
-.CW @
-operator.
-.Ex
-acid: asm(main)
-main     0x00001020 ADD    $-0x64,R29
-main+0x4 0x00001024 MOVW   R31,0x0(R29)
-main+0x8 0x00001028 MOVW   R1,argc+4(FP)
-main+0xc 0x0000102c MOVW   $bin(SB),R1
-.Ee
-.\"
-.\"
-.\"
-.Ip \f(CW{}\fP bpdel integer "Delete breakpoint
-.CW bpdel
-removes a previously set breakpoint from memory.
-The
-.I integer
-supplied as its argument must be the address of a previously set breakpoint.
-The breakpoint address is deleted from the active breakpoint list
-.CW bplist ,
-then the original instruction is copied from the file image to the memory
-image so that the breakpoint is removed.
-.Ex
-acid: bpdel(main+4)
-.Ee
-.\"
-.\"
-.\"
-.Ip \f(CW{}\fP bpset integer "Set a breakpoint
-.CW bpset
-places a breakpoint instruction at the address specified
-by its
-.I integer
-argument, which must be in the text segment.
-.CW bpset
-draws an error if a breakpoint has already been set at the specified address.
-A list of current breakpoints is maintained in the variable
-.CW bplist .
-Unlike in
-.I db (1),
-breakpoints are left in memory even when a process is stopped, and
-the process must exist, perhaps by being
-created by either
-.CW new
-or
-.CW win ,
-in order to place a breakpoint.
-.CW Db "" (
-accepts breakpoint commands before the process is started.)
-On the
-MIPS and SPARC architectures,
-breakpoints at function entry points should be set 4 bytes into the function
-because the
-instruction scheduler may fill
-.CW JAL
-branch delay slots with the first instruction of the function.
-.Ex
-acid: bpset(main+4)
-.Ee
-.\"
-.\"
-.\"
-.Ip \f(CW{}\fP bptab "" "List active breakpoints
-.CW bptab
-prints a list of currently installed breakpoints. The list contains the
-breakpoint address in symbolic and hexadecimal form as well as the instruction
-the breakpoint replaced. Breakpoints are not maintained across process creation
-using
-.CW new
-and
-.CW win .
-They are maintained across a fork, but care must be taken to keep control of
-the child process.
-.Ex
-acid: bpset(ls+4)
-acid: bptab()
-	0x00001420 ls+0x4  MOVW	R31,0x0(R29)
-.Ee
-.\"
-.\"
-.\"
-.Ip \f(CW{}\fP casm "" "Continue disassembly
-.CW casm
-continues to disassemble instructions from where the last
-.CW asm
-or
-.CW casm
-command stopped. Like
-.CW asm ,
-this command stops disassembling at function boundaries.
-.Ex
-acid: casm()
-main+0x10 0x00001030	MOVW	$0x1,R3
-main+0x14 0x00001034	MOVW	R3,0x8(R29)
-main+0x18 0x00001038	MOVW	$0x1,R5
-main+0x1c 0x0000103c	JAL	Binit(SB)
-.Ee
-.\"
-.\"
-.\"
-.Ip \f(CW{}\fP cont "" "Continue program execution
-.CW cont
-restarts execution of the currently active process.
-If the process is stopped on a breakpoint, the breakpoint is first removed,
-the program is single stepped, the breakpoint is replaced and the program
-is then set executing. This may cause
-.CW stopped()
-to be called twice.
-.CW cont
-causes the interpreter to block until the process enters the
-.CW Stopped
-state.
-.Ex
-acid: cont()
-95197: breakpoint	ls+0x4	MOVW	R31,0x0(R29)
-.Ee
-.\"
-.\"
-.\"
-.Ip \f(CW{}\fP dump integer,integer,string "Formatted memory dump
-.CW dump
-interprets its first argument as an address, its second argument as a
-count and its third as a format string.
-.CW dump
-fetches an object from memory at the current address and prints it according
-to the format. The address is incremented by the number of bytes specified by
-the format and the process is repeated count times. The format string is any
-combination of format characters, each preceded by an optional count.
-For each object,
-.CW dump
-prints the address in hexadecimal, a colon, the object and then a newline.
-.CW dump
-uses
-.CW mem
-to fetch each object.
-.Ex
-acid: dump(main+35, 4, "X2bi")
-0x00001043: 0x0c8fa700 108 143 lwc2 r0,0x528f(R4) 
-0x0000104d: 0xa9006811   0   0 swc3 r0,0x0(R24) 
-0x00001057: 0x2724e800   4  37 ADD  $-0x51,R23,R31 
-0x00001061: 0xa200688d   6   0 NOOP
-0x0000106b: 0x2710c000   7   0 BREAK
-.Ee
-.\"
-.\"
-.\"
-.Ip \f(CW{}\fP findsrc string "Use source path to load source file
-.CW findsrc
-interprets its
-.I string
-argument as a source file. Each directory in the source path is searched
-in turn for the file. If the file is found, the source text is loaded using
-.CW file
-and stored in the list of active source files called
-.CW srctext .
-The name of the file is added to the source file name list
-.CW srcfiles .
-Users are unlikely to call
-.CW findsrc
-from the command line, but may use it from scripts to preload source files
-for a debugging session. This function is used by
-.CW src
-and
-.CW line
-to locate and load source code. The default search path for the MIPS
-is
-.CW ./ ,
-.CW /sys/src/libc/port ,
-.CW /sys/src/libc/9sys ,
-.CW /sys/src/libc/mips .
-.Ex
-acid: findsrc(pcfile(main));
-.Ee
-.\"
-.\"
-.\"
-.Ip \f(CW{}\fP fpr "" "Display single precision floating registers
-For machines equipped with floating point,
-.CW fpr
-displays the contents of the floating point registers as single precision
-values. When the interpreter stores or manipulates floating point values
-it converts into double precision values.
-.Ex
-acid: fpr()
-F0   0.	F1   0.
-F2   0.	F3   0.
-F4   0.	F5   0.
-\&...
-.Ee
-.\"
-.\"
-.\"
-.Ip \f(CW{}\fP func "" "Step while in function
-.CW func
-single steps the active process until it leaves the current function
-by either calling another function or returning to its caller.
-.CW func
-will execute a single instruction after leaving the current function.
-.Ex
-acid: func()
-95197: breakpoint	ls+0x8	MOVW	R1,R8
-95197: breakpoint	ls+0xc	MOVW	R8,R1
-95197: breakpoint	ls+0x10	MOVW	R8,s+4(FP)
-95197: breakpoint	ls+0x14	MOVW	$0x2f,R5
-95197: breakpoint	ls+0x18	JAL	utfrrune(SB)
-95197: breakpoint	utfrrune	ADD	$-0x18,R29
-.Ee
-.\"
-.\"
-.\"
-.Ip \f(CW{}\fP gpr "" "Display general purpose registers
-.CW gpr
-prints the values of the general purpose processor registers.
-.Ex
-acid: gpr()
-R1	0x00009562 R2	0x000010a4 R3	0x00005d08
-R4	0x0000000a R5	0x0000002f R6	0x00000008
-\&...
-.Ee
-.\"
-.\"
-.\"
-.Ip \f(CW{}\fP labstk integer "Print stack trace from label
-.CW labstk
-performs a stack trace from a Plan 9
-.I label.
-The kernel
-and C compilers store continuations in a common format. Since the
-compilers all use caller save conventions a continuation may be saved by
-storing a
-.CW PC
-and
-.CW SP
-pair. This data structure is called a label and is used by the
-C function
-.CW longjmp
-and the kernel to schedule threads and processes.
-.CW labstk
-interprets its
-.I integer
-argument as the address of a label and produces a stack trace for
-the thread of execution. The value of the function
-.CW ALEF_tid
-is a suitable argument for
-.CW labstk .
-.Ex
-acid: labstk(*mousetid)
-At pc:0x00021a70:Rendez_Sleep+0x178 rendez.l:44
-Rendez_Sleep(r=0xcd7d8,bool=0xcd7e0,t=0x0) rendez.l:5
-	called from ALEF_rcvmem+0x198 recvmem.l:45
-ALEF_rcvmem(c=0x000cd764,l=0x00000010) recvmem.l:6
-\&...
-.Ee
-.\"
-.\"
-.\"
-.Ip \f(CW{}\fP lstk "" "Stack trace with local variables
-.CW lstk
-produces a long format stack trace.
-The stack trace includes each function in the stack,
-where it was called from, and the value of the parameters and automatic
-variables for each function.
-.CW lstk
-displays the value rather than the address of each variable and all
-variables are assumed to be an integer in format
-.CW X .
-To print a variable in its correct format use the
-.CW :
-operator to find the address and apply the appropriate format before indirection
-with the
-.CW *
-operator. It may be necessary to single step a couple of instructions into
-a function to get a correct stack trace because the frame pointer adjustment
-instruction may get scheduled down into the body of the function.
-.Ex
-acid: lstk()
-At pc:0x00001024:main+0x4 ls.c:48
-main(argc=0x00000001,argv=0x7fffefec) ls.c:48
-	called from _main+0x20 main9.s:10
-	_argc=0x00000000
-	_args=0x00000000
-	fd=0x00000000
-	buf=0x00000000
-	i=0x00000000
-.Ee
-.\"
-.\"
-.\"
-.Ip \f(CW{}\fP mem integer,string "Print memory object
-.CW mem
-interprets its first
-.I integer
-argument as the address of an object to be printed according to the
-format supplied in its second
-.I string
-argument.
-The format string can be any combination of format characters, each preceded
-by an optional count.
-.Ex
-acid: mem(bdata+0x326, "2c2Xb")
-P = 0xa94bc464 0x3e5ae44d  19 
-.Ee
-.\"
-.\"
-.\"
-.Ip \f(CW{}\fP new "" "Create new process
-.CW new
-starts a new copy of the debugged program. The new program is started
-with the program arguments set by the variable
-.CW progargs .
-The new program is stopped in the second instruction of
-.CW main .
-The breakpoint list is reinitialized.
-.CW new
-may be used several times to instantiate several copies of a program
-simultaneously. The user can rotate between the copies using
-.CW setproc .
-.Ex
-acid: progargs="-l"
-acid: new()
-60: external interrupt	_main	ADD	$-0x14,R29
-60: breakpoint	main+0x4	MOVW	R31,0x0(R29)
-.Ee
-.\"
-.\"
-.\"
-.Ip \f(CW{}\fP next "" "Step through language statement
-.CW next
-steps through a single language level statement without tracing down
-through each statement in a called function. For each statement,
-.CW next
-prints the machine instructions executed as part of the statement. After
-the statement has executed, source lines around the current program
-counter are displayed.
-.Ex
-acid: next()
-60: breakpoint	Binit+0x4 MOVW	R31,0x0(R29)
-60: breakpoint	Binit+0x8 MOVW	f+8(FP),R4
-binit.c:93
- 88	
- 89	int
- 90	Binit(Biobuf *bp, int f, int mode)
- 91	{
->92		return Binits(bp, f, mode, bp->b, BSIZE);
- 93	}
-.Ee
-.\"
-.\"
-.\"
-.Ip \f(CW{}\fP notestk integer "Stack trace after receiving a note
-.CW notestk
-interprets its
-.I integer
-argument as the address of a
-.CW Ureg
-structure passed by the kernel to a
-.I notify (2)
-function during note processing.
-.CW notestk
-uses the
-.CW PC ,
-.CW SP ,
-and link register from the
-.CW Ureg
-to print a stack trace corresponding to the point in the program where the note
-was received.
-To get a valid stack trace on the MIPS and SPARC architectures from a notify
-routine, the program must stop in a new function called from the notify routine
-so that the link register is valid and the notify routine's parameters are
-addressable.
-.Ex
-acid: notestk(*notify:ur)
-Note pc:0x00001024:main+0x4 ls.c:48
-main(argc=0x00000001,argv=0x7fffefec) ls.c:48
-	called from _main+0x20 main9.s:10
-	_argc=0x00000000
-	_args=0x00000000
-.Ee
-.\"
-.\"
-.\"
-.Ip \f(CW{}\fP pfl integer "Print source file and line
-.CW pfl
-interprets its argument as a text address and uses it to print
-the source file and line number corresponding to the address. The output
-has the same format as file addresses in
-.I acme (1).
-.Ex
-acid: pfl(main)
-ls.c:48
-.Ee
-.\"
-.\"
-.\"
-.Ip \f(CW{}\fP procs "" "Print active process list
-.CW procs
-prints a list of active process attached to the debugger. Each process
-produces a single line of output giving the pid, process state, the address
-the process is currently executing, and the
-.CW setproc
-command required to make that process current.
-The current process is marked in the first column with a
-.CW >
-character. The debugger maintains a list of processes in the variable
-.CW proclist .
-.Ex
-acid: procs()
->62: Stopped at main+0x4 setproc(62)
- 60: Stopped at Binit+0x8 setproc(60)
-.Ee
-.\"
-.\"
-.\"
-.Ip \f(CW{}\fP pstop integer "Print reason process stopped
-.CW pstop
-prints the status of the process specified by the
-.I integer
-pid supplied as its argument.
-.CW pstop
-is usually called from
-.CW stopped
-every time a process enters the
-.CW Stopped
-state.
-.Ex
-acid: pstop(62)
-0x0000003e: breakpoint	main+0x4	MOVW	R31,0x0(R29)
-.Ee
-.\"
-.\"
-.\"
-.Ip \f(CW{}\fP regs "" "Print registers
-.CW regs
-prints the contents of both the general and special purpose registers.
-.CW regs
-calls
-.CW spr
-then
-.CW gpr
-to display the contents of the registers.
-.KE
-.\"
-.\"
-.\"
-.Ip \f(CW{}\fP source "" "Summarize source data base
-.CW source
-prints the directory search path followed by a list of currently loaded
-source files. The source management functions
-.CW src
-and
-.CW findsrc
-use the search path to locate and load source files. Source files are
-loaded incrementally into a source data base during debugging. A list
-of loaded files is stored in the variable
-.CW srcfiles
-and the contents of each source file in the variable
-.CW srctext .
-.Ex
-acid: source()
-/n/bootes/sys/src/libbio/
-./
-/sys/src/libc/port/
-/sys/src/libc/9sys/
-/sys/src/libc/mips/
-	binit.c
-.Ee
-.\"
-.\"
-.\"
-.Ip \f(CW{}\fP spr "" "Print special purpose registers
-.CW spr
-prints the contents of the processor control and memory management
-registers. Where possible, the contents of the registers are decoded
-to provide extra information; for example the
-.CW CAUSE
-register on the MIPS is
-printed both in hexadecimal and using the
-.CW reason
-function.
-.Ex
-acid: spr()
-PC	0x00001024 main+0x4  ls.c:48
-SP	0x7fffef68 LINK	0x00006264 _main+0x28 main9.s:12
-STATUS	0x0000ff33 CAUSE	0x00000024 breakpoint
-TLBVIR	0x000000d3 BADVADR	0x00001020
-HI	0x00000004 LO		0x00001ff7
-.Ee
-.\"
-.\"
-.\"
-.Ip \f(CW{}\fP src integer "Print lines of source
-.CW src
-interprets its
-.I integer
-argument as a text address and uses this address to print 5 lines
-of source before and after the address. The current line is marked with a
-.CW >
-character.
-.CW src
-uses the source search path maintained by
-.CW source
-and
-.CW addsrcdir
-to locate the required source files.
-.Ex
-acid: src(*PC)
-ls.c:47
- 42	Biobuf	bin;
- 43	
- 44	#define		HUNK	50
- 45	
- 46	void
->47	main(int argc, char *argv[])
- 48	{
- 49		int i, fd;
- 50		char buf[64];
- 51	
- 52		Binit(&bin, 1, OWRITE);
-.Ee
-.\"
-.\"
-.\"
-.Ip \f(CW{}\fP step "" "Single step process
-.CW step
-causes the debugged process to execute a single machine level instruction.
-If the program is stopped on a breakpoint set by
-.CW bpset
-it is first removed, the single step executed, and the breakpoint replaced.
-.CW step
-uses
-.CW follow
-to predict the address of the program counter after the current instruction
-has been executed. A breakpoint is placed at each of these predicted addresses
-and the process is started. When the process stops the breakpoints are removed.
-.Ex
-acid: step()
-62: breakpoint	main+0x8	MOVW	R1,argc+4(FP)
-.Ee
-.\"
-.\"
-.\"
-.Ip \f(CW{}\fP stk "" "Stack trace
-.CW stk
-produces a short format stack trace. The stack trace includes each function
-in the stack, where it was called from, and the value of the parameters.
-The short format omits the values of automatic variables.
-Parameters are assumed to be integer values in the format
-.CW X ;
-to print a parameter in the correct format use the
-.CW :
-to obtain its address, apply the correct format, and use the
-.CW *
-indirection operator to find its value.
-It may be necessary to single step a couple of instructions into
-a function to get a correct stack trace because the frame pointer adjustment
-instruction may get scheduled down into the body of the function.
-.Ex
-acid: stk()
-At pc:0x00001028:main+0x8 ls.c:48
-main(argc=0x00000002,argv=0x7fffefe4) ls.c:48
-	called from _main+0x20 main9.s:10
-.Ee
-.\"
-.\"
-.\"
-.Ip \f(CW{}\fP stmnt "" "Execute a single statement
-.CW stmnt
-executes a single language level statement.
-.CW stmnt
-displays each machine level instruction as it is executed. When the executed
-statement is completed the source for the next statement is displayed.
-Unlike
-.CW next ,
-the
-.CW stmnt
-function will trace down through function calls.
-.Ex
-acid: stmnt()
-62: breakpoint	main+0x18 MOVW	R5,0xc(R29)
-62: breakpoint	main+0x1c JAL	Binit(SB)
-62: breakpoint	Binit     ADD	$-0x18,R29
-binit.c:91
- 89	int
- 90	Binit(Biobuf *bp, int f, int mode)
->91	{
-.Ee
-.\"
-.\"
-.\"
-.Ip \f(CW{}\fP stopped integer "Report status of stopped process
-.CW stopped
-is called automatically by the interpreter
-every time a process enters the
-.CW Stopped
-state, such as when it hits a breakpoint.
-The pid is passed as the
-.I integer
-argument.  The default implementation just calls
-.CW pstop ,
-but the function may be changed to provide more information or perform fine control
-of execution.  Note that
-.CW stopped
-should return; for example, calling
-.CW step
-in
-.CW stopped
-will recur until the interpreter runs out of stack space.
-.Ex
-acid: defn stopped(pid) {
-	if *lflag != 0 then error("lflag modified");
-	}
-acid: progargs = "-l"
-acid: new();
-acid: while 1 do step();
-<stdin>:7: (error) lflag modified
-acid: stk()
-At pc:0x00001220:main+0x200 ls.c:54
-main(argc=0x00000001,argv=0x7fffffe8) ls.c:48
-	called from _main+0x20 main9.s:10
-.Ee
-.\"
-.\"
-.\"
-.Ip \f(CW{}\fP symbols string "Search symbol table
-.CW symbols
-uses the regular expression supplied by
-.I string
-to search the symbol table for symbols whose name matches the
-regular expression.
-.Ex
-acid: symbols("main")
-main	T	0x00001020
-_main	T	0x0000623c
-.Ee
-.\"
-.\"
-.\"
-.Ip \f(CW{}\fP win "" "Start new process in a window
-.CW win
-performs exactly the same function as
-.CW new
-but uses the window system to create a new window for the debugged process.
-The variable
-.CW progargs
-supplies arguments to the new process.
-The environment variable
-.CW $8½srv
-must be set to allow the interpreter to locate the mount channel for the
-window system.
-The window is created in the top left corner of the screen and is
-400x600 pixels in size. The
-.CW win
-function may be modified to alter the geometry.
-The window system will not be able to deliver notes in the new window
-since the pid of the created process is not passed when the server is
-mounted to create a new window.
-.Ex
-acid: win()
-.Ee
+The name space clash between Acid variables, keywords, program variables,
+and functions is unavoidable.
+Although it rarely affects a debugging session, it is annoying
+when it happens and is sometimes difficult to circumvent.
+The current renaming scheme
+is too crude; the new names are too hard to remember.
+.PP
+Acid has proved to be a powerful tool whose applications
+have exceeded expectations.
+Of its strengths, portability, extensibility and parallel debugging support
+were by design and provide the expected utility.
+In retrospect,
+its use as a tool for code test and verification and as
+a medium for communicating type information and encapsulating
+interfaces has provided unanticipated benefits and altered our
+view of the debugging process.
+.NH
+Acknowledgments
+.PP
+Bob Flandrena was the first user and helped prepare the paper.
+Rob Pike endured three buggy Alef compilers and a new debugger
+in a single sitting.
+.NH
+References
+.LP
+[Pike90] R. Pike, D. Presotto, K. Thompson, H. Trickey,
+``Plan 9 from Bell Labs'',
+.I
+UKUUG Proc. of the Summer 1990 Conf.,
+.R
+London, England,
+1990.
+.LP
+[Gol93] M. Golan, D. Hanson,
+``DUEL -- A Very High-Level Debugging Language'',
+.I
+USENIX Proc. of the Winter 1993 Conf.,
+.R
+San Diego, CA,
+1993.
+.LP
+[Lin90] M. A. Linton,
+``The Evolution of DBX'',
+.I
+USENIX Proc. of the Summer 1990 Conf.,
+.R
+Anaheim, CA,
+1990.
+.LP
+[Stal91] R. M. Stallman, R. H. Pesch,
+``Using GDB: A guide to the GNU source level debugger'',
+Technical Report, Free Software Foundation,
+Cambridge, MA,
+1991.
+.LP
+[Win93] P. Winterbottom,
+``Alef reference Manual'',
+reprinted in this volume.
+.LP
+[Pike93] Rob Pike,
+``Acme: A User Interface for Programmers'',
+.I
+USENIX Proc. of the Winter 1994 Conf.,
+.R
+San Francisco, CA,
+reprinted in this volume.
+.LP
+[Ols90] Ronald A. Olsson, Richard H. Crawford, and W. Wilson Ho,
+``Dalek: A GNU, improved programmable debugger'',
+.I
+USENIX Proc. of the Summer 1990 Conf.,
+.R
+Anaheim, CA.
+.LP
+[May92] Paul Maybee,
+``NeD: The Network Extensible Debugger''
+.I
+USENIX Proc. of the Summer 1992 Conf.,
+.R
+San Antonio, TX.
+.LP
+[Aral] Ziya Aral, Ilya Gertner, and Greg Schaffer,
+``Efficient debugging primitives for multiprocessors'',
+.I
+Proceedings of the Third International Conference on Architectural
+Support for Programming Languages and Operating Systems,
+.R
+SIGPLAN notices Nr. 22, May 1989.

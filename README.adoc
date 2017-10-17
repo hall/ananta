@@ -6,11 +6,9 @@ http://www.bell-labs.com/[Bell Labs] and currently maintained by
 http://www.vitanuova.com/[Vita Nuova]) aimed at modernization for mass
 adoption.
 
-Applications are written in
-http://www.vitanuova.com/inferno/limbo.html[Limbo] (a concurrent
-programming language) and compiled to Dis (portable virtual machine
-code) to run anywhere on a network in a portable environment that is a
-complete operating system.
+Applications are written in link:doc/manual/limbo.adoc[Limbo] and
+compiled to link:doc/manual/dis.adoc[Dis] to run anywhere on a network
+in a portable environment that is a complete operating system.
 
 The design has three principles:
 
@@ -66,4 +64,8 @@ Now execute `emu` and you should see the `rc` prompt awaiting your input:
 
     ;
 
+
+== license
+
+`inf` is licensed under the GNU GPLv3.
 

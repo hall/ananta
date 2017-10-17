@@ -51,7 +51,8 @@ To install
 
  . edit the `mkconfig` file
 
- . if you do not have `mk`, run `./makemk.sh` to build it.
+ . if you do not have link:doc/manual/mk.adoc[`mk`], run `./makemk.sh`
+   to build it.
 
  . set `PATH` to include the `$ROOT/bin/` directory.
 
@@ -60,7 +61,8 @@ To install
 This will create and install the libraries, limbo compiler, emu (if
 running hosted), and auxiliary commands.
 
-Now execute `emu` and you should see the `rc` prompt awaiting your input:
+Now execute `emu` and you should see the link:doc/manual/sh.adoc[`sh`]
+prompt awaiting your input:
 
     ;
 

@@ -1,30 +1,19 @@
 = inf: one hell of an operating system
+:docpath: ./share/doc/manual
 
-*inf* is a derivative of http://www.inferno-os.info/inferno/[Inferno]
-(a distributed operating system originally developed at
-http://www.bell-labs.com/[Bell Labs] and currently maintained by
-http://www.vitanuova.com/[Vita Nuova]) aimed at modernization for mass
-adoption.
+link:{docpath}/inf.adoc[*inf*] is a derivative of http://www.inferno-os.info/inferno/[Inferno] (a distributed operating system originally developed at http://www.bell-labs.com/[Bell Labs] and currently maintained by http://www.vitanuova.com/[Vita Nuova]) aimed at modernization for mass adoption.
 
-Applications are written in link:doc/manual/limbo.adoc[Limbo] and
-compiled to link:doc/manual/dis.adoc[Dis] to run anywhere on a network
-in a portable environment that is a complete operating system.
+Applications are written in link:{docpath}/limbo.adoc[Limbo] and compiled for link:{docpath}/dis.adoc[Dis] to run anywhere on a network in a portable environment that is a complete operating system.
 
 The design has three principles:
 
  .  All resources are named and accessed as files.
-
+ .  One protocol (link:{docpath}/styx.adoc[Styx]) allows uniform access to these resources.
  .  A single local namespace joins resources provided by remote services.
 
- .  One communication protocol (link:doc/manual/styx.adoc[Styx]) allows
-    uniform access to these resources.
+In this manner, programs can access resources using only the file operations `open`, `read`, `write`, and `close`.
 
-In this manner, programs can access resources using only the file
-operations `open`, `read`, `write`, and `close`.
-
-NOTE: That is to say, networked participants only need to communicate
-with Styx instead of http(s)/dav, smtp, imap/pop, ssh/scp, tcp/ip/udp,
-ftp, ssl/tls, smb, ntp, ppp, ldap, dhcp, dns, sip, mac, ...
+NOTE: That is to say, networked participants only need to communicate with Styx instead of http(s)/dav, smtp, imap/pop, ssh/scp, tcp/ip/udp, ftp, ssl/tls, smb, ntp, ppp, ldap, dhcp, dns, sip, mac, ...
 
 
 The following system/architecture pairs are supported:
@@ -53,24 +42,18 @@ The following system/architecture pairs are supported:
 To install
 
  . edit link:mkconfig[`mkconfig`]
-
- . if you do not have link:doc/manual/mk.adoc[`mk`], execute
-   link:makemk.sh[`makemk.sh`] to build it.
-
+ . if you do not have link:{docpath}/mk.adoc[`mk`], execute link:makemk.sh[`makemk.sh`] to build it.
  . set `PATH` to include the `$ROOT/bin/` directory.
-
  . run `mk install`
 
-This will create and install the libraries, limbo compiler, emu (if
-running hosted), and auxiliary commands.
+This will create and install the libraries, limbo compiler, emu (if running hosted), and auxiliary commands.
 
-Now execute `emu` and you should see the link:doc/manual/sh.adoc[`sh`]
-prompt awaiting your input:
+Now execute `emu` and you should see the link:{docpath}/sh.adoc[`sh`] prompt awaiting your input:
 
     ;
 
 
-== license
+== about
 
 https://github.com/brytonhall/inf[`inf`] is licensed under the GNU GPLv3.
 

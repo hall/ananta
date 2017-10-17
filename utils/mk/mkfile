@@ -1,4 +1,4 @@
-<../../mkconfig
+<$ROOT/mkconfig
 
 TARG=mk
 
@@ -36,4 +36,3 @@ LIBS=	regexp bio 9
 
 CFLAGS=$CFLAGS -I../include -DROOT'="'$ROOT'"'
 
-<mkfile-$HOSTMODEL

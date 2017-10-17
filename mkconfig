@@ -1,7 +1,7 @@
 # Edit the following variables.
 ############################################################
 # On Windows, this MUST be of the form 'drive:/path'
-ROOT=/home/bryton/repos/inferno
+ROOT=/home/bryton/repos/inf
 
 TKSTYLE=std       # Tk version (std, ...)
 

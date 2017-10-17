@@ -7,6 +7,8 @@
 # grab settings from mkconfig
 . ./mkconfig
 
+SYSTYPE=posix
+
 # you might need to adjust the CC, LD, AR, and RANLIB definitions after this point
 CC="p gcc -m32 -c -I$INCDIR -I$OBJDIR/include -I$ROOT/utils/include"
 LD="p gcc -m32"
@@ -43,13 +45,13 @@ $AR $LIBDIR/libregexp.a `ofiles $CFILES` || error libregexp ar failed
 $RANLIB $LIBDIR/libregexp.a || error libregexp ranlib failed
 
 # libbio
-cd $LIBDIR/libbio || error cannot find libbio directory
+cd $INCDIR/libbio || error cannot find libbio directory
 $CC *.c || error libbio compilation failed
 $AR $LIBDIR/libbio.a *.o || error libbio ar failed
 $RANLIB $LIBDIR/libbio.a || error libbio ranlib failed
 
 # lib9
-cd $LIBDIR/lib9 || error cannot find lib9 directory
+cd $INCDIR/lib9 || error cannot find lib9 directory
 CFILES="dirstat-$SYSTYPE.c rerrstr.c errstr-$SYSTYPE.c getuser-$SYSTYPE.c"	# system specific
 CFILES="$CFILES charstod.c cleanname.c create.c dirwstat.c *print*.c *fmt*.c exits.c getfields.c  pow10.c print.c qsort.c rune.c runestrlen.c seek.c strdup.c strtoll.c utflen.c utfrrune.c utfrune.c utf*.c *str*cpy*.c"
 $CC $CFILES || error lib9 compilation failed
@@ -62,7 +64,7 @@ CFILES="Posix.c sh.c"	# system specific
 CFILES="$CFILES arc.c archive.c bufblock.c env.c file.c graph.c job.c lex.c main.c match.c mk.c parse.c recipe.c rule.c run.c shprint.c symtab.c var.c varsub.c word.c"
 $CC $CFILES || error mk compilation failed
 $LD -o mk `ofiles $CFILES` $LIBDIR/libregexp.a $LIBDIR/libbio.a $LIBDIR/lib9.a || error mk link failed
-cp mk $BINDIR || error mk binary install failed
+mv mk $BINDIR || error mk binary install failed
 
 echo mk binary built successfully!
 

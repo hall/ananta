@@ -5,6 +5,7 @@
 #	- the remaining libraries
 #	- commands
 #	- utilities
+<mkconfig
 
 EMUDIRS=\
 	$INCDIR/lib9\
@@ -31,9 +32,6 @@ KERNEL_DIRS=\
 	os\
 	os/boot/pc\
 
-# mkconfig is included at this point to allow it to override
-#the preceding declarations (particularly KERNEL_DIRS) if need be
-<mkconfig
 
 DIRS=\
 	$EMUDIRS\
@@ -44,21 +42,14 @@ foo:QV:
 
 all:V:                  all-$HOSTMODEL
 clean:V:                clean-$HOSTMODEL
-install:V:              nuke install-$HOSTMODEL
+install:V:              install-$HOSTMODEL
 installall:V:           installall-$HOSTMODEL
 emu:V:                  emu/all-$HOSTMODEL
 emuinstall:V:           emu/install-$HOSTMODEL
 emuclean:V:             emu/clean-$HOSTMODEL
-emunuke:V:              emu/nuke-$HOSTMODEL
 kernel:V:               kernel/all-$HOSTMODEL
-kernelall:V:            kernel/all-$HOSTMODEL
 kernelclean:V:          kernel/clean-$HOSTMODEL
 kernelinstall:V:        kernel/install-$HOSTMODEL
-kernelinstallall:V:     kernel/installall-$HOSTMODEL
-kernelnuke:V:           kernel/nuke-$HOSTMODEL
-nuke:V:
-	rm -f $BINDIR/*
-	rm -f $LIBDIR/*.a
 
 &-Posix:QV:
 	for j in $DIRS utils tools; do

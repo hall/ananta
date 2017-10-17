@@ -3,7 +3,7 @@
 #include	"error.h"
 #include	<interp.h>
 #include	<isa.h>
-#include	"runt.h"
+#include	"libinterp/runt.h"
 
 /*
  * Enable the heap device for environments that allow debugging =>

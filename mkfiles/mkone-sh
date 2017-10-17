@@ -5,8 +5,7 @@ all:V:	$O.out
 install:V:	$BINDIR/$TARG
 
 installall:V:
-	for objtype in $CPUS
-	do
+	for objtype in $CPUS; do
 		mk $MKFLAGS install
 	done
 
@@ -38,5 +37,5 @@ clean-std:V:
 nuke-std:V:	clean-std
 	rm -f y.tab.? y.debug y.output
 
-$BINDIR/%:	$O.out
-	rm -f $BINDIR/$stem && cp $O.out $BINDIR/$stem
+$BINDIR/%: $O.out
+        mv $O.out $BINDIR/$stem

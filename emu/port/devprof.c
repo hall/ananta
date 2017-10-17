@@ -3,7 +3,7 @@
 #include	"error.h"
 #include	"interp.h"
 #include	<isa.h>
-#include	"runt.h"
+#include	"libinterp/runt.h"
 
 extern	Pool*	imagmem;
 extern void	(*memmonitor)(int, ulong, ulong, ulong);

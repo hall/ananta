@@ -65,3 +65,4 @@ $LD -o mk `ofiles $CFILES` $LIBDIR/libregexp.a $LIBDIR/libbio.a $LIBDIR/lib9.a |
 cp mk $BINDIR || error mk binary install failed
 
 echo mk binary built successfully!
+

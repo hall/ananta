@@ -52,10 +52,13 @@ The following system/architecture pairs are supported:
 
 To install
 
- . edit `mkconfig`
- . if you do not have link:doc/manual/mk.adoc[`mk`], run `./makemk.sh`
-   to build it.
+ . edit link:mkconfig[`mkconfig`]
+
+ . if you do not have link:doc/manual/mk.adoc[`mk`], execute
+   link:makemk.sh[`makemk.sh`] to build it.
+
  . set `PATH` to include the `$ROOT/bin/` directory.
+
  . run `mk install`
 
 This will create and install the libraries, limbo compiler, emu (if

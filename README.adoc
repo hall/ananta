@@ -13,8 +13,11 @@ in a portable environment that is a complete operating system.
 The design has three principles:
 
  .  All resources are named and accessed as files.
+
  .  A single local namespace joins resources provided by remote services.
- .  One communication protocol (Styx) allows uniform access to these resources. 
+
+ .  One communication protocol (link:doc/manual/styx.adoc[Styx]) allows
+    uniform access to these resources.
 
 In this manner, programs can access resources using only the file
 operations `open`, `read`, `write`, and `close`.

@@ -12,9 +12,9 @@ in a portable environment that is a complete operating system.
 
 The design has three principles:
 
- - All resources are named and accessed as files.
- - A single local namespace joins resources provided by remote services.
- - One communication protocol (Styx) allows uniform access to these resources. 
+ .  All resources are named and accessed as files.
+ .  A single local namespace joins resources provided by remote services.
+ .  One communication protocol (Styx) allows uniform access to these resources. 
 
 In this manner, programs can access resources using only the file
 operations `open`, `read`, `write`, and `close`.
@@ -24,7 +24,7 @@ with Styx instead of http(s)/dav, smtp, imap/pop, ssh/scp, tcp/ip/udp,
 ftp, ssl/tls, smb, ntp, ppp, ldap, dhcp, dns, sip, mac, ...
 
 
-*inf* works on the following system/architecture pairs:
+The following system/architecture pairs are supported:
 
 [cols="s,5*^"]
 |===
@@ -49,13 +49,10 @@ ftp, ssl/tls, smb, ntp, ppp, ldap, dhcp, dns, sip, mac, ...
 
 To install
 
- . edit the `mkconfig` file
-
+ . edit `mkconfig`
  . if you do not have link:doc/manual/mk.adoc[`mk`], run `./makemk.sh`
    to build it.
-
  . set `PATH` to include the `$ROOT/bin/` directory.
-
  . run `mk install`
 
 This will create and install the libraries, limbo compiler, emu (if
@@ -69,5 +66,5 @@ prompt awaiting your input:
 
 == license
 
-`inf` is licensed under the GNU GPLv3.
+https://github.com/brytonhall/inf[`inf`] is licensed under the GNU GPLv3.
 

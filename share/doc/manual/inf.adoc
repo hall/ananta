@@ -102,8 +102,10 @@ and includes video clips over digital cable.
 Clearly not everyone who deploys an Inferno-based solution will want
 to span the whole range of possibilities, but the system architecture
 should be constrained only by the desired markets and the available
-interconnection and server technologies, not by the software.  .SH Inferno
-interfaces
+interconnection and server technologies, not by the software.
+
+
+== Inferno interfaces
 
 The role of the Inferno system is to _create_ several standard interfaces
 for its applications:

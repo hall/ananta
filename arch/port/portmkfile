@@ -1,0 +1,170 @@
+PORTHFILES=\
+	$OBJDIR/include/lib9.h\
+	$OBJDIR/include/emu.h\
+	$INCDIR/fcall.h\
+	$INCDIR/interp.h\
+	$INCDIR/draw.h\
+	$ARCDIR/port/error.h\
+	$ARCDIR/port/dat.h\
+	$ARCDIR/port/fns.h\
+
+LIBNAMES=${LIBS:%=lib%.a}
+LIBFILES=${LIBS:%=$LIBDIR/lib%.a}
+
+$LIBDIR/lib%.a:N:	lib%.a
+
+%.$O:	%.s
+	$AS $ASFLAGS $stem.s
+
+%.$O:	%.S$MACOSINF
+	$AS $ASFLAGS $stem.S
+
+%.$O:	%.c
+	$CC $CFLAGS $stem.c
+
+%.$O:		$ARCDIR/port/%.c
+		$CC $CFLAGS -I. $ARCDIR/port/$stem.c
+
+%.$O:		../ip/%.c
+		$CC $CFLAGS -I. ../ip/$stem.c
+
+&.$O:		$HFILES $PORTHFILES
+
+$INSTALLDIR/%: %
+	cp $stem $INSTALLDIR/$stem
+
+installall:V:	install-$SHELLTYPE
+all:V:		default-$SHELLTYPE
+
+# Plan 9 only (requires the compiler)
+acid:V: i$CONF.acid
+
+i$CONF.acid:	i$CONF
+	{
+		for (i in `{srclist -ec -r $ROOT/ i$CONF}) {
+			echo '//FILE: ' $i
+			$CC -I. -I$ARCDIR/port -I$ROOT/Inferno/$OBJTYPE/include -I$INCDIR '-DKERNDATE='$KERNDATE -a $i
+		}
+		echo 'include ("inferno");'
+	} >i$CONF.acid
+
+lib%.a:V:	$SHELLTYPE-lib%.a
+
+rc-lib%.a nt-lib%.a:VQ:
+		echo '@{builtin cd' $INCDIR/lib$stem '; mk $MKFLAGS SHELLTYPE=$SHELLTYPE SYSTARG=$SYSTARG OBJTYPE=$OBJTYPE install}'
+		@{builtin cd $INCDIR/lib$stem; mk $MKFLAGS 'SHELLTYPE='$SHELLTYPE 'SYSTARG='$SYSTARG 'OBJTYPE='$OBJTYPE install}
+
+sh-lib%.a:VQ:
+		echo "(cd $INCDIR/lib$stem ; mk $MKFLAGS SHELLTYPE=$SHELLTYPE SYSTARG=$SYSTARG OBJTYPE=$OBJTYPE install)"
+		(cd $INCDIR/lib$stem; mk $MKFLAGS 'SHELLTYPE='$SHELLTYPE 'SYSTARG='$SYSTARG 'OBJTYPE='$OBJTYPE install)
+
+%-rc %-nt:V:
+		for(i in $CONFLIST)
+			mk 'CONF='$i $MKFLAGS $stem
+
+%-sh:V:
+		for i in $CONFLIST
+		do
+			mk 'CONF='$i $MKFLAGS $stem
+		done
+
+clean:V:	cleanconf-$SHELLTYPE
+		rm -f *.[$OS] *.root.[shc] errstr.h *.out *.obj
+
+cleanconf-sh:V:
+		for i in $CONFLIST $CLEANCONFLIST
+		do
+			rm -f $i.c [$OS].$i i$i i$i.* $i.ver
+		done
+
+cleanconf-rc:V:
+		for(i in $CONFLIST $CLEANCONFLIST)
+			rm -f $i.c [$OS].$i i$i i$i.* $i.ver
+
+cleanconf-nt:V:
+		for(i in $CONFLIST $CLEANCONFLIST)
+			rm -f $i.c [$OS].$i i$i i$i.* $i.ver $i.exe
+
+nuke-sh:QV:
+		for i in $LIBDIRS
+		do
+			echo "(cd $INCDIR/lib$i ; mk $MKFLAGS SHELLTYPE=$SHELLTYPE SYSTARG=$SYSTARG OBJTYPE=$OBJTYPE nuke)"
+			(cd $INCDIR/lib$i; mk $MKFLAGS 'SHELLTYPE='$SHELLTYPE 'SYSTARG='$SYSTARG 'OBJTYPE='$OBJTYPE nuke)
+		done
+
+nuke-rc nuke-nt:QV:
+		for (i in $LIBDIRS)
+		{
+			echo '@{cd $INCDIR/lib$i ; mk $MKFLAGS SHELLTYPE=$SHELLTYPE SYSTARG=$SYSTARG OBJTYPE=$OBJTYPE nuke}'
+			@{cd $INCDIR/lib$i; mk $MKFLAGS 'SHELLTYPE='$SHELLTYPE 'SYSTARG='$SYSTARG 'OBJTYPE='$OBJTYPE nuke}
+		}
+
+nuke:V:		clean nuke-$SHELLTYPE
+		rm -f srv.h srvm.h
+
+$CONF.c:	$ARCDIR/port/mkdevc $CONF
+		$SHELLNAME $ARCDIR/port/mkdevc $CONF > $CONF.c
+
+errstr.h:	$ARCDIR/port/error.h
+		sed 's/extern //;s,;.*/\* , = ",;s, \*/,";,' < $ARCDIR/port/error.h > errstr.h
+
+../init/%.dis:	../init/%.b
+		cd ../init; mk 'SHELLTYPE='$SHELLTYPE 'SYSTARG='$SYSTARG 'OBJTYPE='$OBJTYPE $stem.dis
+
+$INCDIR/libinterp/runt.h:
+		cd $INCDIR/libinterp
+		mk 'SHELLTYPE='$SHELLTYPE 'SYSTARG='$SYSTARG 'OBJTYPE='$OBJTYPE runt.h
+
+INTERP=$INCDIR/interp.h
+RUNT=$INCDIR/libinterp/runt.h		# for culling dependencies
+
+alloc.$O: $INCDIR/pool.h\
+		$INTERP
+devcons.$O:	$INCDIR/version.h
+devdraw.$O:	$INCDIR/draw.h\
+		$INCDIR/memdraw.h\
+		$INCDIR/memlayer.h
+devmem.$O:	$INTERP
+devpipe.$O:	$INTERP
+devprof.$O:	$INTERP
+devprog.$O:	$INCDIR/libinterp/runt.h\
+			$INTERP
+devsign.$O:	$INTERP
+devsign.$O:     $INCDIR/libkeyring/keys.h
+devsrv.$O:	$INCDIR/libinterp/runt.h\
+		$INTERP
+devtk.$O:	$INTERP
+dis.$O:	        $INTERP
+discall.$O:	$INTERP
+exception.$O:	$INTERP
+inferno.$O:	$INCDIR/libinterp/runt.h\
+		$INTERP
+devmnt.$O:      $INCDIR/fcall.h
+main.$O:	$INCDIR/version.h
+main.$O:	$ARCDIR/port/error.h\
+		$INTERP
+proc.$O:	errstr.h\
+		$INTERP
+srv.$O:	        $INTERP
+devroot.$O:	errstr.h
+latin1.$O:	$ARCDIR/port/latin1.h
+netif.$O:	$ARCDIR/port/netif.h
+devprog.$O:	$RUNT
+devsrv.$O:	$RUNT
+exception.$O:	$RUNT
+inferno.$O:	$RUNT
+ipif-$SYSTARG.$O devip.$O:		$ARCDIR/port/ip.h
+
+devroot.$O:	$CONF.root.h
+$CONF.$O:	$CONF.root.h
+$CONF.root.c $CONF.root.h: $CONF $ARCDIR/port/mkroot $ROOTFILES
+	$SHELLNAME $ARCDIR/port/mkroot $CONF
+
+audio.c:N:	$ARCDIR/port/audio-tbls.c
+audio.c:N:	$ARCDIR/port/audio.h
+
+srv.$O:			srv.h srvm.h
+srv.h srvm.h:D:		$MODDIR/srvrunt.b $MODDIR/srv.m
+			rm -f $alltarget
+			limbo -a -I$MODDIR $MODDIR/srvrunt.b >srv.h
+			limbo -t Srv -I$MODDIR $MODDIR/srvrunt.b >srvm.h

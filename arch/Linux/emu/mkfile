@@ -1,0 +1,53 @@
+SYSTARG=Linux
+<$ROOT/mkconfig
+SYSTARG=Linux
+
+#Configurable parameters
+
+CONF=emu			#default configuration
+CONFLIST=emu
+CLEANCONFLIST=
+
+INSTALLDIR=$BINDIR    #path of directory where kernel is installed
+
+#end configurable parameters
+
+X11LIBS= -lX11 -lXext	# can remove or override using env section in config files
+
+<$OBJDIR/mkfile  #set vars based on target system
+
+<| $SHELLNAME $ARCDIR/port/mkdevlist $CONF	#sets $IP, $DEVS, $PORT, $LIBS
+<mkfile-$OBJTYPE	# sets $ARCHFILES
+
+OBJ=\
+	asm-$OBJTYPE.$O\
+	$ARCHFILES\
+	os.$O\
+	kproc-pthreads.$O\
+	segflush-$OBJTYPE.$O\
+	$CONF.root.$O\
+	lock.$O\
+	$DEVS\
+	$PORT\
+
+LIBNAMES=${LIBS:%=$LIBDIR/lib%.a}
+#libs=${LIBS:%=$ROOT/$OBJDIR/lib/lib%.a}
+
+HFILES=\
+
+CFLAGS='-DROOT="'$ROOT'"' -DEMU -I. -I$ARCDIR/port -I$INCDIR $CTHREADFLAGS $CFLAGS $EMUOPTIONS
+SYSLIBS= $X11LIBS -lm -lpthread
+KERNDATE=`{$NDATE}
+
+default:V:	$O.$CONF
+
+$O.$CONF:	$OBJ $CONF.c $CONF.root.h $LIBNAMES
+	$CC $CFLAGS '-DKERNDATE='$KERNDATE $CONF.c
+	$LD $LDFLAGS -o $target $OBJ $CONF.$O $LIBFILES $SYSLIBS
+
+install:V: $O.$CONF
+	cp $O.$CONF $INSTALLDIR/$CONF
+
+<$ARCDIR/port/portmkfile
+
+devfs.$O:	$ARCDIR/port/devfs-posix.c

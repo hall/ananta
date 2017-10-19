@@ -1,4 +1,5 @@
 /bin
+*.emu
 *.pdf
 *.html
 *.out

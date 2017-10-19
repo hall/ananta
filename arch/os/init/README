@@ -1,5 +1,0 @@
-initialisation programs used by various native kernels to set up
-the right environment to invoke a shell, a window system, mux, or
-any specialised application.
-
-even so, there are really more than needed here just now.

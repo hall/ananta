@@ -1,0 +1,31 @@
+TIMESTAMP(1)           General Commands Manual          TIMESTAMP(1)
+
+NAME
+       timestamp - log event times
+
+SYNOPSIS
+       timestamp [ tag ]
+
+DESCRIPTION
+       Timestamp reads lines from its standard input and writes them
+       to its standard output, prefixing each  line  with  the  time
+       that  it was written, in decimal milliseconds since timestamp
+       was started. If tag is given, it is written  along  with  the
+       time stamp on each line, to enable tagging if several writers
+       are each writing to the same log file.
+
+       The first line written gives  the  time  that  timestamp  was
+       started,  in milliseconds since the epoch.  Note that logging
+       events can cause timings to change, and that  the  timestamps
+       are only as accurate as the times reported by /dev/time.
+
+SOURCE
+       /appl/cmd/timestamp.b
+
+EXAMPLE
+       % {echo hello; sleep 1; echo goodbye} | timestamp eg
+       0000000000 eg start 1080156139468
+       0000000007 eg hello
+       0000000988 eg goodbye
+
+                                                        TIMESTAMP(1)

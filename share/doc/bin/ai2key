@@ -1,0 +1,97 @@
+AI2KEY(8)              System Manager's Manual             AI2KEY(8)
+
+NAME
+       ai2key, dsagen, rsagen - generate and reformat public keys
+
+SYNOPSIS
+       ai2key [ -t tag ] keyfile ...
+
+       dsagen [ -t tag ]
+
+       rsagen [ -b nbits ] [ -t tag ]
+
+DESCRIPTION
+       Factotum(4)  represents  public  keys  as lists of attribute-
+       value pairs, each key on a  single  line  prefixed  with  the
+       string key.
+
+       Ai2key   converts  the  original  Inferno  representation  of
+       authentication data, in the format defined  for  authinfo  by
+       keytext(6),  to  an attribute-value format accepted by facto‐
+       tum(4) for the infauth  authentication  protocol.   For  each
+       keyfile  it writes a single line on standard output, contain‐
+       ing the following fields:
+
+           key proto=infauth [ tag ] sigalg=pkalg-hashalg [ dom=host
+              ]  server=host  [  service=svc ] user=name signer=name
+              pk=pk !sk=sk spk=pk cert=cert dh-alpha=hex dh-p=hex
+
+       where
+
+              pkalg          is dsa, elgamal or rsa
+              hashalg        is md5 or sha1
+              user           is the user name  associated  with  the
+                             key,  as  vouched for by the supporting
+                             certificate cert
+              signer         is the user name  associated  with  the
+                             key that signed the certificate
+              pk             is the user's public key
+              !sk            is the user's private (secret) key
+              spk            is the signer's public key
+              cert           is the certificate
+              dh-alpha, dh-p are   the   Diffie-Hellman   parameters
+                             shared by the user and file servers.
+
+       The key is tagged by one or more of dom, server and  service,
+       derived  from  the  file  name keyfile.  The server is `*' if
+       keyfile is default.  Otherwise keyfile has the form
+
+              [ net!  ] host [ !srv ]
+
+       and server and service are set accordingly;  dom  is  set  if
+       host  looks  like  a domain name.  Key and certificate values
+       have the form defined in keytext(6); hex is a large number in
+       hexadecimal.
+
+       Dsagen  prints a randomly-generated DSA private key using the
+       NIST-recommended algorithm.  If tag text is specified, it  is
+       printed after the proto attribute-value pair.  Typically, tag
+       is a sequence of attribute-value comments describing the key.
+       A DSA key has the following attributes
+
+              p       prime public modulus
+              q       prime group order; divides p-1
+              alpha   group generator
+              key     alpha^!secret mod p
+              !secret the secret exponent
+
+       Rsagen  prints  a  randomly generated RSA private key whose n
+       has exactly nbits (default 1024) significant bits.   The  key
+       has the following attributes:
+
+              size   the number of significant bits in n
+              ek     the encryption exponent
+              n      the product of !p and !q
+              !dk    the decryption exponent
+              !p     a large prime
+              !q     another large prime
+              !kp, !kq, !c2
+                     parameters  derived  from the other attributes,
+                     cached to speed decryption
+
+       All the numbers in dsagen and rsagen output are in  hexadeci‐
+       mal  except RSA's size, which is decimal.  A public key omits
+       the attributes beginning with A key may have other attributes
+       as well, for example a service attribute identifying how this
+       key is typically used, but to these utilities such attributes
+       are merely comments.  They can be provided in a tag argument.
+
+SOURCE
+       /appl/cmd/auth/ai2key.b
+       /appl/cmd/auth/dsagen.b
+       /appl/cmd/auth/rsagen.b
+
+SEE ALSO
+       factotum(4)
+
+                                                           AI2KEY(8)

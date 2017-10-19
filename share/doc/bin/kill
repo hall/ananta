@@ -1,0 +1,41 @@
+KILL(1)                General Commands Manual               KILL(1)
+
+NAME
+       kill, broke - terminate process(es)
+
+SYNOPSIS
+       kill [ -g ] [ pid ...  ] [ module ...  ]
+
+       broke [ user ]
+
+DESCRIPTION
+       Kill  terminates  each process (for a numeric process ID pid)
+       or process running a given module (for a  non-numeric  module
+       name),  by  writing  a message to the corresponding process's
+       control file in prog(3).  The -g option causes kill to  write
+       a  message  instead,  killing  all  processes  in  the  given
+       process's process group (see sys-pctl(2)).  Processes running
+       a  module are identified by their file, and the process ID of
+       each such process is printed on standard output.
+
+       A process that incurs an exception (eg, array  bounds  check)
+       is  normally  suspended in the `broken' state to allow debug‐
+       ging.  Broke finds all such processes owned by user (default:
+       the  current  user), and prints sh (1) commands to kill them.
+       The commands can be piped to the shell  or  selectively  run,
+       releasing  back  to  the  system any resources owned by those
+       processes.
+
+FILES
+       /prog/pid/ctl
+
+       /prog/pid/status
+
+SOURCE
+       /appl/cmd/kill.b
+       /dis/broke
+
+SEE ALSO
+       ps(1), prog(3)
+
+                                                             KILL(1)

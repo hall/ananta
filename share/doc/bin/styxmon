@@ -1,0 +1,32 @@
+STYXMON(8)             System Manager's Manual            STYXMON(8)
+
+NAME
+       styxmon - monitor a 9P (Styx) conversation
+
+SYNOPSIS
+       styxmon [ -r ] [ -t ] cmd [ arg...  ]
+
+DESCRIPTION
+       Styxmon  allows  the  monitoring  of  9P  messages  sent  and
+       received by cmd, which should serve 9P through  its  standard
+       input.   Styxmon  in  its turn serves 9P through its standard
+       input, and writes information on the 9P messages that it sees
+       to  the  standard  error.  The -r and -t options restrict the
+       messages printed to R-messages and T-messages respectively.
+
+EXAMPLE
+       Mount an instance of export(4)  of  the  current  name  space
+       through  styxmon  on  /n/remote  to  monitor all access to it
+       through that name:
+
+              mount {styxmon {export /}} /n/remote
+              ls /n/remote
+              cp /n/remote/lib/unicode /n/remote/dev/null
+
+SOURCE
+       /appl/cmd/styxmon.b
+
+SEE ALSO
+       styx(2), intro(5), styxchat(8)
+
+                                                          STYXMON(8)

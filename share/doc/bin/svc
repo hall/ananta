@@ -1,0 +1,86 @@
+SVC(8)                 System Manager's Manual                SVC(8)
+
+NAME
+       svc: auth, net, registry, rstyx, styx - start Inferno network
+       services
+
+SYNOPSIS
+       svc/net
+       svc/auth [ -n ]
+       svc/registry
+       svc/rstyx
+       svc/styx
+
+DESCRIPTION
+       The directory /dis/svc  contains  several  sh(1)  scripts  to
+       start  network  listeners  (see  listen(1))  that give remote
+       hosts access to specific  Inferno  services  on  the  current
+       host.   The scripts can be edited to suit (or configure them‐
+       selves to suit) the requirements of a particular site.
+
+       A host that is not an authentication  server  and  wishes  to
+       start  the  usual network services can simply invoke svc/net,
+       which runs all the others except authentication.  Authentica‐
+       tion  servers  should normally run svc/auth instead, to start
+       local name and authentication services, and  a  listener  for
+       each  authentication  service  but not file service or remote
+       execution.
+
+       Auth must be run (only) on a  host  that  is  to  act  as  an
+       authentication  server, providing signing and other authenti‐
+       cation services to itself and the network.  The -n flag tells
+       it not to start keyfs(4), perhaps because it has been started
+       already.  The files /keydb/signerkey, created by  createsign‐
+       erkey(8),  and  /keydb/keys,  managed by changelogin(8), must
+       exist.  If so, auth starts keyfs(4), which  prompts  for  the
+       password  that  protects  /keydb/keys,  the  file  of secrets
+       shared with registered users.  If the key file is empty,  the
+       confirmed  password  will  be  used  in future to encrypt and
+       decrypt the file; otherwise the password must match  the  one
+       used to encrypt the key file.  If the password is valid, lis‐
+       teners are started for keysrv(4), to allow  passwords  to  be
+       changed  remotely, logind(8), to provide signed certificates,
+       and signer(8).  Note that although an  authentication  server
+       must  be  present to run getauthinfo(8) to obtain credentials
+       to access another service, once those have been  issued,  the
+       recipient  can  subsequently present them (if still valid) to
+       access that service without further involvement by  the  ser‐
+       vice  (ie,  it need not then be running).  See changelogin(8)
+       for the user registration program, which  can  be  used  once
+       auth has started.
+
+       Registry  starts  the  dynamic  service  registry  (see  reg‐
+       istry(4)) if it is not already running,  putting  it  at  the
+       conventional  location for the local registry, /mnt/registry.
+       Initial  (static)  service  descriptions   are   taken   from
+       /lib/ndb/registry if it exists.  It then starts a listener to
+       give other hosts access to the registry as a  9P  service  at
+       tcp!*!registry, normally port 6675.
+
+       Rstyx  listens  for  incoming calls to the rstyx service, and
+       invokes rstyxd(8) to deal with each one.
+
+       Styx listens for incoming calls to the styx service, and  for
+       each  one,  authenticates the caller, then calls export(4) to
+       export the current root.
+
+FILES
+       /keydb/keys
+              encrypted file containing user secrets
+
+       /keydb/signerkey
+              private key of authentication server
+
+SOURCE
+       /appl/svc/auth.sh
+       /appl/svc/net.sh
+       /appl/svc/registry.sh
+       /appl/svc/rstyx.sh
+       /appl/svc/styx.sh
+
+SEE ALSO
+       listen(1),  export(4),  keyfs(4),   keysrv(4),   registry(4),
+       changelogin(8), createsignerkey(8), cs(8), dns(8), logind(8),
+       rstyxd(8), signer(8)
+
+                                                              SVC(8)

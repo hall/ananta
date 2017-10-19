@@ -1,0 +1,53 @@
+RIP(8)                 System Manager's Manual                RIP(8)
+
+NAME
+       rip - routing information protocol
+
+SYNOPSIS
+       ip/rip [-2] [-b] [-d] [-n] [ -x mntpt ] [ net ...  ] &
+
+DESCRIPTION
+       Rip implements the Internet RIP routing protocol described by
+       RFC1058 and RFC2453.  It watches the network and makes appro‐
+       priate  changes  to the machine's Internet routing table (see
+       iproute in ip(3)), based  on  routing  packets  broadcast  by
+       gateways  on  the  network.   Rip  is only used when a single
+       default gateway is inadequate, typically  because  a  machine
+       sits  on a network directly connected to several others, hav‐
+       ing no common gateway or router.  On networks where there  is
+       just one gateway, it is usually simpler and more efficient to
+       configure that statically using ndb(6) or  dynamically  using
+       DHCP/BOOTP, rather than running rip.
+
+       Rip  serves  the  network  on mntpt (default: /net).  When it
+       starts, rip learns its own interfaces and  directly  attached
+       networks  by  reading  mntpt/ipifc, and notes any routes cur‐
+       rently in mntpt/iproute.
+
+       By default, rip neither  broadcasts  routes  nor  replies  to
+       requests for its route table.  If the -b option is given, rip
+       periodically broadcasts changes to its routing table to  each
+       of  its  interfaces.  If at least one explicit net address is
+       given, the broadcasts are restricted to just  the  interfaces
+       listed (and -b is implied).
+
+       The -d option causes routed to record changes it makes to the
+       routing tables.  This can be helpful when locating misleading
+       announcements  from rogue gateways.  A second -d will include
+       detailed information about every packet.  The -n option tells
+       rip  not to change the local routing table, but only say what
+       changes it would have made.
+
+       Rip understands both version1 and version 2 of the  protocol,
+       and  interprets  updates  from  gateways  appropriately.   By
+       default, it transmits updates using  version  1;  if  the  -2
+       option  is given, it uses version 2 instead, which is prefer‐
+       able when the network has subnets.
+
+SOURCE
+       /appl/cmd/ip/rip.b
+
+SEE ALSO
+       ip(3), ndb(6)
+
+                                                              RIP(8)

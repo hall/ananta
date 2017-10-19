@@ -1,0 +1,32 @@
+ZEROS(1)               General Commands Manual              ZEROS(1)
+
+NAME
+       zeros - write sequence of bytes
+
+SYNOPSIS
+       zeros [ -r ] [ -vvalue ] [ [ blocksize...  [ numblocks ] ]
+
+DESCRIPTION
+       Zeros  writes  a  sequence  of  bytes to standard output. The
+       arguments specify the nature of  the  bytes,  block  size  in
+       bytes,  and  the  number  of blocks to output.  The -r option
+       requests that each block be the same, but randomly generated.
+       The  -vvalue  option sets the value of each byte (default 0).
+       Typically zeros has a specialised use: ensuring  a  file  has
+       the  desired  number  of  blocks  in it to hold a file system
+       image, before reaming it.
+
+EXAMPLE
+       To create and initialize a file system containing  2048  1024
+       byte blocks
+
+              zeros 1024 2048 >kfs.file
+              mount -c {disk/kfs -r kfs.file} /n/local
+
+SOURCE
+       /appl/cmd/zeros.b
+
+SEE ALSO
+       kfs(4)
+
+                                                            ZEROS(1)

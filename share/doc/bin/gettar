@@ -1,0 +1,58 @@
+GETTAR(1)              General Commands Manual             GETTAR(1)
+
+NAME
+       gettar, lstar, puttar - tar archive utilities
+
+SYNOPSIS
+       gettar [ -k ] [ -v ] [ -R ] [ name ...  ]
+       lstar
+       puttar [ file ...  ]
+
+DESCRIPTION
+       These commands manage POSIX.1 tar archives in Inferno.
+
+       Gettar  reads  a tar file from standard input and unpacks the
+       contents into the current directory tree.  By default, gettar
+       converts  absolute  path names, including names starting with
+       into names relative to the current directory; the  -R  option
+       extracts  such  names  as-is.   The -k option tells gettar to
+       keep existing files rather than overwriting them  with  files
+       from  the  archive.   The -v option causes gettar to print on
+       standard error the names of files extracted.  Finally,  list‐
+       ing  one  or  more names as arguments will extract only those
+       files.
+
+       Lstar reads a tar file from  standard  input  and  lists  the
+       files  contained therein, one per line, with four space-sepa‐
+       rated fields giving the file name, modification time (in sec‐
+       onds since the epoch), size (in bytes), and a constant 0 (the
+       place holder for a checksum).  The format is the same as that
+       produced by du -n -t.
+
+       Puttar  writes  a  tar  file to standard output that contains
+       each file, and its substructure if it is a directory.   Given
+       no  arguments, puttar instead reads a list of file names from
+       standard input and includes each file or directory named;  it
+       does not copy directory substructure.
+
+EXAMPLE
+       The  following  commands  create  a  tar  file with two files
+       test.b and srv.b:
+
+              $ cat tarlist
+              test.b
+              srv.b
+              $ puttar <tarlist >test.tar
+              $ lstar <test.tar
+              test.b 867178082 1104 0
+              srv.b 866042662 3865 0
+
+SOURCE
+       /appl/cmd/gettar.b
+       /appl/cmd/lstar.b
+       /appl/cmd/puttar.b
+
+SEE ALSO
+       tarfs(4)
+
+                                                           GETTAR(1)

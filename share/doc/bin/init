@@ -1,0 +1,56 @@
+INIT(8)                System Manager's Manual               INIT(8)
+
+NAME
+       init: emuinit, osinit - Inferno initialisation
+
+SYNOPSIS
+       Init: module
+       {
+            init: fn();
+       };
+
+       /dis/emuinit.dis
+
+       #/./osinit.dis
+
+DESCRIPTION
+       Both  emu(1) and the native kernels run a Dis program to ini‐
+       tialise the system.
+
+       Emuinit is the default  initialisation  program  for  emu(1).
+       Emu  sets  the environment variable (see env(3)) /env/emuargs
+       to the command line originally given to emu,  which  has  the
+       following form:
+
+              emu [-d] [ command [ arg ...]  ]
+
+       Emuinit  uses the value of emuargs to decide which command to
+       start and its arguments.  The default command is /dis/sh.dis,
+       unless the -d option is given, in which case /dis/lib/srv.dis
+       is used by default instead, to cause emu to run on  the  host
+       system as a server (`daemon' mode).
+
+       Osinit   is  built-in  to  the  root(3)  of  native  kernels.
+       Although the kernel uses the fixed  name  #/./osinit.dis  the
+       contents are taken from one of the files in /os/init selected
+       by  the  init  section  of  the  kernel  configuration  file.
+       Osinit's  action  is  platform-specific  in detail, but might
+       include: building an initial /dev by mounting device drivers;
+       binding  the physical network driver (eg, ether(3)) into /net
+       and initialising ip(3), usually setting addresses and  routes
+       using  bootp;  attaching  to a remote file system; setting up
+       flash translation using ftl(3); starting  dossrv  or  9660srv
+       (see  dossrv(4)), or kfs(3) to serve local files from disk or
+       flash memory.
+
+FILES
+       /env/emuargs
+
+SOURCE
+       /appl/cmd/emuinit.b
+       /os/init/*.b
+
+SEE ALSO
+       emu(1)
+
+                                                             INIT(8)

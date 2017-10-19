@@ -1,0 +1,40 @@
+SH-TEST(1)             General Commands Manual            SH-TEST(1)
+
+NAME
+       report - shell module for test reporting.
+
+SYNOPSIS
+       load test
+
+       report severity verbosity message[...]
+
+DESCRIPTION
+       Its  is  a  loadable  module for sh(1) that provides a simple
+       error reporting facility  for  tests  which  can  be  run  by
+       itest(1).   It provides one command, report, which is used by
+       a test to report a message with specified severity  and  ver‐
+       bosity.   Severity  must  be  one of INF, WRN, ERR or FTL for
+       Information, warnings, errors and fatal errors  respectively.
+       Verbosity  is  an  integer  between 0 and 9.  For informatory
+       messages (severity INF), the message will only  be  displayed
+       if  the  current  verbosity level is greater than or equal to
+       verbosity.
+
+EXAMPLE
+       #!/dis/sh
+
+       load std test
+
+       echo 1 > /tmp/a
+       echo 2 >/tmp/b
+       report INF 5 testing cmp command
+       if {cmp /tmp/a /tmp/b} {
+            report ERR 0 'cmp failed - reported different files as the same'
+       }{
+            report INF 6 'cmp ok - reported different files as different'
+       }
+
+SEE ALSO
+       itest(1)
+
+                                                          SH-TEST(1)

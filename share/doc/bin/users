@@ -1,0 +1,34 @@
+USERS(6)                    Games Manual                    USERS(6)
+
+NAME
+       users - kfs file server user list format
+
+DESCRIPTION
+       The  permanent file server kfs(4) maintains a private list of
+       users and groups, in /adm/users by convention.  Each line  in
+       the file has the format
+
+              num:name:leader:members
+
+       where num is a decimal integer, name and leader are printable
+       strings excluding the characters and and members is a  comma-
+       separated  list  of such strings.  Such a line defines a user
+       and a group with the given name; the group has a group leader
+       given  by leader and group members given by the user names in
+       members.  The leader field may be empty, in  which  case  any
+       group  member  is  a  group leader.  The members field may be
+       empty.
+
+       Lines beginning with are ignored.
+
+       The num in a line is a  number  used  internally  by  a  file
+       server;  there  should  be  no duplicate nums in the file.  A
+       negative num is special: a user with a  negative  num  cannot
+       attach  to  the  file  server.  The file /adm/users itself is
+       owned by user adm, having a negative num, and write protected
+       to others, so it can only be changed via console commands.
+
+SEE ALSO
+       kfs(4), intro(5), stat(5), kfscmd(8)
+
+                                                            USERS(6)

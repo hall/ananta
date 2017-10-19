@@ -1,0 +1,91 @@
+SECSTORE(1)            General Commands Manual           SECSTORE(1)
+
+NAME
+       secstore - retrieve files from secure store
+
+SYNOPSIS
+       auth/secstore  [ -iv ] [ -k key ] [ -p pin ] [ -s address ] [
+       -u user ] [ op [ file ] ... ]
+
+DESCRIPTION
+       Secstore manages files on the eponymous Plan 9 secure storage
+       service.  It holds a set of files for each of its users.  The
+       service is most often used to store a file factotum  contain‐
+       ing user credentials in a form ready to be loaded into facto‐
+       tum(4).  Op is one of the following operations:
+
+       d      Delete the given files on the server.
+
+       p      Print the contents of each file  on  standard  output.
+              Each line is written separately, so that files of keys
+              will be received  correctly  when  written  to  facto‐
+              tum(4).
+
+       r      Replace  the  contents  of  files on the server by the
+              contents of the named files,  after  encrypting  them.
+              In  each case, the file name on the server is the last
+              component of the local file name (ie, everything after
+              the final `/').
+
+       t      List  a  table of contents of user's collection on the
+              the server.  By default, only the  names  are  listed,
+              one  per line, but given the -v option, each line dis‐
+              plays name, file size in bytes, date last stored,  and
+              SHA-1 hash of the file's contents.
+
+       x      Extract the named files into files of the same name in
+              the current directory.  By default, they are decrypted
+              (ie, in clear text).
+
+       If  no op is specified, secstore connects to the server (thus
+       checking the connection and the  validity  of  both  key  and
+       user), but does nothing with it.
+
+       By default, secstore prompts for a secret key to authenticate
+       the user and the secstore service.  The service might be con‐
+       figured  to  demand  an  extra authentication code, such as a
+       `pin', in which case secstore will then prompt  for  that  as
+       well.  The options are:
+
+       -i     Read  one  or  two  lines from the standard input: the
+              first line contains the secret;  the  optional  second
+              line contains the extra authentication code.
+
+       -k key Use  key  as  the secret to authenticate with the sec‐
+              store service.
+
+       -p pin Supply pin as the extra  authentication  code  if  the
+              server demands it.
+
+       -s address
+              Connect to the server at the given network address, as
+              defined by dial(2),  and  translated  by  cs(8).   The
+              default is net!$auth!secstore.
+
+       -u user
+              Authenticate  as  user (default: the Inferno user name
+              contained in /dev/user)
+
+       -v     Make  the  output  more  verbose:  display  the   name
+              announced  by the remote server; and use the long form
+              of the table of contents.
+
+EXAMPLE
+       Retrieve the factotum file and feed the keys therein to  fac‐
+       totum(4):
+
+              auth/secstore p factotum >/mnt/factotum/ctl
+
+SOURCE
+       /appl/cmd/auth/secstore.b
+
+SEE ALSO
+       crypt(1), secstore(2), factotum(4),
+       ``Plan  9 Security'', Plan 9 Programmer's Manual, Fourth Edi‐
+       tion, Volume 2, 2003.
+
+BUGS
+       Perhaps secstore should allow several -s options as a  simple
+       way to replicate the same files on different servers.
+
+                                                         SECSTORE(1)

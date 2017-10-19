@@ -1,0 +1,43 @@
+LOGIND(8)              System Manager's Manual             LOGIND(8)
+
+NAME
+       logind - login daemon
+
+SYNOPSIS
+       auth/logind
+
+DESCRIPTION
+       Logind  is  normally started by svc(8) to service requests on
+       the inflogin TCP/IP port,  to  provide  a  `signing'  service
+       (identity  authentication)  for  a  network.  Ultimately, the
+       client receives a certificate that can be used  to  establish
+       its identity with any host that is willing to honour certifi‐
+       cates from the certificate's signer.
+
+       The signer constructs the certificate from  the  contents  of
+       the  signer's key file /keydb/signerkey, typically created by
+       createsignerkey(8), and the ID string and  password  supplied
+       by  the  client  (which  are used to access keyfs(4) to check
+       identity).
+
+       The protocol involves an exchange of information between  the
+       client  and  server,  as  summarised in login(6).  The client
+       side of this exchange can be managed by the Login module; see
+       security-login(2).
+
+       Client  and  server  communicate over the Secure Socket Layer
+       device ssl(3).
+
+FILES
+       /keydb/keys
+
+       /keydb/signerkey
+
+SOURCE
+       /appl/cmd/auth/logind.b
+
+SEE ALSO
+       security-login(2), ssl(3), keyfs(4), keys(6), changelogin(8),
+       createsignerkey(8), svc(8)
+
+                                                           LOGIND(8)

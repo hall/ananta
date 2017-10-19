@@ -1,0 +1,126 @@
+CS(8)                  System Manager's Manual                 CS(8)
+
+NAME
+       cs, csquery - connection server
+
+SYNOPSYS
+       ndb/cs [ -f database ] [ -v ] [ -x net ]
+
+       ndb/csquery [ -x net ] [ -s server ] [ address ... ]
+
+DESCRIPTION
+       Cs spawns a process that serves a single file /net/cs, in the
+       current name space, answering requests by client processes to
+       translate  symbolic  network  and service names into instruc‐
+       tions for connecting to the given service.   It  is  normally
+       accessed indirectly by calls to dial(2).
+
+       The  network  data  is taken from the network database files,
+       described in ndb(6).  By default, it  is  /lib/ndb/local  but
+       the -f option can specify a different one.
+
+       Each  write to /net/cs makes a query, expressed in one of two
+       forms.  The first form is a network address of the same  form
+       as  the addr parameter to dial: network!netaddr!service where
+       service and network are  optional  for  some  networks.   The
+       write  returns  an error if the address cannot be translated.
+       Otherwise, the file offset should be reset to  0  using  sys-
+       seek(2)  and  each subsequent read will return either end-of-
+       file (if there are no further translations), or a single line
+       containing a translation of the form:
+
+              /net/proto/clone address!port
+
+       The  first  field is the name of the clone file for a network
+       protocol or interface.  To make a connection  or  announce  a
+       service,  open  that  file,  and write the text in the second
+       field preceded by connect or announce as required.  (All this
+       activity  is normally encapsulated in a call to dial(2).)  Cs
+       produces a translation for each network and for each  network
+       address  on which a symbolic netaddr is found.  When announc‐
+       ing a service, netaddr can be * to represent any local inter‐
+       face,  and  the  resulting recipes read from /net/cs will not
+       include an address!  part.
+
+       Cs interprets a netaddr of the  form  $server  specially:  it
+       looks  for  an  attribute server in the database in the entry
+       for the current host, then in the entry for each network that
+       contains  it (if specified), and finally in a site-wide entry
+       labelled with the attribute infernosite.  If found, the value
+       of the attribute replaces the netaddr before further transla‐
+       tion.
+
+       In the second form of query, the text written contains space-
+       separated attribute/value pairs following an initial
+
+              !  attr1=val1 [ attr2=val2  ...  ]
+
+       Cs  looks  for  an ndb(6) entry that contains attribute/value
+       pairs matching those in the query.  Any value but val1 may be
+       `*',  to  signify  that  the  entry  must  contain  the given
+       attribute but with any value.  As before, the  write  returns
+       an  error  if  no  entry matches.  Otherwise, each subsequent
+       read returns the whole of the next matching entry, in  ndb(6)
+       form.
+
+       The  file  /net/cs  persists until it is removed or unmounted
+       from /net, or the cs process is killed (see kill(1)).  The -v
+       option  causes  cs  to  print  each  translation  request and
+       results (if any) on standard error.  The -x option  gives  an
+       alternative  mount  point for cs, when there is more than one
+       network stack (see ip(3)).  It causes it cs to  serve  net/cs
+       instead of /net/cs.
+
+       Cs  is  normally  started   once,  after  dns(8) if used, but
+       before most other applications including the various  listen‐
+       ers  described  in  svc(8).   If another instance of cs(8) is
+       started on the same mount point, the file it serves  replaces
+       the  earlier  one if permissions allow.  (On Plan 9, Plan 9's
+       native  connection  service  will  be  used  by  default   if
+       Inferno's cs is not started.)
+
+       Csquery  queries  the  given  server (default: /net/cs) for a
+       translation of each address and prints the results,  one  per
+       line.    If   no   address  is  given,  csquery  prompts  for
+       address(es) to translate which it  reads  from  the  standard
+       input,  printing the results of each translation on the stan‐
+       dard output.  The -x option gives an alternative mount  point
+       for  cs,  when  there  is  more  than  one network stack (see
+       ip(3)).
+
+       Cs uses ndb(6) to map protocol and service names to  Internet
+       port  numbers.   When  running  hosted, if entries are not in
+       ndb(6), cs applies the built-in srv(2), if available, to have
+       the  host  system try the translation.  Consequently, entries
+       in ndb(6) take precedence over the host's system-wide config‐
+       uration.   (This  is  helpful  for  adding symbolic names for
+       Inferno services without requiring administrative  privileges
+       on the host system.)
+
+EXAMPLE
+       Check the translation of the symbolic name $signer:
+
+              ndb/csquery
+              > net!$signer!inflogin
+              /net/tcp/clone 200.1.1.67!6673
+
+FILES
+       #scs*  service directory
+
+       /net/cs
+              connection service
+
+       /net/dns
+              domain name service
+
+       /lib/ndb/local
+              map from symbolic service names to servers
+
+SOURCE
+       /appl/cmd/ndb/cs.b
+       /appl/cmd/ndb/csquery.b
+
+SEE ALSO
+       dial(2), ndb(6), dns(8)
+
+                                                               CS(8)

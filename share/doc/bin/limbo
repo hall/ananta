@@ -1,0 +1,121 @@
+LIMBO(1E)                                                  LIMBO(1E)
+
+NAME
+       limbo - Limbo compiler
+
+SYNOPSIS
+       limbo [ option ... ] [ file ... ]
+
+DESCRIPTION
+       Limbo compiles the named Limbo files into machine-independent
+       object files for the Dis virtual machine.  Depending  on  the
+       options, the compiler may create output files or write infor‐
+       mation to its standard output.  Conventional files and  their
+       extensions include the following.
+
+       file.b    Limbo source file.
+
+       file.dis  Object code for the Dis virtual machine.
+
+       file.m    Limbo source file for module declarations.
+
+       file.s    Assembly code.
+
+       file.sbl  Symbolic debugging information.
+
+       With  no  options, limbo produces a .dis file for each source
+       file.
+
+       The compiler options are:
+
+       -a        Print on standard output type definitions and  call
+                 frames  useful  for  writing C language implementa‐
+                 tions of Limbo modules.  Suppresses  normal  output
+                 file generation.
+
+       -C        Mark the Dis object file to prevent run-time compi‐
+                 lation.
+
+       -c        Mark the Dis object file to guarantee run-time com‐
+                 pilation.
+
+       -D flags  Turn  on  debugging  flags.   Flags  include  A for
+                 arrays, a for alt statements, b for booleans, C for
+                 case  body statements, c for case statements, D for
+                 use descriptors, d for declarations, e for  expres‐
+                 sions,  E  for extended expressions, F for function
+                 information, f for constant folding, m for modules,
+                 n for nil references, P for program counter manipu‐
+                 lations, r for reference types, S for  type  signa‐
+                 tures,  s  for  a  code  generation  summary, T for
+                 tuples, t for type checking,  and  v  for  variable
+                 initialization.
+
+       -e        Increase  the  number  of  errors the compiler will
+                 report before exiting.
+
+       -G        Annotate assembly language  output  with  debugging
+                 information.  A no-op unless -S is set.
+
+       -g        Generate  debugging information for the input files
+                 and place it in  a  file  named  by  stripping  any
+                 trailing  .b from the input file name and appending
+                 .sbl.
+
+       -i        Disable inlining of functions. Currently  functions
+                 containing  a single return statement or two return
+                 statements and an  if  clause  are  candidates  for
+                 inlining.
+
+       -I dir    An  include  file  whose  name  does not begin with
+                 slash is  sought  first  relative  to  the  working
+                 directory,  regardless of the source file argument.
+                 If this fails, limbo sequences through  directories
+                 named  in -I options, then searches in /module.  An
+                 include file contains Limbo source  code,  normally
+                 holding one or more module declarations.
+
+       -o obj    Place  output in file obj (allowed only if there is
+                 a single input file).  The output  file  will  hold
+                 either  object  or  assembly code, depending on -S.
+                 Default is to take the last element  of  the  input
+                 file  name,  strip any trailing .b, and append .dis
+                 for object code and .s for  assembly  code.   Thus,
+                 the  default  output  file  for  dir/mod.b would be
+                 mod.dis.
+
+       -S        Create assembly language output instead  of  object
+                 code.
+
+       -T module Print  on  standard output C stub functions, useful
+                 for implementing Limbo modules in  the  C  language
+                 for linkage with the interpreter.
+
+       -t module Print  on  standard output a table of runtime func‐
+                 tions, to link C language implementations  of  mod‐
+                 ules with the Limbo interpreter.  Suppresses normal
+                 output file generation.
+
+       -w        Print warning messages about unused variables, etc.
+                 More  w's  (e.g., -ww) increase the pedantry of the
+                 checking.
+
+FILES
+       /module
+              directory for Limbo include modules
+
+SOURCE
+       /appl/limbo
+              compiler source in Limbo
+
+       /limbo compiler source in C for host
+
+SEE ALSO
+       asm(1), emu(1), mk(10.1), intro(2), sys-intro(2), tk(2)
+
+       ``The Limbo Programming Language''
+       ``Program Development in Inferno''
+       ``A Descent into Limbo''
+       in Volume 2.
+
+                                                           LIMBO(1E)

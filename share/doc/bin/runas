@@ -1,0 +1,20 @@
+RUNAS(1)               General Commands Manual              RUNAS(1)
+
+NAME
+       runas - run command as another user
+
+SYNOPSIS
+       runas user cmd [ arg...  ]
+
+DESCRIPTION
+       Runas writes user to /dev/user and invokes cmd with the given
+       arguments.  The command is only invoked  if  setting  of  the
+       user name succeeds.
+
+SOURCE
+       /appl/cmd/runas.b
+
+SEE ALSO
+       cons(3),
+
+                                                            RUNAS(1)

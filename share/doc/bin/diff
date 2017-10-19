@@ -1,0 +1,71 @@
+DIFF(1)                General Commands Manual               DIFF(1)
+
+NAME
+       diff - differential file comparator
+
+SYNOPSIS
+       diff [ -efbwr ] file1 ... file2
+
+DESCRIPTION
+       Diff  tells  what lines must be changed in two files to bring
+       them into agreement.  If one file is a directory, then a file
+       in that directory with basename the same as that of the other
+       file is used.  If both files are directories, similarly named
+       files  in  the  two directories are compared by the method of
+       diff for text files and cmp(1) otherwise.  If more  than  two
+       file  names  are given, then each argument is compared to the
+       last argument as above.  The -r option causes diff to process
+       similarly  named subdirectories recursively.  The normal out‐
+       put contains lines of these forms:
+
+            n1 a n3,n4
+            n1,n2 d n3
+            n1,n2 c n3,n4
+
+       These lines resemble Plan 9 or Unix ed  commands  to  convert
+       file1  into  file2.  The numbers after the letters pertain to
+       file2.  In fact, by exchanging `a' for `d' and reading  back‐
+       ward  one  may  ascertain  equally  how to convert file2 into
+       file1.  As in ed, identical pairs where n1 = n2 or  n3  =  n4
+       are abbreviated as a single number.
+
+       Following  each  of  these  lines come all the lines that are
+       affected in the first file flagged by `<', then all the lines
+       that are affected in the second file flagged by `>'.
+
+       The  -b option causes trailing blanks (spaces and tabs) to be
+       ignored and other strings of blanks to compare equal.  The -w
+       option  causes all white-space to be removed from input lines
+       before applying the difference algorithm.
+
+       The -e option produces a script of a, c and  d  commands  for
+       the  Plan 9 or Unix editor ed, which will recreate file2 from
+       file1.  The -f option produces a similar script,  not  useful
+       with ed, in the opposite order. It may, however, be useful as
+       input to a stream-oriented post-processor.
+
+       Except in rare circumstances, diff finds  a  smallest  suffi‐
+       cient set of file differences.
+
+FILES
+       /tmp/diff[12]
+
+SOURCE
+       /appl/cmd/diff.b
+
+DIAGNOSTICS
+       Exit status is the empty string for no differences, for some,
+       and for trouble.
+
+SEE ALSO
+       cmp(1)
+
+BUGS
+       Editing scripts produced under the -e or -f option are  naive
+       about creating lines consisting of a single `.'.
+       When  running  diff  on  directories, the notion of what is a
+       text file is open to debate.
+       Nothing directly interprets the ed scripts within the Inferno
+       environment.
+
+                                                             DIFF(1)

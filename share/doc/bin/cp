@@ -1,0 +1,57 @@
+CP(1)                  General Commands Manual                 CP(1)
+
+NAME
+       cp, fcp - copy files
+
+SYNOPSIS
+       cp [ -gux ] fromfile tofile
+       cp [ -gux ] fromfile ...  todir
+       cp -r [ -gux ] fromdir ...  todir
+
+       fcp [ -R nr ] [ -W nw ] fromfile tofile
+       fcp [ -R nr ] [ -W nw ] fromfile ...  todir
+       fcp -r [ -R nr ] [ -W nw ] fromdir ...  todir
+
+DESCRIPTION
+       In  the  first  form,  fromfile is any name and tofile is any
+       name except an existing directory.  In the second  form,  the
+       commands  copy  one  or  more  fromfiles into dir under their
+       original file names, as if by a sequence of commands  in  the
+       first form. For example:
+
+              cp f1 f2 dir
+
+       is equivalent to:
+
+              cp f1 dir/f1;  cp f2 dir/f2
+
+       Cp copies the contents of plain (non-directory) file fromfile
+       to tofile.  The mode and owner of tofile are preserved if  it
+       already  exists;  the  permissions of fromfile is used other‐
+       wise.  The -x option sets the full mode and modified time  of
+       file2 from file1; -g sets the group id; and -u sets the group
+       id and user id (which is usually only possible  if  the  file
+       server is in an administrative mode).
+
+       The -r option directs cp to copy recursively the named direc‐
+       tories fromdir ...  to the target directory todir.
+
+       Fcp behaves like cp, but copies many blocks in parallel.   It
+       works  only  with  files  that respect read and write offsets
+       (see pread and pwrite in sys-read(2)), which usually excludes
+       files  representing  devices  or  services.  When it applies,
+       however, it is often much faster than  cp.   The  -R  and  -W
+       options  set  the  number of readers and writers (default for
+       each: 8).
+
+SOURCE
+       /appl/cmd/cp.b
+       /appl/cmd/fcp.b
+
+SEE ALSO
+       cat(1), mv(1), sys-stat(2)
+
+DIAGNOSTICS
+       Cp and fcp refuse to copy a file onto itself.
+
+                                                               CP(1)

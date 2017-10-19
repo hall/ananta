@@ -1,0 +1,32 @@
+FMT(1)                 General Commands Manual                FMT(1)
+
+NAME
+       fmt - simple text formatter
+
+SYNOPSIS
+       fmt [ -l n ] [ -i n ] [ -j ] [ file ...  ]
+
+DESCRIPTION
+       Fmt copies the given files (standard input by default) to its
+       standard output, filling and indenting  lines.   The  options
+       are
+
+       -l n   Output  line  length  is  n, including indent (default
+              70).
+
+       -w n   A synonym for -l.
+
+       -i n   Indent n spaces (default 0).
+
+       -j     Do not join short lines: only fold long lines.
+
+       Empty lines and initial white space in input lines  are  pre‐
+       served.  Empty lines are inserted between input files.
+
+       Fmt   is   idempotent:   it  leaves  already  formatted  text
+       unchanged.
+
+SOURCE
+       /appl/cmd/fmt.b
+
+                                                              FMT(1)

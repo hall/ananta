@@ -1,0 +1,32 @@
+SPREE-JOIN(1)          General Commands Manual         SPREE-JOIN(1)
+
+NAME
+       join - join a spree clique.
+
+SYNOPSIS
+       spree/join [ -d mntdir ] [ -j joinrequest ] name
+
+DESCRIPTION
+       When  a  spree(4) instance has been mounted from somewhere on
+       the network, join can be used to join a clique  and  fire  up
+       the  appropriate  module  to perform the client-side display.
+       Mntdir gives  the  directory  where  the  spree  instance  is
+       mounted  (default  /n/remote);  joinrequest gives the initial
+       join request to be passed to the clique (default join).  Name
+       is the name of the clique's directory within the spree direc‐
+       tory.
+
+EXAMPLE
+       When spree is started, it creates  a  ``lobby''  engine  that
+       keeps  a  record  of what cliques have been started, who is a
+       member of which, etc.
+            spree/join 0
+       will connect to this session.
+
+SOURCE
+       /appl/spree/join.b
+
+SEE ALSO
+       spree(4), spree(2)
+
+                                                       SPREE-JOIN(1)

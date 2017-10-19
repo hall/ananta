@@ -1,0 +1,91 @@
+BRUTUS(1)              General Commands Manual             BRUTUS(1)
+
+NAME
+       brutus - screen editor with support for SGML
+
+SYNOPSIS
+       wm/brutus [ file ]
+
+DESCRIPTION
+       Brutus is a multi-file editor for UTF format text files.
+
+       When  editing  multiple  files,  each file appears in its own
+       window.  Button 1 can be  used  to  make  a  window  current.
+       Within  the  current  window,  button 1 selects text.  Double
+       clicking selects text up to the boundaries of  words,  lines,
+       quoted  text or bracketed text depending upon the text at the
+       point of the double click. Double clicking at the start of  a
+       line  selects  the  entire  line. Double clicking just inside
+       various forms of brace selects text up to the matching brace,
+       correctly  handling  nested braces.  Button 2 displays a menu
+       of editing commands:
+
+       cut    Delete the selected text and save it in the snarf buf‐
+              fer.
+
+       paste  Replace the selected text by the contents of the snarf
+              buffer.
+
+       snarf  Save the selected text in the snarf buffer.
+
+       look   Search forwards and select the next occurrence of  the
+              selected text.
+
+       Mouse  chording  is  implemented,  as in acme(1).  Dragging a
+       selection with button-1 held down and then also clicking but‐
+       ton-2 cuts the selected text into the Snarf buffer.  Clicking
+       button-3 instead of button-2 replaces the selected text  with
+       the contents of the Snarf buffer.
+
+       Clicking  button  3  extracts  the  whitespace-bounded string
+       around the point of the click and plumbs it to the  appropri‐
+       ate application (see plumber(8)).
+
+       A  brutus  console  window is always displayed from which new
+       files may be opened or from which existing open files may  be
+       selected.  Typing
+
+              /word
+
+       in  the console window will search for the character sequence
+       word in the file associated with the current window. Typing
+
+              ?word
+
+       in the console window will search backwards for the character
+       sequence word.  If text has been selected in the current win‐
+       dow the search begins  from  the  end  of  the  selection  if
+       searching  forwards  and  the  beginning  of the selection if
+       searching backwards.  If no text has been selected the search
+       begins from the current insertion point.  Typing
+
+              linenumber
+
+       in the console window selects all the text on line linenumber
+       and moves the window to show the selected text.
+
+   SGML
+       If the first line of a file is exactly:
+
+              <SGML>
+
+       it is assumed to be in SGML format and the contents are  dis‐
+       played according to some predefined formatting rules. Tags of
+       the form <font.size> are recognised and used to  control  the
+       visual  appearance  of  text.  The font may be one of: Roman,
+       Italic, Bold, and Type giving normal, italicised, emboldened,
+       and  constant  width  text.  The size may be one of 6, 8, 10,
+       12, or 16, and determines the point  size  of  the  displayed
+       text.
+
+PLUMBING
+       wm/brutus  listens for edit messages and plumbs text selected
+       by button 3
+
+SOURCE
+       /appl/wm/brutus.b
+
+SEE ALSO
+       acme(1), cook(1)
+
+                                                           BRUTUS(1)

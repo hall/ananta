@@ -1,0 +1,22 @@
+CLEANNAME()                                              CLEANNAME()
+
+NAME
+       cleanname - clean a path name
+
+SYNOPSIS
+       cleanname [ -d dir ] name ...
+
+DESCRIPTION
+       Cleanname tidies up each file name it is given and prints the
+       result on standard output.  It removes redundant slashes  and
+       interprets  and  directory names lexically.  If the -d option
+       is given, each name that does not not start with / or #  will
+       be prefixed by dir/ before processing.
+
+SOURCE
+       /appl/cmd/cleanname.b
+
+SEE ALSO
+       basename(1), pwd(1), names(2)
+
+                                                         CLEANNAME()

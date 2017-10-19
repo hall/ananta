@@ -1,0 +1,70 @@
+AUPLAY(1)              General Commands Manual             AUPLAY(1)
+
+NAME
+       auplay, auhdr, raw2iaf, wav2iaf - basic audio output and con‐
+       version
+
+SYNOPSIS
+       auplay file ...
+
+       auhdr file ...
+
+       raw2iaf [ option ...  ] [ -o output ] input
+
+       wav2iaf [ input ]
+
+       wav2iaf
+
+DESCRIPTION
+       Auplay plays each file in turn on the audio device /dev/audio
+       (see  audio(3)),  setting  the  device's  characteristics  in
+       /dev/audioctl to match those of the  file.   It  uses  stream
+       (see  sys-read(2))  to  stream the data to the device at high
+       priority.  All files played must be in  `Inferno  audio  for‐
+       mat', as defined by audio(6).
+
+       Auhdr  writes  the header of each Inferno audio input file to
+       the standard output.  The header describes the data in a form
+       that  can  be  written  directly  to /dev/audioctl to set the
+       device's characteristics.
+
+       Raw2iaf converts the input file, adds an  appropriate  header
+       to  describe  the  data in the Inferno format, and writes the
+       result to the output file.  The options tell how the bytes in
+       the input file should be interpreted:
+
+       -8     rate is 8000 Hz
+
+       -1     rate is 11025 Hz
+
+       -2     rate is 22050 Hz
+
+       -4     rate is 44100 Hz
+
+       -m     mono (one channel)
+
+       -s     stereo (two channels)
+
+       -b     each sample in each channel is one byte (unsigned)
+
+       -w     each sample in each channel is 16-bits (little-endian)
+
+       -a     input is a-law encoded
+
+       -u     input is μ-law encoded
+
+       -p     input is PCM encoded
+
+       Wav2iaf  reads  the  input file, which must be in Windows WAV
+       format and encoded  using  PCM,  and  converts  the  data  to
+       Inferno format on the standard output.
+
+SOURCE
+       /appl/cmd/auplay.b
+       /appl/cmd/raw2iaf.b
+       /appl/cmd/wav2iaf.b
+
+SEE ALSO
+       sys-read(2), audio(3), audio(6)
+
+                                                           AUPLAY(1)

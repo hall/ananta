@@ -1,0 +1,43 @@
+SH-MLOAD(1)            General Commands Manual           SH-MLOAD(1)
+
+NAME
+       mload, munload - namespace separation for shell modules
+
+SYNOPSIS
+       load mload
+
+       mload name [ path...  ]
+       munload name [ path...  ]
+
+DESCRIPTION
+       Mload is a loadable module for sh(1) that allows the simulta‐
+       neous use of shell modules with potentially clashing  command
+       name  spaces.   Mload  creates a new namespace name and loads
+       each path as a builtin module in the same way  as  load  (see
+       sh(1)).  Any commands or substitution builtins defined by the
+       modules are accessible by giving the command  and  its  argu‐
+       ments as arguments to the name command.
+
+       Munload unloads a module from the namespace name.  If no mod‐
+       ules remain in the namespace, name is undefined as a command.
+
+EXAMPLE
+       Load mpexpr in a  different  namespace  from  expr  (see  sh-
+       expr(1)):
+       load expr
+       mload mp mpexpr
+       echo ${expr 1 2 +}
+       echo ${mp expr 2 300 xx}
+
+SOURCE
+       /appl/cmd/sh/mload.b
+
+SEE ALSO
+       sh(1),
+
+BUGS
+       Because  of the way shell modules are implemented, the names‐
+       paces are global across all processes that share an  instance
+       of mload.
+
+                                                         SH-MLOAD(1)

@@ -1,0 +1,276 @@
+FS(1)                  General Commands Manual                 FS(1)
+
+NAME
+       fs - file-hierarchy traversal
+
+SYNOPSIS
+       fs verb arg
+
+DESCRIPTION
+       Fs  evaluates  an  expression whose values represent the con‐
+       tents of a hierarchical filesystem.  There are six  types  of
+       value:
+
+       fs        The complete contents of a filesystem.
+
+       entries   Information about the entries in a filesystem with‐
+                 out their content.
+
+       gate      A condition  that  can  be  used  with  conditional
+                 verbs.   A  gate is open to entries satisfying par‐
+                 ticular criteria.
+
+       selector  A comparator which compares two entries and selects
+                 one, both or neither of them.
+
+       string    A  simple string literal, represented by itself, or
+                 quoted according to the usual shell quoting rules.
+
+       command   A shell command, represented by an ``@''  character
+                 followed  by  a  braced  block containing the shell
+                 commands.
+
+       void      No value. An expression of this type cannot be used
+                 as an argument to any verb.
+
+       A value is represented either by a literal (a string or shell
+       command), or by a braced block, {verb [arg...]}, whose  value
+       is the result of evaluating verb with the given arguments.
+
+       In  the following description of the verbs provided, an entry
+       such as:
+
+       print entries -> void
+
+       describes a verb print, which  takes  one  argument  of  type
+       entries,  and  the  result  of which is of type void.  If the
+       type is not one of those described above, it should be  taken
+       to be of type string.
+
+       With  no  arguments,  fs  prints  a  summary of the available
+       verbs.  Verbs understood by fs include:
+
+       and gate gate [gate...] -> gate
+                 And is a gate that is open to an entry if  all  its
+                 arguments are open.
+
+       bundle fs -> void
+                 Bundle converts fs to an archival format and writes
+                 it to the standard output.
+
+       compose [-d] op -> selector
+                 Compose implements ``compositing''-style operators,
+                 useful  when merging filesystems.  Op specifies the
+                 operator,  taking  its  name  from  the   graphical
+                 Porter-Duff  equivalent:  AinB,  AinB, BinA, AoutB,
+                 BoutA, A, AoverB,  AatopB,  AxorB,  B,  BoverA,  or
+                 BatopA.   For instance, AinB gives the intersection
+                 of A and B; AatopB gives A whereever both A  and  B
+                 exist,  and  B  otherwise.  When used as a selector
+                 for merge, operators that exclude the  union  of  A
+                 and B are not very useful, as they will exclude all
+                 common directories at the top level.  Given the  -d
+                 option, compose will allow through directories that
+                 would otherwise be excluded  in  this  way,  making
+                 operators  such  as AxorB (all that A does not hold
+                 in common with B) more  useful,  although  accurate
+                 only for regular files.
+
+       depth n -> gate
+                 Depth  is  a  gate  open  only to entries which are
+                 within n levels of the root of the filesystem.
+
+       entries fs -> entries
+                 Entries produces all the entries  contained  within
+                 fs.
+
+       eval expr -> any
+                 Eval  evaluates  an  fs  expression  and yields its
+                 result.
+
+       filter [-d]gate fs -> fs
+                 The result of filter is a filesystem from which all
+                 entries  that will not pass through gate, and their
+                 descendents, have been removed.  If the -d flag  is
+                 given, only files are filtered - directories bypass
+                 the gate.
+
+       ls [-um] entries -> void
+                 Print each entry in the style of ls -l (see ls(1)).
+                 If  the  -u  flag  is  given,  the file access time
+                 rather than the  file  modification  time  will  be
+                 printed.  If  the -m flag is given, the name of the
+                 user that last modified the file is printed too.
+
+       exec [-pP] [-t command] [-n n] command entries -> void
+                 Run its argument command for each entry in  entries
+                 .   If  the  -n flag is specified, exec will try to
+                 gather n entries together before invoking the  com‐
+                 mand (default 1).  The environent variable $file is
+                 set to the names of  the  entries  that  have  been
+                 gathered.   If  the  -p  flag is given, environment
+                 variables are  set  giving  information  about  the
+                 mode,  owner,  modification  time  and  size of the
+                 entry (they are named after  the  equivalent  field
+                 names in the Dir structure; see sys-stat(2)).  This
+                 option is only valid when n  is  1.   The  -P  flag
+                 causes all the other fields in the Dir structure to
+                 be included too.  Note that the command is  run  in
+                 the  same  shell  context each time, so environment
+                 variable set on one execution can be  retrieved  on
+                 the next. The -t flag can be used to specify a com‐
+                 mand which will be executed  just  before  termina‐
+                 tion.
+
+       match [-ar] pattern -> gate
+                 Match  is  a gate that is open if the entry's file‐
+                 name matches the pattern.  If the -a flag is given,
+                 the  whole  path will be used for the match.  If -r
+                 is specified, the pattern is evaluated as a regular
+                 expression,  otherwise  it is a shell-style pattern
+                 in the style of filepat(2).
+
+       merge [-1] [-c selector] fs fs [fs...] -> fs
+                 Recursively merge  the  contents  of  its  argument
+                 filesystems.   Selector  is  consulted to see which
+                 entries are chosen for the result;  if  not  given,
+                 entries   are  resolved  in  favour  of  the  first
+                 filesystem (equivalent to  {compose  AoverB}).   If
+                 the  -1  flag is given, merging takes place only in
+                 the top-level directory.
+
+       mode spec -> gate
+                 Mode is a gate that lets through entries whose file
+                 permissions  satisfy spec, which is a string in the
+                 style of chmod(1).  If the op field is +, the spec‐
+                 ified  permissions must be present; if -, they must
+                 be absent, and if =, they must be exactly as given.
+                 The directory and auth modes are specified with the
+                 characters ``d'' and ``A'' respectively.
+
+       not gate -> gate
+                 Not is a gate open to an entry if its  argument  is
+                 not.
+
+       or gate gate [gate...] -> gate
+                 Or  is  a  gate open to an entry if any argument is
+                 open.
+
+       path [-x] path... -> gate
+                 Path is a gate open to an entry whose full pathname
+                 is  an ancestor or a descendent of any path.  If -x
+                 is specified, the gate is open to any  path  except
+                 descendents of the paths given.
+
+       pipe [-1pP] command fs -> void
+                 Pipe  is  similar to exec, except that the contents
+                 of all files  in  fs  are  piped  through  command.
+                 Unless  the  -1 option is given, command is started
+                 once for each file, with $file set to its name, and
+                 other environment variables set according to the -p
+                 or -P options, as for exec.  If the  -1  option  is
+                 specified,  command is started once only - all file
+                 data is piped through that.
+
+       print entries -> void
+                 Print the path name of each entry.
+
+       proto [-r root] protofile -> fs
+                 Evaluate protofile as a mkfs(8) proto file. If root
+                 is  specified,  it  will be used as the root of the
+                 resulting fs.
+
+       query command -> gate
+                 Query is a gate  that  runs  command  to  determine
+                 whether  it  is open: an empty exit status from the
+                 command yields an open gate.  The environment vari‐
+                 able  $file is set for the command to the path name
+                 of the entry that is being queried for.
+
+       run command -> string
+                 Run runs command and substitutes the value  of  the
+                 environment  variable  $s after its invocation.  $s
+                 must have exactly one element.
+
+       select gate entries -> entries
+                 Select only those entries within entries that  will
+                 pass  through  gate.  Descendents of elided entries
+                 are not affected.
+
+       setroot [-c] path fs -> fs
+                 Setroot sets the name of the root directory of  fs.
+                 If  the  -c flag is given, the elements in the root
+                 directory will be made explicit  in  the  hierarchy
+                 (i.e.  the  name of the top directory will not con‐
+                 tain any / characters).
+
+       size entries -> void
+                 Print the sum of the size of all entries, in bytes.
+
+       unbundle file -> fs
+                 Unbundle reads an archive  as  produced  by  bundle
+                 from  file;  its  result  is  the  contents  of the
+                 filesystem that was originally bundled.  If file is
+                 ``-'', the standard input is read.
+
+       walk path -> fs
+                 Walk  produces  a  filesystem  that's the result of
+                 traversing all the files and directories underneath
+                 path.
+
+       write dir fs -> void
+                 Write  the  contents of fs to the filesystem rooted
+                 at dir .  If dir is empty, fs will  be  written  to
+                 the root directory originally associated with fs.
+
+       As  a convenience, fs carries out some automatic type conver‐
+       sions (conversions are applied recursively, so for  instance,
+       an  fs-valued  expression  at the top level will converted to
+       void by applying {print {entries fs}}.
+
+       string->fs
+              The result is {walk string}.
+
+       fs->entries
+              The result is {entries fs}.
+
+       string->gate
+              The result is {match string}.
+
+       entries->void
+              The result is {print entries}.
+
+       command->string
+              The result is {run command}.
+
+EXAMPLES
+       Print the size of all files below the current directory:
+            fs size .
+       Show the names of all files in x that aren't in y:
+            fs select {mode -d} {merge -c {compose -d AoutB} x y}
+       Remove all files from /appl ending in .dis:
+            fs exec @{rm $file} {select *.dis /appl}
+       Recursively copy the current directory to /tmp/foo.
+            fs bundle . | fs write /tmp/foo {unbundle -}
+       A simpler method of the above:
+            fs write /tmp/foo .
+       Interactively remove all regular files from one level of  the
+       current directory:
+
+              fs exec @{rm $file} {select {query
+                   @{echo -n $file:; ~ `{read} y yes}}
+                   {select {mode -d} {filter {depth 1} .}}}
+
+       Create  a  new  archive containing those files from below the
+       current directory that were held in an old archive:
+            fs bundle {merge -c {compose AinB} . {unbundle old.bundle}} > new.bundle
+
+SOURCE
+       /appl/cmd/fs.b
+       /appl/cmd/fs/*.b
+       /appl/lib/fslib.b
+
+SEE ALSO
+       sh(1)
+
+                                                               FS(1)

@@ -1,0 +1,36 @@
+NETSTAT(1)             General Commands Manual            NETSTAT(1)
+
+NAME
+       netstat - summarize network connections
+
+SYNOPSIS
+       netstat
+
+DESCRIPTION
+       Netstat  prints  information  about network connections.  The
+       following is presented for each connection:
+
+              connection name: the protocol and conversation  direc‐
+              tory in /net (eg.  tcp/8)
+              user name
+              status of the connection
+              address  of  each  end  of the connection (eg host and
+              port if IP)
+
+       The information is obtained from  the  status  file  of  each
+       entry  under  the  network directories /net/tcp, /net/udp and
+       /net/il.
+
+       Netstat relies on a populated /net directory; the  #I  device
+       must therefore have previously been bound there.
+
+FILES
+       /net/*/status
+
+SOURCE
+       /appl/cmd/netstat.b
+
+SEE ALSO
+       ip(3)
+
+                                                          NETSTAT(1)

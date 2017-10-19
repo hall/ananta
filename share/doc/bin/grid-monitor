@@ -1,0 +1,62 @@
+GRID-MONITOR(1)        General Commands Manual       GRID-MONITOR(1)
+
+NAME
+       monitor - graphical display for viewing resource use.
+
+SYNOPSIS
+       command | grid/srv/monitor interface [ wintitle ]
+
+DESCRIPTION
+       Monitor  is  designed  to  work with resources that deal with
+       incoming connections (such as grid-register(1))  to  visually
+       display  the  connections  to a specific resource.  Interface
+       sets the style of interface, this can be 1 or 2. Interface  1
+       is the simplest, displaying only a list of connections to the
+       resource. Interface 2  is  slightly  more  complex,  allowing
+       extra  data to be displayed for each connection. While inter‐
+       face 1 shows all the connections at any one time, interface 2
+       displays a selection of 'slots' which have buttons that light
+       up to signify a connection. Clicking on  a  lit  button  will
+       display any data given about that connection in the main win‐
+       dow.  Wintitle optionally sets the title of the monitor  win‐
+       dow.   Command must write status messages to stdout which are
+       then read and displayed (if appropriate) by monitor.  Monitor
+       reads on stdin and accepts the following input:
+
+   Interface 1
+       add addr                      display   a   connection   from
+                                     address addr
+
+       del addr                      remove   a   connection    from
+                                     address addr
+
+   Interface 2
+       data set id { data }          set and display the string data
+                                     in slot id.
+
+       data set id finished          clear slot id
+
+   Common
+       setup maxusers n              set display to fit a maximum of
+                                     n   connections.  -1  signifies
+                                     unlimited connections.
+
+       starting pid                  add pid to a list of pids whose
+                                     process  group  is to be killed
+                                     if the user closes monitor.
+
+       error errstr                  print  out  the  error   string
+                                     errstr to the console.
+
+       exit                          close down monitor and kill all
+                                     processes in the current group.
+
+       Input messages of any other form will simply be ignored.
+
+SOURCE
+       /appl/grid/srv/monitor.b
+
+SEE ALSO
+       grid-register(1), ns(1), cpu(4)
+
+                                                     GRID-MONITOR(1)

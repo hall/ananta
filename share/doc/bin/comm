@@ -1,0 +1,29 @@
+COMM(1)                General Commands Manual               COMM(1)
+
+NAME
+       comm - select or reject lines common to two sorted files
+
+SYNOPSIS
+       comm [ -123 ] file1 file2
+
+DESCRIPTION
+       Comm  reads  lines from file1 and file2, which are in lexico‐
+       graphical order, and produces a three  column  output:  lines
+       only  in file1; lines only in file2; and lines in both files.
+       The file name means the standard input.
+
+       Each option digit or suppresses printing of the corresponding
+       column.
+
+EXAMPLE
+       comm -12 file1 file2
+
+              Print lines common to two sorted files.
+
+SOURCE
+       /appl/cmd/comm.b
+
+SEE ALSO
+       sort(1), cmp(1), diff(1), uniq(1)
+
+                                                             COMM(1)

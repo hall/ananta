@@ -1,0 +1,147 @@
+APPLYLOG(8)            System Manager's Manual           APPLYLOG(8)
+
+NAME
+       applylog, updatelog - log-based updates
+
+SYNOPSIS
+       install/applylog  [ -c ] [ -e ] [ -n ] [ -s ] [ -u ] [ -g ] [
+       -v ] [ -T timefile ] clientlog clientroot serverroot  [  path
+       ...  ]
+
+       install/updatelog  [  -p proto ] [ -r root ] [ -t now gen ] [
+       -c ] [ -x path ] log [ path ...  ]
+
+DESCRIPTION
+       These two commands allow distribution of updates (eg, to  the
+       Inferno  tree)  based  on  a  log of changes since a previous
+       update.  Notionally, one server system is the primary  for  a
+       set  of files, and one or more client systems maintain repli‐
+       cas of that set, although in  some  applications  server  and
+       client might be the same machine.
+
+       Applylog  is  run on a client, to update the file tree rooted
+       at clientroot.  The server's version of the tree is rooted at
+       serverroot  on  the  client, typically by being mounted there
+       (see bind(1)).  Applylog  takes  the  current  state  of  the
+       replica  from  the entries in clientlog, and applies a set of
+       changes represented by log entries  read  from  its  standard
+       input.   Those  entries  are  provided  by  the server.  Each
+       change is examined to  see  whether  the  file  to  which  it
+       applies  is  in  the  expected  state.   If so, the change is
+       applied without  comment;  otherwise,  there  is  a  conflict
+       caused  by  a  local change to the replica tree independently
+       from the primary.  By default, applylog  diagnoses  the  con‐
+       flict  and does not apply the change.  It accepts the follow‐
+       ing options:
+
+       -c     Resolve inconsistencies in favour of the client: leave
+              the replica as is.
+
+       -e     Exit  with  an  error  status  on any error, including
+              inconsistency between client and server.
+
+       -n     Print on standard output a list of changes that  would
+              be made, and list any conflicts, but do not change the
+              tree or update the log.
+
+       -s     Resolve inconsistencies in favour of the server:  make
+              the replica match the server's state.
+
+       -u     Make  file  ownership in the replica match that on the
+              server.
+
+       -g     Make group ownership in the replica match that on  the
+              server.
+
+       -v     Print a summary of each log entry as it is examined.
+
+       -T timefile
+              Read  a  time  and  sequence  number from timefile and
+              apply only log entries with stamps greater than  that.
+              On  successful  completion,  if  the  -n option is not
+              given, update the timefile with the stamp of the  last
+              log entry processed successfully.
+
+       The  scope of an update in a tree can be restricted to a par‐
+       ticular set of paths listed on the command line.  They should
+       all be relative path names.
+
+       Updatelog  is  run  on  a server to produce a sequence of log
+       entries representing changes to the primary tree since a pre‐
+       vious  log  was  produced.  It can also be run on a client to
+       see how its replica state differs from  that  recorded  in  a
+       log.  It accepts the following options:
+
+       -p proto
+              Use  proto  as  the  prototype for the file system, as
+              described by proto(6) (default: /lib/proto/all).
+
+       -r root
+              The replica is rooted at root  (default:  the  current
+              directory, .).
+
+       -t now gen
+              Make  log  entries  use  time now and initial sequence
+              number gen.  The defaults are the current time and 0.
+
+       -c     Produce output only for content and metadata  changes,
+              not additions or deletions.
+
+       -x path
+              Exclude path and its subtrees from consideration.
+
+       By   default,   updatelog  produces  log  entries  describing
+       changes, additions and deletions to all files in root but the
+       scope  can be limited by giving a different proto, explicitly
+       listing trees to consider as paths on the command  line,  and
+       by giving one or more -x options to exclude particular paths,
+       in any desired combination.
+
+   Log file format
+       A log file is a text file with  one  line  representing  each
+       change to the tree.  Each line has the form:
+
+              time  gen  verb  path  serverpath  mode  uid gid mtime
+              length [ sum ...  ]
+
+       where:
+
+              time, gen
+                     are decimal numbers that order the sequence  of
+                     requests: time is typically the time in seconds
+                     of the epoch at which the entry was  made;  gen
+                     is a monotonically increasing sequence number
+
+              verb   is an action:
+
+                     a      add file path
+
+                     c      change the contents of file path
+
+                     d      delete path
+
+                     m      change the metadata (permissions, owner‐
+                            ship) for path
+
+              path   the name of the file on the client
+
+              serverpath
+                     the name of the file on  the  server  with  the
+                     contents  for  path,  or simply when the server
+                     and client file names are the same
+
+              mode, uid, gid, length, mtime
+                     the resulting metadata (except for d where  the
+                     metadata is that for the file to be deleted)
+
+              sum    is the MD5 checksum of the file's contents
+
+SOURCE
+       /appl/cmd/install/applylog.b
+       /appl/cmd/install/logs.b
+       /appl/cmd/install/updatelog.b
+
+SEE ALSO
+       fs(1), kfs(4), proto(6)
+
+                                                         APPLYLOG(8)

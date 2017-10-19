@@ -1,0 +1,96 @@
+STACK(1)               General Commands Manual              STACK(1)
+
+NAME
+       stack, stackv - examine call stack
+
+SYNOPSIS
+       bind '#p' /prog
+       stack [ -v ] [ -p dispath sblpath ]...  pid
+       stackv [ -Tlm ] [ -r maxdepth ] [ pid[.sym] ...] ...
+
+DESCRIPTION
+       Stack writes to the standard output a stack trace for process
+       pid, by decoding the stack traceback data  contained  in  the
+       file  /prog/pid/stack.   The  -v option causes stack to print
+       values of arguments and variables.  The output is most useful
+       when  the  Limbo  program  was compiled with the -g option to
+       produce a .sbl symbol file.
+
+       Stack has a built-in list of associations between dis  direc‐
+       tories  and  their associated source directories (e.g. it can
+       automatically  map  from  /dis/ls.dis  to  /appl/cmd/ls.sbl).
+       Giving  the  -p  option adds a new association to the head of
+       this list: if a module path  prefix  matches  dispath,  stack
+       will search for a symbol file in sblpath.  If the environment
+       variable $sblpath is set, pairs of items from it are added to
+       the association list, as given as -p options.  The -p options
+       take precedence over $sblpath.
+
+       Stackv recursively traverses the symbols it  finds,  printing
+       values  as it goes. Repeated identical structure is not shown
+       - only the pointer value is printed, followed by (qv).   Each
+       argument  gives a starting point for the traversal, rooted by
+       a process id, pid.  If an unadorned process id is given,  all
+       values  in  all  stack frames in the process will be printed;
+       adding names specifies  the  starting  point.  For  instance,
+       123.init.ctxt.display  might specify the display field inside
+       the ctxt adt inside the init function inside the process 123.
+       Stackv understands the following options:
+
+       -l        Show source line information with each item.
+
+       -m        Show  module  variables  accessible from each stack
+                 frame.
+
+       -T        Do not show the Limbo types of value encountered.
+
+       -r maxdepth
+                 Restrict the maximum traversal  depth  to  maxdepth
+                 levels.
+
+EXAMPLE
+       Run stack on process with ID 1:
+
+              $ stack 1
+              unknown fn() Module $Sys PC 742103
+              waitfor() shnew.b:105.7, 38
+              runpipeline() shnew.b:483.2, 14
+              runit() shnew.b:552.3, 29
+              init() shnew.b:83.3, 28
+
+       The  process  is  executing  in  the  Sys  module,  a call to
+       sys->read that originated at line 105 (characters 7 to 38) of
+       the waitfor function in shnew.b.
+
+       Once again, with the -v option to reveal more:
+
+              $ stack -v 1
+              unknown fn() Module $Sys PC 742103
+              waitfor(pid=18) shnew.b:105.7, 38
+                      status=[0] ""
+                      buf=[64] @b419a4
+                      n=-1
+                      who=-1
+              runpipeline(ctx=nil, pipeline=@b41454) shnew.b:483.2, 14
+                      pid=18
+              runit(ctx=nil, pipes=nil) shnew.b:552.3, 29
+                      pipeline=@b41454
+              init(ctxt=nil, argv=nil) shnew.b:83.3, 28
+                      buf=[1024] @b40f04
+                      n=4
+                      arg=@b41634
+                      prompt=[21] "$ "
+              $
+
+FILES
+       /prog/pid/stack
+       /prog/pid/status
+
+SOURCE
+       /appl/cmd/stack.b
+       /appl/cmd/stackv.b
+
+SEE ALSO
+       deb(1), ps(1), prog(3), debug(2)
+
+                                                            STACK(1)

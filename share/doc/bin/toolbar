@@ -1,0 +1,58 @@
+TOOLBAR(1)             General Commands Manual            TOOLBAR(1)
+
+NAME
+       toolbar - window manager toolbar
+
+SYNOPSIS
+       wm/toolbar [ -s ] [ -p ]
+
+DESCRIPTION
+       Toolbar  is designed to be run as the controlling application
+       under an instance of wm(1).  It runs an initialisation  shell
+       script,  provides  a menu allowing the user to start new pro‐
+       grams.  and shows icons representing windows that  have  been
+       hidden.
+
+       When toolbar is started, it configures itself by means of the
+       /lib/wmsetup shell script.  Toolbar loads  the  shell  sh(1),
+       and defines the following shell built-in commands before exe‐
+       cuting the script:
+
+       menu title1 [title2] command
+              Insert an item at the top of the start  menu.   Title1
+              is  the  text of the item on the main menu.  If title2
+              is given then title1 is a sub-menu with title2 as  the
+              menu  item.  Command is executed by the shell whenever
+              the item is selected.  An item with an  empty  command
+              is displayed as a separator.
+
+       delmenu
+              Forget all menu items.
+
+       The   standard   /lib/wmsetup   script  executes  the  script
+       /usr/username/lib/wmsetup, enabling each user to  have  their
+       own window manager configuration.
+
+       Normally  toolbar  packs a menu button referring to the start
+       menu at the left hand side of the tool bar.   The  -s  option
+       suppresses that.
+
+       Toolbar  serves the shared snarf buffer used by cut and paste
+       in wm(1) applications, except in  hosted  Inferno  where  the
+       host's   standard  clipboard  system  is  used  instead,  via
+       snarf(3).  If toolbar  cannot  find  /chan/snarf  or  the  -p
+       option  is  given,  toolbar will create its own snarf buffer,
+       private to the set of applications running under the  current
+       instance of wm(1).
+
+FILES
+       /lib/wmsetup
+              Initialisation shell-script.
+
+SOURCE
+       /appl/wm/toolbar.b
+
+SEE ALSO
+       wm(1), tkclient(2), wmclient(2), toolbar(1), logon(1).
+
+                                                          TOOLBAR(1)

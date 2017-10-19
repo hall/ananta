@@ -1,0 +1,161 @@
+INTRO(1)               General Commands Manual              INTRO(1)
+
+NAME
+       intro - introduction to Inferno
+
+DESCRIPTION
+       Inferno  is  a  virtualised  operating  system  that  can run
+       natively across a wide range of  processor  architectures  or
+       hosted  on  a wide range of operating systems.  The principal
+       components of the system are:
+
+       ·      The Inferno kernel  which  can  run  both  native  and
+              `hosted'  on  a  range of platforms and which presents
+              the same interface to programs in both cases.
+
+       ·      The Dis virtual machine.
+
+       ·      Styx - the tiny broad-spectrum file service protocol.
+
+       ·      Limbo - a new simple, modular, concurrent  programming
+              language.
+
+       ·      Tk and Prefab - graphical user interface (`GUI') prim‐
+              itives without a lot of goo.
+
+       ·      The portable cross-development suites that  allow  any
+              native  Inferno  platform  to be cross-compiled on any
+              hosted system.
+
+   Manual conventions
+       Throughout this volume, manual entries are  cross  referenced
+       by  a  notation of the form entry(n), where entry is the name
+       of the page (in italics) and n is the manual section  holding
+       the  page.   The same name may be found in more than one sec‐
+       tion.  For example, the environment variable inspection  com‐
+       mand  documented in env(1), is quite distinct from the module
+       interface to environment variables  which  is  documented  in
+       env(2),  which  in  turn is distinct from the component docu‐
+       mented by env(3), which describes the underlying device  that
+       implements environment variables.
+
+       Pathnames  are  understood  to exist in the file system space
+       visible from Inferno. The root of this space when viewed from
+       the  host operating system is the Inferno installation direc‐
+       tory, sometimes called the  Inferno  root  directory.  Unless
+       otherwise enabled, the result of changes made by Inferno pro‐
+       grams  to  files  in  the  file  system  space  is  generally
+       restricted to this portion of the host file system.
+
+   Name spaces
+       One  of  the  great  strengths  of  Inferno is the name space
+       interface to the resources available to a process, a  hierar‐
+       chical  structure  which looks very similar to a conventional
+       file system.  Resources look like files and directories  that
+       can  be read and written, created and deleted in a way famil‐
+       iar to most programmers.
+
+       While this interface is used to provide programs with  access
+       to conventional disk-based filestore, it is also used to con‐
+       trol devices and user level programs mounted in  a  process's
+       name  space.  Once a program or a device has been attached to
+       a process's name space, the program or device interprets  any
+       access  to  the attachment point; it can synthesise on demand
+       the names of new files or directories, create their  contents
+       on  the  fly  as  the  process reads from them, and interpret
+       written data as commands or data as appropriate (See  bind(1)
+       and sys-bind(2)).
+
+       Each  new  Inferno  process inherits its parent's name space,
+       but it can divorce its own name space from that of its parent
+       (see  sys-pctl(2)),  giving programs the capability to attach
+       resources to their own name space without making  them  glob‐
+       ally  visible.  This  per-process  name  space  is potent but
+       potentially confusing, so, to help  programs  that  might  be
+       confused,  namespace(4) gives some conventions that should be
+       adhered to if programs are to work properly. (That page  also
+       gives a general overview of the Inferno source tree.)
+
+   Start up
+       See  ``Installation of the Inferno Software'' in Volume 2 for
+       details of how to start up Inferno.
+
+   Window/development environment
+       Inferno provides a powerful development environment in  which
+       to  write, compile, execute and debug programs written in the
+       Limbo language.  It gives the developer a clean platform from
+       which  he can utilise an operating system which contains many
+       new and innovative ideas and some,  carefully  chosen,  older
+       concepts  that  have survived the test of time and are likely
+       to be familiar to most Plan 9 or Unix users.
+
+       Superficially, the Inferno shell sh(1) looks and behaves much
+       like  its  Plan 9 or Unix contemporaries but, at heart, it is
+       quite different.  The shell takes advantage  of  the  dynamic
+       module  loading services that Inferno provides to allow it to
+       be dynamically extended in appropriate and interesting  ways.
+       For  example, by loading the sh-tk(1) builtin module, a shell
+       script can provide all the programming logic required to man‐
+       age  a Tk window with full Tk functionality in, surprisingly,
+       few lines of code; by  loading  the  sh-file2chan(1)  builtin
+       module,  a  shell  script can create a file in the name space
+       whose properties are completely  under  the  control  of  the
+       script.
+
+       The  Inferno  window  manager wm(1) allows the user to manage
+       the order and position of a dynamic collection of application
+       windows  in  which to perform various tasks.  Acme(1) is tar‐
+       geted at programmers. It is an editor,  a  shell  and  window
+       system all rolled into one, which through thoughtful and con‐
+       sistent application of simple principles results  in  a  rich
+       and  productive programming environment with a user interface
+       that feels right.  Acme requires  a  three-button  mouse  and
+       attaches  distinct  functions to the three mouse buttons and,
+       indeed, to chords of buttons to maximise the productivity  of
+       the  programmer's  mouse.  For  more details of the Acme user
+       interface see the paper "Acme: A User Interface for  Program‐
+       mers" in Volume 2.
+
+       Limbo  programs  are  compiled  with limbo(1).  This compiles
+       Limbo source into a machine-independent format (Dis) for exe‐
+       cution  by  the  Inferno  Dis  virtual  machine.  The virtual
+       machine is designed to provide  safe  execution  of  programs
+       even  on  machines  without  memory protection.  Debugging is
+       made straightforward by use of either stack(1) ,  to  display
+       the execution stack of a process or, if a finer inspection is
+       required, deb(1), a novel window based debugger  that  allows
+       the  user  to  identify  the  exact location of problems, set
+       break points and walk  the  data  structures  of  any  module
+       loaded  by  the program. See "Program Development in Inferno"
+       in Volume 2 for details on how to use the  development  tools
+       that Inferno provides.
+
+SEE ALSO
+       Section (1) (this section) for the commonly-used commands.
+       Section (2) for Limbo modules, including Inferno's system calls.
+       Section (3) for kernel devices (accessed by `bind').
+       Section (4) for file services (accessed by `mount').
+       Section (5) for the Styx file service protocol.
+       Section (6) for file formats and system conventions.
+       Section (7) for databases and database access modules.
+       Section (8) for administrative modules and system services.
+       Section (9) for the reference for Inferno's Tk variant, Limbo/Tk.
+       Section (10) for the build environment and device driver implementation.
+
+       Volume 2 contains papers and other documentation about Inferno.
+
+       The back of this volume contains a permuted index.
+
+DIAGNOSTICS
+       On successful execution, a process can simply exit.  Programs
+       (modules) that wish to return error  status  to  the  command
+       interpreters  sh(1)  and  mash(1)  do so by raising a special
+       exception (eg, using the  raise  statement  in  Limbo).   The
+       exception's  value  is  a  string  beginning  with  the  text
+       `fail:'.
+
+SEE ALSO
+       intro(2), intro(3), intro(4), intro(5),  intro(6),  intro(7),
+       intro(8), intro(9), intro(10)
+
+                                                            INTRO(1)

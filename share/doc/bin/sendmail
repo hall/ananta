@@ -1,0 +1,33 @@
+SENDMAIL(1)            General Commands Manual           SENDMAIL(1)
+
+NAME
+       sendmail - send mail messages
+
+SYNOPSIS
+       sendmail [ recipient ...  ]
+
+DESCRIPTION
+       Sendmail  sends  mail to each recipient named as an argument.
+       It reads its standard input to get the text of  the  message.
+       If no recipient is named, the recipient(s) will be taken from
+       the message header.
+
+       The mail message is scanned for lines beginning and
+       If no `from' line is found, the sender is assumed to  be  the
+       current  user.  The  recipient(s)  of the message can be men‐
+       tioned as arguments or in a list of names in a line  but  not
+       as both.  If the sender's name is unqualified (is just a user
+       name), sendmail appends the value of the environment variable
+
+       Sendmail delivers the mail using the  module  smtp(2),  which
+       connects  to  a mail server running the Simple Mail Transport
+       Protocol (SMTP), using the  symbolic  host  name  $MAILSERVER
+       (see db(6)).
+
+SOURCE
+       /appl/cmd/sendmail.b
+
+SEE ALSO
+       smtp(2), db(6)
+
+                                                         SENDMAIL(1)

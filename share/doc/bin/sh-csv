@@ -1,0 +1,44 @@
+SH-CSV(1)              General Commands Manual             SH-CSV(1)
+
+NAME
+       csv, getcsv - parse ``comma-separated values''
+
+SYNOPSIS
+       load csv
+
+       getcsv command
+       ${csv list}
+
+DESCRIPTION
+       Csv is a loadable module for sh(1) that provides the facility
+       to parse and  generate  ``comma-separated  value''  lists,  a
+       widely  used  data  exchange  format.  Data in this format is
+       usually in the form of a table, each row  of  which  contains
+       one or more items, each separated by a comma (,).  Items that
+       contain a comma or a  newline  are  surrounded  with  double-
+       quotes  (").  A double-quote within an item is represented by
+       a pair of double-quotes.  Two primitives are provided:
+
+       getcsv    Getcsv works similiarly to getlines  in  sh-std(1).
+                 It  reads  from  the  standard input, and for every
+                 line read, invokes command with $line  set  to  the
+                 items  found  on  that line (one element per item).
+                 Getcsv recognises the usual loop break and continue
+                 exceptions.
+
+       ${csv}    Csv  yields  a  single  element  containing all the
+                 items in list, comma-separated and quoted as neces‐
+                 sary.
+
+SOURCE
+       /appl/cmd/sh/csv.b
+
+SEE ALSO
+       sh(1), sh-std(1)
+
+BUGS
+       Empty  lines  are ambiguous: csv treats an empty line as con‐
+       taining a single, empty element; there is thus no way of rep‐
+       resenting a line containing no elements at all.
+
+                                                           SH-CSV(1)

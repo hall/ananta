@@ -1,0 +1,31 @@
+WC(1)                  General Commands Manual                 WC(1)
+
+NAME
+       wc - count lines, words, and characters
+
+SYNOPSIS
+       wc [ -lwceb ] [ file ...  ]
+
+DESCRIPTION
+       Wc  writes  to  standard  output a tally of lines, words, and
+       characters found in each file, assumed to be text in UTF for‐
+       mat.  If no files are named, standard input is read. One line
+       is output per file. If several files are specified, an  addi‐
+       tional line is written giving totals.
+
+       `Words'  are  maximal  sequences  of  characters separated by
+       blanks, tabs and newlines.
+
+       Counts are output in the same order as  the  listing  of  the
+       option  letters  lwceb;  select lines, words, UTF characters,
+       erroneously-encoded characters, and bytes, respectively.   If
+       no  options  are  given,  lines,  words  and  characters  are
+       counted.
+
+SOURCE
+       /appl/cmd/wc.b
+
+SEE ALSO
+       tr(1), utf(6)
+
+                                                               WC(1)

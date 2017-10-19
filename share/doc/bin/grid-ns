@@ -1,0 +1,49 @@
+GRID-NS(1)             General Commands Manual            GRID-NS(1)
+
+NAME
+       grid:  ns  -  exports  a  selected namespace and serves it on
+       standard input
+
+SYNOPSIS
+       grid/srv/ns    [ -r relpath ] path1 path2...path n
+       grid/runns     [ -r relpath ] path1 path2...path n
+
+DESCRIPTION
+       Ns exports a selected subsection of the local  namespace  and
+       serves  it on stdin.  The path arguments specify which direc‐
+       tories are to be exported.  If  subdirectories  are  exported
+       without  their parents, ns attempts to maintain the namespace
+       structure by creating the parents but  populating  them  only
+       with  the  selected  subdirectories.  For  example, exporting
+       /appl/lib would mean that the exported /appl  directory  con‐
+       tained nothing apart from the lib subdirectory. If relpath is
+       specified, all paths will be viewed relative  to  this  path.
+       For    instance,    if    relpath   is   /usr/inferno,   then
+       /usr/inferno/bin/dis would be listed  as  /bin/dis  and  /tmp
+       would not be listed at all.
+
+       Grid-register(1) may be used in conjunction with ns to regis‐
+       ter it with a registry(4) and to export and serve its  names‐
+       pace across dial(2) network connections. Incoming connections
+       may also be displayed visually  using  grid-monitor(1).   For
+       example:
+
+       grid/register  [  options  ...  ]  { grid/srv/ns paths... } |
+       grid/srv/monitor 1 'NS resource'
+
+       This set of commands is encapsulated within the shell  script
+       runns which will automatically register ns with a registry(4)
+       if possible and start up the graphical display to  show  con‐
+       nections  to  the  resource. There is no need for the user to
+       execute ns outside of runns unless the namespace it  provides
+       is  required to be accessible in a different way to that pro‐
+       vided by grid-register(1).
+
+SOURCE
+       /appl/grid/srv/ns.b
+
+SEE ALSO
+       grid-cpu(4),  grid-monitor(1),  grid-register(1),   grid-ses‐
+       sion(1)
+
+                                                          GRID-NS(1)

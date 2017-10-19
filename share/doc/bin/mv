@@ -1,0 +1,30 @@
+MV(1)                  General Commands Manual                 MV(1)
+
+NAME
+       mv - move files
+
+SYNOPSIS
+       mv fromfile tofile
+       mv fromfile ...  todir
+
+DESCRIPTION
+       Mv  moves  fromfile  to tofile.  If the files are in the same
+       directory, fromfile is simply renamed; a previously  existing
+       file  named tofile will be (silently) removed.  Otherwise, mv
+       copies fromfile  to  tofile,  then  removes  fromfile.   This
+       requires   write   permission   for  the  parent  directories
+       involved.
+
+       If the last argument is a directory,  the  earlier  arguments
+       (all files) will be moved into that directory. Any previously
+       existing files of the same name will be overwritten.   Direc‐
+       tories  can  only  be  renamed:  mv  refuses to move one into
+       another.
+
+SOURCE
+       /appl/cmd/mv.b
+
+SEE ALSO
+       cp(1), rm(1), sys-stat(2)
+
+                                                               MV(1)

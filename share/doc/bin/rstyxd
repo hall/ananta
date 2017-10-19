@@ -1,0 +1,51 @@
+RSTYXD(8)              System Manager's Manual             RSTYXD(8)
+
+NAME
+       rstyxd - Styx-based remote execution and file service
+
+SYNOPSIS
+       auxi/rstyxd alg ...
+
+DESCRIPTION
+       Rstyxd  provides  a  remote-execution service.  Having autho‐
+       rised the client and optionally established ssl, as described
+       above,  it  reads a single line from its standard input.  The
+       line contains a decimal value that is the count of the number
+       of  bytes that follow, which rstyxd reads as a utf(6)-encoded
+       string.  The string contains a command, which is parsed  into
+       arguments,  following  the quoting conventions of sh(1).  The
+       first argument is the command name.  Rstyxd prepares a  modi‐
+       fied  name  space in which to run the command.  It mounts the
+       connection (standard input) on /n/client, binds /n/client/dev
+       onto  /dev,  and  opens  the  new  /dev/cons  (ie, the remote
+       client's /dev/cons) on file descriptors 0, 1 and 2.  Finally,
+       it executes the command.
+
+       Rstyxd  is normally started by svc(8) in response to incoming
+       network calls.  It expects the standard input to be connected
+       to  the  client;  unusually, it is both read and written.  It
+       first authenticates the incoming call  using  keyring-auth(2)
+       via   security-auth(2).   On  successful  authorisation,  the
+       server sets its user identity to that of the caller, and  the
+       client  can request that a digest and/or encryption algorithm
+       be applied using ssl(3) to protect the  data  exchanged  with
+       the  server.  Each alg names a digest or encryption algorithm
+       that the server will allow the client to  use,  in  any  form
+       accepted  by ssl; the special name none is usually listed, to
+       allow the client to choose not to use ssl.
+
+FILES
+       /n/client
+              mount point used by rstyxd
+
+       /usr/user/keyring/default
+              server's authentication data when svc(8) run as  given
+              user
+
+SOURCE
+       /appl/cmd/auxi/rstyxd.b
+
+SEE ALSO
+       keyring-auth(2), security-auth(2), getauthinfo(8)
+
+                                                           RSTYXD(8)

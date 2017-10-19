@@ -1,0 +1,42 @@
+CREATESIGNERKEY(8)     System Manager's Manual    CREATESIGNERKEY(8)
+
+NAME
+       createsignerkey - create signer key on authentication server
+
+SYNOPSIS
+       auth/createsignerkey  [ -a alg ] [ -f keyfile ] [ -e expiry ]
+       [ -b bitsize ] name
+
+DESCRIPTION
+       Createsignerkey creates public and private keys that are used
+       by  a  server acting as `signer' to generate certificates for
+       users.  Name appears as  signer  in  each  certificate.   The
+       expiry  date  has  the form ddmmyyyy, is converted to seconds
+       since the epoch (see daytime(2)) and stored in  the  keyfile;
+       by default the server's certificate never expires.
+
+       The key will be bitsize long (default: 512 bits) with a mini‐
+       mum of 32 bits and a maximum of 4096 bits.   Keyfile  is  the
+       file  in  which  the  server  stores its keys; the default is
+       /keydb/signerkey, and many authentication  programs  such  as
+       logind(8)  by  default expect to find their server key there.
+       Creating a signer's default key afresh typically  invalidates
+       all  certificates  previously  issued by that signer, because
+       their signatures will not verify.  The mode  of  the  keyfile
+       should  be  set to be readable only by the user running those
+       programs.
+
+       The -a option specifies the signature  algorithm.   Currently
+       alg  can  be either elgamal or rsa.  RSA keys are now used by
+       default.
+
+FILES
+       /keydb/signerkey
+
+SOURCE
+       /appl/cmd/auth/createsignerkey.b
+
+SEE ALSO
+       security-auth(2), keyring-gensk(2), logind(8), signer(8)
+
+                                                  CREATESIGNERKEY(8)

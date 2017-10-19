@@ -1,0 +1,34 @@
+ASM(1)                 General Commands Manual                ASM(1)
+
+NAME
+       asm, disdump - Dis assembler, Dis disassembler
+
+SYNOPSIS
+       asm [-l] file
+       disdump file...
+
+DESCRIPTION
+       Asm  reads  one  Dis assembly language file and translates it
+       into instructions for the Dis virtual machine.  The output is
+       written  to  a  file whose name is created by taking the last
+       element of the  input  file,  stripping  any  extension,  and
+       appending  .dis For example, the output file for abc would be
+       abc.dis; the output file for dir/def.s, would be def.dis.
+
+       The assembler has one option:
+
+       -l     Generate a listing, showing the generated object code.
+
+       Disdump prints to the standard output the Dis virtual machine
+       instructions in each of its Dis file arguments.
+
+SOURCE
+       /appl/cmd/asm
+       /appl/cmd/disdump.b
+
+SEE ALSO
+       emu(1), limbo(1)
+
+       ``The Dis Virtual Machine'' in Volume 2.
+
+                                                              ASM(1)

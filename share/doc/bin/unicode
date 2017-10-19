@@ -1,0 +1,52 @@
+UNICODE(1)             General Commands Manual            UNICODE(1)
+
+NAME
+       unicode - interpret Unicode characters
+
+SYNOPSIS
+       unicode [ -nt ] hexmin-hexmax
+
+       unicode [ -t ] hex ...
+
+       unicode [ -n ] char ...
+
+DESCRIPTION
+       Unicode  converts  between  UTF and character values from the
+       Unicode Standard (see utf(6)).
+
+       If given a range of hexadecimal numbers, unicode prints a ta‐
+       ble  of the specified Unicode characters including their val‐
+       ues and UTF representations.  Otherwise, it  translates  from
+       UTF  to  numeric  value or numeric value to UTF, depending on
+       the appearance of the supplied text.  If converting  to  UTF,
+       the characters are printed one per line.
+
+       The options are:
+
+       -n     Forces  numeric output to avoid ambiguity with numeric
+              characters.
+
+       -t     Output a single string containing the specified  char‐
+              acters, rather than one per line.
+
+       The  output of unicode might not be helpful if the characters
+       printed are not available in the current font.
+
+EXAMPLES
+       unicode p
+              Print the hex value of p.
+
+       unicode 2200-22f1
+              Print a table of miscellaneous mathematical symbols.
+
+FILES
+       /lib/unicode
+              Table of characters and descriptions.
+
+SOURCE
+       /appl/cmd/unicode.b
+
+SEE ALSO
+       tr(1), utf(6), font(6)
+
+                                                          UNICODE(1)

@@ -1,0 +1,222 @@
+TKTESTER(1)            General Commands Manual           TKTESTER(1)
+
+NAME
+       tktester - test Tk widgets and help design Tk layouts
+
+SYNOPSIS
+       wm/tktester [ -import ]
+
+DESCRIPTION
+       Tktester  not  only tests the tk(2) widget implementation but
+       can help when designing Tk  application  layouts.   Its  main
+       window  contains the design area where widgets are placed and
+       edited. Most of the commands for creating and moving  widgets
+       are  located  on  the  control bar just below the design area
+       although a few commands may be found in the menus at the  top
+       of  the window. Output is sent to the text box below the con‐
+       trol bar.
+
+       Widget properties may be modified using the config window and
+       widget commands called from the command window.
+
+Main Window
+       This is split into four areas:
+
+   Menu Bar
+       This  contains  various file operations as well as a few com‐
+       mands
+
+       File      New: Starts a new file
+                 Open:          Opens a saved file
+                 Snarf:         Sends the current file to snarf
+                 Save:          Saves the current file
+                 Save as:  Asks for a new filename  and  then  saves
+                 the file
+                 Exit:          Close tktester
+
+              Files  are saved in the form of a list of tk commands.
+              This means that they can easily be imported into  pro‐
+              grams  as  part  of  an array. Files to be loaded must
+              have .f as the top frame with no widgets outside it.
+
+       Row/Column
+                 The current row/column is the one in which the cur‐
+                 rently selected widget/empty cell is located Insert
+                 - inserts a new row/column either before  or  after
+                 the  currently selected row/column Delete - deletes
+                 currently selected row/column  Format  -  sets  the
+                 properties for the current row/column
+
+       Hidden    Forget  -  removes the current widget from the dis‐
+                 play area but does not delete it. The  widget  name
+                 is then added to the 'Hidden' menu and can still be
+                 selected by clicking on its name there. This can be
+                 useful  for  operations  which require widgets that
+                 are not currently packed e.g. placing a frame as  a
+                 window  within a canvas. Forgotten items will still
+                 be saved.
+
+       Disabled  This menu only appears when a widget has been  dis‐
+                 abled.  In  this state, button bindings are ignored
+                 so it becomes impossible to select the widget. When
+                 a  widget  is  disabled,  its name is automatically
+                 added to the 'Disabled' menu and  can  be  selected
+                 from there.
+
+   Design Area
+       This  is  the  main area of the main window where the widgets
+       are displayed. To select a widget, click  on  it  with  mouse
+       button  3,  the control bar shows the name and other informa‐
+       tion about the currently selected widget.  Frames  themselves
+       can  only  be  selected  by clicking on their label, clicking
+       elsewhere on the frame (if there is  no  widget  there)  will
+       select  the empty cell, any new widget created will be placed
+       here. Once a widget has been selected, you  can  move  it  by
+       clicking  on  the empty destination cell with mouse button 2.
+       Individual widgets can be moved from one frame to another but
+       frames themselves can currently only be moved within the same
+       parent frame. Clicking mouse button 2 on a widget will delete
+       that  widget  if the Free Delete button on the control bar is
+       on.
+
+   Control Bar
+       This is split into three different menus. To select the  dif‐
+       ferent  submenus,  click  on  the  >>  at the end of the menu
+       title.
+
+       Data Menu
+
+       Widget    shows information about the current widget
+                 clicking on the Destroy button will delete the cur‐
+                 rently  selected widget.  The Free Delete button to
+                 the right of the Destroy button can be  toggled  on
+                 and  off  by  clicking  on  it. When turned on (red
+                 background) , clicking mouse button 2 on  a  widget
+                 in the design area will delete it.
+
+       Grid      shows information about the current grid
+                 Clicking the Hide Labels button will hide the frame
+                 labels so that you can see  what  the  screen  will
+                 look like normally.
+
+       Position and Formatting Menu
+
+       Move      Move the widget within its current frame
+
+       Spanning  Change row and column spanning properties
+
+       Padding   Set  cell  padding,  checkbox  selects  internal or
+                 external padding
+
+       Position  Adjust widget position, widget can be stretched  if
+                 opposite positions are selected e.g. to flill hori‐
+                 zontaly, select < and >
+
+       New Menu
+
+       Clicking on 'New' will bring up the pack menu, here  you  can
+       set  packing to down or right. This is used when a new widget
+       is created. If the user has not selected an empty  cell,  the
+       new widget will be placed either below or to the right of the
+       currently selected widget. Clicking on '>>' will  scroll  the
+       buttons  within the menu to the left to allow access to those
+       that might be off screen.
+
+   Output Box
+       Output and errors are reported here. This box may  be  hidden
+       by  clicking  on the grey button located at the bottom of the
+       main window.
+
+POPUP WINDOWS
+   Config Window
+       This window is opened by clicking on the red  button  located
+       at  the  bottom  of  the main window. To configure a widget's
+       options, the widget must be selected. To  modify  an  option,
+       type  the  new value required into the relevant entry box and
+       click the 'set' button. Any output (including error messages)
+       returned will be sent to the output box.
+
+       There  are  two  template buttons at the bottom of the config
+       window, set as default and save as default.  Set  will  cause
+       each  new widget of the same type to be created with the same
+       options as the currently selected widget. This  default  will
+       not  be  remembered  once tktester has been closed. Save does
+       the same as set except the default is saved so it will be not
+       be lost if tktester is closed.
+
+       Default Template Options
+
+       %n   the name of the widget e.g. .f.f1.b2
+
+       %t   the widget type e.g. button
+
+       %i   the number of the widget
+
+       By default, each widget with a -text option is set to {%t %i}
+       e.g. button 2. Note: These options  only  work  with  default
+       templates,  setting  the -text option of a specific button to
+       {%t %i} will just cause '%t %i' to be displayed.
+
+   Command Window
+       This window is opened by clicking on the green button located
+       at  the bottom of the main window. To call the commands for a
+       particular widget, the widget must be selected.
+
+       The command window is split into two listboxes and one  entry
+       box.  The first listbox contains all the main commands avail‐
+       able for the current widget type. Selecting  a  command  will
+       bring  up a list of subcommands (if they exist) in the second
+       listbox as well as displaying any  arguments  required  above
+       the entrybox. To run a command, first select the command (and
+       any subcommand), then enter the required arguments  into  the
+       entry  box and click run. The command, as well as any output,
+       is sent to the output box on the main window. If no output is
+       returned, the output box will display 'ok'.
+
+OPTIONS
+       -import   Tells tktester to import valid widget commands from
+                 the man pages. This data is saved in  the  tkwargs/
+                 directory, which must already exist.
+
+FILES
+       The  file tkwargs/widgets must contain a list of widgets, one
+       per line as follows:
+
+              [name] [abv]
+
+       with the fields separated by tabs or spaces.  For example:
+
+              menubutton mb
+              listbox lb
+
+SOURCE
+       /appl/wm/tktester
+
+BUGS
+       The command window sometimes lists a command more than  once.
+       It does not matter which one is used.
+
+       In  a saved file, any grid commands must put -row and -column
+       options before -rowspan or -columnspan.
+
+       Tktester can crash when loading a file if it is  not  in  the
+       correct format.
+
+PROPOSED ADDITIONS
+   Allow renaming of widgets
+       At  the  moment, tktester can only load, save and use tk com‐
+       mands where the widget names adhere  to  the  format  .abv[n]
+       where  abv  is the abreviation for the widget type e.g. b for
+       buttons, sb for scrollbars etc and n is an  optional  number.
+       It  would  be  better  to allow users to have more meaningful
+       names such as .f.fmenu. Implementing this would also make  it
+       possible  to load in commands written outside of tktester for
+       testing or modification purposes.
+
+   Column and Row indicators
+       This would more clearly show which rows and  columns  widgets
+       were in (especially when widgets are spanning more than one).
+       Also could be used to select individual rows and columns more
+       explicity and maybe for multiple selections.
+
+                                                         TKTESTER(1)

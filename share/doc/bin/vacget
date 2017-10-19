@@ -1,0 +1,61 @@
+VACGET(1)              General Commands Manual             VACGET(1)
+
+NAME
+       vacget, vacput - venti archive utilities
+
+SYNOPSIS
+       vacget [ -vdpt ] [ -a addr ] vac:score
+       vacput  [ -vd ] [ -i | -x ] [ -a addr ] [ -b blocksize ] [ -n
+       name ] [ -u uid ] [ -g gid ] path ...
+
+DESCRIPTION
+       Vacget retrieves a venti archive from a venti server  to  the
+       current working directory.
+
+       Vacput  writes  a venti archive to a venti server.  The paths
+       are walked recursively and all files and directories  written
+       to  the  archive.  Temporary files, i.e. those with the DMTMP
+       bit set, are skipped.  Writing only changed files relative to
+       a previously written archive is not implemented.
+
+       -d     Print debug messages.
+
+       -p     Try  to  preserve  file  permissions  and owner/group.
+              Only for vacget.
+
+       -v     Be verbose.  Prints files as they are being  retrieved
+              or written.
+
+       -t     List files, do not write them.  Only for vacget.
+
+       -a address
+              Dial address instead of the default venti server.
+
+       -b blocksize
+              Use blocks with blocksize bytes instead of the default
+              8192 byte blocks.  Only for vacput.
+
+       -n name
+              Use name as the name in  the  root  block.   Only  for
+              vacput.
+
+       -i or -x
+              Read  a  list  of  files from stdin to include (-i) or
+              exclude (-x) from the (recursively walked) paths spec‐
+              ified on the command-line.  Only for vacput.
+
+       -u uid Use uid for all files.  Only for vacput.
+
+       -g gid Use gid for all files.  Only for vacput.
+
+SOURCE
+       /appl/cmd/vacget.b
+       /appl/cmd/vacput.b
+
+SEE ALSO
+       venti(2), vacfs(4)
+
+BUGS
+       These tools need more testing.
+
+                                                           VACGET(1)

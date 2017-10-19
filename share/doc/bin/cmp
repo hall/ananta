@@ -1,0 +1,35 @@
+CMP(1)                 General Commands Manual                CMP(1)
+
+NAME
+       cmp - compare two files
+
+SYNOPSIS
+       cmp [ -lsL ] file1 file2 [ offset1 [ offset2 ] ]
+
+DESCRIPTION
+       The two files are compared.  A diagnostic results if the con‐
+       tents differ, otherwise there is no output.  By default,  cmp
+       prints the byte number of the first differing byte.
+
+       The options are:
+
+       -l     Print  the  byte  number  (decimal)  and the differing
+              bytes (hexadecimal) for each difference.
+
+       -s     Print nothing for differing files, but  set  the  exit
+              status.
+
+       -L     Print the line number of the first differing byte.
+
+       If  offsets  are  given,  comparison starts at the designated
+       byte position of the corresponding file.  Offsets that  begin
+       with  0x  are hexadecimal; with 0, octal; with anything else,
+       decimal.
+
+SOURCE
+       /appl/cmd/cmp.b
+
+SEE ALSO
+       diff(1)
+
+                                                              CMP(1)

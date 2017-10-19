@@ -1,0 +1,24 @@
+P(1)                   General Commands Manual                  P(1)
+
+NAME
+       p - paginate
+
+SYNOPSIS
+       p [ -number ] [ file ...  ]
+
+DESCRIPTION
+       P  copies its standard input, or the named files if given, to
+       its standard output, stopping at the end of  every  page,  to
+       wait for a newline from the user.  The option sets the number
+       of lines on a page (default: 22).
+
+       While waiting for a newline, p interprets the commands:
+
+       !      Pass the rest of the line to the shell as a command.
+
+       q      Quit.
+
+SOURCE
+       /appl/cmd/p.b
+
+                                                                P(1)

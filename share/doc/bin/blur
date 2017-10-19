@@ -1,0 +1,81 @@
+BLUR(1)                General Commands Manual               BLUR(1)
+
+NAME
+       blur  -  an  example  program to demonstrate splitting a task
+       over several machines.
+
+SYNOPSIS
+       grid/demo/blur [imagefile]              - master process
+
+       grid/demo/blur                          - slave process
+
+DESCRIPTION
+       Blur is a small program that works in two parts to manipulate
+       an  image(6).   The  master process takes an image file as an
+       argument and displays the image in a window on screen  whilst
+       waiting  for and displaying results from the slave processes.
+       Each slave process takes a block of the image at a  time  and
+       blurs  it,  reduces the contrast and overlays the result of a
+       simple edge detection analysis.
+
+       The only requirement for a master and slave process  to  work
+       together  is  that  they  both  have a common /tmp directory.
+       Within this a /blur directory is created  and  used  by  both
+       processes.  All  communication  and  synchronisation  is done
+       through files in this directory. There can be many slave pro‐
+       cesses running concurrently in order to improve performance.
+
+COMMUNICATION
+       All  the  communication  takes  place  through  files  in the
+       /tmp/blur directory which is common to  all  the  processses.
+       Once the master process has started, it creates:
+
+       image.bit        the image being processed
+
+       data.dat         processing  parameters e.g. block size, blur
+                        radius etc
+
+       working          tells slave processes  to  continue  reading
+                        todo/ directory
+
+       todo/            contains  files  showing  which blocks still
+                        need processing
+
+       Within the todo/ directory, the master process creates a file
+       for  each  block  to be processed. Starting at block.0.a, the
+       name of each file denotes the block number  and  the  version
+       id. The version id is used to indicate the current version of
+       a block being worked on. This is to allow the master  process
+       to  ask  another  slave  process  to  work  on  a block if it
+       believes the current one has crashed or is taking  too  long.
+       Once  a block has been processed, the master removes the file
+       from todo/.
+
+       Each slave process reads the list of files in todo/  and  for
+       each  block  in turn, attempts to create a directory with the
+       same name e.g.  block.1.a/ in /tmp/blur.  It is not  possible
+       to  create  a directory if it already exists and as the slave
+       will only process blocks for which it has been able to create
+       a  directory,  no  two  slave processes can be simultaneously
+       working on the same block. Once a slave has managed to create
+       a directory, it processes the relevant block of the image and
+       writes the result to img.bit in the  directory.  Having  com‐
+       pleted a block, the slave creates a file called done in order
+       to let the master process know that it can read the completed
+       result.
+
+       The  master  process keeps track of all the blocks being pro‐
+       cessed and if any of them have not  been  completed  after  a
+       certain  time,  it creates a new file for that block in todo/
+       with a new version id. This guarantees that all  blocks  will
+       be  processed  as  long as at least one working slave process
+       remains. Once all the blocks have been processed, the  master
+       process  removes  all  the  files created in /tmp/blur.  Each
+       slave, upon seeing that the working file has gone, will  then
+       exit.
+
+SOURCE
+       /appl/grid/demo/blur.b
+       /appl/grid/demo/block.b
+
+                                                             BLUR(1)

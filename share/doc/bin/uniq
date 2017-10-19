@@ -1,0 +1,26 @@
+UNIQ(1)                General Commands Manual               UNIQ(1)
+
+NAME
+       uniq - report repeated lines in a file
+
+SYNOPSIS
+       uniq [ -ud ] [ file ]
+
+DESCRIPTION
+       Uniq  copies  the  input  file, or the standard input, to the
+       standard output, comparing adjacent  lines.   In  the  normal
+       case,  the second and succeeding copies of repeated lines are
+       removed.  Repeated lines must be  adjacent  in  order  to  be
+       found.
+
+       -u     Print unique lines.
+
+       -d     Print (one copy of) duplicated lines.
+
+SOURCE
+       /appl/cmd/uniq.b
+
+SEE ALSO
+       comm(1), sort(1)
+
+                                                             UNIQ(1)

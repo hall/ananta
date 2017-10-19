@@ -1,0 +1,82 @@
+SIGNER(8)              System Manager's Manual             SIGNER(8)
+
+NAME
+       signer, verify, countersigner - set-top box authentication
+
+SYNOPSIS
+       auth/signer
+
+       auth/verify set-top-box-id
+
+       auth/countersigner
+
+DESCRIPTION
+       Signer  and  countersigner listen for requests on the service
+       ports infsigner and infcsigner, respectively.  They are typi‐
+       cally  run  via  svc(8) on a machine acting as authentication
+       server for a network.  Verify is invoked on the same  server,
+       after  signer but before countersigner, following an indepen‐
+       dent check of a caller's credentials.
+
+       Signer constructs  an  authentication  certificate  from  the
+       signer's  key  (in /keydb/signerkey) and information from the
+       requesting  client,  including  the  set  top  box  ID.   The
+       signer's  key can be created using createsignerkey(8), but if
+       the key does not yet exist, signer  creates  and  initialises
+       /keydb/signerkey itself, with an owner name of
+
+       Signer  `blinds'  the certificate by XOR-ing it with a random
+       bit mask, then sends the result  to  the  requesting  client.
+       The  client machine's user uses that information to establish
+       identity with a human agent on the signing  machine.   Signer
+       also saves the both the `blinded' and `unblinded' result from
+       the input in  /keydb/signed/set-top-box-id  for  verify  (see
+       below).
+
+       Verify is run on the signing server by the agency running the
+       authentication server, in response to a call  from  a  remote
+       user  who  has  invoked register(8) or an equivalent.  Verify
+       checks a caller's identity using information  from  the  file
+       /keydb/signed/set-top-box-id  created  by  signer.   The file
+       contains the previously  crafted  authentication  certificate
+       and the `blinded' version of the certificate that was sent to
+       the requesting client.
+
+       Verify displays the `blinded' version  textually  or  graphi‐
+       cally,  as  appropriate,  so  that it can be compared to that
+       reported by the set-top-box owner over a  secure  independent
+       mechanism (for example, telephone). If the operator of verify
+       is convinced of the identity  of  the  caller,  the  operator
+       should  accept  when  prompted by verify.  Verify then writes
+       the authentication certificate  to  /keydb/countersigned/set-
+       top-box-id, as input for countersigner (see signer(8)).
+
+       Note:  if  the  operator  of verify accepts the identity, the
+       set-top-box owner should be requested to answer `yes' to  the
+       prompt   displayed  by  register(8).   The  order  of  accep‐
+       tance-first on the signer, then on the  client-is  essential,
+       to  produce  the  countersigned  certificate  before invoking
+       countersigner to read it.
+
+       Countersigner sends  the  blinding  data  in  /keydb/counter‐
+       signed/set-top-box-id to the requesting client.
+
+FILES
+       /keydb/signerkey
+              Secret key of the `signer' host.
+
+       /keydb/signed/set-top-box-id
+              Repository of `blinded' and clear certificates.
+
+       /keydb/countersigned/set-top-box-id
+              Repository of `unblinded' certificates.
+
+SOURCE
+       /appl/cmd/auth/signer.b
+       /appl/cmd/auth/verify.b
+       /appl/cmd/auth/countersigner.b
+
+SEE ALSO
+       createsignerkey(8), register(8), svc(8)
+
+                                                           SIGNER(8)

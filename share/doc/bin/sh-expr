@@ -1,0 +1,123 @@
+SH-EXPR(1)             General Commands Manual            SH-EXPR(1)
+
+NAME
+       expr, ntest, mpexpr - shell module for simple arithmetic.
+
+SYNOPSIS
+       load expr OR load mpexpr
+
+       ${expr [ -r radix ] [ arg...  ] }
+       ntest num
+
+DESCRIPTION
+       Expr  and  mpexpr are loadable modules for sh(1) that provide
+       support for integer  arithmetic.   Expr  uses  64-bit  signed
+       integers;  mpexpr  uses  arbitrary-precision signed integers.
+       They each provide the same interface: a command ntest,  which
+       performs  a  simple boolean test on its integer argument, and
+       the substitution operator expr, which takes an expression  in
+       Reverse Polish notation, and yields its result.
+
+       Ntest returns true if its argument num is non-zero, and false
+       otherwise.
+
+       Expr evaluates each arg in turn; if it is an integer it  gets
+       pushed  onto  the  stack; otherwise it should name one of the
+       operators below, whereupon the appropriate number of operands
+       are popped off the stack, evaluated as arguments to the oper‐
+       ator, and the result pushed back onto  the  stack.  Arguments
+       are  passed  to  the  operator  first-pushed  first,  so, for
+       instance, ${expr 2 1 -} yields 1, not -1.  Alternative  names
+       are  given for some operators; this is to avoid the necessity
+       of quoting operators that contain sh(1) metacharacters. Inte‐
+       gers  are  given  in  the  same form acceptable to Limbo. The
+       relational operators yield either 1 (true) or 0  (false).  If
+       the  -r  option  is given, radix specifies an output base for
+       printed numbers.  It may be from 2 to 36; mpexpr also  allows
+       64 to specify base64 notation.  Numbers are printed in a form
+       suitable for re-interpretation by expr.
+
+       When all its arguments have been evaluated, expr  yields  all
+       the  values  remaining on its stack, first pushed first. Note
+       that bitwise operators treat their operands as if  they  were
+       stored  in  two's complement form. The operators supported by
+       expr are as follows (the number of operands  required  in  is
+       given parentheses).
+
+       + (2)          Addition
+
+       - (2)          Subtraction
+
+       x, * (2)       Multiplication
+
+       / (2)          Division.  Division by zero raises a divide by
+                      zero exception.
+
+       % (2)          Modulus. A zero modulus will cause a divide by
+                      zero exception to be raised.
+
+       and (2)        Bitwise-and.
+
+       or (2)         Bitwise-or.
+
+       xor (2)        Bitwise-xor.
+
+       ~ (1)          Bitwise-complement..
+
+       _ (1)          Unary minus.
+
+       <<, shl (2)    Shift left.
+
+       >>, shr (2)    Shift right.
+
+       =, ==, eq (2)  Equality.
+
+       !=, neq (2)    Inequality.
+
+       >, gt (2)      Greater than.
+
+       <, lt (2)      Less than.
+
+       <=, le (2)     Less than or equal to.
+
+       >=, ge (2)     Greater than or equal to.
+
+       !, not (1)     Logical negation.
+
+       rep (n)        Rep  repeats  the  last  operation (which must
+                      have been a two-operand operation  other  than
+                      seq)   until  the  values  in  the  stack  are
+                      exhausted.
+
+       seq (2)        Seq pushes on the stack a sequence of  numbers
+                      ranging numerically from its first argument up
+                      to and including its second argument.  If  its
+                      second  argument  is  less than its first, the
+                      sequence will descend.
+
+       rand (1)       (mpexpr only). Push a  secure  random  number;
+                      the  argument value gives the size of the num‐
+                      ber, in bits.
+
+       bits (1)       (mpexpr only). Push the size, in bits, of  the
+                      argument.
+
+       expmod, invert (2)
+                      (mpexpr only). See keyring-ipint(2).
+
+       exp, xx, **    (mpexpr only). Exponentiation.
+
+SOURCE
+       /appl/cmd/sh/expr.b
+
+SEE ALSO
+       sh(1), sh-std(1), sh-tk(1), keyring-ipint(2)
+
+BUGS
+       Postfix  notation  can be confusing.  Any operators that con‐
+       tain shell metacharacters (e.g. ``*'', ``>'') must be  quoted
+       to  avoid  interpretation  by the shell.  Base64 notation can
+       contain # characters, which need quoting to avoid interpreta‐
+       tion by the shell.
+
+                                                          SH-EXPR(1)

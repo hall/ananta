@@ -1,0 +1,55 @@
+LOOK(1)                General Commands Manual               LOOK(1)
+
+NAME
+       look - find lines in a sorted list
+
+SYNOPSIS
+       look [ -dfnix ] [ -r endkey ] [ -tc ] [ string ] [ file ]
+
+DESCRIPTION
+       Look  consults  a sorted file and prints all lines that begin
+       with string.  It uses binary search.
+
+       The following options are recognised:
+
+       -i     Interactive.  There is  no  string  argument;  instead
+              look takes lines from the standard input as strings to
+              be looked up.
+
+       -x     Exact.  Print only lines of the file whose key matches
+              string exactly.
+
+       -d     `Directory'  order:  only  letters,  digits,  tabs and
+              blanks participate in comparisons.
+
+       -f     Fold.  Upper case letters compare equal to lower case.
+
+       -n     Numeric comparison  with  initial  string  of  digits,
+              optional minus sign, and optional decimal point.
+
+       -r endkey
+              Limit  the  range  of  matching values, to include the
+              word endkey but no larger values.
+
+       -t[c]  Character c terminates the sort key in the  file.   By
+              default,  tab terminates the key.  If c is missing the
+              entire line comprises the key.
+
+       If no file is specified, /lib/words is assumed, with  collat‐
+       ing sequence df.
+
+FILES
+       /lib/words
+
+SOURCE
+       /appl/cmd/look.b
+
+SEE ALSO
+       sort(1), grep(1)
+
+DIAGNOSTICS
+       The  exit status is "not found" if no match is found, and "no
+       dictionary" if file  or  the  default  dictionary  cannot  be
+       opened.
+
+                                                             LOOK(1)

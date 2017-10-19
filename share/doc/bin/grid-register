@@ -1,0 +1,49 @@
+GRID-REGISTER(1)       General Commands Manual      GRID-REGISTER(1)
+
+NAME
+       grid:  register  -  registers  a  resource  with a known reg‐
+       istry(4)
+
+SYNOPSIS
+       grid/register [ option ...  ] { command ...  }
+
+DESCRIPTION
+       Register takes a program that serves a namespace using the 9P
+       protocol  on its standard input and registers it with a known
+       registery(4).  (See intro(5) for a description of the  proto‐
+       col.)  It then marshals the service by listening for incoming
+       connections and exporting the namespace across them.   Regis‐
+       ter  prints out various status messages to stdout in the form
+       which may be read by grid-monitor(1).
+
+OPTIONS
+       -u maxusers      Specifies the maximum number of  connections
+                        to  the  resource  at  any  one time. If not
+                        given,  any  number   of   connections   are
+                        allowed.
+
+       -e n             Tells  register  to exit after the last con‐
+                        nection has gone away.   N  is  a  threshold
+                        value,  so  that register will not exit upon
+                        the last connection  going  away  until  the
+                        number  of  incoming connections has reached
+                        at least n.
+
+       -a 'name=value'  Specifies the name and value of an attribute
+                        to  be  listed  as belonging to the resource
+                        when registered with the registry(4).
+
+       -A address       Allows the user to specify the  address  for
+                        the  service  to announce on.  Address takes
+                        the form tcp!machine!port
+
+       -m               Includes the amount of free main  memory  as
+                        part of the attributes list.
+
+SOURCE
+       /appl/grid/register.b
+
+SEE ALSO
+       registries(2), registry(4), grid-localreg(1)
+
+                                                    GRID-REGISTER(1)

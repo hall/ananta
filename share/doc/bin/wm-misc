@@ -1,0 +1,197 @@
+WM-MISC(1)             General Commands Manual            WM-MISC(1)
+
+NAME
+       about, clock, coffee, colors, date, edit, mand, memory, poly‐
+       hedra, reversi, rt, stopwatch, sweeper,  task,  tetris,  uni‐
+       browse, view, winctl - miscellaneous graphical applications
+
+SYNOPSIS
+       wm/about
+       wm/clock
+       wm/coffee
+       wm/colors
+       wm/date
+       wm/edit [file]
+       wm/mand
+       wm/memory
+       wm/polyhedra
+       wm/reversi
+       wm/rt
+       wm/stopwatch
+       wm/sweeper
+       wm/task
+       wm/tetris [ -b blocksize ]
+       wm/unibrowse
+       wm/view [ -i ] [file...]
+       wm/winctl
+
+DESCRIPTION
+       A  collection of simple applications and utilities that oper‐
+       ate under the  Wm  window  manager.   Other  Wm  applications
+       exist,  see  their  respective manual pages for more informa‐
+       tion.
+
+       wm/about
+              Display system version and copyright information.
+
+       wm/clock
+              Display an analogue clock.
+
+       wm/coffee
+              A whimsical plaything.
+
+       wm/colors
+              Displays the Inferno palette.  Clicking on a  particu‐
+              lar colour displays its RGB values.
+
+       wm/date
+              Displays the current date and time in a window.
+
+       wm/edit
+              A  simple  cut-and-paste  text  editor.  Several menus
+              provide the usual editing commands.   Text  selections
+              are  dragged out using mouse button 1.  Mouse button-2
+              displays a pop-up menu of the Cut, Copy and Paste com‐
+              mands.
+
+       wm/mand
+              A  fractal browser to explore the Mandelbrot and Julia
+              sets.  Button 1 drags a rectangle to zoom into, button
+              2  shows  the  Julia set at the chosen point, button 3
+              zooms out.  To produce  more  accurate  pictures,  the
+              iteration depth may be increased by altering the depth
+              scale factor. The default  number  of  iterations  per
+              point  is 253. The sets are plotted by filling regions
+              of (apparently) the same colour. Deselecting the  fill
+              option will plot the points in the usual fashion.
+
+       wm/memory
+              Displays  memory  usage.   Three  usage  bars are dis‐
+              played, one for each  of  the  Inferno  memory  pools:
+              main,  heap and image. The current usage (in bytes) is
+              displayed to the left of each bar, and the  number  of
+              blocks  in  use appears in red.  The maximum permitted
+              size of each pool is given (in megabytes) to the right
+              of  its  usage  bar.  Each bar also sports a highwater
+              mark.  The usage data is re-read  and  displayed  once
+              every second.
+
+       wm/polyhedra
+              A  program  to  display  convex regular polyhedra. The
+              menu options allow the user  to  alter  the  speed  of
+              rotation  and  the axis of rotation. To display a dif‐
+              ferent solid, move forward or back with the  prev  and
+              next  boxes. Selecting the dual box will show the dual
+              of a solid rather than the original solid. Finally the
+              edges,  clear  and faces boxes determine whether edges
+              are shown, whether the screen is  cleared  before  the
+              next plot and whether faces are shown respectively.
+
+       wm/reversi
+              An implementation of the popular game. The default set
+              up is for black to be the machine and white the  human
+              player. Use the Black and White menu options to change
+              this. The level of any machine player may be set using
+              the Black level and White level boxes. This determines
+              the amount of lookahead performed by the  tree  search
+              algorithm.
+
+       wm/rt  A  Dis  module inspector: it can show the Dis instruc‐
+              tions, strings, types and other attributes of  a  mod‐
+              ule;  it  also  allows the user to set some attributes
+              stored in a module's header.
+
+       wm/stopwatch
+              A simple-minded stopwatch.  Only  useful  for  coarse-
+              grained timings.
+
+       wm/sweeper
+              Mine sweeping game.
+
+       wm/task
+              Task  manager:  it lists the processes running when it
+              starts, and offers buttons to kill a selected process,
+              kill  its process group, show its open files, or debug
+              it using deb(1).  A process is selected from the  list
+              using  mouse  button  1.   Task does not automatically
+              refresh the list; there is a Refresh button to  prompt
+              it to do so.
+
+       wm/tetris
+              The  ubiquitous and annoyingly addictive tile dropping
+              game.  The game keys are: `7' move  left;  `8'  rotate
+              (anti-clockwise);  `9'  move right; `p' pause; `space'
+              drop and `q' quit.  A mouse or stylus can also be used
+              to  guide the pieces (eg, by tapping the screen in the
+              desired direction).  Scores are  stored  in  the  file
+              /lib/scores/tetris.  Score file updates are not inter‐
+              locked - it's only a game!
+
+       wm/unibrowse
+              A handy utility for  browsing  the  unicode  character
+              set,  finding out what particular characters look like
+              in different fonts, finding out exactly which  charac‐
+              ters  a font provides, and finding the name of a char‐
+              acter that you have managed to  grab  into  the  snarf
+              buffer.
+
+       wm/view
+              Image  viewer.   Displays GIF, Inferno image(6), JPEG,
+              PNG and X bitmap image files.  The  viewer  creates  a
+              new  window  to display the contents of each file.  If
+              no arguments are given, the file browser  panel  file‐
+              name(1)  is  displayed to prompt the user to select an
+              image file to view.  If the -i option is  given,  view
+              continues  to listen for requests from the plumber(8);
+              the -i option will normally appear only  in  rules  in
+              plumbing(6) files.
+
+       wm/winctl
+              Window  management  tool.   Displays  a set of buttons
+              that provide for: raising a window to the top or  low‐
+              ering  it  to  the  bottom of the screen window stack;
+              moving a window to a new position; iconising a window;
+              deleting a window.
+
+              Click on the button for the required action then click
+              on the window to apply it to.  When moving  a  window,
+              click  and  drag  the  target.   Deleting  a window is
+              error-prone. Currently using this tool on a charon  or
+              acme window has strange effects.
+
+PLUMBING
+       wm/view receives view messages
+
+FILES
+       /lib/polyhedra
+              Polyhedra data base.
+
+       /lib/scores/tetris
+              Tetris high score table.
+
+       /lib/unidata
+              Directory  holding  Unicode character set information,
+              used by unibrowse.
+
+       /dev/memory
+              Provides memory with memory usage statistics.
+
+SOURCE
+       /appl/wm/about.b
+       /appl/wm/coffee.b
+       /appl/wm/colors.b
+       /appl/wm/date.b
+       /appl/wm/edit.b
+       /appl/wm/mand.b
+       /appl/wm/memory.b
+       /appl/wm/polyhedra.b
+       /appl/wm/reversi.b
+       /appl/wm/rt.b
+       /appl/wm/stopwatch.b
+       /appl/wm/task.b
+       /appl/wm/tetris.b
+       /appl/wm/unibrowse.b
+       /appl/wm/view.b
+       /appl/wm/winctl.b
+
+                                                          WM-MISC(1)

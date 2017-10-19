@@ -1,0 +1,25 @@
+SLEEP(1)               General Commands Manual              SLEEP(1)
+
+NAME
+       sleep, pause - suspend execution for an interval
+
+SYNOPSIS
+       sleep n
+
+       pause
+
+DESCRIPTION
+       Sleep suspends its own execution for n seconds before return‐
+       ing.
+
+       Pause never returns, and is typically used to stop a  command
+       interpreter reading any more from the standard input.
+
+SOURCE
+       /appl/cmd/sleep.b
+       /appl/cmd/pause.b
+
+SEE ALSO
+       sys-sleep(2)
+
+                                                            SLEEP(1)

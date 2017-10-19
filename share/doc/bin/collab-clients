@@ -1,0 +1,109 @@
+COLLAB-CLIENTS(1)      General Commands Manual     COLLAB-CLIENTS(1)
+
+NAME
+       collab: chat, poll, poller, whiteboard - collaborative activ‐
+       ities
+
+SYNOPSIS
+       collab/clients/chat [ servicedir ] chatroom
+
+       collab/clients/poll [ -d ] [ servicedir ] station
+
+       collab/clients/poller [ -d ] [ servicedir ] station
+
+       collab/clients/whiteboard [ servicedir ] id
+
+DESCRIPTION
+       These commands are wm(1) programs that  are  clients  of  the
+       services  of  collabsrv(8).   It must therefore be running in
+       the network for any of them to be usable.  Furthermore,  col‐
+       labsrv's  service  directory  must  appear  somewhere  in the
+       client's  name  space,  for  instance  by  using  connect(1),
+       although  plain mount (see bind(1)) can also be used.  In all
+       cases, the optional parameter servicedir  names  the  service
+       directory  (default: /n/remote/services).  Finally, collabsrv
+       must be configured to provide the service.
+
+       Chat is a simple multi-user chat  program.   Each  user  that
+       wishes to chat starts chat naming the desired chatroom, which
+       is an identifying string agreed amongst the clients.  (It  is
+       often  convenient  to  use  the  path name of a shared file.)
+       Chat attempts to enter the given chatroom.  It announces  the
+       results of the connection, and if successful, displays subse‐
+       quent chat room messages.  Its window provides  a  scrollable
+       text  area  that  forms a transcript of the current conversa‐
+       tion, and a single line of editable text at the bottom of the
+       window  for sending messages.  Messages sent by others appear
+       in the transcript tagged with the sender's  name.   When  the
+       user types a new line (return, enter) in the text entry area,
+       chat sends the text to all the members of the chat room,  and
+       it  subsequently appears in the user's own transcript, tagged
+       with <you> in place of the user's name.  Chat also  notes  in
+       the transcript the arrival and departure of other users.
+
+       Poll  and poller together enable simple real-time polls.  One
+       user runs poller, which activates the given polling  station.
+       The  other users can subsequently join using poll, naming the
+       same station, and can come and go as they please as  long  as
+       the  poller  remains.   The  polling  station closes when the
+       poller leaves.
+
+       Poller drives the interaction for a sequence of one  or  more
+       real-time  polls.   It  is  assumed that the poller is in the
+       same room as those polled, allowing the questions and answers
+       to  be  read  out each time, as in quiz shows and exit polls.
+       Alternatively, something like chat  could  be  used  to  pose
+       questions  to a distant audience.  For each poll, the polling
+       user selects, in poller's  window,  the  number  of  possible
+       answers  (2, 3, or 4) using radio buttons, and hits the Start
+       button.  A bar chart shows results as they come in: each  bar
+       shows  the  percentage  of  those polled (thus far) that have
+       selected the corresponding  alternative.   Once  the  polling
+       user  hits Stop, no further results are accepted, and the bar
+       chart represents the final  result.   The  -d  option  causes
+       poller  to  display a debugging transcript of the messages it
+       receives.
+
+       Each user being polled runs poll, and initially sees an array
+       of radio buttons with labels A, B, C and D.  They remain dis‐
+       abled until the  poller  hits  Start,  at  which  point  poll
+       enables  as  many  radio buttons as allowed by the poller for
+       this round.  If the user selects a button,  poll  immediately
+       send  the  selection  to the polling station (and thus to the
+       poller), and disables all the buttons,  although  the  user's
+       selection remains marked.  All buttons are also disabled when
+       the poller says to stop, whether or not  a  choice  has  been
+       made.   Buttons  are  enabled  again at the start of the next
+       question.  The -d option causes poll to display  a  debugging
+       transcript.
+
+       Whiteboard  allows several users to draw on the shared canvas
+       with the given id, which  is  an  identifying  string  agreed
+       amongst the clients.  The whiteboard window contains a canvas
+       to be drawn on with stylus, or mouse button 1.  Strokes drawn
+       in  a  given  whiteboard  appear  in all others with the same
+       board id.  There are two controls at the bottom of  the  win‐
+       dow:  the  lower  left-hand corner has a small pop-up menu of
+       brush shapes, including one for erasing; and a long  coloured
+       button  showing  the  current  drawing  colour that pops up a
+       choice of drawing colour from a palette.   Artists  can  come
+       and go as they please, but the drawing vanishes for ever when
+       the last artist leaves the whiteboard.
+
+FILES
+       /n/remote
+              default mount point of collaborative resources
+
+       /n/remote/services
+              collabsrv(8) collaborative activity services directory
+
+SOURCE
+       /appl/collab/clients/chat.b
+       /appl/collab/clients/poll.b
+       /appl/collab/clients/poller.b
+       /appl/collab/clients/whiteboard.b
+
+SEE ALSO
+       connect(1), collabsrv(8)
+
+                                                   COLLAB-CLIENTS(1)

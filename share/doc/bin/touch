@@ -1,0 +1,21 @@
+TOUCH(1)               General Commands Manual              TOUCH(1)
+
+NAME
+       touch - update the modification time of one or more files
+
+SYNOPSIS
+       touch [-c] [ -t time ] files
+
+DESCRIPTION
+       Touch  attempts to set the modification time of the specified
+       files to time (by default, the current system  time).   If  a
+       file  does not exist, touch will attempt to create it, unless
+       the -c option is given.
+
+SOURCE
+       /appl/cmd/touch.b
+
+SEE ALSO
+       ls(1), chmod(1), sys-stat(2), stat(5)
+
+                                                            TOUCH(1)

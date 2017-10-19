@@ -1,0 +1,237 @@
+TINY(1)                General Commands Manual               TINY(1)
+
+NAME
+       tiny: sh, broke, kill, rm - reduced command line interface to
+       the Inferno system
+
+SYNOPSIS
+       tiny/sh [ -n ] [ -ccommand ] [ file ]
+
+       tiny/broke
+
+       tiny/kill [ -g ] [ pid ...  ] [ module ...  ]
+
+       tiny/rm [ file ...  ]
+
+DESCRIPTION
+       The tiny commands are smaller, simpler versions of more capa‐
+       ble  but  larger Inferno commands.  They are provided for use
+       on devices where a certain level of  functionality  might  be
+       useful for configuration or maintenance (or development), but
+       device constraints are such as to make the use of the normal,
+       fleshier versions of the commands unattractive.  For example,
+       the Dis object files can be as much as 5  times  smaller  (or
+       better) than the mainstream alternatives.  They are also use‐
+       ful when initially porting the  system.   They  live  in  the
+       directory  /dis/tiny,  but  could  be placed in the /dis of a
+       small device (eg, via root(3))·
+
+       Broke kills broken processes and prints their process IDs.
+
+       Kill terminates each process (for a numeric process  ID  pid)
+       or  process  running a given module (for a non-numeric module
+       name), by writing a message to  the  corresponding  process's
+       control  file in prog(3).  The -g option causes kill to write
+       a  message  instead,  killing  all  processes  in  the  given
+       process's process group (see sys-pctl(2)).  Processes running
+       a module are identified by their file, and the process ID  of
+       each such process is printed on standard output.
+
+       Rm  removes  files and empty directories, subject to the per‐
+       mission rules given in rm(1).  There are no options.
+
+       Sh provides a simple user level interface (a  shell)  to  the
+       Inferno  system.   (It  was once the only Inferno shell.)  It
+       reads input lines, identifies a  command  and  arguments  for
+       that command, and arranges for execution of the corresponding
+       Inferno module.  There are features that  allow  input/output
+       redirection,  creating  pipelines,  and  performing  tasks in
+       background.  It is nevertheless a rudimentary shell  designed
+       for  starting and debugging applications.  It is not intended
+       to serve as a general-purpose programmable shell.
+
+       If a file is named as a command line argument, that  file  is
+       the source of input; otherwise, standard input is read.
+
+       Options are:
+
+       -n     Don't  fork  the  namespace.  By default, sh forks the
+              namespace, making subsequent namespace changes invisi‐
+              ble to the previous namespace group.
+
+       -ccommand
+              Execute  the  single  command rather than prompting to
+              read commands from the standard input.
+
+   Command line syntax
+       Each line consists of one or more command pipelines each sep‐
+       arated  by  either  an ampersand (&) which indicates that the
+       pipeline should be run in background or a semi-colon (;). The
+       semi-colon need not be provided for the last command pipeline
+       on a line.
+
+       Command pipelines are not allowed to span lines.
+
+       Each command pipeline consists of one or more commands  sepa‐
+       rated by a vertical bar (|) character. The standard output of
+       one command is made the standard input of the next command to
+       the right.
+
+       Redirection  of  input/output  to pipes takes precedence over
+       redirection from/to files.
+
+       In the limit case, a command pipeline consists  of  a  single
+       command with no pipes.
+
+       A  command  consists  of one or more fields. The first (left‐
+       most) field is the command field. It is  used  to  determined
+       the  executable  file  to  be  loaded and run; see below. The
+       remaining fields are parsed and become command line arguments
+       that  are  passed  to the module's init function as a list of
+       strings.
+
+       Any input following a # on a line is discarded as comment.
+
+   Finding the module
+       The command field is converted to the  pathname  of  the  Dis
+       file  of  some  module.  That field can be either an absolute
+       pathname, starting from /, or a relative  pathname  from  the
+       current directory.
+
+       As  a  convenience, the user need not specify the .dis suffix
+       to the filename. If missing, it will be added by the shell.
+
+       If the load fails there is, in general, a second  attempt  to
+       load  the  module  by  resolving the pathname relative to the
+       /dis directory (or any directory bound to the /dis  directory
+       in the current namespace).
+
+       There  are  two exceptions to this second attempt. The second
+       load attempt is not performed if the command  field  provides
+       an  absolute  pathname  or  a relative pathname starting with
+       dot-slash (./).  Such explicit naming is taken to  mean  that
+       the user will accept no substitutions.
+
+       The  shell requires that the Dis file implement a module with
+       an interface equivalent to the module as specified  in  /mod‐
+       ule/sh.m  (see  command(2)).   Otherwise, the named file will
+       not load.
+
+       In lieu of a path mechanism, a process  can  create  a  union
+       directory at /dis.
+
+   File name expansion
+       Command  line  arguments (including the command field itself)
+       are expanded by the shell according to the regular expression
+       rules described in filepat(2).
+
+       This  expansion  is  not  applied  to  the filenames used for
+       input/output redirection.
+
+   Quoting
+       The shell special characters can be stripped of their meaning
+       and  treated  as literals by enclosing them in single quotes.
+       Inside a quoted string, the special  meaning  of  the  single
+       quote can be removed by immediately following it with another
+       single quote. Command lines with un-terminated quoted strings
+       are rejected and cause an error message.
+
+       For example:
+
+              $ echo ''''
+              '
+              $ echo 'don''t'
+              don't
+              $ echo 'hello' 'world
+              sh: unmatched quote
+              $ echo 'a'b
+              ab
+              $ echo a'b'
+              ab
+              $
+
+   Shell special characters
+       The following characters are treated specially by sh and must
+       be quoted to be taken literally:
+
+       blank  white space, except in a quoted string
+
+       tab    white space, except in a quoted string
+
+       newline
+              command line terminator
+
+       #      Start of comment
+
+       '      Start of/end of quoted string (single quote)
+
+       |      Interface between commands in a command pipeline.
+
+       &      Terminator for command pipelines to be  run  in  back‐
+              ground.
+
+       ;      Terminator  for  command  pipelines  to  be  run  syn‐
+              chronously by the shell.
+
+       >      Output re-direction: create file if it does not exist;
+              truncate file if it exists
+
+       >>     Output re-direction: create file if it does not exist;
+              append to file if it exists
+
+       <      Input re-direction.
+
+   Prompt
+       The shell uses a prompt consisting of the system name as pro‐
+       vided by /dev/sysname suffixed by $.
+
+   Input/output re-directions
+       By  default, standard input is the console keyboard and stan‐
+       dard output the console display.  Each  command  can  specify
+       that  standard input be taken from a file and standard output
+       be written to a file.
+
+       Attempts to redirect standard input to  a  non-existing  file
+       will fail. Redirecting standard output to a non-existing file
+       will cause that file to be created. If the  destination  file
+       already exists, it will be overwritten. Any previous contents
+       are lost.
+
+       In cases of competing re-direction mechanisms (re-direct to a
+       file and to a pipe), the pipe has precedence.
+
+   Background tasks
+       In  general, the shell waits for the termination of a command
+       pipeline before continuing execution, for example,  prompting
+       the  user for the next command. However, if the command pipe‐
+       line is terminated by an ampersand (&)  character,  the  wait
+       stage  is  skipped  and the shell continues execution immedi‐
+       ately, in this case the command pipeline executes as a  back‐
+       ground task.
+
+   Name space concerns
+       When  started,  the  shell  creates  an independent file name
+       space that is a copy of the file name space  of  the  shell's
+       creator.
+
+       Command  pipelines  started  by  the  shell  are  executed by
+       threads that share the shell's name space. If those  commands
+       modify  the  file  name space (and they have not mimicked the
+       shell in creating their own independent  name  space),  those
+       modifications  will be perceived by the shell when it contin‐
+       ues execution. See bind(1) and sys-pctl(2).
+
+FILES
+       /prog/n/wait
+
+SOURCE
+       /appl/tiny/broke.b
+       /appl/tiny/kill.b
+       /appl/tiny/rm.b
+       /appl/tiny/sh.b
+
+SEE ALSO
+       bind(1), sh(1), filepat(2), command(2), sys-pctl(2), cons(3),
+       pipe(3), prog(3)
+
+                                                             TINY(1)

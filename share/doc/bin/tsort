@@ -1,0 +1,33 @@
+TSORT(1)               General Commands Manual              TSORT(1)
+
+NAME
+       tsort - topological sort
+
+SYNOPSIS
+       tsort
+
+DESCRIPTION
+       Tsort  reads  a set of partial order relations between labels
+       (sequences of non-space characters) from its standard  input,
+       and lists the labels on its standard output one per line fol‐
+       lowing a topological sort.  Each input line represents a  set
+       of inequalities: the first label on the line is less than all
+       the others on the same line, and  should  appear  earlier  in
+       sorted  order.   (The  relation  might for instance represent
+       arcs in a directed graph, from the first label on a  line  to
+       the  others,  or dependency relationships.)  Labels on a line
+       are separated by space or tab.
+
+DIAGNOSTICS
+       If the input contains cycles, tsort prints  a  diagnostic  on
+       standard error for each cycle, listing its members.  The mem‐
+       bers of each cycle will also appear on the  standard  output,
+       in any order, but after any predecessors outside the cycle.
+
+SOURCE
+       /appl/cmd/tsort.b
+
+SEE ALSO
+       sort(1)
+
+                                                            TSORT(1)

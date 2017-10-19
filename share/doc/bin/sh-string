@@ -1,0 +1,79 @@
+SH-STRING(1)           General Commands Manual          SH-STRING(1)
+
+NAME
+       prefix, in, splitl, splitr, drop, take, splitstrl, splitstrr,
+       tolower, toupper, len, alen,  slice  -  shell  script  string
+       manipulation
+
+SYNOPSIS
+       load string
+
+       prefix pre s
+       in c cl
+       ${splitl s cl}
+       ${splitr s cl}
+       ${splitstrl s t}
+       ${splitstrr s t}
+       ${take s cl}
+       ${tolower s}
+       ${toupper s}
+       ${len s}
+       ${alen s}
+       ${slice start end s}
+       ${fields cl s}
+       ${padl n [ s...  ]}
+       ${padr n [ s...  ]}
+
+DESCRIPTION
+       String  is a loadable module for sh(1) that provides a shell-
+       script interface to the string manipulation commands found in
+       string(2),  with  a  couple of other facilities thrown in for
+       good measure.  Each  of  the  substitution  builtins  splitl,
+       splitr,  drop, take, splitstrl, splitstrr, tolower, and toup‐
+       per implements the same functionality as that provided by the
+       function  of the same name in string(2).  Where a function in
+       the string(2) module returns a tuple, the equivalent  builtin
+       yields  a  two-element  list;  the others yield a list with a
+       single element.
+
+       In all string commands, the number of arguments provided must
+       be  exactly  that  required  by the command so, for instance,
+       giving an undefined variable (a  zero  element  list)  as  an
+       argument will cause a usage exception to be generated.
+
+       The  two  builtins  prefix  and in are again similar to their
+       string(2) counterparts - their return value is true (an empty
+       string)  if  the  equivalent string(2) function would be non-
+       zero.
+
+       Len returns the length of its argument s.  Alen  returns  the
+       length  of  its  argument  s  when converted to a byte-array.
+       (This will be different from the result of len  when  s  con‐
+       tains non-ASCII characters).  Slice is similar to the string-
+       slicing operator in Limbo; it returns the section of s start‐
+       ing at index start and ending just before index end.  End may
+       be the literal string end, in which ${slice start end} is the
+       same  as  ${slice  start ${len s}}.  Unlike in Limbo, nothing
+       untoward happens if an out-of-range slice is taken:  any  out
+       of range indices are trimmed to within the bounds of s.
+
+       Fields  is  similar  to ${split} in sh(1), but does not merge
+       field separator characters.  It splits s  into  fields  sepa‐
+       rated  by  characters  in class cl; if there are n characters
+       matching cl inside s, fields will  yield  n+1  items  in  its
+       result.
+
+       Padl  and padr widen the string s to n characters, padding it
+       with spaces on the right (for padl) or the left (for padr) as
+       necessary.  If s is already at least n characters wide, it is
+       left unchanged.  If several arguments  are  given,  they  are
+       concatenated,  separated  with  spaces,  before padding takes
+       place.
+
+SOURCE
+       /appl/cmd/sh/string.b
+
+SEE ALSO
+       string(2), sh(1), sh-std(1), sh-expr(1)
+
+                                                        SH-STRING(1)

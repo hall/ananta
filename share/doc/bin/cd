@@ -1,0 +1,24 @@
+CD(1)                  General Commands Manual                 CD(1)
+
+NAME
+       cd - change working directory
+
+SYNOPSIS
+       cd [ directory ]
+
+DESCRIPTION
+       Cd  changes  the working directory for the shell and all pro‐
+       cesses in its name space group (see  sys-pctl(2))  to  direc‐
+       tory.   If  no  argument  is  given, cd attempts to change to
+       /usr/user where user is the name read from /dev/user.
+
+FILES
+       /dev/user
+
+SOURCE
+       /appl/cmd/cd.b
+
+SEE ALSO
+       pwd(1), sys-chdir(2), sys-pctl(2), cons(3)
+
+                                                               CD(1)

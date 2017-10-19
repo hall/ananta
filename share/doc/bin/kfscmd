@@ -1,0 +1,56 @@
+KFSCMD(8)              System Manager's Manual             KFSCMD(8)
+
+NAME
+       kfscmd - kfs administration
+
+SYNOPSIS
+       disk/kfscmd [-n name] cmd ...
+
+DESCRIPTION
+       Kfscmd  issues  commands  to a kfs(4) server that was started
+       with the -n option to create a control file.  Kfscmd's own -n
+       option  names the file system to which the cmd applies; it is
+       main by default.
+
+       The known commands are described below.  Note that some  com‐
+       mands are multiple words (eg, check and its flags) and should
+       be quoted to appear as a single argument to sh(1).
+
+       allow     Turn permission checking off (to simplify  adminis‐
+                 tration).   Equivalent  to the -P and -W options to
+                 kfs(4).
+
+       allowoff
+       disallow  Turn permission checking on (again).
+
+       sync      write to disk all of the dirty blocks in the memory
+                 cache.
+
+       users     Reinitialise  authentication information by reading
+                 /adm/users.
+
+       check [cdfpPqrtw]
+                 Check the file system and  print  summary  informa‐
+                 tion.  The options are
+                 c      fix  bad  tags and clear the contents of the
+                        block.
+                 d      delete redundant references to a block.
+                 f      rebuild the list of free blocks.
+                 p      print the names of directories as  they  are
+                        checked.
+                 P      print  the  names  of  all files as they are
+                        checked.
+                 q      quiet mode: report errors, but suppress sum‐
+                        mary information.
+                 r      read  all  of  the data blocks and check the
+                        tags.
+                 t      fix bad tags.
+                 w      write all of the blocks that are touched.
+
+SOURCE
+       /appl/cmd/disk/kfscmd.b
+
+SEE ALSO
+       sd(3), kfs(4), mkfs(8)
+
+                                                           KFSCMD(8)

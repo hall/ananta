@@ -1,0 +1,27 @@
+ECHO(1)                General Commands Manual               ECHO(1)
+
+NAME
+       echo - print arguments
+
+SYNOPSIS
+       echo [-n] [arg ...]
+
+       load echo
+       echo [-n] [arg ...]
+
+DESCRIPTION
+       Echo  writes its arguments separated by blanks and terminated
+       by a newline on the standard output.   Option  -n  suppresses
+       the newline.
+
+       A  version  of  echo  can optionally be loaded into the Shell
+       sh(1) if need be, to make shell scripts a little faster.
+
+SOURCE
+       /appl/cmd/echo.b
+       /appl/cmd/sh/echo.b
+
+SEE ALSO
+       sh(1)
+
+                                                             ECHO(1)

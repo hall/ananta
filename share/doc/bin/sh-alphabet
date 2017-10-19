@@ -1,0 +1,227 @@
+SH-ALPHABET(1)         General Commands Manual        SH-ALPHABET(1)
+
+NAME
+       alphabet,  typeset,  declare,  import,  type, define, autode‐
+       clare, autoconvert, -, rewrite, modules, types, usage,  info,
+       clear - typed shell interface
+
+SYNOPSIS
+       load alphabet
+
+       type qname...
+       declare name [ usage ]
+       undeclare name...
+       define name expr
+       import qname...
+       typeset qname
+       autoconvert srctype dsttype expr
+       autodeclare 0|1
+       - {expression}
+       ${rewrite {expression} [ dsttype ] }
+       ${modules}
+       ${types typeset }
+       ${usage qname }
+       info
+       clear
+
+DESCRIPTION
+       Alphabet is a loadable sh(1) module providing an interface to
+       a simple, experimental, typed shell.  It initially provides a
+       small  set  of  basic types, which can be added to by loading
+       new typesets.  Types are atomic; alphabet provides no support
+       for  higher-order types.  The root typeset, named /, consists
+       of the following kinds of value:
+
+       string    A simple string literal, represented by itself,  or
+                 quoted according to the usual shell quoting rules.
+
+       cmd       A  shell  command or uninterpreted alphabet expres‐
+                 sion, represented by the syntax "{block}.
+
+       fd        A file open for reading.
+
+       wfd       A file open for reading and writing.
+
+       status    The status of a completed command.
+
+       Each typeset implements a set of types, and has an associated
+       set  of modules.  Initially, types may only be referred to by
+       their qualified names, consisting of the  name  of  the  type
+       prefixed  with  the name of its typeset; for instance /string
+       for the string type, or /grid/data for a type named  data  in
+       the typeset /grid.  An unqualified name is the qualified name
+       without the typeset prefix; for instance string or data.
+
+       To make a type available as its  unqualified  name,  use  the
+       type  command,  which imports the type named by the qualified
+       name qname from its parent typeset.  This is a no-op  if  the
+       type  has  previously been imported from the same typeset; an
+       error is raised if the type has previously been imported from
+       a different typeset.
+
+       Declare declares the module name with type usage.  If name is
+       a qualified name, the module  must  exist  in  the  specified
+       typeset and be compatible with the specified usage.  If usage
+       is not given, the module itself will be loaded and queried to
+       find  it  out.   If name is not qualified, the declaration is
+       virtual: the module cannot actually be used, but is available
+       for  typechecking and expression rewriting.  Declare is a no-
+       op if the module has already been declared with a  compatible
+       usage,  otherwise an error is raised.  The syntax of usage is
+       similar to the usage messages printed by  normal  shell  com‐
+       mands,  and  defines the argument types expected by a module.
+       For example:
+
+              declare /foo/bar '[-a] [-x string] fd string [string...] -> fd'
+
+       The above declares the module bar from  typeset  /foo,  which
+       takes  two  possible  options (one of which requires a single
+       associated argument of type string), two mandatory arguments,
+       of  type  fd and string respectively, and any number of addi‐
+       tional arguments of type string.  The module returns a  value
+       of type fd.
+
+       When first loaded, alphabet is lax about declaration require‐
+       ments: if a module is referred to by its qualified name,  and
+       is  not  currently declared, the module will automatically be
+       declared and used as appropriate (as long as the module actu‐
+       ally  exists).   Use  autodeclare  to  change this behaviour.
+       Autodeclare 0 turns off all automatic declaration:  all  mod‐
+       ules   used  in  an  expression  must  have  previously  been
+       declared; autodeclare 1 reverts to the original behaviour.
+
+       Once a module is declared, it may be referred to by its qual‐
+       ified  name.   Import  makes  the  module available under its
+       unqualified name.  It is an error if a  module  of  the  same
+       name has already been imported from a different typeset.  For
+       instance:
+
+              declare /read 'string -> fd'
+              import /read
+
+       This would declare a module named read from the root  typeset
+       (checking  that  it  accepts  a  single  string  argument and
+       returns a file), and make it available under the name read.
+
+       Undeclare removes the previously declared name.  Note that an
+       imported  module  has  two  names: its qualified name and its
+       unqualified name.
+
+       Typeset loads the new typeset qname.  Typesets are hierarchi‐
+       cal  in  the  same  way that types and modules are: a typeset
+       adds some types to its parent typeset, and has an  associated
+       set  of  modules  that  provide transformations between those
+       types and between those of its parent.
+
+       Autoconvert specifies an automatic conversion between srctype
+       and  dsttype,  i.e. whereever a module expects an argument of
+       type dsttype, and the argument is actually of  type  srctype,
+       the  module block (see below for definition) expr (which must
+       be compatible with type srctype->dsttype), will be invoked to
+       convert between the two.  Several conversions will be applied
+       atop one another if necessary.  It is an error if adding  the
+       auto-conversion  creates an ambiguous conversion path between
+       two types.  As a convenience, expr may simply be the name  of
+       a  module,  in which case the expression will be rewritten as
+       its identity module block: {(srctype); expr}.
+
+       The - command evaluates the alphabet expression, of the form:
+
+              {command arg...}
+
+       Usually, command is the name of a previously declared module,
+       which  must  also have been imported if it is not a qualified
+       name.  The arguments must conform to those  expected  by  the
+       module.  Each  argument  is either a literal string or shell-
+       command, as described earlier, or a subexpression of the same
+       form as above.  All subexpressions are evaluated fully before
+       command is invoked.  The result of the  outermost  expression
+       must  be convertible to the type /status; the shell status of
+       the - command will reflect this when  the  command  has  com‐
+       pleted.
+
+       As  a  convenience,  alphabet provides a pipe-like syntax. It
+       will rewrite any expression of the form m1  m1args|m2  m2args
+       as m2 {m1 m1args}m2args.  This occurs before any auto-conver‐
+       sions have been applied.
+
+       Command may also be a module block, of the form:
+
+              {(argtype...); command arg...}
+
+       The argtype values given in the brackets specify the types of
+       the  arguments  expected  by  the  module block; these can be
+       referred to in the arguments to command  (and  subexpressions
+       thereof) with values of the form $1, $2, etc.  For instance,
+
+              {(/string); echo $1} hello}
+
+       is exactly equivalent to:
+
+              {echo hello}
+
+       In a module block with no arguments, the argument declaration
+       section may be omitted.
+
+       Define defines a new module in terms of  previously  declared
+       modules.   Name (which must be an unqualified name) gives the
+       name of the module to define, and expr is a module block giv‐
+       ing  the  expression to evaluate when name is used. The usage
+       of the module is taken from the types declared in the  module
+       block;  its  return  type is inferred from the return type of
+       expr.  All modules used in the evaluation of expr are  evalu‐
+       ated  when  the definition takes place, so evaluation of name
+       is unaffected if any modules it uses are later undeclared.
+
+       To show the complete form of an expression, after pipe trans‐
+       formations and auto-conversions have been applied, and module
+       definitions  expanded,  use  ${rewrite},  which  returns  the
+       expression's  canonical  form  without actually executing it.
+       If dsttype is given, auto-conversions will be applied to  try
+       to  convert  the  result  of  expression to dsttype.  Rewrite
+       raises an error if it  finds  any  declarations  incompatible
+       with expression or if the final type cannot be converted suc‐
+       cessfully.
+
+       Alphabet also provides some shell operations that give infor‐
+       mation  on its current state: ${modules} yields a list of all
+       the currently declared module names  (including  entries  for
+       both qualified and unqualified names); ${types} yields a list
+       of all currently available types (giving only  the  types  in
+       typeset  if  specified); and ${usage} provides usage informa‐
+       tion on module qname, which need not be declared.   Addition‐
+       ally,  info  searches the module directories on all currently
+       loaded typesets, and prints usage information for  everything
+       it  can  find  there, along with information on all currently
+       installed auto-conversions.
+
+       Finally, clear clears all existing declarations  and  defini‐
+       tions, and starts again with a clean slate.
+
+EXAMPLE
+       load alphabet
+       type /string
+       type /fd
+       type /status
+       import /cat /filter
+       autoconvert string fd /read
+       autoconvert fd status {(fd); /print $1 1}
+       define wc {(fd); /filter $1 "{wc}}
+       - {cat /lib/polyhedra /dis/sh.dis | wc}
+       echo ${rewrite {cat /lib/polyhedra /dis/sh.dis | wc} status}
+
+SOURCE
+       /appl/alphabet/*.b
+       /appl/alphabet/*/*.b
+
+BUGS
+       Alphabet  expressions  involving  external  typesets and file
+       descriptors cannot have their I/O  redirected  at  the  shell
+       level. Unfortunately it is not possible to provide a diagnos‐
+       tic when this occurs.
+
+SEE ALSO
+       sh(1), alphabet(2), alphabet-main(1), alphabet-fs(1),  alpha‐
+       bet-grid(1)
+
+                                                      SH-ALPHABET(1)

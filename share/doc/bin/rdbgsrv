@@ -1,0 +1,39 @@
+RDBGSRV(8)             System Manager's Manual            RDBGSRV(8)
+
+NAME
+       rdbgsrv - remote debug server
+
+SYNOPSIS
+       bind -b '#t' /dev
+
+       auxi/rdbgsrv [ -dn ] [ -sbaud ] [ -fdev ] mountpoint
+
+DESCRIPTION
+       Rdbgsrv  interposes  itself  between dev (default: /dev/eia0)
+       and mountpoint to convey 9P messages via the serial  port  to
+       and  from  a  9P  server  program  running on a board running
+       native Inferno.  The -f option specifies the  serial  device;
+       the default is /dev/eia0.  The -s option sets the line speed;
+       the default is 38400 baud.  The -d option  selects  debugging
+       options by a bit mask: 1, print trace of 9P message types; 2,
+       print actual 9P message contents.
+
+       The monitor program on  the  board  must  be  started  first.
+       Rdbgsrv writes the two byte message go, and keeps reading the
+       device until it sees the reply ok.  It then attempts to mount
+       the  exported  name space, and copies 9P messages to and from
+       the device.
+
+       Once rdbgsrv is running, any device  files  provided  by  the
+       program will be visible at mountpoint.
+
+SOURCE
+       /appl/auxi/rdbgsrv.b
+
+SEE ALSO
+       styxchat(8)
+
+BUGS
+       No error recovery is applied, let alone error correction.
+
+                                                          RDBGSRV(8)

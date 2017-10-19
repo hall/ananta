@@ -1,0 +1,44 @@
+AUDIO(6)                    Games Manual                    AUDIO(6)
+
+NAME
+       audio - Inferno audio file format
+
+DESCRIPTION
+       Inferno  audio  files  accepted by commands such as auplay(1)
+       have a simple format.  The file contains a header  consisting
+       of  non-empty  lines  of  text specifying the data format and
+       characteristics, followed by an empty line, followed  by  the
+       audio  data  in binary form.  The data can be copied directly
+       to a suitable audio device (see audio(3))  correctly  config‐
+       ured, using read, write or stream (see sys-read(2)).
+
+       Each header line corresponds to a command that can be written
+       to the control file audioctl of  the  audio(3)  device.   The
+       first  line  of the header must be a rate command; other com‐
+       mands can appear in any order.  The commands available are:
+
+       rate n The data was recorded at n Hz, typically one of 44100,
+              22050, 11025 or 8000 but other values are legal.
+
+       chans n
+              There are n channels of audio data (eg, 1 for mono and
+              2 for stereo).
+
+       bits n Each sample is n bits (typically 8 or 16).
+
+       enc e
+              The string e gives the recording format, and will usu‐
+              ally  be  one  of  the  following:  ulaw, alaw, pcm or
+              adpcm.
+
+       The audio data is stored with a sample from each  channel  in
+       turn  (`left'  sample first if stereo, regardless of encoding
+       or data size).  Data encoded as  pcm  is  little-endian,  2's
+       complement   if  16-bit,  but  unsigned  if 8 bit.  The adpcm
+       encoding uses 4-bit samples (two mono samples or  one  stereo
+       sample per byte, again little-endian).
+
+SEE ALSO
+       auplay(1), audio(3)
+
+                                                            AUDIO(6)

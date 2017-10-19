@@ -1,0 +1,111 @@
+MUX(1)                 General Commands Manual                MUX(1)
+
+NAME
+       mux - interactive television demo
+
+SYNOPSIS
+       mux/mux
+
+DESCRIPTION
+       Mux  is  a  standalone  application  environment run from the
+       Inferno console in emu(1) or started automatically by init(8)
+       in a native environment.  It directly uses the draw(3) device
+       and either keyboard or Infrared,  and  cannot  be  run  under
+       wm(1).   It is included in this release only as an example of
+       the use of the Prefab graphics module  described  by  prefab-
+       intro(2).  The simpler style of graphics and interaction pro‐
+       vided by Prefab and demonstrated by mux might be more  appro‐
+       priate  than  Tk  on devices that use infrared remote control
+       for interaction, such as televisions, or devices with limited
+       screen space, such as pocket devices or portable telephones.
+
+   Configuration
+       Mux produces a menu derived from the configuration file /ser‐
+       vices/basic.  Each line in the file has three  fields,  sepa‐
+       rated by :, of the following form:
+
+              icon:app:label
+
+       The  icon  is  the  name of a bitmap file to displayed in the
+       menu alongside the textual label (which is the  rest  of  the
+       line).   When  the  item is selected, as described below, mux
+       runs the Dis file
+
+              /dis/mux/app.dis
+
+   Applications
+       The following applications are available:
+
+       fnn    Financial reports: a scrolling `ticker tape' along the
+              bottom of the screen.
+
+       movie  Movies: select a film from a menu of categories
+
+       news   Today's Newspaper: on-screen newspapers
+
+       tv     Television
+
+       tvlist TV Timetable
+
+       pizza  Order Pizza
+
+       email  Internet mail
+
+       web    Internet Web Browser: simplistic web browser
+
+       register
+              Register with a service provider
+
+       ovid   Presentations
+
+       audioctl
+              Audio Control
+
+   Interaction
+       Mux  can  be  controlled  using  an  infrared device, but for
+       demonstration purposes under emu(1) the infrared is  emulated
+       using the keyboard (see ir(2)).  The following are the common
+       controls:
+
+       r      channel up
+
+       c      channel down
+
+       t      volume up
+
+       v      volume down
+
+       i      cursor up
+
+       m      cursor down
+
+       j      cursor left; rewind
+
+       k      cursor right; fast forward
+
+       x      return  to  main  menu  leaving  application  running;
+              recall
+
+       newline
+              select item
+
+       space  exit and return to the previous screen or menu
+
+FILES
+       /services/basic
+       /icons/*.bit
+
+SOURCE
+       /appl/mux
+
+SEE ALSO
+       wm(1),  ir(2),  prefab-intro(2),  virgil(2),  manufacture(8),
+       register(8), signer(8), virgild(8)
+
+BUGS
+       The  video  demonstrations  currently  work  only  on  native
+       machines with specific hardware.
+       For copyright reasons, some databases are not distributed, or
+       have randomly-generated content.
+
+                                                              MUX(1)

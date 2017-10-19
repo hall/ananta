@@ -1,0 +1,138 @@
+CREATE(8)              System Manager's Manual             CREATE(8)
+
+NAME
+       create, inst, info - archive or update a file system
+
+SYNOPSIS
+       install/create  [-u] [-U] [-v] [-x] [-o] [-p proto] [-r root]
+       [-s source] [-N uid] [-G gid] [-d description] name
+
+       install/inst [-c] [-h] [-t] [-u] [-v]  [-F]  [-r  root]  name
+       [prefix ...]
+
+       install/info [-r] package
+
+DESCRIPTION
+       Create  copies files from the file tree source (default /) to
+       an output file in archive format appropriate for  a  software
+       distribution.  The  name  of the output file is the time that
+       the archive was made. The latter includes wrap  headers  that
+       describe the distribution.  Name is typically the name of the
+       product or software package. The -p option specifies the pro‐
+       totype file proto to use to build the archive.
+
+       Each line of the proto file specifies a file to copy.  Inden‐
+       tation is significant, with each level of indentation  corre‐
+       sponding  to  a level in the file tree.  Fields within a line
+       are separated by white space.  The first field  is  the  last
+       path  element in the destination file tree.  The second field
+       specifies the permissions.  The third field is the  owner  of
+       the  file,  and the fourth is the group owning the file.  The
+       fifth field is the name of the file from which to copy;  this
+       file is read from the current name space, not the source file
+       tree.  All fields except the first are optional.
+
+       Names beginning with a are expanded as environment variables.
+       If  the  first  file  specified  in a directory is all of the
+       files in that directory are copied.  If the first file is all
+       of  the non-directory files in that directory are copied.  If
+       the first file is all of the files are copied, and all subdi‐
+       rectories are recursively copied.
+
+       Files  in the source tree that are not specified in the proto
+       file are not placed in the archive.
+
+       The remaining options to create are:
+
+       -u        Build an update distribution  rather  than  a  base
+                 distribution.  In this case name should be the name
+                 of the previous archive file built for  this  prod‐
+                 uct.  Only  files that are out of date with respect
+                 to the latter are included in  the  archive.  Files
+                 which no longer exist will be marked for removal.
+
+       -U        Build  an update package distribution instead. This
+                 is a hybrid of a base distribution  and  an  update
+                 distribution.
+
+       -v        Print out the files as they go into the archive.
+
+       -x        Print  out the files that would go into the archive
+                 but do not actually archive them.
+
+       -o        Copy the archive file to the standard output rather
+                 than putting it in a date stamped output file.
+
+       -r root   Specifies the location of any previous archives for
+                 this product.
+
+       -N uid    Give all the files in the archive the user id spec‐
+                 ified.
+
+       -G gid    Give  all  the  files  in  the archive the group id
+                 specified,
+
+       -d description
+                 Give a description of  the  distribution.  This  is
+                 placed in the wrap header files.
+
+       Inst  installs  archive  files  made by create .  Name is the
+       name of the archive file to install. Any further names  after
+       this  are  treated as path prefixes and only files in the ar‐
+       chive that have  one  of  the  given  prefixes  are  actually
+       installed.  The option to inst are :
+
+       -c        Carry  on regardless when errors occur. The default
+                 behaviour is to exit on encountering an error.
+
+       -h        Only print the names of the files in the archive.
+
+       -t        Give each installed file the  same  date  stamp  as
+                 indicated by that file's entry in the archive.
+
+       -u        Give  each installed file the same date stamp, user
+                 id and group id as shown in the archive.
+
+       -v        Print out the names  of  directories  as  they  are
+                 installed.
+
+       -F        Force  the installation of the files in the archive
+                 even when the corresponding local file  has  appar‐
+                 ently been locally updated or already exists.
+
+       -r root   Specifies  the  root  of destination tree where the
+                 files will be copied to.
+
+       Info prints information about either a specific file produced
+       by create or about all files making up a package in the /wrap
+       tree. In particular base packages, full updates  and  partial
+       updates  are  distinguished.  The -r option specifies the the
+       root of the tree to look in. This defaults to /.
+
+EXAMPLES
+       Make an archive to  establish  a  new  base  package  for  an
+       Inferno distribution:
+
+              install/create -o -N inferno -G inf -d InfernoOS -p PROTO Inferno.1.0 > inferno.arch
+
+       Here the name of the product is Inferno.1.0.
+
+       Install that archive on another machine:
+
+              install/inst -r / inferno.arch
+
+       Here  the  product is placed in / with the user and group ids
+       being set to those of the person doing the installation.
+
+SOURCE
+       /appl/cmd/install/arch.b
+       /appl/cmd/install/create.b
+       /appl/cmd/install/info.b
+       /appl/cmd/install/inst.b
+       /appl/cmd/install/proto.b
+       /appl/cmd/install/wrap.b
+
+SEE ALSO
+       archfs(4)
+
+                                                           CREATE(8)

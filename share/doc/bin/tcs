@@ -1,0 +1,37 @@
+TCS(1)                 General Commands Manual                TCS(1)
+
+NAME
+       tcs - translate character sets
+
+SYNOPSIS
+       tcs -l [-v] [ csname ]
+
+       tcs [ -f ics ] [ -t ocs ] [ file ...  ]
+
+DESCRIPTION
+       Tcs  converts  its  input from the ics character set encoding
+       into Unicode runes and then outputs the data in the  encoding
+       of  the ocs character set.  The default values of ics and ocs
+       are both utf8.  This is the  standard  Inferno  Unicode  text
+       encoding  as  described by utf(6).  If no files are specified
+       tcs reads from its standard input.
+
+       The -l option causes tcs to output the list of character sets
+       that  it  understands.   The -v option causes a more detailed
+       listing to be given.  Giving a  csname  argument  to  the  -l
+       option  causes  tcs  to list the known aliases for that name.
+       The first name in the list is  the  standard  (or  preferred)
+       name.
+
+FILES
+       /lib/convcs/charsets
+              Specifies  the  supported  character  set names, their
+              aliases and the implementation of their converters.
+
+SOURCE
+       /appl/cmd/tcs.b
+
+SEE ALSO
+       convcs(2)
+
+                                                              TCS(1)

@@ -1,0 +1,26 @@
+ENV(1)                 General Commands Manual                ENV(1)
+
+NAME
+       env - display environment variables
+
+SYNOPSIS
+       env
+
+DESCRIPTION
+       Env  prints on standard output the current process's environ‐
+       ment (see sh(1) and env(3)) listing  each  variable  and  its
+       current value.
+
+       Individual variable values can be set by assignment in sh(1).
+
+SOURCE
+       /appl/cmd/env.b
+
+SEE ALSO
+       acme(1), sh(1), env(2)
+
+BUGS
+       Env  does not understand that environment variables as stored
+       by sh(1) are lists.
+
+                                                              ENV(1)

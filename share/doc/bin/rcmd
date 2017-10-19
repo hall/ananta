@@ -1,0 +1,37 @@
+RCMD(1)                General Commands Manual               RCMD(1)
+
+NAME
+       rcmd - remote command execution
+
+SYNOPSIS
+       rcmd [ -e cryptoalg ] [ -x exportpath ] host [ cmd arg ...  ]
+
+DESCRIPTION
+       Rcmd  executes  cmd  on  the given host.  If no cmd is given,
+       sh(1) is assumed.  The host must  have  enabled  the  service
+       (typically started via svc(8)).
+
+       For authentication, rcmd will use the certificate in the file
+
+              /usr/username/keyring/net!machine
+
+       if it exists, and otherwise it will use the certificate in
+
+              /usr/username/keyring/default.
+
+       The -e option sets the algorithm cryptoalg to be used follow‐
+       ing authentication for digesting or encryption.   See  ssl(3)
+       for the supported algorithms.  The default is none: ssl(3) is
+       not used after authentication.
+
+       The -x option sets the path to be exported as root  from  the
+       local machine (defaults to / if not specified).
+
+SOURCE
+       /appl/cmd/rcmd.b
+
+SEE ALSO
+       security-intro(2),    security-auth(2),    security-login(2),
+       getauthinfo(8), rstyxd(8), svc(8)
+
+                                                             RCMD(1)

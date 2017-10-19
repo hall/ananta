@@ -1,0 +1,710 @@
+ACME(1)                General Commands Manual               ACME(1)
+
+NAME
+       acme, win - interactive text windows
+
+SYNOPSIS
+       acme  [  -f  varfont ] [ -F fixfont ] [ -c ncol ] [ -b ] [ -l
+       file | file ... ]
+
+       win [ command ]
+
+DESCRIPTION
+       Acme manages windows of text that may be edited interactively
+       or  by external programs.  The interactive interface uses the
+       keyboard and mouse; external programs  use  a  set  of  files
+       served by acme; these are discussed in acme(4).
+
+       Any  named  files  are  read  into  acme  windows before acme
+       accepts input.  With the -l option, the state of  the  entire
+       system is loaded from file, which should have been created by
+       a Dump command (q.v.), and subsequent file names are ignored.
+       Plain  files  display  as text; directories display as colum‐
+       nated lists of the names of their components with  the  names
+       of subdirectories having a slash appended.
+
+       The  -f  (-F)  option sets the default variable-pitch (fixed-
+       pitch) font;  the  default  is  /fonts/lucidasans/euro.8.font
+       (.../lucm/unicode.9.font).   Tab  intervals  are  set  to the
+       width of 4 numeral zeros in the variable-pitch font.
+
+   Windows
+       Acme windows are in two parts: a one-line tag above a  multi-
+       line body.  The body typically contains an image of a file or
+       the output of a program.  The tag contains a number of blank-
+       separated  words,  followed by a vertical bar character, fol‐
+       lowed by anything.  The first word is the name of the window,
+       typically  the  name of the associated file or directory, and
+       the other words are commands available in that  window.   Any
+       text  may  be  added  after  the bar; examples are strings to
+       search for or commands to execute in that window.  Changes to
+       the  text  left of the bar will be ignored, unless the result
+       is to change the name of the window.
+
+       If a window holds a directory, the name (first  word  of  the
+       tag) will end with a slash.
+
+   Scrolling
+       Each  window  has  a  scroll  bar  to  the  left of the body.
+       Scrolling occurs when the  button  is  pressed,  rather  than
+       released,  and  continues as long as the mouse button is held
+       down in the  scroll  bar.   For  example,  to  scroll  slowly
+       through a file, hold button 3 down near the top of the scroll
+       bar.  Moving the mouse down the scroll bar speeds up the rate
+       of  scrolling.  Scrolling  backwards  is  performed similarly
+       using button 1. Button 2 allows absolute movement within  the
+       text;  clicking it at different heights within the scroll bar
+       changes the focused text without intermediate scrolling.
+
+   Layout
+       Acme windows are arranged in columns.  By default, it creates
+       two columns when starting; this can be overridden with the -c
+       option.  Placement is automatic but may be adjusted using the
+       layout  box  in the upper left corner of each window and col‐
+       umn.  Pressing and holding any mouse button in the box  drags
+       the  associated window or column.  For windows, just clicking
+       in the layout box grows the window in place: button  1  grows
+       it a little, button 2 grows it as much as it can, still leav‐
+       ing all other tags in that column visible, and button 3 takes
+       over  the column completely, temporarily hiding other windows
+       in the column.  (They will return en masse  if  any  of  them
+       needs  attention.)   The  layout  box in a window is normally
+       white; when it is black in the center, it  records  that  the
+       file is `dirty': Acme believes it is modified from its origi‐
+       nal contents.
+
+       Tags exist at the top of each column  and  across  the  whole
+       display.   Acme  pre-loads  them with useful commands.  Also,
+       the tag across the top maintains a list  of  executing  long-
+       running commands.
+
+   Typing
+       The  behaviour  of  typed  text is as one would expect except
+       that the characters are delivered to the tag  or  body  under
+       the  mouse;  there  is no `click to type'.  (The experimental
+       option -b causes typing to go to the most recently clicked-at
+       or  made  window.)   The usual backspacing conventions apply.
+       The ESC key selects the  text  typed  since  the  last  mouse
+       action,  a  feature  particularly  useful when executing com‐
+       mands.  A side effect is that typing ESC  with  text  already
+       selected is identical to a Cut command (q.v.).
+
+       Most text, including the names of windows, may be edited uni‐
+       formly.  The only exception is that the command names to  the
+       left  of  the  bar  in  a  tag  are maintained automatically;
+       changes to them are repaired by acme.
+
+   Directory context
+       Each window's tag names a directory: explicitly if the window
+       holds  a  directory;  implicitly  if  it holds a regular file
+       (e.g.  the  directory  /module  if  the  window  holds  /mod‐
+       ule/sys.m).  This directory provides a context for interpret‐
+       ing file names in that window.  For example, the string sys.m
+       in  a  window  labelled  /module/  or  /module/draw.m will be
+       interpreted as the file name /module/sys.m.  The directory is
+       defined  purely textually, so it can be a non-existent direc‐
+       tory or a real directory associated with a non-existent  file
+       (e.g.   /module/not-a-file).   File  names  beginning  with a
+       slash are assumed to be absolute file names.
+
+   Errors
+       Windows whose names begin with -  or  +  conventionally  hold
+       diagnostics  and  other  data  not  directly  associated with
+       files.  A window labelled +Errors  receives  all  diagnostics
+       produced  by  acme  itself.  Diagnostics from commands run by
+       acme appear in a window named directory/+Errors where  direc‐
+       tory  is  identified  by  the  context of the command.  These
+       error windows are created when needed.
+
+   Mouse button 1
+       Mouse button 1 selects text  and  double-clicking  highlights
+       the text for replacement text to be typed in.
+
+       Button  1 is also useful for matching symbols. For example to
+       match curly brackets in some limbo source, double click  but‐
+       ton 1 immediately after the open curly bracket.  The whole of
+       the text up to any matching end curly bracket will  be  high‐
+       lighted.  A similar match is made if the double click is per‐
+       formed immediately before the end bracket. In all, acme  will
+       match  the pairs { and }, [ and ], ( and ), < and >, « and »,
+       ' and ', " and ", ` and `.  Also whole lines of text  may  be
+       highlighted by double clicking at the beginning or end of the
+       line.
+
+   Mouse button 2
+       By an action similar to selecting text with button 1,  button
+       2  indicates  text to execute as a command.  If the indicated
+       text has multiple white-space-separated words, the  first  is
+       the  command name and the second and subsequent are its argu‐
+       ments.  If button 2 is `clicked'—indicates a null string—acme
+       expands  the  indicated text to find a command to run: if the
+       click is  within  button-1-selected  text,  acme  takes  that
+       selection  as  the  command;  otherwise  it takes the largest
+       string of valid file name characters  containing  the  click.
+       Valid  file name characters are alphanumerics and _ .  - + /.
+       This behaviour is similar to double-clicking  with  button  1
+       but,  because  a  null  command is meaningless, only a single
+       click is required.
+
+       Some commands, all by convention starting with a capital let‐
+       ter, are built-ins that are executed directly by acme:
+
+       Cut    Delete  most recently selected text and place in snarf
+              buffer.
+
+       Del    Delete window.  If window is dirty,  instead  print  a
+              warning; a second Del will succeed.
+
+       Delcol Delete column and all its windows, after checking that
+              windows are not dirty.
+
+       Delete Delete window without checking for dirtiness.
+
+       Dump   Write the state of acme to the file  name,  if  speci‐
+              fied, or $home/acme.dump by default.
+
+       Edit   Treat  the  argument  as a text editing command in the
+              style of Plan9's sam.  The full Sam language is imple‐
+              mented  except for the commands k, n, q, and !.  The =
+              command is slightly different: it  includes  the  file
+              name  and  gives only the line address unless the com‐
+              mand is explicitly =#.  The `current window'  for  the
+              command  is  the  body of the window in which the Edit
+              command is executed.  Usually the Edit  command  would
+              be  typed in a tag; longer commands may be prepared in
+              a scratch window and executed, with Edit itself in the
+              current  window,  using the 2-1 chord described below.
+              See the later section on editing for a  full  descrip‐
+              tion of the commands available here.
+
+       Exit   Exit acme after checking that windows are not dirty.
+
+       Font   With  no  arguments, change the font of the associated
+              window from  fixed-spaced  to  proportional-spaced  or
+              vice  versa.   Given  a file name argument, change the
+              font of the window to that stored in the  named  file.
+              If  the  file  name argument is prefixed by var (fix),
+              also  set  the  default  proportional-spaced   (fixed-
+              spaced)  font  for  future  use  to  that font.  Other
+              existing windows are unaffected.
+
+       Get    Load file into  window,  replacing  previous  contents
+              (after  checking  for  dirtiness  as in Del).  With no
+              argument, use the existing file name  of  the  window.
+              Given an argument, use that file but do not change the
+              window's file name.
+
+       ID     Print window ID number (q.v.).
+
+       Incl   When opening  `include'  files  with  button  3,  acme
+              searches  in  the  directories  /module and /include .
+              Incl adds its arguments to  a  supplementary  list  of
+              include directories, analogous to the -I option to the
+              compilers.  This list is per-window and  is  inherited
+              when windows are created by actions in that window, so
+              Incl is most usefully applied to a directory  contain‐
+              ing  relevant  source.  With no arguments, Incl prints
+              the supplementary list.
+
+       Kill   Send a kill note to acme-initiated commands  named  as
+              arguments.
+
+       Lineno Give  the  line  number(s)  of  the currently selected
+              text.
+
+       Load   Restore  the  state  of  acme  from  a  file  (default
+              $home/acme.dump) created by the Dump command.
+
+       Local  When prefixed to a command run the command in the same
+              file name space  and  environment  variable  group  as
+              acme.   The  environment  of the command is restricted
+              but is sufficient to run bind(1), mount, etc., and  to
+              set environment variables.
+
+       Look   Search  in  body  for occurrence of literal text indi‐
+              cated by the argument or, if none  is  given,  by  the
+              selected text in the body.
+
+       New    Make new window.  With arguments, load the named files
+              into windows.
+
+       Newcol Make new column.
+
+       Paste  Replace most recently selected text with  contents  of
+              snarf buffer.
+
+       Put    Write  window  to  the  named file.  With no argument,
+              write to the file named in the tag of the window.
+
+       Putall Write all dirty windows whose names indicate  existing
+              regular files.
+
+       Redo   Complement of Undo.
+
+       Send   Append  selected  text or snarf buffer to end of body;
+              used mainly with win.
+
+       Snarf  Place selected text in snarf buffer.
+
+       Sort   Arrange the windows in the column from top  to  bottom
+              in lexicographical order based on their names.
+
+       Undo   Undo last textual change or set of changes.
+
+       Zerox  Create  a  copy of the window containing most recently
+              selected text.
+
+       A common place to store text for commands is in the  tag;  in
+       fact  acme  maintains  a  set  of commands appropriate to the
+       state of the window to the left of the bar in the tag.
+
+       If the text indicated with  button  2  is  not  a  recognized
+       built-in,  it  is  executed as a shell command.  For example,
+       indicating date with button 2 runs date(1).  The standard and
+       error  outputs of commands are sent to the error window asso‐
+       ciated with the directory from which  the  command  was  run,
+       which will be created if necessary.  For example, in a window
+       /module/sys.m executing pwd will produce the  output  /module
+       in  a  (possibly newly-created) window labelled /adm/+Errors;
+       in  a  window  containing  /appl/cmd/date.b  executing  limbo
+       date.b  will run limbo(1) in /appl/cmd, producing output in a
+       window labelled /appl/cmd/+Errors.
+
+   Mouse button 3
+       Pointing at text with button 3 instructs acme  to  locate  or
+       acquire  the  file,  string,  etc. described by the indicated
+       text and its context.  This description follows  the  actions
+       taken when button 3 is released after sweeping out some text.
+       In the description, text refers to the text of  the  original
+       sweep  or,  if  it  was null, the result of applying the same
+       expansion rules that apply to button 2 actions.
+
+       If the text names an existing window, acme  moves  the  mouse
+       cursor  to  the selected text in the body of that window.  If
+       the text names an existing file with  no  associated  window,
+       acme  loads  the  file  into a new window and moves the mouse
+       there.  If the text  is  a  file  name  contained  in  double
+       quotes, acme loads the indicated include file from the direc‐
+       tory appropriate to the suffix of the file name of the window
+       holding  the text.  (The Incl command adds directories to the
+       standard list.)
+
+       If the text begins with a colon, it is taken to be an address
+       within  the  body  of  the  window  containing the text.  The
+       address is evaluated, the resulting text highlighted, and the
+       mouse  moved to it.  Thus, in acme, one must type :/regexp or
+       :127 not just /regexp or 127.  (There is  an  easier  way  to
+       locate literal text; see below.)
+
+       If  the  text  is  a  file  name  followed  by a colon and an
+       address, acme loads the file and evaluates the address.   For
+       example,  clicking  button  3  anywhere in the text file.c:27
+       will open file.c, select line 27, and put the  mouse  at  the
+       beginning of the line.  The rules about Error files, directo‐
+       ries, and so on all combine to make this an efficient way  to
+       investigate errors from compilers, etc.
+
+       If the text is not an address or file, it is taken to be lit‐
+       eral text, which is then searched for in the body of the win‐
+       dow  in  which button 3 was clicked.  If a match is found, it
+       is selected and the mouse is moved there.   Thus,  to  search
+       for  occurrences  of a word in a file, just click button 3 on
+       the word.  Because of the rule of using the selection as  the
+       button  3  action,  subsequent  clicks  will  find subsequent
+       occurrences without moving the mouse.
+
+       In all these actions, the mouse motion is  not  done  if  the
+       text  is  a  null string within a non-null selected string in
+       the tag, so that (for example)  complex  regular  expressions
+       may  be  selected  and applied repeatedly to the body by just
+       clicking button 3 over them.
+
+   Chords of mouse buttons
+       Several operations  are  bound  to  multiple-button  actions.
+       After selecting text, with button 1 still down, pressing but‐
+       ton 2 executes Cut and button 3 executes Paste.  After click‐
+       ing one button, the other undoes the first; thus (while hold‐
+       ing down button 1) 2 followed by 3 is a Snarf that leaves the
+       file  undirtied;  3  followed by 2 is a no-op.  These actions
+       also apply to text selected by  double-clicking  because  the
+       double-click  expansion is made when the second click starts,
+       not when it ends.
+
+       Thus to copy a word a number of times, double  click  on  the
+       word  with  button  1  to highlight it leaving button 1 down,
+       press and release button 2 to cut it and save it in the snarf
+       buffer,  press and release button 3 to paste it back and then
+       release button 1. Now move the cursor to any  selected  place
+       in  the text, press button 1 down, then button 3 and the word
+       is copied in.
+
+       Similarly lines may be deleted  by  double  clicking  at  the
+       beginning  or end of the line and then pressing button 2 with
+       button 1 still down.
+
+       Commands may be given extra arguments by a mouse  chord  with
+       buttons  2  and 1.  While holding down button 2 on text to be
+       executed as a command, clicking button  1  appends  the  text
+       last  pointed  to  by  button 1 as a distinct final argument.
+       For example, to search for literal text one may execute  Look
+       text  with button 2 or instead point at text with button 1 in
+       any window, release button 1,  then  execute  Look,  clicking
+       button 1 while 2 is held down.
+
+       When  an  external  command  (e.g.  echo(1)) is executed this
+       way, the extra argument is passed as expected and an environ‐
+       ment  variable  $acmeaddr  is created that holds, in the form
+       interpreted by button 3, the fully-qualified address  of  the
+       extra argument.
+
+   Support programs
+       win  creates  a  new  acme window and runs a command (default
+       /dis/sh.dis) in it, turning the window into a shell window in
+       which commands may be executed.  Executing text in a win win‐
+       dow with button 2 is similar to using Send.
+
+       Similarly winm creates  a  new  window  but  runs  the  shell
+       /dis/mash.dis  by  default.  adiff behaves as diff in finding
+       the difference between two files but the listing  uses  file‐
+       name:linenumber  format  to allow the user to simply click on
+       this to be sent to that line in the  file.   agrep  does  for
+       grep  what  adiff  does for diff above.  cd changes directory
+       but when used in a win window for example, sends  information
+       to  the  window  to  display a new heading reflecting the new
+       directory.
+
+   Mail
+       In the directory /acme/mail there are two mail programs  that
+       may be used under acme. These Mail and Mailpop3 can be run to
+       display the user's current mail,  read  the  mail,  reply  to
+       mail,  save  or  delete  mail, send mail and write the user's
+       mail box.
+
+       The former expects the user's mail box to be in the directory
+       and file specified as its first argument, the latter uses the
+       POP3 protocol to connect to a server for the user's mail  and
+       will  prompt  for  a password when first run. Otherwise their
+       behaviour is the same.
+
+   Applications and guide files
+       In the directory /acme live several subdirectories, each cor‐
+       responding  to  a  program  or  set  of related programs that
+       employ acme's user interface.  Each subdirectory includes dis
+       files  and  a  readme  file for further information.  It also
+       includes a guide, a text  file  holding  sample  commands  to
+       invoke  the  programs.  The idea is to find an example in the
+       guide that best matches the job at hand, edit it to suit, and
+       execute it.
+
+       Whenever  a  command  is executed by acme, the default search
+       path includes the directory of the window containing the com‐
+       mand.   Also,  acme binds the directory /acme/dis in front of
+       /dis when it starts; this  is  where  acme-specific  programs
+       such as win reside.
+
+EDITING
+       This  section  explains  the  commands  available  when using
+       acme's Edit command.
+
+   Regular expressions
+       Regular expressions are as in regexp(6) with the addition  of
+       \n  to  represent  newlines.   A regular expression may never
+       contain a  literal  newline  character.   The  empty  regular
+       expression  stands  for  the last complete expression encoun‐
+       tered.  A regular expression  matches  the  longest  leftmost
+       substring  formally  matched by the expression.  Searching in
+       the reverse direction is equivalent  to  searching  backwards
+       with the catenation operations reversed in the expression.
+
+   Addresses
+       An  address identifies a substring in a file.  In the follow‐
+       ing, `character n' means the null string after the n-th char‐
+       acter  in  the  file, with 1 the first character in the file.
+       `Line n' means the n-th match, starting at the  beginning  of
+       the  file,  of the regular expression All files always have a
+       current substring, called dot, that is the default address.
+
+   Simple Addresses
+       #n     The empty string after character n; #0 is  the  begin‐
+              ning of the file.
+
+       n      Line n; 0 is the beginning of the file.
+
+       /regexp/
+
+       ?regexp?
+              The  substring  that  matches  the regular expression,
+              found by looking toward the end (/) or  beginning  (?)
+              of  the  file,  and if necessary continuing the search
+              from the other  end  to  the  starting  point  of  the
+              search.  The matched substring may straddle the start‐
+              ing point.  When entering a pattern containing a  lit‐
+              eral question mark for a backward search, the question
+              mark should be specified as a member of a class.
+
+       0      The string before the first full line.   This  is  not
+              necessarily the null string; see + and - below.
+
+       $      The null string at the end of the file.
+
+       .      Dot.
+
+       '      The mark in the file.
+
+       "regexp"
+              Preceding  a simple address (default .), refers to the
+              address evaluated in the unique file whose  menu  line
+              matches the regular expression.
+
+   Compound Addresses
+       In the following, a1 and a2 are addresses.
+
+       a1+a2  The address a2 evaluated starting at the end of a1.
+
+       a1-a2  The address a2 evaluated looking in the reverse direc‐
+              tion starting at the beginning of a1.
+
+       a1,a2  The substring from the beginning of a1 to the  end  of
+              a2.   If  a1  is  missing, 0 is substituted.  If a2 is
+              missing, $ is substituted.
+
+       a1;a2  Like a1,a2, but with a2 evaluated at the end  of,  and
+              dot set to, a1.
+
+       The  operators + and - are high precedence, while , and ; are
+       low precedence.
+
+       In both + and - forms, if a2 is a line or  character  address
+       with  a  missing  number, the number defaults to 1.  If a1 is
+       missing, is substituted.  If both a1 and a2 are  present  and
+       distinguishable,  +  may  be  elided.   a2  may  be a regular
+       expression; if it is delimited by the effect of the + or - is
+       reversed.
+
+       It  is  an  error  for a compound address to represent a mal‐
+       formed substring.  Some useful idioms:  a1+-  (a1-+)  selects
+       the  line  containing  the  end (beginning) of a1.  0/regexp/
+       locates the first match of the expression in the file.   (The
+       form  0;//  sets  dot  unnecessarily.)  ./regexp/// finds the
+       second following occurrence of the expression, and .,/regexp/
+       extends dot.
+
+   Commands
+       In  the following, text demarcated by slashes represents text
+       delimited by any printable  character  except  alphanumerics.
+       Any  number of trailing delimiters may be elided, with multi‐
+       ple elisions then representing null strings,  but  the  first
+       delimiter  must  always  be  present.  In any delimited text,
+       newline may not appear literally; \n may be  typed  for  new‐
+       line;  and  \/ quotes the delimiter, here Backslash is other‐
+       wise interpreted literally, except in s commands.
+
+       Most commands may be prefixed by an address to indicate their
+       range  of  operation.   Those  that may not are marked with a
+       below.  If a command takes an address and none  is  supplied,
+       dot  is  used.   The  sole  exception is the w command, which
+       defaults to 0,$.  In the description, `range' is used to rep‐
+       resent  whatever  address is supplied.  Many commands set the
+       value of dot as a side effect.  If so, it is  always  set  to
+       the  `result' of the change: the empty string for a deletion,
+       the new text for an insertion, etc. (but see the s and e com‐
+       mands).
+
+   Text commands
+       a/text/
+
+       or
+
+       a
+
+       lines of text
+
+       .      Insert  the  text  into the file after the range.  Set
+              dot.
+
+       c
+       i      Same as a, but c replaces the text,  while  i  inserts
+              before the range.
+
+       d      Delete the text in the range.  Set dot.
+
+       s/regexp/text/
+              Substitute  text  for  the  first match to the regular
+              expression in the range.   Set  dot  to  the  modified
+              range.   In text the character & stands for the string
+              that matched the  expression.   Backslash  behaves  as
+              usual  unless  followed  by a digit: \d stands for the
+              string that matched the subexpression begun by the  d-
+              th  left parenthesis.  If s is followed immediately by
+              a number n, as in s2/x/y/, the n-th match in the range
+              is substituted.  If the command is followed by a g, as
+              in s/x/y/g, all matches in the range are substituted.
+
+       m a1
+       t a1   Move (m) or copy (t) the range to after a1.  Set dot.
+
+   Display commands
+       p      Print the text in the range.  Set dot.
+       =      Print the file name and line address of the range.
+       =#     Print the file  name  and  character  address  of  the
+              range.
+
+   File commands
+       * b file-list
+              Set  the  current  file to the first file named in the
+              list  that  acme  has  displayed.   The  list  may  be
+              expressed  <command  in  which case the file names are
+              taken as words (in the shell sense) generated  by  the
+              command.
+
+       * B file-list
+              Same  as  b,  except that file names not displayed are
+              entered there, and all file  names  in  the  list  are
+              examined.
+
+       * D file-list
+              Delete the named files from the menu.  If no files are
+              named, the current file is deleted.  It is an error to
+              D a modified file, but a subsequent D will delete such
+              a file.
+
+   I/O Commands
+       * e filename
+              Replace the file by the contents of the named external
+              file.  Set dot to the beginning of the file.
+
+       r filename
+              Replace  the  text in the range by the contents of the
+              named external file.  Set dot.
+
+       w filename
+              Write the range (default 0,$) to  the  named  external
+              file.
+
+       * f filename
+              Set the file name and print the resulting menu entry.
+
+       If  the  file  name  is absent from any of these, the current
+       file name is used.  e always sets the file name; r and  w  do
+       so if the file has no name.
+
+       < command
+              Replace  the  range by the standard output of the com‐
+              mand.
+
+       > command
+              Send the range to the standard input of the command.
+
+       | command
+              Send the range to the standard input, and  replace  it
+              by the standard output, of the command.
+
+       * cd directory
+              Change  working  directory.  If no directory is speci‐
+              fied, $home is used.
+
+       In any of <, >, or |, if the command is omitted the last com‐
+       mand (of any type) is substituted.
+
+   Loops and Conditionals
+       x/regexp/ command
+              For each match of the regular expression in the range,
+              run the command with dot set to the match.  Set dot to
+              the  last  match.   If  the regular expression and its
+              slashes are omitted, is assumed.  Null string  matches
+              potentially  occur before every character of the range
+              and at the end of the range.
+
+       y/regexp/ command
+              Like x, but run the command for  each  substring  that
+              lies  before, between, or after the matches that would
+              be generated  by  x.   There  is  no  default  regular
+              expression.   Null substrings potentially occur before
+              every character in the range.
+
+       * X/ regexp / command
+              For each file whose menu  entry  matches  the  regular
+              expression,  make  that  the  current file and run the
+              command.  If the expression is omitted, the command is
+              run in every file.
+
+       * Y/ regexp / command
+              Same as X, but for files that do not match the regular
+              expression, and the expression is required.
+
+       g/regexp/ command
+       v/regexp/ command
+              If the range contains (g) or does not  contain  (v)  a
+              match for the expression, set dot to the range and run
+              the command.
+
+       These may be nested arbitrarily deeply, but only one instance
+       of  either  X  or Y may appear in a single command.  An empty
+       command in an x or y defaults to p; an empty command in X  or
+       Y defaults to f.  g and v do not have defaults.
+
+   Miscellany
+       * u n  Undo  the  last  n (default 1) top-level commands that
+              changed the contents or name of the current file,  and
+              any other file whose most recent change was simultane‐
+              ous with the current file's  change.   Successive  u's
+              move  further  back  in  time.   The only commands for
+              which u is ineffective are cd, u, w and D.   If  n  is
+              negative, u `redoes,' undoing the undo, going forwards
+              in time again.
+
+       (empty)
+              If the range is explicit, set dot to the range.  If no
+              address is specified (the command is a newline) dot is
+              extended in either direction to  line  boundaries  and
+              printed.   If  dot  is thereby unchanged, it is set to
+              .+1 and printed.
+
+   Grouping and multiple changes
+       Commands may be grouped by enclosing them in braces {}.  Com‐
+       mands  within  the  braces  must appear on separate lines (no
+       backslashes are required between commands).  Semantically, an
+       opening  brace  is  like  a  command:  it takes an (optional)
+       address and sets dot for each sub-command.   Commands  within
+       the braces are executed sequentially, but changes made by one
+       command are not visible to other commands (see the next para‐
+       graph).  Braces may be nested arbitrarily.
+
+       When  a  command  makes  a number of changes to a file, as in
+       x/re/c/text/, the addresses of all changes to  the  file  are
+       computed  in  the  original  file.   If  the  changes  are in
+       sequence, they are applied to the  file.   Successive  inser‐
+       tions  at the same address are catenated into a single inser‐
+       tion composed of the several insertions in the order applied.
+
+FILES
+       $home/acme.dump
+              default file for Dump and Load; also  where  state  is
+              written if acme dies unexpectedly.
+
+       /acme/*/guide
+              template files for applications
+
+       /acme/*/readme
+              informal documentation for applications
+
+       /appl/acme/acme/*/src
+              source for applications
+
+       /acme/dis
+              dis files for applications
+
+SOURCE
+       /appl/acme
+       /appl/acme/acme/bin/src/win.b
+
+SEE ALSO
+       acme(4)
+       Rob Pike, Acme: A User Interface for Programmers, Volume 2
+
+BUGS
+       With the -l option or Load command, the recreation of windows
+       under control of external programs such as  win  is  just  to
+       rerun the command; information may be lost.
+
+                                                             ACME(1)

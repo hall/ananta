@@ -1,0 +1,45 @@
+FTL(8)                 System Manager's Manual                FTL(8)
+
+NAME
+       ftl - Flash Translation Layer formatter
+
+SYNOPSIS
+       disk/ftl flashsize secsize kfsfile output
+
+DESCRIPTION
+       Ftl  reads  a file system image in kfs(3) format from kfsfile
+       and adds the data structures needed to make it a valid  image
+       for the Flash Translation Layer driver ftl(3).  The result is
+       written to the output file, which can be copied to initialise
+       the flash memory of a suitable device (see flash(3)).
+
+       The other arguments describe the characteristics of the flash
+       memory:
+
+       flashsize
+              The size in bytes of the flash memory to which  output
+              will  be copied; exactly flashsize bytes will be writ‐
+              ten to output.
+
+       secsize
+              The effective erase unit (sector) size in bytes of the
+              flash memory, as seen by the processor, having allowed
+              for bus width.  For example, a bank  of  flash  formed
+              from byte-wide flash chips, each with 16kbyte sectors,
+              wired across a 4 byte bus,  might  have  an  effective
+              erase unit size of 64kbytes.
+
+       The  kfsfile must not be larger than the size (length) of the
+       ftldata file provided by ftl(3) for the target  flash  device
+       or partition.  (That size is invariably less than the size of
+       the raw flash, owing to the overhead of FTL  data  structures
+       and  a  reserve  pool  of  5%  to  reduce the number of erase
+       cycles; see ftl(3)).
+
+SOURCE
+       /appl/cmd/disk/ftl.b
+
+SEE ALSO
+       flash(3), ftl(3), kfs(3)
+
+                                                              FTL(8)

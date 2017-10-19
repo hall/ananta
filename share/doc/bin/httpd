@@ -1,0 +1,74 @@
+HTTPD(8)               System Manager's Manual              HTTPD(8)
+
+NAME
+       httpd, echo, stats - HTTP server
+
+SYNOPSIS
+       svc/httpd/httpd [ -a addr ] [ -c cachesize ] [ -D ]
+
+       svc/httpd/echo meth vers uri search
+
+       svc/httpd/stats meth vers uri search
+
+DESCRIPTION
+       Httpd  is  a  simple  HTTP daemon, serving version 1.0 of the
+       HTTP protocol.  It listens for  incoming  calls  on  a  given
+       address  (default: tcp!*!80).  It serves content rooted at in
+       its name space.
+
+       The httpd program supports only the and methods of  the  HTTP
+       protocol.  The (default and (default of a file are determined
+       by  looking  for  suffixes  of  the  file   name   in   /ser‐
+       vices/http/http.suff.
+
+       If  the  requested  URI  begins with /magic/, httpd loads the
+       module associated with the remaining part of the  URI.   Take
+       care  to  configure  the name space sensibly.  Simple servers
+       echo and stats are provided (see below).
+
+       Httpd has the following options:
+
+       -a address
+              Listen for calls on the given address, expressed using
+              the syntax of dial(2).
+
+       -c cachesize
+              Set  the size of the daemon's cache to cachesize kilo‐
+              bytes. The default is a five megabyte cache.
+
+       -D     Debugging information is written  to  the  file  /ser‐
+              vices/httpd/httpd.debug.
+
+       Echo  is  a trivial server that just returns the method, URI,
+       any search, and the headers sent by the client.
+
+       Stats is an equally simple server that queries the cache  and
+       returns  information  to  the  user about pages stored in the
+       cache.
+
+       More complex services  can  be  written  to  httpd's  private
+       interface.   The  file  httpd.m  (in /appl/svc/httpd) defines
+       constants and adts used by httpd.  The file cgi.m defines the
+       module  which  is the interface for programs called using the
+       URI /magic/.
+
+FILES
+       /services/httpd/root
+              Root of the served web content.
+
+       /services/httpd/httpd.debug
+              Logfile for debugging information.
+
+       /services/httpd/httpd.log
+              httpd logfile.
+
+       /services/httpd/httpd.rewrite
+              File to redirect specific URI requests.
+
+       /services/httpd/httpd.suff
+              File of recognizable suffixes and their content type.
+
+SOURCE
+       /appl/svc/httpd
+
+                                                            HTTPD(8)

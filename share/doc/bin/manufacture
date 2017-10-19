@@ -1,0 +1,27 @@
+MANUFACTURE(8)         System Manager's Manual        MANUFACTURE(8)
+
+NAME
+       manufacture - command to emulate set-top-box-id in ROM
+
+SYNOPSIS
+       manufacturebox-id
+
+DESCRIPTION
+       Manufacture  initialises  the  file  /nvfs/ID with the string
+       box-id.  The file emulates the serial number that  the  manu‐
+       facturer  of  a real set top box would normally burn into ROM
+       (see also rtcid in rtc(3)).  The box-id  is  used  by  regis‐
+       ter(8).
+
+FILES
+       /nvfs/ID
+
+       /nvfs/default
+
+SOURCE
+       /appl/cmd/manufacture.b
+
+SEE ALSO
+       register(8)
+
+                                 mux                  MANUFACTURE(8)

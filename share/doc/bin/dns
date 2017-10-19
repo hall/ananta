@@ -1,0 +1,84 @@
+DNS(8)                 System Manager's Manual                DNS(8)
+
+NAME
+       dns, dnsquery - domain name service
+
+SYNOPSIS
+       ndb/dns [ -f dnsfile ] [ -h ] [ -r ] [ -x net ]
+
+       ndb/dnsquery [ -x net ] [ -s server ] [ address ...  ]
+
+DESCRIPTION
+       Dns  is  an  Internet Domain Name Service (DNS) resolver.  By
+       default it serves a file /net/dns, that clients such as cs(8)
+       write  and  read  to  retrieve  network  data associated with
+       domain names and Internet addresses.  The -f option specifies
+       the  network  database  that  contains  the  local  DNS  data
+       (default: /lib/ndb/local).  The -x option specifies an alter‐
+       native  mount  point  for  the network (default: /net).  When
+       Inferno is running hosted, dns normally uses the  host's  own
+       DNS  resolver  first  (via  srv(2)), before searching the DNS
+       itself; that way domain names can be  used  in  Inferno  with
+       minimal  configuration.   The  -h option stops dns from using
+       the host data.  In the absence of local data, by default  dns
+       consults the external DNS directly using some bootstrap data,
+       but if -r is specified and local resolvers are given  in  the
+       configuration file, dns(6), dns will query them first for all
+       addresses, before resorting to external DNS servers.
+
+       Dnsquery queries the given server (default: /net/dns)  for  a
+       translation  of  each address and prints the results, one per
+       line.  If no address is given, dnsquery prompts for something
+       to  find  in  the DNS, one per line on the standard input, of
+       the form:
+
+              name [attribute]
+
+       where name  is  the  label  of  something  in  the  DNS,  and
+       attribute is one of its attributes from the list below:
+
+       all    all data currently known locally for name
+
+       cname  name for which name is an alias
+
+       hinfo  host and operating system type
+
+       ip     for an IP address when name is a domain name
+
+       mx     mail exchanger
+
+       ns     for a list of name servers
+
+       ptr    for the domain name when name is an Internet address
+
+       soa    statement-of-authority
+
+       Dnsquery  queries the server for that name/attribute combina‐
+       tion and prints the results, one per line.  If  an  attribute
+       is  not  given,  dnsquery uses ip if name looks like a domain
+       name, and ptr if it looks like an Internet address.
+
+FILES
+       #sdns* service directory
+
+       /net/dns
+              domain name service
+
+       /lib/ndb/local
+              network database
+
+       /lib/ndb/dns
+              DNS bootstrap data
+
+SOURCE
+       /appl/cmd/ndb/dns.b
+       /appl/cmd/ndb/dnsquery.b
+
+SEE ALSO
+       dns(6), cs(8)
+
+BUGS
+       Dns does not yet offer an external  DNS  server,  mainly  for
+       lack of a suitable database for local zone data.
+
+                                                              DNS(8)

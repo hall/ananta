@@ -1,0 +1,22 @@
+FORTUNE(1)             General Commands Manual            FORTUNE(1)
+
+NAME
+       fortune - sample lines from a file
+
+SYNOPSIS
+       fortune [ file ]
+
+DESCRIPTION
+       Fortune  prints  a  one-line aphorism chosen at random.  If a
+       file is specified, the saying is taken from that file; other‐
+       wise it is selected from /lib/games/fortunes.
+
+FILES
+       /lib/games/fortunes
+       /lib/games/fortunes.index    fast  lookup  table,  maintained
+       automatically
+
+SOURCE
+       /appl/cmd/fortune.b
+
+                                                          FORTUNE(1)

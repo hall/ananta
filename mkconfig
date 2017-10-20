@@ -14,7 +14,8 @@ OBJTYPE=386       # target system architecture (386, arm, mips, power, s800, spa
 
 ############################################################
 
-OBJDIR=$ROOT/arch/$SYSTARG/$OBJTYPE
+ARCDIR=$ROOT/arch
+OBJDIR=$ARCDIR/$SYSTARG/$OBJTYPE
 BINDIR=$ROOT/bin
 LIBDIR=$ROOT/lib
 INCDIR=$ROOT/include

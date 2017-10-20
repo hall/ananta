@@ -26,7 +26,7 @@ EMUDIRS=\
 	$INCDIR/libdynld\
 	utils/data2c\
 	utils/ndate\
-	emu\
+	arch/$SYSTARG/emu\
 
 KERNEL_DIRS=\
 	os\
@@ -44,9 +44,9 @@ all:V:                  all-$HOSTMODEL
 clean:V:                clean-$HOSTMODEL
 install:V:              install-$HOSTMODEL
 installall:V:           installall-$HOSTMODEL
-emu:V:                  emu/all-$HOSTMODEL
-emuinstall:V:           emu/install-$HOSTMODEL
-emuclean:V:             emu/clean-$HOSTMODEL
+emu:V:                  $ARCDIR/all-$HOSTMODEL
+emuinstall:V:           $ARCDIR/install-$HOSTMODEL
+emuclean:V:             $ARCDIR/clean-$HOSTMODEL
 kernel:V:               kernel/all-$HOSTMODEL
 kernelclean:V:          kernel/clean-$HOSTMODEL
 kernelinstall:V:        kernel/install-$HOSTMODEL
@@ -61,12 +61,7 @@ kernelinstall:V:        kernel/install-$HOSTMODEL
 		echo '@{builtin cd' $j '; mk $MKFLAGS $stem}'
 		@{builtin cd $j; mk.exe $MKFLAGS $stem }
 	}
-&-Inferno:QV:
-	for (j in $DIRS utils) {
-		echo '@{builtin cd' $j '; mk $MKFLAGS $stem}'
-		@{builtin cd $j; mk $MKFLAGS $stem }
-	}
-&-Plan9:QV:
+&-Plan9 &-Inferno:QV:
 	for (j in $DIRS utils) {
 		echo '@{builtin cd' $j '; mk $MKFLAGS $stem}'
 		@{builtin cd $j; mk $MKFLAGS $stem }

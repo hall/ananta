@@ -1,90 +1,90 @@
-.TL
+
 Limbo profilers in Inferno
-.AU
+
 J R Firth
-.AI
+
 Vita Nuova
-.br
+
 13 June 2002
-.SP 4
-.NH 1
+
+
 Introduction
-.LP
+
 Currently there are three application level profiling tools in the
 Inferno package. 
-.I Prof
+_Prof_
 is a time profiler which, by sampling, can provide statistics
 on the percentage of time spent on each line of limbo source. 
-.I Cprof
+_Cprof_
 is a
 coverage profiler which provides the execution profile for limbo source
 code. It can accumulate results over a series of runs to allow full
 coverage testing. Finally, 
-.I mprof
+_mprof_
 is a memory profiler which provides
 statistics on the amount of memory used by each line
 of limbo source.
-.LP
+
 Two gui versions of these tools currently exist. 
-.I Wm/cprof
+_Wm/cprof_
 shows the
 coverage per module and highlights those lines which have not been
 executed or have been only partially executed. 
-.I Wm/mprof
+_Wm/mprof_
 shows the memory
 usage per module and highlights lines with high memory allocation in
 darker shades of red.
-.I Prof
+_Prof_
 itself does not have a gui equivalent as it
 was originally written to determine why acme was so slow when using it's
 global editing command. A gui for it was not a requirement at that stage.
-.LP
+
 All these tools use a common library module
-.CW /module/profile.m
-and
-.CW /appl/lib/profile.b
-that acts as the direct interface with the kernel profiling device.
-.LP
+`/module/profile.m
+`and
+`/appl/lib/profile.b
+`that acts as the direct interface with the kernel profiling device.
+
 Note that none of these tools give kernel profile statistics. For that, the devmem driver should be used.
-.LP
+
 Although the use of these tools is very similar, there are a few differences
 when it comes to interactive testing as the profilers were written to
 answer different questions. Thus 
-.I prof
+_prof_
 tries to determine 'why is blah so
 slow ?', 
-.I cprof
+_cprof_
 tries to accumulate coverage records over time and 
-.I mprof
+_mprof_
 tries to
 give a series of memory statistics at intervals during the execution of
 a program or series of programs.
-.NH 1
+
 Prof
-.LP
+
 The time profiler works by sampling. A kernel procedure sleeps for the
 given sample time and then notes the particular dis instruction currently
 being executed before repeating the process. After many such samples, an accurate profile can be obtained.
-.LP
+
 At it's simplest we can profile a particular command by giving the command
 to execute followed by any arguments to the command eg
-.sp
-.RS
+
+
 	prof wm/polyhedra
-.RE
-.sp
+
+
 profiles the polyhedra displayer. After letting the latter run for a reasonable
 amount of time, we exit and then get the following statistics.
-.br
-.DS
+
+
 Module: Wmlib(/dis/lib/wmlib.dis)
 
 34	0.06		str = load String String->PATH;
 
 **** module sampling points 1 ****
 
-.DE
-.DS
+
+
 Module: Bufio(/dis/lib/bufio.dis)
 
 340	0.06			n := 0;
@@ -180,8 +180,8 @@ Module: Polyhedra(/dis/wm/polyhedra.dis)
 
 
 **** total sampling points 1611 ****
-.DE
-.br
+
+
 The output lists all lines in all modules with a sampling point. Each line
 shows the line number in the corresponding source file, the percentage of
 time spent on that line and the source code. We can see that about 60% of
@@ -189,40 +189,40 @@ the sampling points occur on lines 37, 38, 64 and 65 of the Polyfill module.
 With this information we might then try to speed up this part of the code
 by altering the algorithm or making the limbo code more efficient (for
 instance by moving constant calculations or addressing out of loops).
-.LP
+
 The number of sampling points is also shown. The sampling rate can be
 increased with the -s option to give better granularity.
 This will cause a decrease in apparent performance but increases the
 accuracy of the results. The above example showed the results for all
 modules sampled. We might have restricted attention to the two main
 polyhedra modules instead by executing
-.sp
-.RS
+
+
 	prof -m Polyhedra -m Polyfill wm/polyhedra
-.RE
-.sp
+
+
 See the manual page for other options to 
-.I prof
+_prof_
 and further examples.
-.NH1
+
 Cprof
-.LP
+
 Coverage of instructions is achieved by running a special dis instruction execute routine in place of the usual one (just as the debugger does).
 This routine notes down each
 instruction as it is executed. The profile device then passes this information
 to 
-.I cprof
+_cprof_
 via the io system.
-.LP
+
 The coverage profiler is used in a similar way to the time profiler.
-.sp
-.RS
+
+
 	cprof -m Zeros zeros 1024 2880
-.RE
-.sp
+
+
 gives
-.br
-.DS
+
+
 Module: Zeros(zeros.dis)	56% coverage
 
 1	 	implement Zeros;
@@ -266,8 +266,8 @@ Module: Zeros(zeros.dis)	56% coverage
 39	-			'v' => (val, nil) = str->toint(arg->arg(), 16);
 40	-			* => sys->raise(sys->sprint("fail: unknown option (%c)\n", c));
 41	 			}
-.DE
-.DS
+
+
 42	+		argv = arg->argv();
 43	+		if(len argv >= 1)
 44	+			bs = int hd argv;
@@ -297,8 +297,8 @@ Module: Zeros(zeros.dis)	56% coverage
 68	+	}
 
 **** module dis instructions 39725 ****
-.DE
-.br
+
+
 Here the -m option has restricted attention to the Zeros module itself.
 The output shows the source line number, an indicator of coverage and
 the source. The indicator is + if the line has been executed, - if
@@ -306,68 +306,68 @@ it hasn't and ? if only part of it has (for instance a loop statement that has
 never had it's iteration part executed). Lines with no indicator have no
 corresponding dis instructions associated with them. Another option (-f)
 shows coverage frequencies instead.
-.LP
+
 An alternative to 
-.I cprof
+_cprof_
 is 
-.I wm/cprof
+_wm/cprof_
 which shows the statistics graphically.
 It's options are pretty much the same as those to 
-.I cprof .
+_cprof_ .
 Unexecuted and 
 partially executed lines of code are shown in colour. See the man page 
 for exact details of the colouring convention
-.LP
+
 Results may be accumulated with the -r option so that multiple runs of
 code can be made. The resulting statistics go into a file <xxx>.prf when
 <xxx>.dis is the corresponding dis file. See the manual page for further
 details on how to use this option and then review the accumulated 
 results.
-.NH 1
+
 Mprof
-.LP
+
 When memory profiling, the kernel profile device associates each heap allocation with a line of limbo source and each heap deallocation with the line of
 limbo source that allocated it. In this way, current memory usage and
 high-water usage can be determined on a line by line basis.
-.LP
+
 Here it seems that memory usage at a particular point in the execution of
 a program is more appropriate than the post-mortem approach of 
-.I prof
+_prof_
 and 
-.I cprof
+_cprof_
 , so an interactive example is described (though 
-.I mprof
+_mprof_
 can be
 used non-interactively and 
-.I prof
+_prof_
 interactively if so desired). See the manual
 pages for complete details and further examples.
-.LP
+
 To do this we execute
-.sp
-.RS
+
+
 	mprof -b -m Polyhedra
-.RE
-.sp
+
+
 which kicks off profiling and restricts attention to the Polyhedra module
 whenever it runs. The -b simply says begin profiling. Note that no command
 to execute is given to 
-.I mprof
+_mprof_
 at this stage. Then run the command
-.sp
-.RS
+
+
 	wm/polyhedra &
-.RE
-.sp
+
+
 and interact with it. Now show memory statistics
-.sp
-.RS
+
+
 	mprof
-.RE
-.sp
+
+
 This gives
-.br
-.DS
+
+
 Module: Polyhedra(/dis/wm/polyhedra.dis)
 
 44	100	100		sys = load Sys Sys->PATH;
@@ -408,8 +408,8 @@ Module: Polyhedra(/dis/wm/polyhedra.dis)
 779	0	104				return (r, s[i+1:]);
 802	0	68			s = s[1:];
 806	0	72			s = s[0: ln-1];
-.DE
-.DS
+
+
 866	0	200		cmd(mainwin, ".f1.txt configure -text {" + s + "}");
 874	0	356		labs := array[n] of string;
 881	0	5128			labs[i++] = string q.indx + " " + name;
@@ -418,8 +418,8 @@ Module: Polyhedra(/dis/wm/polyhedra.dis)
 934	0	244		cmd(win, ". configure -x " + string actr.min.x + " -y " + string actr.min.y);
 
 Module totals	31416	33984
-.DE
-.br
+
+
 We get the source line number, the amount of memory in bytes
 currently allocated on that line, the high-water mark in bytes and then the source. Thus
 loading the Sys module on line 44 used 100 bytes and this memory is
@@ -427,88 +427,88 @@ still allocated. Loading Daytime on line 51 used 3504 bytes but this is now
 released (because the module pointer is set to nil in the source and the
 memory has been reclaimed). The string concatenation on line 378 currently uses 68 bytes 
 but at it's worst it was 176 bytes.
-.LP
+
 Further interaction with wm/polyhedra can now be done and memory
 statistics reviewed before the
 profiling session is ended, throwing away the accumulated memory
 statistics inside the kernel with
-.sp
-.RS
+
+
 	mprof -c
-.RE
-.sp
+
+
 The -c option simply says cease profiling.
-.LP
+
 An alternative to 
-.I mprof
+_mprof_
 is 
-.I wm/mprof
+_wm/mprof_
 which shows the statistics graphically.
 It's options are pretty much the same as those to 
-.I mprof .
+_mprof_ .
 Lines of code
 which have allocated more of the memory are shown in darker shades of red.
-.NH 1
+
 Manual pages
-.LP
+
 Further information and other examples are given in the following
 manual pages :-
-.sp
-.RS
-.I cprof(1)
-.br
-.I mprof(1)
-.br
-.I prof(1)
-.br
-.I wm-cprof(1)
-.br
-.I wm-mprof(1)
-.RE
-.sp
+
+
+_cprof(1)_
+
+_mprof(1)_
+
+_prof(1)_
+
+_wm-cprof(1)_
+
+_wm-mprof(1)_
+
+
 For the lower level library module interface to these profilers
-.sp
-.RS
-.I prof(2)
-.RE
-.sp
+
+
+_prof(2)_
+
+
 For the kernel profile device which gathers timing, coverage and memory
 statistics
-.sp
-.RS
-.I prof(3)
-.RE
-.br
-.NH 1
+
+
+_prof(3)_
+
+
+
 Sources
-.LP
+
 The relevant sources are
-.sp
-.RS
-.CW /module/profile.m
-.br
-.CW /appl/lib/profile.b
-.br
-.CW /appl/cmd/cprof.b
-.br
-.CW /appl/cmd/mprof.b
-.br
-.CW /appl/cmd/prof.b
-.br
-.CW /appl/wm/cprof.b
-.br
-.CW /appl/wm/mprof.b
-.br
-.CW /emu/devprof.c
-.br
-.CW /os/port/devprof.c
-.RE
-.NH 1
+
+
+`/module/profile.m
+`.br
+`/appl/lib/profile.b
+`.br
+`/appl/cmd/cprof.b
+`.br
+`/appl/cmd/mprof.b
+`.br
+`/appl/cmd/prof.b
+`.br
+`/appl/wm/cprof.b
+`.br
+`/appl/wm/mprof.b
+`.br
+`/emu/devprof.c
+`.br
+`/os/port/devprof.c
+`.RE
+
 Addendum
-.LP
+
 A gui version of
-.I prof
+_prof_
 has been added for completeness. See the manual page
-.I wm-prof(1)
+_wm-prof(1)_
 and the source
-.CW /appl/wm/prof.b .
+`/appl/wm/prof.b` .

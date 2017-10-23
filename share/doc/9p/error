@@ -1,18 +1,10 @@
-ERROR(5)                 File Formats Manual                ERROR(5)
+= error: return an error
 
-NAME
-       error - return an error
+    size[4] Rerror tag[2] ename[s]
 
-SYNOPSIS
-       size[4] Rerror tag[2] ename[s]
+The  Rerror message (there is no Terror) is used to return an
+error string describing the failure  of  a  transaction.   It
+replaces the corresponding reply message that would accompany
+a successful call; its tag is that of the failing request.
 
-DESCRIPTION
-       The  Rerror message (there is no Terror) is used to return an
-       error string describing the failure  of  a  transaction.   It
-       replaces the corresponding reply message that would accompany
-       a successful call; its tag is that of the failing request.
-
-       By convention, clients  may  truncate  error  messages  after
-       Sys->ERRMAX-1 bytes.
-
-                                                            ERROR(5)
+By convention, clients  may  truncate  error  messages  after Sys->ERRMAX-1 bytes.

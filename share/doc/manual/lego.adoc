@@ -1,15 +1,5 @@
-
-Styx-on-a-Brick
-
-Chris Locke
-
-chris@vitanuova.com
-
-Vita Nuova
-
-June 2000
-
-Background
+= Styx-on-a-Brick
+Chris Locke <chris@vitanuova.com>
 
 The aim of the Vita-Nuova ``styx-on-a-brick'' project was
 to demonstrate the simplicity of the Styx protocol and the ease

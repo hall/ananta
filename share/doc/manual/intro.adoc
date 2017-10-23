@@ -6,12 +6,6 @@ services.  It was originally developed by the Computing Science Research
 Center of Bell Labs, the R&D arm of Lucent Technologies, and further
 developed by other groups in Lucent.
 
-Inferno was designed specifically as a commercial product, both for
-licensing in the marketplace and for use within new Lucent offerings.
-It encapsulates many years of Bell Labs research in operating systems,
-languages, on-the-fly compilers, graphics, security, networking and
-portability.
-
 
 == Introduction
 
@@ -993,7 +987,7 @@ programmer convenience.
 == Summary
 
 Inferno supplies a rich environment for constructing distributed
-applications that are portable\-in fact identical\-even when running on
+applications that are portable--in fact identical--even when running on
 widely divergent underlying hardware.  Its unique advantage over other
 solutions is that it encompasses not only a virtual machine, but also
 a complete virtual operating system including network facilities.
@@ -1001,79 +995,30 @@ a complete virtual operating system including network facilities.
 
 == Acknowledgment
 
-The cryptographic elements of Inferno owe much to the cryptographic
-library of Lacy et al. [22].
+The cryptographic elements of Inferno owe much to the cryptographic library of Lacy et al. [22].
 
 
 == References
 
-. R. Pike, D. Presotto, S. Dorward, B. Flandrena, K. Thompson, H. Trickey,
-and P. Winterbottom. ``Plan 9 from Bell Labs'', _"J._ Computing Systems"
-8:3, Summer 1995, pp. 221-254.
-
-. S. Dorward, R. Pike, and P. Winterbottom.  ``Programming in Limbo'',
-_"IEEE_ Compcon 97 Proceedings" , 1997.
-
-. J. K. Ousterhout.  _"Tcl_ and the Tk Toolkit" , Addison-Wesley, 1994.
-
-. T. Elgamal, ``A Public-Key Cryptosystem and a Signature Scheme Based
-on Discrete Logarithms'', _"Advances_ in Cryptography: Proceedings of
-CRYPTO 84, " Springer Verlag, 1985, pp. 10-18
-
-. B. Schneier,  ``Applied Cryptography'',  Wiley, 1996, p. 516
-
-. D. Stinson, ``Cryptography, Theory and Practice'', _"CRC_ Press" ,
-1996, p. 271
-
-. K. Hickman and T. Elgamal, ``The SSL Protocol (V3.0)'', _"IETF_
-Internet-draft"
-
-. S. M. Bellovin and M. Merritt, ``Encrypted Key Exchange: Password-Based
-Protocols  Secure Against Dictionary Attack'', Proceedings of the 1992
-IEEE Computer Society Conference on Research in Security and Privacy,
-1992, pp. 72-84
-
-. M. Blaze, J. Feigenbaum, J. Lacy, ``Decentralized Trust Management'',
-_"Proceedings_ 1996 IEEE Symposium on Security and Privacy" , May 1996
-
-. R. Rivest and B. Lampson, ``SDSI - A Simple
-Distributed Security Architecture'', unpublished,
-_"http://theory.lcs.mit.edu/~rivest/sdsi10.ps"_
-
-. _"American_ National Standard for Information Systems  Programming
-Language C" , American National Standards Institute, X3.159-1989.
-
-. _"GIF_ Graphics Interchange Format: A standard defining a mechanism for
-the storage and transmission of bitmap-based graphics information" ,
-CompuServe Incorporated, Columbus, OH, 1987.
-
-. _"GIF_ Graphics Interchange Format: Version 89a" , CompuServe
-Incorporated, Columbus, OH, 1990.
-
-. S. Dorward et al., ``Inferno'', _"IEEE_ Compcon 97 Proceedings" , 1997.
-
-. C. A. R. Hoare, ``Communicating Sequential Processes''.  _"Comm._ ACM"
-21:8,  pp. 666-677, 1978.
-
-. L. Huelsbergen, and P. Winterbottom, ``Very Concurrent Mark & Sweep
-Garbage Collection without Fine-Grain Synchronization'', Submitted
-_"International_ Conference of Functional Programming" , Amsterdam, 1997.
-
-. K. Jensen, and N. Wirth, _"PascalUser_ Manual and Report" .
-Springer-Verlag, 1974.
-
-. John K. Ousterhout, _"Tcl_ and the Tk Toolkit" , Addison-Wesley, 1994.
-
-. W. B. Pennebaker. and J. L. Mitchell, _"JPEG_ Still Image Data
-Compression" , Van Nostrand Reinhold, New York, 1992.
-
-. R. W. Scheifler, J. Gettys, and R. Newman, _"X_ Window System" , Digital
-Press, 1988.
-
-. The Unicode Consortium, _"The_ Unicode Standard, Version 2.0, " Addison
-Wesley, 1996.
-
-. J. B. Lacy, D. P. Mitchell, and W. M. Schell, ``CryptoLib: Cryptography
-in Software,'' _"UNIX_ Security Symposium IV Proceedings" , USENIX
-Association, 1993 pp. 1-17.
-
+. R. Pike, D. Presotto, S. Dorward, B. Flandrena, K. Thompson, H. Trickey, and P. Winterbottom. 'Plan 9 from Bell Labs', _J. Computing Systems_ 8:3, Summer 1995, pp. 221-254.
+. S. Dorward, R. Pike, and P. Winterbottom.  'Programming in Limbo', _IEEE Compcon 97 Proceedings_, 1997.
+. J. K. Ousterhout. _Tcl_ and the Tk Toolkit_, Addison-Wesley, 1994.
+. T. Elgamal, 'A Public-Key Cryptosystem and a Signature Scheme Based on Discrete Logarithms', _Advances in Cryptography: Proceedings of CRYPTO 84,_ Springer Verlag, 1985, pp. 10-18
+. B. Schneier,  'Applied Cryptography',  Wiley, 1996, p. 516
+. D. Stinson, 'Cryptography, Theory and Practice', _CRC Press_, 1996, p. 271
+. K. Hickman and T. Elgamal, 'The SSL Protocol (V3.0)', _IETF Internet-draft_
+. S. M. Bellovin and M. Merritt, 'Encrypted Key Exchange: Password-Based Protocols Secure Against Dictionary Attack', Proceedings of the 1992 IEEE Computer Society Conference on Research in Security and Privacy, 1992, pp. 72-84
+. M. Blaze, J. Feigenbaum, J. Lacy, `Decentralized Trust Management', _Proceedings 1996 IEEE Symposium on Security and Privacy_, May 1996
+. R. Rivest and B. Lampson, 'SDSI - A Simple Distributed Security Architecture', unpublished, _http://theory.lcs.mit.edu/~rivest/sdsi10.ps_
+. _American National Standard for Information Systems Programming Language C_, American National Standards Institute, X3.159-1989.
+. _GIF Graphics Interchange Format: A standard defining a mechanism for the storage and transmission of bitmap-based graphics information_, CompuServe Incorporated, Columbus, OH, 1987.
+. _GIF Graphics Interchange Format: Version 89a_, CompuServe Incorporated, Columbus, OH, 1990.
+. S. Dorward et al., 'Inferno', _IEEE Compcon 97 Proceedings_ , 1997.
+. C. A. R. Hoare, 'Communicating Sequential Processes'.  _Comm. ACM_ 21:8,  pp. 666-677, 1978.
+. L. Huelsbergen, and P. Winterbottom, 'Very Concurrent Mark & Sweep Garbage Collection without Fine-Grain Synchronization', Submitted _International Conference of Functional Programming_, Amsterdam, 1997.
+. K. Jensen, and N. Wirth, _PascalUser Manual and Report_. Springer-Verlag, 1974.
+. John K. Ousterhout, _Tcl and the Tk Toolkit_, Addison-Wesley, 1994.
+. W. B. Pennebaker. and J. L. Mitchell, _JPEG Still Image Data Compression_, Van Nostrand Reinhold, New York, 1992.
+. R. W. Scheifler, J. Gettys, and R. Newman, _X Window System_, Digital Press, 1988.
+. The Unicode Consortium, _The Unicode Standard, Version 2.0_, Addison Wesley, 1996.
+. J. B. Lacy, D. P. Mitchell, and W. M. Schell, 'CryptoLib: Cryptography in Software,' _UNIX Security Symposium IV Proceedings_, USENIX Association, 1993 pp. 1-17.

@@ -1,240 +1,100 @@
-NAMESPACE(4)          Kernel Interfaces Manual          NAMESPACE(4)
-
-NAME
-       namespace - structure of conventional Inferno name space
-
-SYNOPSIS
-       none
-
-DESCRIPTION
-       The  list below gives an overview of the Inferno distribution
-       file tree, organised into related categories.
-
-       /      The  root  directory.  To  programs  running   outside
-              Inferno,  this  corresponds  to the directory in which
-              Inferno has been  installed  (e.g.   C:\inferno  under
-              Windows).
-
-   Mount points
-       The  following  are all placeholders for filesystems that are
-       mounted when Inferno is running. They contain no data  files.
-       Although  an  Inferno  namespace  is  a  dynamic  entity, and
-       devices can be mounted anywhere therein, many programs assume
-       that  devices  have  been  mounted in the standard places, as
-       suggested by the skeleton directories listed below.
-
-       /dev   The standard mount point for devices (e.g.  cons(3))
-
-       /env   The standard mount point for the env(3) device.
-
-       /mnt   A directory containing mount points for applications.
-
-       /chan  An empty directory, used  for  holding  files  created
-              with sys-file2chan(2).
-
-       /net   The  standard mount point directory for network inter‐
-              faces.
-
-       /n     A directory containing mount points for file trees  on
-              local devices or imported from remote systems.
-
-       /prog  An  empty  directory,  the mount point for the prog(3)
-              device.
-
-       /nvfs  An empty directory, the mount point for a non-volatile
-              RAM filesystem on devices that have one.
-
-       /tmp   Mount  point  for private directory of temporary files
-              (eg, /usr/user/tmp).
-
-       /mail  Conventional place to mount mailboxes.
-
-   Limbo applications
-       /dis   Dis executables (commands)
-
-       /dis/lib
-              Dis libraries
-
-       /dis/wm
-              Dis commands that run under wm(1).
-
-       /man   Manual pages.
-
-       /doc   Documentation other than manual pages.
-
-       /appl  Source to Limbo applications.
-
-       /appl/cmd
-              Source to the commands in /dis (as documented in  Sec‐
-              tion 1).
-
-       /appl/wm
-              Source to the commands in /dis/wm
-
-       /appl/lib
-              Source  to  the  modules in /dis/lib (as documented in
-              Section 2).
-
-       /module
-              Limbo module declarations
-
-   Supporting data
-       /acme  Programs and guide files specific to acme(1).
-
-       /fonts Font definitions
-
-       /locale
-              Timezone and locale information
-
-       /icons Contains image(6) files used by programs.
-
-       /icons/tk
-              Default directory searched by tk's -bitmap option (see
-              options(9)).
-
-       /lib   Static program-specific data.
-
-       /lib/ndb
-              Network  configuration files used by cs(8), dns(8) and
-              others.
-
-   Administration
-       /keydb Storage  of  secrets  and  certificates   on   signers
-              (authentication servers).
-
-       /services
-              A jungle of program-specific configuration files.
-
-   Platform specific
-       /Platform
-              Binaries  specific  to  Platform.   Current  platforms
-              include Inferno (native binaries), FreeBSD, Hp,  Irix,
-              Linux, Nt, Plan9, Solaris and Unixware.
-
-       /Platform/arch/bin
-
-       /Platform/arch/lib
-
-       /Platform/arch/include
-              Platform  specific  binaries,  libraries  and  include
-              files respectively.  Arch is the architecture type, as
-              defined  in 2c(10.1) and held in the $objtype environ‐
-              ment variable.
-
-       /usr   A directory containing user directories.
-
-   Inferno source code
-       /emu   Directory containing source specific to emu(1).
-
-       /emu/port
-              Cross-platform source for emu(1).  /emu/Platform Plat‐
-              form-specific source for emu(1).
-
-       /libkfs
-              The emu version of kfs(3).
-
-       /libbio
-
-       /libregexp
-              Source to libraries used by hosted commands.
-
-       /lib9  Source  to  the  Plan 9 emulation library, used by emu
-              and the hosted commands.
-
-       /libmemdraw
-
-       /libmemlayer
-
-       /libprefab
-
-       /libkern
-
-       /libkeyring
-
-       /libdraw
-
-       /libinterp
-
-       /libtk Inferno source used by both native and hosted versions
-              of Inferno.
-
-       /asm
-
-       /limbo Source  to the two hosted Inferno commands of the same
-              name.
-
-       /utils Source to hosted utilities run  from  emu(1)  via  the
-              cmd(3) interface.
-
-       /tools A  directory  containing source directories for hosted
-              tools used in building Inferno (e.g.  mk(10.1)).
-
-       /os    A directory holding source directories for the  native
-              versions of Inferno.
-
-       /os/init
-              Limbo source for platform-specific initialisation pro‐
-              cedures.
-
-       /os/port
-              Portable native kernel source.
-
-       /os/arch
-              Arch-specific native kernel source.
-
-       /os/kfs
-              The native kernel version of kfs(3).
-
-   Minimal name space
-       The above is all very well on a system with lots of  storage,
-       but  what  is  actually necessary for the running of Inferno?
-       The following gives a quick summary  of  the  structure  that
-       must be provided for Inferno to function correctly.
-
-       /dis   This must contain Dis modules for all the applications
-              you plan to run, and the modules they depend on.  Dis‐
-              dep(1)  can  be  useful  when trying to determine this
-              set.
-
-       /dev
-
-       /env
-
-       /chan
-
-       /net
-
-       /prog
-
-       /tmp   All empty unwritable directories,  place  holders  for
-              mounted  services  and  applications.  Often these are
-              provided by the built-in root(3).
-
-       /mnt   A directory containing mount points for applications.
-
-       /n     A directory containing mount points  for  remote  file
-              systems.
-
-   Files needed to run as a server
-       /keydb/keys
-              See keyfs(4), logind(8) and signer(8).
-
-       /keydb/signerkey
-              See createsignerkey(8) and logind(8).
-
-   Files needed to run the window manager
-       /fonts At  least  one  font must be provided - a default font
-              for Tk to use.
-
-       /icons/tk
-              This should contain icons used  by  applications  that
-              run within Tk.
-
-       /user/user
-              At  least one user directory must exist if logon(1) is
-              to function correctly.
-
-SEE ALSO
-       intro(1), root(3), namespace(6)
-
-                                                        NAMESPACE(4)
+= namespace: structure of conventional name space
+
+While any structure is valid, many programs assume the following tree.
+
+    /                      root (the install directory)
+    |     /* MOUNT POINTS */
+    |-- dev                devices (e.g., cons(3))
+    |-- env                env(3)
+    |-- mnt                applications
+    |-- chan               files created with sys-file2chan(2)
+    |-- net                network interfaces
+    |-- n                  file trees on local or remote systems
+    |-- prog               prog(3)
+    |-- nvfs               non-volatile RAM
+    |-- tmp                private directory of temporary files
+    |-- mail               conventional mailboxes
+    |      /* LIMBO APPS */
+    |-- dis                dis executables
+    |   |-- lib            dis libraries
+    |   `-- wm             dis commands that run under wm
+    |-- appl               source to Limbo applications
+    |   |-- cmd            source to the commands in /dis.
+    |   |-- wm             source to the commands in /dis/wm
+    |   `-- lib            source  to  the  modules in /dis/lib
+    |-- module             Limbo module declarations
+    |    /* SUPPORTING DATA */
+    |-- acme               programs and guide files specific to acme(1)
+    |-- share              system wide files
+    |   |-- font
+    |   |-- icon           image(6) files
+    |   |   `-- tk         search directory for tk's -bitmap option (options(9))
+    |   `-- doc
+    |-- lib                static program-specific data
+    |   `-- ndb            network configuration files (cs(8), dns(8), ...)
+    |     /* ADMINISTRATION */
+    |-- keydb              secrets and certificates on signers
+    |-- services           program-specific configuration files
+    |    /* PLATFORM SPECIFIC */
+    |-- arch
+    |   |-- <cpu>          instruction-set-archecture specific code
+    |   |   |-- native     arch-specific native kernel source
+    |   |   `-- <platform> operating-system-specific code
+    |   |       |-- bin     
+    |   |       |-- lib     
+    |   |       |-- include     
+    |   |       `-- emu
+    |   `-- port
+    |       |-- emu        cross-platform source for emu(1)
+    |       `-- native     portable native kernel source
+    |           |-- init   limbo source for platform-specific initialisation procedures
+    |           `-- kfs    the native kernel version of kfs(3)
+    |-- usr                user directories
+    |     /* INFERNO SOURCE */
+    |-- include
+    |   |-- libkfs                emu version of kfs(3)
+    |   |-- libbio
+    |   |-- libregexp      libraries used by hosted commands
+    |   |-- lib9           Plan 9 emulation library, for emu and the hosted commands
+    |   |-- libmemdraw
+    |   |-- libmemlayer
+    |   |-- libprefab
+    |   |-- libkern
+    |   |-- libkeyring
+    |   |-- libdraw
+    |   |-- libinterp
+    |   |-- libtk Inferno source used by both native and hosted versions of Inferno.
+    |   `-- limbo          hosted command of the same name
+    |-- utils              hosted utilities run  from  emu(1)  via  the cmd(3) interface
+    `-- tools              hosted tools used in building Inferno (e.g.  mk(10.1))
+
+
+== minimal namespace
+
+The minimum structure necessary to function is
+
+    /dis
+    /dev
+    /env
+    /chan
+    /net
+    /prog
+    /tmp
+    /mnt
+    /n
+
+In addition, the following are required if running a server:
+
+    /keydb/keys          see keyfs(4), logind(8) and signer(8)
+    /keydb/signerkey     see createsignerkey(8) and logind(8)
+
+or a window manager:
+
+    /fonts               at least one font
+    /icons/tk            any necessary icons
+    /user/_name_         at least one if logon(1) is desired
+
+
+== related
+
+    intro(1), root(3), namespace(6)

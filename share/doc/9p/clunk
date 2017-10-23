@@ -1,30 +1,27 @@
-CLUNK(5)                 File Formats Manual                CLUNK(5)
+= clunk: forget about a fid
 
-NAME
-       clunk - forget about a fid
+    size[4] Tclunk tag[2] fid[4]
+    size[4] Rclunk tag[2]
 
-SYNOPSIS
-       size[4] Tclunk tag[2] fid[4]
-       size[4] Rclunk tag[2]
+The  clunk  request  informs the file server that the current
+file represented by fid is no longer needed  by  the  client.
+The  actual  file is not removed on the server unless the fid
+had been opened with ORCLOSE.
 
-DESCRIPTION
-       The  clunk  request  informs the file server that the current
-       file represented by fid is no longer needed  by  the  client.
-       The  actual  file is not removed on the server unless the fid
-       had been opened with ORCLOSE.
+Once a fid has been clunked, the same fid can be reused in  a
+new walk or attach request.
 
-       Once a fid has been clunked, the same fid can be reused in  a
-       new walk or attach request.
+Even  if  the  clunk  returns  an error, the fid is no longer
+valid.
 
-       Even  if  the  clunk  returns  an error, the fid is no longer
-       valid.
 
-ENTRY POINTS
-       A clunk message is generated when a file descriptor is closed
-       (usually  by  the  garbage collector) and indirectly by other
-       actions such as failed open calls.
+== entry points
 
-SEE ALSO
-       sys-open(2)
+A clunk message is generated when a file descriptor is closed
+(usually  by  the  garbage collector) and indirectly by other
+actions such as failed open calls.
 
-                                                            CLUNK(5)
+
+== related
+
+    sys-open(2)

@@ -329,4 +329,3 @@ top-level function will be in the shell's module).
 `Wm/deb` can be used to debug multiple threads, to inspect the data
 structures in a thread, and to interactively step through the running
 of a thread (single stepping).  See `wm-deb`(1) for details.
-

@@ -1,0 +1,53 @@
+SYSTARG=linux
+<$ROOT/mkconfig
+SYSTARG=linux
+
+#Configurable parameters
+
+CONF=emu			#default configuration
+CONFLIST=emu
+CLEANCONFLIST=
+
+INSTALLDIR=$OBJDIR/bin    #path of directory where kernel is installed
+
+#end configurable parameters
+
+X11LIBS= -lX11 -lXext	# can remove or override using env section in config files
+
+<$OBJDIR/mkfile  #set vars based on target system
+
+<| $SHELLNAME $ROOT/arch/emu/port/mkdevlist $CONF	#sets $IP, $DEVS, $PORT, $LIBS
+<mkfile-$OBJTYPE	# sets $ARCHFILES
+
+OBJ=\
+	asm-$OBJTYPE.$O\
+	$ARCHFILES\
+	os.$O\
+	kproc-pthreads.$O\
+	segflush-$OBJTYPE.$O\
+	$CONF.root.$O\
+	lock.$O\
+	$DEVS\
+	$PORT\
+
+LIBNAMES=${LIBS:%=lib%.a}
+#libs=${LIBS:%=$ROOT/$OBJDIR/lib/lib%.a}
+
+HFILES=\
+
+CFLAGS='-DROOT="'$ROOT'"' -DEMU -I. -I$ROOT/arch/emu/port -I$OBJDIR/include -I$ROOT/include -I$ROOT/include/libinterp $CTHREADFLAGS $CFLAGS $EMUOPTIONS
+SYSLIBS= $X11LIBS -lm -lpthread
+KERNDATE=`{$NDATE}
+
+default:V:	$O.$CONF
+
+$O.$CONF:	$OBJ $CONF.c $CONF.root.h $LIBNAMES
+	$CC $CFLAGS '-DKERNDATE='$KERNDATE $CONF.c
+	$LD $LDFLAGS -o $target $OBJ $CONF.$O $LIBFILES $SYSLIBS
+
+install:V: $O.$CONF
+	cp $O.$CONF $INSTALLDIR/$CONF
+
+<$ROOT/arch/emu/port/portmkfile
+
+devfs.$O:	$ROOT/arch/emu/port/devfs-posix.c

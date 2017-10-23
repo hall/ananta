@@ -1,7 +1,7 @@
 #
 #	Rules for updating a library with Nt rcsh
 #
-LIBRARY=$LIBDIR/$LIB
+LIBRARY=$OBJDIR/lib$LIB
 LIBOBJ=${OFILES:%=$LIBRARY(%)}
 
 default:V:	all
@@ -42,11 +42,11 @@ nuke-std:V:	clean-std
 	rm -f y.tab.? y.output y.error *.pdb *.pch
 	rm -f $LIBRARY
 
-#nuke-std:V:	clean-std $LIBDIR/fake.lib
+#nuke-std:V:	clean-std $OBJDIR/libfake.lib
 #	rm -f y.tab.? y.output y.error *.pdb *.pch
-#	cp $LIBDIR/fake.lib $LIBRARY
+#	cp $OBJDIR/libfake.lib $LIBRARY
 #
-#$LIBDIR/fake.lib:
+#$OBJDIR/libfake.lib:
 #	echo 'void axzzzzzzz(void) { return; }' > fooxx.c
 #	$CC $CFLAGS fooxx.c
 #	$AR $ARFLAGS -out:$target fooxx.obj

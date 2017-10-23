@@ -27,7 +27,7 @@ LIBS=cc bio 9			# order is important.
 
 CFLAGS=	$CFLAGS -I../include
 
-$LIBDIR/libcc.a:
+$OBJDIR/liblibcc.a:
 	cd ../cc
 	mk $MKFLAGS install
 	mk $MKFLAGS clean

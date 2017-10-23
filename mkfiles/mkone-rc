@@ -1,4 +1,4 @@
-libs=${LIBS:%=$LIBDIR/lib%.a}
+libs=${LIBS:%=$OBJDIR/liblib%.a}
 
 all:V:	$O.out
 

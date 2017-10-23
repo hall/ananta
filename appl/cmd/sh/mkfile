@@ -63,4 +63,4 @@ uninstall:V:
 $ROOT/dis/sh.dis:	sh.dis
 	rm -f $ROOT/dis/sh.dis && cp sh.dis $ROOT/dis/sh.dis
 
-%.dis: ${SYSMODULES:%=$MODDIR/%}
+%.dis: ${SYSMODULES:%=$ROOT/module/%}

@@ -2,7 +2,7 @@
 :docpath: ./share/doc/manual
 :name: inf
 
-link:{docpath}/inf.adoc[{name}] is a derivative of http://www.inferno-os.info/inferno/[Inferno] (a distributed operating system originally developed at http://www.bell-labs.com/[Bell Labs] and currently maintained by http://www.vitanuova.com/[Vita Nuova]) aimed at modernization for mass adoption.
+link:{docpath}/intro.adoc[{name}] is a derivative of http://www.inferno-os.info/inferno/[Inferno] (a distributed operating system originally developed at http://www.bell-labs.com/[Bell Labs] and currently maintained by http://www.vitanuova.com/[Vita Nuova]) aimed at modernization for mass adoption.
 
 WARNING: {name} is not ready for production use.
 
@@ -11,35 +11,33 @@ Applications are written in link:{docpath}/limbo.adoc[limbo] and compiled for li
 The design has three principles:
 
  .  All resources are named and accessed as files.
- .  One protocol (link:{docpath}/styx.adoc[styx]) allows uniform access to these resources.
+ .  One protocol (link:{docpath}/9p.adoc[9p]) allows uniform access to these resources.
  .  A single local namespace joins resources provided by remote services.
 
 In this manner, programs can access resources using only the file operations `open`, `read`, `write`, and `close`.
 
-NOTE: That is to say, networked participants only need to communicate with styx instead of http(s)/dav, smtp, imap/pop, ssh/scp, tcp/ip/udp, ftp, ssl/tls, smb, ntp, ppp, ldap, dhcp, dns, sip, mac, ...
+NOTE: That is to say, networked participants only need to communicate with 9p instead of http(s)/dav, smtp, imap/pop, ssh/scp, tcp/ip/udp, ftp, ssl/tls, smb, ntp, ppp, ldap, dhcp, dns, sip, mac, ...
 
 
 The following system/architecture pairs are supported:
 
-[cols="s,5*^"]
+[cols="s,9*^"]
 |===
-|           | x86 | mips | power | sparc | s800
+|             | 386 |amd64| arm |68020| mips|power|sparc| spim|thumb
 
-|FreeBSD    |  h  |      |       |       |
-|HP/UX      |     |      |       |       |  p
-|Irix       |     |   h  |       |       |
-|Linux      |  h  |      |       |       |
-|MacOSX     |  h  |      |   h   |       |
-|NetBSD     |  h  |      |       |       |
-|Plan 9     |  h  |   h  |   h   |   h   |
-|Solaris    |  p  |      |       |   h   |
-|Unixware   |     |      |       |       |
-|Windows    |     |      |       |       |
+|DragonFlyBSD |  x  |     |     |     |     |     |     |     |
+|FreeBSD      |  x  |     |     |     |     |     |     |     |
+|HP/UX        |     |     |     |     |  o  |     |     |     |
+|Irix         |     |     |     |     |  x  |     |     |     |
+|Inferno      |  x  |     |  x  |     |  x  |  x  |  x  |  x  |  x
+|Linux        |  x  |     |  x  |     |     |  x  |     |  x  |
+|MacOSX       |  x  |     |     |     |     |  x  |     |     |
+|NetBSD       |  x  |     |     |     |     |     |     |     |
+|Plan 9       |  x  |  x  |  x  |  x  |  x  |  x  |  x  |     |
+|Solaris      |  o  |     |     |     |     |     |  x  |     |
+|Unixware     |  x  |     |     |     |     |     |     |     |
+|Windows      |  x  |     |     |     |     |     |     |     |
 |===
-
-    h - hosted (with emu)
-    n - native
-    p - partial support
 
 //Dependencies:
 
@@ -49,7 +47,7 @@ To install
 
  . edit link:mkconfig[`mkconfig`]
  . execute link:makemk.sh[`makemk.sh`] to build link:{docpath}/mk.adoc[`mk`].
- . set `PATH` to include the `$ROOT/bin/` directory.
+ . set `PATH` to include the `$ROOT/arch/$OBJTYPE/$SYSTARG/bin/` directory.
  . run `mk install`
 
 This will create and install the libraries, limbo compiler, emu (if running hosted), and auxiliary commands.

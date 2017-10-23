@@ -8,10 +8,10 @@ OFILES=\
 	rsaalg.$O
 
 HFILES=\
-	$INCDIR/mp.h\
-	$INCDIR/libsec.h\
-	$INCDIR/libinterp/runt.h\
-	$INCDIR/interp.h\
+	$ROOT/include/mp.h\
+	$ROOT/include/libsec.h\
+	$ROOT/include/libinterp/runt.h\
+	$ROOT/include/interp.h\
 	keys.h\
 
 <$ROOT/mkfiles/mksyslib-$SHELLTYPE

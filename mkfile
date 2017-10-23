@@ -8,25 +8,25 @@
 <mkconfig
 
 EMUDIRS=\
-	$INCDIR/lib9\
-	$INCDIR/libbio\
-	$INCDIR/libmp\
-	$INCDIR/libsec\
-	$INCDIR/libmath\
+	include/lib9\
+	include/libbio\
+	include/libmp\
+	include/libsec\
+	include/libmath\
 	utils/iyacc\
-	$INCDIR/limbo\
-	$INCDIR/libinterp\
-	$INCDIR/libkeyring\
-	$INCDIR/libdraw\
-	$INCDIR/libprefab\
-	$INCDIR/libtk\
-	$INCDIR/libfreetype\
-	$INCDIR/libmemdraw\
-	$INCDIR/libmemlayer\
-	$INCDIR/libdynld\
+	include/limbo\
+	include/libinterp\
+	include/libkeyring\
+	include/libdraw\
+	include/libprefab\
+	include/libtk\
+	include/libfreetype\
+	include/libmemdraw\
+	include/libmemlayer\
+	include/libdynld\
 	utils/data2c\
 	utils/ndate\
-	arch/$SYSTARG/emu\
+	arch/emu/$SYSTARG\
 
 KERNEL_DIRS=\
 	os\
@@ -44,9 +44,9 @@ all:V:                  all-$HOSTMODEL
 clean:V:                clean-$HOSTMODEL
 install:V:              install-$HOSTMODEL
 installall:V:           installall-$HOSTMODEL
-emu:V:                  $ARCDIR/all-$HOSTMODEL
-emuinstall:V:           $ARCDIR/install-$HOSTMODEL
-emuclean:V:             $ARCDIR/clean-$HOSTMODEL
+emu:V:                  $ROOT/arch/all-$HOSTMODEL
+emuinstall:V:           $ROOT/arch/install-$HOSTMODEL
+emuclean:V:             $ROOT/arch/clean-$HOSTMODEL
 kernel:V:               kernel/all-$HOSTMODEL
 kernelclean:V:          kernel/clean-$HOSTMODEL
 kernelinstall:V:        kernel/install-$HOSTMODEL

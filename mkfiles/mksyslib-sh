@@ -1,7 +1,7 @@
 #
 #	Rules for updating a library with sh
 #
-LIBRARY=$LIBDIR/$LIB
+LIBRARY=$OBJDIR/lib$LIB
 LIBOBJ=${OFILES:%=$LIBRARY(%)}
 
 default:V:	all

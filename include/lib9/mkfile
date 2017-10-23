@@ -85,8 +85,8 @@ HFILES=$OBJDIR/include/lib9.h\
 
 <$ROOT/mkfiles/mksyslib-$SHELLTYPE
 
-convD2M.$O: $INCDIR/fcall.h
-convM2D.$O: $INCDIR/fcall.h
-convM2S.$O: $INCDIR/fcall.h
-convS2M.$O: $INCDIR/fcall.h
-fcallfmt.$O: $INCDIR/fcall.h
+convD2M.$O: $ROOT/include/fcall.h
+convM2D.$O: $ROOT/include/fcall.h
+convM2S.$O: $ROOT/include/fcall.h
+convS2M.$O: $ROOT/include/fcall.h
+fcallfmt.$O: $ROOT/include/fcall.h

@@ -1,0 +1,166 @@
+PORTHFILES=\
+	$OBJDIR/include/lib9.h\
+	$OBJDIR/include/emu.h\
+	$ROOT/include/fcall.h\
+	$ROOT/include/interp.h\
+	$ROOT/include/draw.h\
+	$ROOT/arch/emu/port/error.h\
+	$ROOT/arch/emu/port/dat.h\
+	$ROOT/arch/emu/port/fns.h\
+
+LIBNAMES=${LIBS:%=lib%.a}
+LIBFILES=${LIBS:%=$OBJDIR/lib/lib%.a}
+
+$OBJDIR/lib/lib%.a:N:	lib%.a
+
+%.$O:	%.s
+	$AS $ASFLAGS $stem.s
+
+%.$O:	%.S$MACOSINF
+	$AS $ASFLAGS $stem.S
+
+%.$O:	%.c
+	$CC $CFLAGS $stem.c
+
+%.$O:		$ROOT/arch/emu/port/%.c
+		$CC $CFLAGS -I. $ROOT/arch/emu/port/$stem.c
+
+#%.$O:		$ROOT/arch/native/ip/%.c
+#		$CC $CFLAGS -I. $ROOT/arch/native/ip/$stem.c
+
+&.$O:		$HFILES $PORTHFILES
+
+$INSTALLDIR/%: %
+	cp $stem $INSTALLDIR/$stem
+
+installall:V:	install-$SHELLTYPE
+all:V:		default-$SHELLTYPE
+
+# Plan 9 only (requires the compiler)
+acid:V: i$CONF.acid
+
+i$CONF.acid:	i$CONF
+	{
+		for (i in `{srclist -ec -r $ROOT/ i$CONF}) {
+			echo '//FILE: ' $i
+			$CC -I. -I$ROOT/arch/emu/port -I$ROOT/arch/inferno/$OBJTYPE/include -I$ROOT/include -I$ROOT/include/libinterp '-DKERNDATE='$KERNDATE -a $i
+		}
+		echo 'include ("inferno");'
+	} >i$CONF.acid
+
+lib%.a:V:	$SHELLTYPE-lib%.a
+
+rc-lib%.a nt-lib%.a:V:
+		@{builtin cd $ROOT/include/lib$stem; mk $MKFLAGS 'SHELLTYPE='$SHELLTYPE 'SYSTARG='$SYSTARG 'OBJTYPE='$OBJTYPE install}
+
+sh-lib%.a:V:
+		(cd $ROOT/include/lib$stem; mk $MKFLAGS 'SHELLTYPE='$SHELLTYPE 'SYSTARG='$SYSTARG 'OBJTYPE='$OBJTYPE install)
+
+%-rc %-nt:V:
+		for(i in $CONFLIST)
+			mk 'CONF='$i $MKFLAGS $stem
+
+%-sh:V:
+		for i in $CONFLIST
+		do
+			mk 'CONF='$i $MKFLAGS $stem
+		done
+
+clean:V:	cleanconf-$SHELLTYPE
+		rm -f *.[$OS] *.root.[shc] errstr.h *.out *.obj
+
+cleanconf-sh:V:
+		for i in $CONFLIST $CLEANCONFLIST
+		do
+			rm -f $i.c [$OS].$i i$i i$i.* $i.ver
+		done
+
+cleanconf-rc:V:
+		for(i in $CONFLIST $CLEANCONFLIST)
+			rm -f $i.c [$OS].$i i$i i$i.* $i.ver
+
+cleanconf-nt:V:
+		for(i in $CONFLIST $CLEANCONFLIST)
+			rm -f $i.c [$OS].$i i$i i$i.* $i.ver $i.exe
+
+nuke-sh:V:
+		for i in $LIBDIRS
+		do
+			(cd $ROOT/include/lib$i; mk $MKFLAGS 'SHELLTYPE='$SHELLTYPE 'SYSTARG='$SYSTARG 'OBJTYPE='$OBJTYPE nuke)
+		done
+
+nuke-rc nuke-nt:V:
+		for (i in $LIBDIRS)
+		{
+			@{cd $ROOT/include/lib$i; mk $MKFLAGS 'SHELLTYPE='$SHELLTYPE 'SYSTARG='$SYSTARG 'OBJTYPE='$OBJTYPE nuke}
+		}
+
+nuke:V:		clean nuke-$SHELLTYPE
+		rm -f srv.h srvm.h
+
+$CONF.c:	$ROOT/arch/emu/port/mkdevc $CONF
+		$SHELLNAME $ROOT/arch/emu/port/mkdevc $CONF > $CONF.c
+
+errstr.h:	$ROOT/arch/emu/port/error.h
+		sed 's/extern //;s,;.*/\* , = ",;s, \*/,";,' < $ROOT/arch/emu/port/error.h > errstr.h
+
+$ROOT/arch/native/init/%.dis:	$ROOT/arch/native/init/%.b
+		cd $ROOT/arch/native/init; mk 'SHELLTYPE='$SHELLTYPE 'SYSTARG='$SYSTARG 'OBJTYPE='$OBJTYPE $stem.dis
+
+$OBJDIR/include/libinterp/runt.h:
+		cd $ROOT/include/libinterp
+		mk 'SHELLTYPE='$SHELLTYPE 'SYSTARG='$SYSTARG 'OBJTYPE='$OBJTYPE runt.h
+
+INTERP=$ROOT/include/interp.h
+RUNT=$ROOT/include/libinterp/runt.h		# for culling dependencies
+
+alloc.$O:       $ROOT/include/pool.h\
+		$INTERP
+devcons.$O:	$ROOT/include/version.h
+devdraw.$O:	$ROOT/include/draw.h\
+		$ROOT/include/memdraw.h\
+		$ROOT/include/memlayer.h
+devmem.$O:	$INTERP
+devpipe.$O:	$INTERP
+devprof.$O:	$INTERP
+devprog.$O:	$ROOT/include/libinterp/runt.h\
+			$INTERP
+devsign.$O:	$INTERP
+devsign.$O:     $ROOT/include/libkeyring/keys.h
+devsrv.$O:	$ROOT/include/libinterp/runt.h\
+		$INTERP
+devtk.$O:	$INTERP
+dis.$O:	        $INTERP
+discall.$O:	$INTERP
+exception.$O:	$INTERP
+inferno.$O:	$ROOT/include/libinterp/runt.h\
+		$INTERP
+devmnt.$O:      $ROOT/include/fcall.h
+main.$O:	$ROOT/include/version.h
+main.$O:	$ROOT/arch/emu/port/error.h\
+		$INTERP
+proc.$O:	errstr.h\
+		$INTERP
+srv.$O:	        $INTERP
+devroot.$O:	errstr.h
+latin1.$O:	$ROOT/arch/emu/port/latin1.h
+netif.$O:	$ROOT/arch/emu/port/netif.h
+devprog.$O:	$RUNT
+devsrv.$O:	$RUNT
+exception.$O:	$RUNT
+inferno.$O:	$RUNT
+ipif-$SYSTARG.$O devip.$O:		$ROOT/arch/emu/port/ip.h
+
+devroot.$O:	$CONF.root.h
+$CONF.$O:	$CONF.root.h
+$CONF.root.c $CONF.root.h: $CONF $ROOT/arch/emu/port/mkroot $ROOTFILES
+	$SHELLNAME $ROOT/arch/emu/port/mkroot $CONF
+
+audio.c:N:	$ROOT/arch/emu/port/audio-tbls.c
+audio.c:N:	$ROOT/arch/emu/port/audio.h
+
+srv.$O:			srv.h srvm.h
+srv.h srvm.h:D:		$ROOT/module/srvrunt.b $ROOT/module/srv.m
+			rm -f $alltarget
+			limbo -a -I$ROOT/module $ROOT/module/srvrunt.b >srv.h
+			limbo -t Srv -I$ROOT/module $ROOT/module/srvrunt.b >srvm.h

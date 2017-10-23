@@ -53,8 +53,8 @@ uninstall:V:
 	rm -f $INS
 
 MODDIR=$ROOT/module
-SYS_MODULE=${SYSMODULES:%=$MODDIR/%}
-LIMBOFLAGS=-I$MODDIR
+SYS_MODULE=${SYSMODULES:%=$ROOT/module/%}
+LIMBOFLAGS=-I$ROOT/module
 
 $ROOT/dis/mash.dis:	mash.dis
 	rm -f $ROOT/dis/mash.dis && cp mash.dis $ROOT/dis/mash.dis

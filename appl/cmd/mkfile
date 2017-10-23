@@ -217,11 +217,11 @@ DISBIN=$ROOT/dis
 auhdr.dis: auplay.dis
 	rm -f auhdr.dis && cp auplay.dis auhdr.dis
 
-dbfs.dis: $MODDIR/styxservers.m
-rawdbfs.dis: $MODDIR/styxservers.m
-import.dis:	$MODDIR/encoding.m $MODDIR/factotum.m
-basename.dis: $MODDIR/names.m
-cleanname.dis: $MODDIR/names.m
-vacfs.dis:	$MODDIR/vac.m $MODDIR/venti.m
-vacget.dis:	$MODDIR/vac.m $MODDIR/venti.m
-vacput.dis:	$MODDIR/vac.m $MODDIR/venti.m
+dbfs.dis: $ROOT/module/styxservers.m
+rawdbfs.dis: $ROOT/module/styxservers.m
+import.dis:	$ROOT/module/encoding.m $ROOT/module/factotum.m
+basename.dis: $ROOT/module/names.m
+cleanname.dis: $ROOT/module/names.m
+vacfs.dis:	$ROOT/module/vac.m $ROOT/module/venti.m
+vacget.dis:	$ROOT/module/vac.m $ROOT/module/venti.m
+vacput.dis:	$ROOT/module/vac.m $ROOT/module/venti.m

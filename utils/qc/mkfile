@@ -25,7 +25,7 @@ LIBS=cc bio 9		# order is important
 
 <$ROOT/mkfiles/mkone-$SHELLTYPE
 
-$LIBDIR/libcc.a:
+$OBJDIR/liblibcc.a:
 	cd ../cc
 	mk $MKFLAGS install
 	mk $MKFLAGS clean

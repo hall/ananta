@@ -6,7 +6,7 @@ ROOT=/home/bryton/repos/inf
 TKSTYLE=std       # Tk version (std, ...)
 
 # Except for building kernels, SYSTARG must be SYSHOST
-SYSHOST=Linux     # build  system (Hp, Inferno, Irix, Linux, MacOSX, Nt, Plan9, Solaris)
+SYSHOST=linux     # build  system (Hp, Inferno, Irix, Linux, MacOSX, Nt, Plan9, Solaris)
 SYSTARG=$SYSHOST  # target system (Hp, Inferno, Irix, Linux,         Nt, Plan9, Solaris)
 
 OBJTYPE=386       # target system architecture (386, arm, mips, power, s800, sparc, ...)
@@ -14,13 +14,7 @@ OBJTYPE=386       # target system architecture (386, arm, mips, power, s800, spa
 
 ############################################################
 
-ARCDIR=$ROOT/arch
-OBJDIR=$ARCDIR/$SYSTARG/$OBJTYPE
-BINDIR=$ROOT/bin
-LIBDIR=$ROOT/lib
-INCDIR=$ROOT/include
-MODDIR=$ROOT/modules
+OBJDIR=$ROOT/arch/$OBJTYPE/$SYSTARG
 
-<$ROOT/arch/$SYSHOST/mkhost          # variables appropriate for host system
-<$ROOT/arch/$SYSTARG/$OBJTYPE/mkfile # variables used to build target object type
-
+<$ROOT/arch/mk-$SYSTARG     # variables appropriate for host system
+<$OBJDIR/mkfile          # variables used to build target object type

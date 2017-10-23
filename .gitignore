@@ -1,4 +1,4 @@
-/bin
+**/bin/*
 *.emu
 *.pdf
 *.html

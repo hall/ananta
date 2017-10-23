@@ -1,4 +1,4 @@
-libs=${LIBS:%=$LIBDIR/lib%.a}
+libs=${LIBS:%=$OBJDIR/liblib%.a}
 TARGPROG=$TARG.exe
 
 all:V:	$O.out

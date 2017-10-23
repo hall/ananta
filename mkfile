@@ -51,56 +51,46 @@ kernel:V:               kernel/all-$HOSTMODEL
 kernelclean:V:          kernel/clean-$HOSTMODEL
 kernelinstall:V:        kernel/install-$HOSTMODEL
 
-&-Posix:QV:
+&-Posix:V:
 	for j in $DIRS utils tools; do
-		echo "(cd $j; mk $MKFLAGS $stem)"
 		(cd $j; mk $MKFLAGS $stem) || exit 1
 	done
-&-Nt:QV:
+&-Nt:V:
 	for (j in $DIRS utils tools) {
-		echo '@{builtin cd' $j '; mk $MKFLAGS $stem}'
 		@{builtin cd $j; mk.exe $MKFLAGS $stem }
 	}
-&-Plan9 &-Inferno:QV:
+&-Plan9 &-Inferno:V:
 	for (j in $DIRS utils) {
-		echo '@{builtin cd' $j '; mk $MKFLAGS $stem}'
 		@{builtin cd $j; mk $MKFLAGS $stem }
 	}
 
-emu/&-Posix:QV:
+emu/&-Posix:V:
 	for j in $EMUDIRS; do
-		echo "(cd $j; mk $MKFLAGS $stem)"
 		(cd $j; mk $MKFLAGS $stem) || exit 1
 	done
-emu/&-Nt:QV:
+emu/&-Nt:V:
 	for (j in $EMUDIRS) {
-		echo '@{builtin cd' $j '; mk $MKFLAGS $stem}'
 		@{builtin cd $j; mk $MKFLAGS $stem }
 	}
-emu/&-Plan9:QV:
+emu/&-Plan9:V:
 	for (j in $EMUDIRS) {
-		echo '@{builtin cd' $j '; mk $MKFLAGS $stem}'
 		@{builtin cd $j; mk $MKFLAGS $stem }
 	}
 
-kernel/&-Posix:QV:
+kernel/&-Posix:V:
 	for j in $KERNEL_DIRS; do
-		echo "(cd $j; mk $MKFLAGS $stem)"
 		(cd $j; mk $MKFLAGS $stem) || exit 1
 	done
-kernel/&-Nt:QV:
+kernel/&-Nt:V:
 	for (j in $KERNEL_DIRS) {
-		echo '@{builtin cd' $j '; mk $MKFLAGS $stem}'
 		@{builtin cd $j; mk $MKFLAGS $stem }
 	}
-kernel/&-Inferno:QV:
+kernel/&-Inferno:V:
 	for (j in $KERNEL_DIRS) {
-		echo '@{builtin cd' $j '; mk $MKFLAGS $stem}'
 		@{builtin cd $j; mk $MKFLAGS $stem }
 	}
-kernel/&-Plan9:QV:
+kernel/&-Plan9:V:
 	for (j in $KERNEL_DIRS) {
-		echo '@{builtin cd' $j '; mk $MKFLAGS $stem}'
 		@{builtin cd $j; mk $MKFLAGS $stem }
 	}
 
@@ -113,4 +103,3 @@ mkdirs-sh:V:
 	chmod 555 mnt/* n/client/* n/*
 mkdirs-nt:V:
 	mkdir -p `{cmd /c type lib\emptydirs}
-

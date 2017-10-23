@@ -6,7 +6,7 @@ link:{docpath}/intro.adoc[{name}] is a derivative of http://www.inferno-os.info/
 
 WARNING: {name} is not ready for production use.
 
-Applications are written in link:{docpath}/limbo.adoc[limbo] and compiled for link:{docpath}/dis.adoc[dis] to run anywhere on a network in a portable environment that is a complete operating system.
+Applications are written in link:{docpath}/limbo.adoc[limbo] and compiled for link:{docpath}/dis.adoc[dis] to run anywhere on a network in a portable operating system.
 
 The design has three principles:
 
@@ -56,7 +56,7 @@ Now execute `emu` and you should see the link:{docpath}/sh.adoc[`sh`] prompt awa
 
     ;
 
-{name} is documented at link:{docpath}[].
+Documentation is at link:{docpath}[].
 
 == about
 

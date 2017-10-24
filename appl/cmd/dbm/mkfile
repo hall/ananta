@@ -16,4 +16,4 @@ SYSMODULES=\
 
 DISBIN=$ROOT/dis/dbm
 
-<$ROOT/mkfiles/mkdis
+<$ROOT/appl/mkfile

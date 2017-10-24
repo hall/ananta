@@ -36,5 +36,5 @@ SYSMODULES=\
 
 DISBIN=$ROOT/dis/auth
 
-<$ROOT/mkfiles/mkdis
+<$ROOT/appl/mkfile
 <$ROOT/mkfiles/mksubdirs

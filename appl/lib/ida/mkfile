@@ -13,7 +13,7 @@ SYSMODULES= \
 
 DISBIN=$ROOT/dis/lib/ida
 
-<$ROOT/mkfiles/mkdis
+<$ROOT/appl/mkfile
 # force compilation
 LIMBOFLAGS= -c $LIMBOFLAGS
 

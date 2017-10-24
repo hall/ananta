@@ -32,7 +32,7 @@ SYSMODULES=\
 
 DISBIN=$ROOT/dis/mpeg
 
-<$ROOT/mkfiles/mkdis
+<$ROOT/appl/mkfile
 
 all:V:		mpeg.dis
 

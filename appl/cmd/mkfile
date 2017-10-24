@@ -211,7 +211,7 @@ SYSMODULES=\
 
 DISBIN=$ROOT/dis
 
-<$ROOT/mkfiles/mkdis
+<$ROOT/appl/mkfile
 <$ROOT/mkfiles/mksubdirs
 
 auhdr.dis: auplay.dis

@@ -21,7 +21,7 @@ SYSMODULES=\
 
 DISBIN=$ROOT/dis
 
-<$ROOT/mkfiles/mkdis
+<$ROOT/appl/mkfile
 
 #asm.b:	asm.y
 #	yacc -D1 -o asm.b asm.y

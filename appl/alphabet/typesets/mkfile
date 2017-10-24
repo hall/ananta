@@ -26,7 +26,7 @@ SYSMODULES=\
 
 DISBIN=$ROOT/dis/alphabet
 
-<$ROOT/mkfiles/mkdis
+<$ROOT/appl/mkfile
 
 LIMBOFLAGS=$LIMBOFLAGS -i -F
 

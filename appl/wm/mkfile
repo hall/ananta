@@ -98,5 +98,5 @@ SYSMODULES=\
 
 DISBIN=$ROOT/dis/wm
 
-<$ROOT/mkfiles/mkdis
+<$ROOT/appl/mkfile
 <$ROOT/mkfiles/mksubdirs

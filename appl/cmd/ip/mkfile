@@ -25,5 +25,5 @@ SYSMODULES=\
 
 DISBIN=$ROOT/dis/ip
 
-<$ROOT/mkfiles/mkdis
+<$ROOT/appl/mkfile
 <$ROOT/mkfiles/mksubdirs

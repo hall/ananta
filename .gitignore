@@ -1,5 +1,7 @@
 **/bin/*
 *.emu
+*.dis
+*.sbl
 *.pdf
 *.html
 *.out
@@ -9,4 +11,3 @@
 libinterp/*.h
 emu/*/*.c
 emu/*/*.h
-emu/*/o.emu

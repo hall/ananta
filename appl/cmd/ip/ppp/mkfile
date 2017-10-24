@@ -24,4 +24,4 @@ SYSMODULES=\
 
 DISBIN=$ROOT/dis/ip/ppp
 
-<$ROOT/mkfiles/mkdis
+<$ROOT/appl/mkfile

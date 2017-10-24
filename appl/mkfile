@@ -13,7 +13,7 @@ DIRS=\
 	math\
 #	mux\
 	spree\
-	svc\
+#	svc\
 	tiny\
 	wm\
 

@@ -45,7 +45,7 @@ SYSMODULES= \
 
 DISBIN=$ROOT/dis/grid
 
-<$ROOT/mkfiles/mkdis
+<$ROOT/appl/mkfile
 <$ROOT/mkfiles/mksubdirs
 
 $ROOT/dis/demo/readjpg.dis:	readjpg.dis

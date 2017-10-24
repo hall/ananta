@@ -30,7 +30,7 @@ WmLogon: module
 };
 
 cfg := array[] of {
-	"label .p -bitmap @/icons/inferno.bit -borderwidth 2 -relief raised",
+	"label .p -bitmap @/sys/icon/inferno.bit -borderwidth 2 -relief raised",
 	"frame .l -bg red",
 	"label .l.u -fg black -bg silver -text {User Name:} -anchor w",
 	"pack .l.u -fill x",

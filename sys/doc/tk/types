@@ -77,7 +77,7 @@ DESCRIPTION
                      per inch on an average CRT display.
 
        font   A  font  parameter  gives  the  full  path  name of an
-              Inferno  font  file;  for  example,   /fonts/pelm/uni‐
+              Inferno  font  file;  for  example,   /sys/font/pelm/uni‐
               code.9.font.
 
        frac   A numeric, possibly fractional, value.

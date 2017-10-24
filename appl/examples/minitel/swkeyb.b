@@ -30,8 +30,8 @@ include "swkeyb.m";
 ICPATH: con "keybd/";
 
 #Font
-FONT: con "/fonts/lucidasans/latin1.7.font";
-SPECFONT: con "/fonts/lucidasans/latin1.6.font";
+FONT: con "/sys/font/lucidasans/latin1.7.font";
+SPECFONT: con "/sys/font/lucidasans/latin1.6.font";
 
 # Dimension constants
 KBDWIDTH: con 360;

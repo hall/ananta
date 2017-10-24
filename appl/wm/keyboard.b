@@ -33,8 +33,8 @@ Keybd: module
 	init:	fn(nil: ref Draw->Context, nil: list of string);
 };
 
-FONT: con "/fonts/lucidasans/boldlatin1.6.font";
-SPECFONT: con "/fonts/lucidasans/unicode.6.font";
+FONT: con "/sys/font/lucidasans/boldlatin1.6.font";
+SPECFONT: con "/sys/font/lucidasans/unicode.6.font";
 
 # size in pixels
 #KEYSIZE: con 16;

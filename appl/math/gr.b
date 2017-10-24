@@ -22,7 +22,7 @@ gr_cfg := array[] of {
 	"pack .fc.b.xy -fill x",
 	"pack .fc.b -fill both -expand 1",
 	"canvas .fc.c -relief sunken -bd 2 -width 600 -height 480 -bg white"+
-		" -font /fonts/lucidasans/unicode.8.font",
+		" -font /sys/font/lucidasans/unicode.8.font",
 	"pack .fc.c -fill both -expand 1",
 	"pack .Wm_t -fill x",
 	"pack .fc -fill both -expand 1",

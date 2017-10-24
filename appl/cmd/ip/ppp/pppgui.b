@@ -51,7 +51,7 @@ ICONQUANTA : con 5000;
 pppquanta := DIALQUANTA;
 
 #Font
-FONT: con "/fonts/lucidasans/unicode.6.font";
+FONT: con "/sys/font/lucidasans/unicode.6.font";
 
 #Messages
 stat_msgs := array[] of {

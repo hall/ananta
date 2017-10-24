@@ -24,9 +24,9 @@ Lobby: module {
 };
 
 CLIENTDIR: con "/dis/spree/clients";
-NAMEFONT: con "/fonts/charon/plain.small.font";
-TITLEFONT: con "/fonts/charon/bold.normal.font";
-HEADERFONT: con "/fonts/charon/italic.normal.font";
+NAMEFONT: con "/sys/font/charon/plain.small.font";
+TITLEFONT: con "/sys/font/charon/bold.normal.font";
+HEADERFONT: con "/sys/font/charon/italic.normal.font";
 
 Object: adt {
 	id:	int;

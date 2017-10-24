@@ -27,11 +27,11 @@ W: adt {
 	textwidth: fn(nil: self ref W, text: Text): int;
 };
 
-ROMAN: con "/fonts/lucidasans/unicode.7.font";
-BOLD: con "/fonts/lucidasans/typelatin1.7.font";
-ITALIC: con "/fonts/lucidasans/italiclatin1.7.font";
-HEADING1: con "/fonts/lucidasans/boldlatin1.7.font";
-HEADING2: con "/fonts/lucidasans/italiclatin1.7.font";
+ROMAN: con "/sys/font/lucidasans/unicode.7.font";
+BOLD: con "/sys/font/lucidasans/typelatin1.7.font";
+ITALIC: con "/sys/font/lucidasans/italiclatin1.7.font";
+HEADING1: con "/sys/font/lucidasans/boldlatin1.7.font";
+HEADING2: con "/sys/font/lucidasans/italiclatin1.7.font";
 rfont, bfont, ifont, h1font, h2font: ref Font;
 
 GOATTR: con Parseman->ATTR_LAST << iota;

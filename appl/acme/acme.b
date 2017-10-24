@@ -178,8 +178,8 @@ fontcache : array of ref Reffont;
 nfontcache : int;
 reffonts : array of ref Reffont;
 deffontnames := array[2] of {
-	"/fonts/lucidasans/euro.8.font",
-	"/fonts/lucm/unicode.9.font",
+	"/sys/font/lucidasans/euro.8.font",
+	"/sys/font/lucm/unicode.9.font",
 };
 
 command : ref Command;

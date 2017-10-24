@@ -25,7 +25,7 @@ While any structure is valid, many programs assume the following tree.
     |-- module             Limbo module declarations
     |    /* SUPPORTING DATA */
     |-- acme               programs and guide files specific to acme(1)
-    |-- share              system wide files
+    |-- sys                system wide files
     |   |-- font
     |   |-- icon           image(6) files
     |   |   `-- tk         search directory for tk's -bitmap option (options(9))
@@ -90,8 +90,8 @@ In addition, the following are required if running a server:
 
 or a window manager:
 
-    /fonts               at least one font
-    /icons/tk            any necessary icons
+    /sys/font               at least one font
+    /sys/icon/tk            any necessary icons
     /user/_name_         at least one if logon(1) is desired
 
 

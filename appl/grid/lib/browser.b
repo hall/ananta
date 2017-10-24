@@ -63,7 +63,7 @@ Browse.new(top: ref Tk->Toplevel, tkchanname, root, rlabel: string, nopanes: int
 	tkcmd(top, "bind .fbrowse.lmov <Button-1> {send "+b.tkchan+" movdiv %X}");
 
 	tkcmd(top, "label .fbrowse.l -text { }  -anchor w -width 0" +
-		" -font /fonts/charon/plain.normal.font");
+		" -font /sys/font/charon/plain.normal.font");
 	tkcmd(top, ".fbrowse.l configure -height "+tkcmd(top, ".fbrowse.l cget -height"));
 	tkcmd(top, "grid .fbrowse.l -row 0 -column 0 -sticky ew -pady 2 -columnspan 4");
 	rb := ref b;
@@ -90,9 +90,9 @@ Browse.refresh(b: self ref Browse)
 bgnorm := "white";
 bgselect := "#5555FF";
 
-ft := " -font /fonts/charon/plain.normal.font";
-fts := " -font /fonts/charon/plain.tiny.font";
-ftb := " -font /fonts/charon/bold.normal.font";
+ft := " -font /sys/font/charon/plain.normal.font";
+fts := " -font /sys/font/charon/plain.tiny.font";
+ftb := " -font /sys/font/charon/bold.normal.font";
 
 Browse.gotoselectfile(b: self ref Browse, file: File): string
 {
@@ -728,7 +728,7 @@ dialog(ctxt: ref draw->Context, oldtop: ref Tk->Toplevel, butlist: list of strin
 	butchan := chan of string;
 	tk->namechan(top, butchan, "butchan");
 	tkcmd(top, "frame .f");
-	tkcmd(top, "label .f.l -text {"+msg+"} -font /fonts/charon/plain.normal.font");
+	tkcmd(top, "label .f.l -text {"+msg+"} -font /sys/font/charon/plain.normal.font");
 	tkcmd(top, "bind .Wm_t <Button-1> +{focus .}");
 	tkcmd(top, "bind .Wm_t.title <Button-1> +{focus .}");
 
@@ -738,7 +738,7 @@ dialog(ctxt: ref draw->Context, oldtop: ref Tk->Toplevel, butlist: list of strin
 	for(; butlist != nil; butlist = tl butlist) {
 		si := string i;
 		tkcmd(top, "button .f.b"+si+" -text {"+hd butlist+"} "+
-			"-font /fonts/charon/plain.normal.font -command {send butchan "+si+"}");
+			"-font /sys/font/charon/plain.normal.font -command {send butchan "+si+"}");
 		tkcmd(top, "grid .f.b"+si+" -row 1 -column "+si+" -padx 5 -pady 5");
 		i++;
 	}
@@ -825,7 +825,7 @@ Select.addframe(s: self ref Select, fname, title: string)
 	tkcmd(s.top, "frame "+f+" -bg white");
 	if (title != nil){
 		tkcmd(s.top, "label "+f+".l -text {"+title+"} -bg white "+
-			"-font /fonts/charon/bold.normal.font; "+
+			"-font /sys/font/charon/bold.normal.font; "+
 			"grid "+f+".l -row 0 -column 0 -columnspan 3 -sticky w");
 	}
 	fr: Frame;
@@ -888,8 +888,8 @@ Select.addselection(s: self ref Select, fname, text: string, lp: list of ref Par
 				return nil;
 		}
 	}
-	font := " -font /fonts/charon/plain.normal.font";
-	fontb := " -font /fonts/charon/bold.normal.font";
+	font := " -font /sys/font/charon/plain.normal.font";
+	fontb := " -font /sys/font/charon/bold.normal.font";
 	(id, row) := newselected(s.top, f);
 	sid := string id;
 	label := f+".l"+sid;

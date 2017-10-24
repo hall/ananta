@@ -47,7 +47,7 @@ signerpkhash := "";
 
 cfg := array[] of {
 	"frame .f -bd 2 -relief raised",
-	"label .f.p -bitmap @/icons/inferno.bit -borderwidth 2 -relief raised",
+	"label .f.p -bitmap @/sys/icon/inferno.bit -borderwidth 2 -relief raised",
 	"label .f.ul -text {User Name:} -anchor w",
 	"entry .f.ue -bg white -width 10w",
 	"label .f.pl -text {Password:} -anchor w",

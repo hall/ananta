@@ -243,9 +243,9 @@ init(ctxt: ref Draw->Context, argv: list of string)
 }
 
 # the keyboard module handles keypresses and focus
-BTN40x25: con "-height 24 -font {/fonts/lucidasans/unicode.6.font}";
-BTNCTL: con "-width 60 -height 20 -font {/fonts/lucidasans/unicode.7.font}";
-BTNMAIN: con "-width 80 -height 20 -font {/fonts/lucidasans/unicode.7.font}";
+BTN40x25: con "-height 24 -font {/sys/font/lucidasans/unicode.6.font}";
+BTNCTL: con "-width 60 -height 20 -font {/sys/font/lucidasans/unicode.7.font}";
+BTNMAIN: con "-width 80 -height 20 -font {/sys/font/lucidasans/unicode.7.font}";
 
 tkinitbs := array[] of {
 	"button .cxfin -text {Cx/Fin} -command {send keyb skey Connect}",

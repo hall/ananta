@@ -54,29 +54,29 @@ Fontinfo : adt {
 };
 
 fonts := array[NumFnt] of {
-	FntR*NumSize+Tiny => Fontinfo("/fonts/charon/plain.tiny.font", nil, 0),
-	FntR*NumSize+Small => ("/fonts/charon/plain.small.font", nil, 0),
-	FntR*NumSize+Normal => ("/fonts/charon/plain.normal.font", nil, 0),
-	FntR*NumSize+Large => ("/fonts/charon/plain.large.font", nil, 0),
-	FntR*NumSize+Verylarge => ("/fonts/charon/plain.vlarge.font", nil, 0),
+	FntR*NumSize+Tiny => Fontinfo("/sys/font/charon/plain.tiny.font", nil, 0),
+	FntR*NumSize+Small => ("/sys/font/charon/plain.small.font", nil, 0),
+	FntR*NumSize+Normal => ("/sys/font/charon/plain.normal.font", nil, 0),
+	FntR*NumSize+Large => ("/sys/font/charon/plain.large.font", nil, 0),
+	FntR*NumSize+Verylarge => ("/sys/font/charon/plain.vlarge.font", nil, 0),
 	
-	FntI*NumSize+Tiny => ("/fonts/charon/italic.tiny.font", nil, 0),
-	FntI*NumSize+Small => ("/fonts/charon/italic.small.font", nil, 0),
-	FntI*NumSize+Normal => ("/fonts/charon/italic.normal.font", nil, 0),
-	FntI*NumSize+Large => ("/fonts/charon/italic.large.font", nil, 0),
-	FntI*NumSize+Verylarge => ("/fonts/charon/italic.vlarge.font", nil, 0),
+	FntI*NumSize+Tiny => ("/sys/font/charon/italic.tiny.font", nil, 0),
+	FntI*NumSize+Small => ("/sys/font/charon/italic.small.font", nil, 0),
+	FntI*NumSize+Normal => ("/sys/font/charon/italic.normal.font", nil, 0),
+	FntI*NumSize+Large => ("/sys/font/charon/italic.large.font", nil, 0),
+	FntI*NumSize+Verylarge => ("/sys/font/charon/italic.vlarge.font", nil, 0),
 	
-	FntB*NumSize+Tiny => ("/fonts/charon/bold.tiny.font", nil, 0),
-	FntB*NumSize+Small => ("/fonts/charon/bold.small.font", nil, 0),
-	FntB*NumSize+Normal => ("/fonts/charon/bold.normal.font", nil, 0),
-	FntB*NumSize+Large => ("/fonts/charon/bold.large.font", nil, 0),
-	FntB*NumSize+Verylarge => ("/fonts/charon/bold.vlarge.font", nil, 0),
+	FntB*NumSize+Tiny => ("/sys/font/charon/bold.tiny.font", nil, 0),
+	FntB*NumSize+Small => ("/sys/font/charon/bold.small.font", nil, 0),
+	FntB*NumSize+Normal => ("/sys/font/charon/bold.normal.font", nil, 0),
+	FntB*NumSize+Large => ("/sys/font/charon/bold.large.font", nil, 0),
+	FntB*NumSize+Verylarge => ("/sys/font/charon/bold.vlarge.font", nil, 0),
 	
-	FntT*NumSize+Tiny => ("/fonts/charon/cw.tiny.font", nil, 0),
-	FntT*NumSize+Small => ("/fonts/charon/cw.small.font", nil, 0),
-	FntT*NumSize+Normal => ("/fonts/charon/cw.normal.font", nil, 0),
-	FntT*NumSize+Large => ("/fonts/charon/cw.large.font", nil, 0),
-	FntT*NumSize+Verylarge => ("/fonts/charon/cw.vlarge.font", nil, 0)
+	FntT*NumSize+Tiny => ("/sys/font/charon/cw.tiny.font", nil, 0),
+	FntT*NumSize+Small => ("/sys/font/charon/cw.small.font", nil, 0),
+	FntT*NumSize+Normal => ("/sys/font/charon/cw.normal.font", nil, 0),
+	FntT*NumSize+Large => ("/sys/font/charon/cw.large.font", nil, 0),
+	FntT*NumSize+Verylarge => ("/sys/font/charon/cw.vlarge.font", nil, 0)
 };
 
 # Seems better to use a slightly smaller font in Controls, to match other browsers

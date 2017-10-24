@@ -65,7 +65,7 @@ TITLEFONT:	con "misc/latin1.8x13";
 DATAFONT:	con "misc/latin1.8x13";
 BUTTONFONT:	con "misc/latin1.8x13";
 
-currfont := "/fonts/" + UNICODEFONT + ".font";
+currfont := "/sys/font/" + UNICODEFONT + ".font";
 
 MAINMENU, BYSEARCH, BYNUMBER, BYCATEGORY, BYFONT, TABLE: con iota;
 elements := array[] of {
@@ -691,7 +691,7 @@ tkexpand(s: string): string
 	}
 	if (font != nil) {
 		if (font[0] != '/')
-			font = "/fonts/"+font+".font";
+			font = "/sys/font/"+font+".font";
 		font = "-font "+font;
 	}
 
@@ -795,7 +795,7 @@ labelset(t: ref Tk->Toplevel, name: string, val: string)
 
 choosefont(ctxt: ref Draw->Context): string
 {
-	font := selectfile->filename(ctxt, top.image, "Select a font", "*.font" :: nil, "/fonts");
+	font := selectfile->filename(ctxt, top.image, "Select a font", "*.font" :: nil, "/sys/font");
 	if (font != nil) { 
 		ret := cmd(top, ".fontlabel configure"+" -font "+font);
 		if (len ret > 0 && ret[0] == '!') {

@@ -239,7 +239,7 @@ Selectborder := 3;
 cardsize: Point;
 carddelta := Point(12, 15);		# offset in order to see card number/suit
 Selectcolour := "red";
-Textfont := "/fonts/pelm/unicode.8.font";
+Textfont := "/sys/font/pelm/unicode.8.font";
 
 client1()
 {
@@ -2085,7 +2085,7 @@ revlist(ls: list of T) : list of T
 
 readconfig(): int
 {
-	for (lines := readconfigfile("/icons/cards/config"); lines != nil; lines = tl lines) {
+	for (lines := readconfigfile("/sys/icon/cards/config"); lines != nil; lines = tl lines) {
 		t := hd lines;
 		case hd t {
 		"rearborder" =>
@@ -2116,14 +2116,14 @@ readconfig(): int
 
 readcardimages(): int
 {
-	(nimages, cardsize) = readimages("/icons/cards", "c");
+	(nimages, cardsize) = readimages("/sys/icon/cards", "c");
  	if (nimages == 0) {
 		sys->fprint(stderr, "cards: no card images found\n");
 		return -1;
 	}
 	sys->print("%d card images found\n", nimages);
 
-	(nrears, rearsize) := readimages("/icons/cardrears", "rear");
+	(nrears, rearsize) := readimages("/sys/icon/cardrears", "rear");
 	if (nrears > 0 && !rearsize.eq(cardsize)) {
 		sys->fprint(stderr, "cards: card rear sizes don't match card sizes (%s vs %s)\n", p2s(rearsize), p2s(cardsize));
 		return -1;

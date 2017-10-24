@@ -225,7 +225,7 @@ main(ctxt: ref Draw->Context, argv: list of string)
 	(menuw, nil) := itemsize(t, ".m");
 	if (font != nil) {
 		if (font[0] != '/' && (len font == 1 || font[0:2] != "./"))
-			font = "/fonts/" + font;
+			font = "/sys/font/" + font;
 		cmd(t, ".ft.t configure -font " + font);
 	}
 	cmd(t, ".ft.t configure -width 65w -height 20h");

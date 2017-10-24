@@ -16,7 +16,7 @@ for Inferno.  Miniterm is written in Limbo.  The main components are:
 
 	fonts.tgz	which expands into:
 
-	fonts/minitel	- external and subfont directory (`bind -b' into /fonts)
+	fonts/minitel	- external and subfont directory (`bind -b' into /sys/font)
 	fonts/minitel/f40x25	- 40 column external font
 	fonts/minitel/14x17
 	fonts/minitel/14x17xoe
@@ -39,9 +39,9 @@ for Inferno.  Miniterm is written in Limbo.  The main components are:
 	fonts/minitel/8x12xoe
 	fonts/minitel/8x12arrow
 
-The fonts subdirectory should be bound into /fonts:
-	bind -b fonts /fonts
-or the directory fonts/minitel copied to /fonts/minitel before invoking the emulator.
+The fonts subdirectory should be bound into /sys/font:
+	bind -b fonts /sys/font
+or the directory fonts/minitel copied to /sys/font/minitel before invoking the emulator.
 The names of the external fonts are
 known to the Videotex display module.  Similarly, the files:
 	/dev/modem
@@ -106,7 +106,7 @@ function and could easily be added if required.
 
 
 - Namespace
-We always expect the fonts to appear in /fonts and the softmodem
+We always expect the fonts to appear in /sys/font and the softmodem
 to appear as /dev/modem and /dev/modemctl.
 
 - Invocation

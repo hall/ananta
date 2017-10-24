@@ -186,8 +186,8 @@ resize(top: ref Tk->Toplevel, img: ref Draw->Image)
 mainscreen := array[] of {
 	"frame .f",
 	"frame .f.ftop",
-	"button .f.ftop.bs -text {Shell} -command {send butchan shell} -font /fonts/charon/bold.normal.font",
-	"button .f.ftop.br -text {Refresh} -command {send butchan refresh} -font /fonts/charon/bold.normal.font",
+	"button .f.ftop.bs -text {Shell} -command {send butchan shell} -font /sys/font/charon/bold.normal.font",
+	"button .f.ftop.br -text {Refresh} -command {send butchan refresh} -font /sys/font/charon/bold.normal.font",
 	"grid .f.ftop.bs .f.ftop.br -row 0",
 	"grid columnconfigure .f.ftop 2 -minsize 30",
 	"grid .f.ftop -row 0 -column 0 -pady 2 -sticky w",
@@ -218,7 +218,7 @@ run(ctxt: ref Draw->Context, file: string)
 openscr := array[] of {
 	"frame .f",
 	"scrollbar .f.sy -command {.f.t yview}",
-	"text .f.t -yscrollcommand {.f.sy set} -bg white -font /fonts/charon/plain.normal.font",
+	"text .f.t -yscrollcommand {.f.sy set} -bg white -font /sys/font/charon/plain.normal.font",
 	"pack .f.sy -side left -fill y",
 	"pack .f.t -fill both -expand 1",
 	"bind .Wm_t <Button-1> +{focus .Wm_t}",
@@ -357,7 +357,7 @@ actionbutton(top: ref Tk->Toplevel, path, tkpath: string)
 		name := ".f.ftop.baction"+string i+" ";
 		(text,cmd) := hd buttons;
 		tkcmd(top, "button "+name+"-text {"+text+"} "+
-				"-font /fonts/charon/bold.normal.font "+
+				"-font /sys/font/charon/bold.normal.font "+
 				"-command {send butchan "+cmd+"}");
 		tkcmd(top, "grid "+name+" -row 0 -column "+string (4+i));
 		buttons = tl buttons;

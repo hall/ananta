@@ -79,7 +79,7 @@ SCHEDDIR: con "/mnt/schedule";
 
 stderr: ref Sys->FD;
 dict: ref Dict;
-font := "/fonts/lucidasans/unicode.7.font";
+font := "/sys/font/lucidasans/unicode.7.font";
 days, months: array of string;
 
 packcmds := array[] of {

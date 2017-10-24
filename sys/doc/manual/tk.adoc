@@ -908,7 +908,7 @@ are hexadecimal values for the corresponding colour components.
 A
 _"font"_
 parameter gives the full path name of an Inferno font file; for example,
-`"/fonts/pelm/unicode.9.font"` .
+`"/sys/font/pelm/unicode.9.font"` .
 
 A
 _bitmap_

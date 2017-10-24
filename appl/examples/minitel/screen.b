@@ -248,7 +248,7 @@ Screen.setmode(s: self ref Screen, tmode: int)
 	if(tmode != s.oldtmode) {
 		(nil, s.image) = disp->Mode(((0,0),(0,0)), 0, 0, 0, 0, nil);
 		T.layout(s.cols);
-		fontpath := sprint("/fonts/minitel/f%dx%d", s.cols, s.rows);
+		fontpath := sprint("/sys/font/minitel/f%dx%d", s.cols, s.rows);
 		(nil, s.image) = disp->Mode(dispr, s.cols, s.rows, ulheight, delims, fontpath);
 		T.setkbmode(tmode);
 	}

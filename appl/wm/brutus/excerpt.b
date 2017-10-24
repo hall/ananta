@@ -42,7 +42,7 @@ create(parent: string, t: ref Tk->Toplevel, name, args: string): string
 	(text, err) := gather(parent, args);
 	if(err != nil)
 		return err;
-	err = tk->cmd(t, "text "+name+" -tabs {1c} -wrap none -font /fonts/pelm/latin1.9.font");
+	err = tk->cmd(t, "text "+name+" -tabs {1c} -wrap none -font /sys/font/pelm/latin1.9.font");
 	if(len err > 0 && err[0] == '!')
 		return err;
 	(n, maxw) := nlines(text);

@@ -22,7 +22,7 @@ tkcfg(version: string): array of string
 {
 	return  array[] of {
 	"frame .f -bg black -borderwidth 2 -relief ridge",
-	"label .b -bg black -bitmap @/icons/inferno.bit",
+	"label .b -bg black -bitmap @/sys/icon/inferno.bit",
 	"label .l1 -bg black -fg #ff5500  -text {Inferno "+ version + "}",
 	"pack .b .l1 -in .f",
 	"pack .f -ipadx 4 -ipady 2",

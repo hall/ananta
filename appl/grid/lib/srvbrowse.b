@@ -515,8 +515,8 @@ resize(top: ref Tk->Toplevel, width, height: int)
 
 makesearchframe(top: ref Tk->Toplevel)
 {
-	font := " -font /fonts/charon/plain.normal.font";
-	fontb := " -font /fonts/charon/bold.normal.font";
+	font := " -font /sys/font/charon/plain.normal.font";
+	fontb := " -font /sys/font/charon/bold.normal.font";
 	f := ".fsearch";
 
 	tkcmd(top, "frame "+f+" -bg white");
@@ -545,7 +545,7 @@ insertattribrow(top: ref Tk->Toplevel)
 	sn := string (n - 2);
 	fsn := ".fsearch.ean"+sn;
 	fsv := ".fsearch.eav"+sn;
-	font := " -font /fonts/charon/plain.normal.font";
+	font := " -font /sys/font/charon/plain.normal.font";
 	tkcmd(top, "entry "+fsn+" -width 170 -borderwidth 0 "+font);
 	tkcmd(top, "bind "+fsn+" <Key> {send butchan key "+sn+" n %s}");
 	tkcmd(top, "entry "+fsv+" -width 170 -borderwidth 0 "+font);
@@ -572,8 +572,8 @@ max(a,b: int): int
 
 makeresultsframe(top: ref Tk->Toplevel, lsrv: list of ref Service, resultstart, maxresults: int)
 {
-	font := " -font /fonts/charon/plain.normal.font";
-	fontb := " -font /fonts/charon/bold.normal.font";
+	font := " -font /sys/font/charon/plain.normal.font";
+	fontb := " -font /sys/font/charon/bold.normal.font";
 	f := ".fresults";
 	nresults := len lsrv;
 	row := 0;

@@ -40,10 +40,10 @@ Mstring: adt
 };
 
 fontname :=  array[NFONT] of {
-	"/fonts/lucidasans/unicode.7.font",
-	"/fonts/lucidasans/italiclatin1.7.font",
-	"/fonts/lucidasans/boldlatin1.7.font",
-	"/fonts/lucidasans/typelatin1.7.font",
+	"/sys/font/lucidasans/unicode.7.font",
+	"/sys/font/lucidasans/italiclatin1.7.font",
+	"/sys/font/lucidasans/boldlatin1.7.font",
+	"/sys/font/lucidasans/typelatin1.7.font",
 	};
 
 fontswitch :=  array[NFONT] of {

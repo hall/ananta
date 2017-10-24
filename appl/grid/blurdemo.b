@@ -186,7 +186,7 @@ init(context : ref Draw->Context, argv: list of string)
 					path := tkcmd(top, tkpath+" cget -text");
 					s := blursrvc.attrs.get("name") + " ("+blursrvc.addr+")";
 					tk->cmd(top, "destroy .m2");
-					tkcmd(top, "menu .m2 -font /fonts/charon/plain.normal.font");
+					tkcmd(top, "menu .m2 -font /sys/font/charon/plain.normal.font");
 					tkcmd(top, ".m2 add command -label {"+path+"}");
 					tkcmd(top, ".m2 add separator");
 					tkcmd(top, ".m2 add command -label {"+s+"}");
@@ -342,7 +342,7 @@ actionbutton(top: ref Tk->Toplevel, path, tkpath: string)
 		name := ".f.ftop.baction"+string i+" ";
 		(text,cmd) := hd buttons;
 		tkcmd(top, "button "+name+"-text {"+text+"} "+
-				"-font /fonts/charon/bold.normal.font "+
+				"-font /sys/font/charon/bold.normal.font "+
 				"-command {send butchan "+cmd+"}");
 		tkcmd(top, "grid "+name+" -row 0 -column "+string (4+i));
 		buttons = tl buttons;
@@ -395,13 +395,13 @@ nopath(file: string): string
 runscr := array[] of {
 	"frame .f",
 	"frame .f.f1",
-	"label .f.f1.l -text {Select no of CPUs} -font /fonts/charon/plain.normal.font",
+	"label .f.f1.l -text {Select no of CPUs} -font /sys/font/charon/plain.normal.font",
 	"scale .f.f1.s -orient horizontal -height 16 -showvalue 0 -from 1 -to 20 -command {.f.f1.ls configure -text}",
-	"label .f.f1.ls -text {1} -font /fonts/charon/plain.normal.font -width 30",
-	"button .f.f1.b -text {Run} -font /fonts/charon/plain.normal.font -command {send butchan go}",
+	"label .f.f1.ls -text {1} -font /sys/font/charon/plain.normal.font -width 30",
+	"button .f.f1.b -text {Run} -font /sys/font/charon/plain.normal.font -command {send butchan go}",
 	"pack .f.f1.l .f.f1.s .f.f1.ls .f.f1.b -side left",
 	"frame .f.f2",
-	"text .f.f2.t -width 250 -height 150 -borderwidth 1 -bg white -font /fonts/charon/plain.normal.font -yscrollcommand { .f.f2.sy set }",
+	"text .f.f2.t -width 250 -height 150 -borderwidth 1 -bg white -font /sys/font/charon/plain.normal.font -yscrollcommand { .f.f2.sy set }",
 	"scrollbar .f.f2.sy -command { .f.f2.t yview }",
 	"pack .f.f2.sy -side left -fill y",
 	"pack .f.f2.t -fill both -expand 1",
@@ -631,9 +631,9 @@ mainscreen := array[] of {
 	"frame .f",
 	"frame .f.ftop",
 	"variable opt command",
-	"button .f.ftop.bp -text {Services} -command {send butchan back} -font /fonts/charon/bold.normal.font -state disabled -state disabled",
-	"button .f.ftop.bn -text {Run} -command {send butchan run} -font /fonts/charon/bold.normal.font -state disabled",
-	"button .f.ftop.br -text {Refresh} -command {send butchan refresh} -font /fonts/charon/bold.normal.font",
+	"button .f.ftop.bp -text {Services} -command {send butchan back} -font /sys/font/charon/bold.normal.font -state disabled -state disabled",
+	"button .f.ftop.bn -text {Run} -command {send butchan run} -font /sys/font/charon/bold.normal.font -state disabled",
+	"button .f.ftop.br -text {Refresh} -command {send butchan refresh} -font /sys/font/charon/bold.normal.font",
  	"grid .f.ftop.br .f.ftop.bp .f.ftop.bn -row 0",
 	"grid columnconfigure .f.ftop 3 -minsize 30",
 	"label .f.l -text { } -height 1 -bg red",
@@ -677,8 +677,8 @@ badmod(path: string)
 
 mountscr := array[] of {
 	"frame .f -borderwidth 2 -relief raised",
-	"text .f.t -width 200 -height 60 -borderwidth 1 -bg white -font /fonts/charon/plain.normal.font",
-	"button .f.b -text {Cancel} -command {send butchan cancel} -width 70 -font /fonts/charon/plain.normal.font",
+	"text .f.t -width 200 -height 60 -borderwidth 1 -bg white -font /sys/font/charon/plain.normal.font",
+	"button .f.b -text {Cancel} -command {send butchan cancel} -width 70 -font /sys/font/charon/plain.normal.font",
 	"grid .f.t -row 0 -column 0 -padx 10 -pady 10",
 	"grid .f.b -row 1 -column 0 -sticky n",
 	"grid rowconfigure .f 1 -minsize 30",
@@ -927,8 +927,8 @@ max(a,b: int): int
 previewscr := array[] of {
 	"frame .f",
 	"panel .f.p -borderwidth 2 -relief raised",
-	"button .f.bs -text Select -font /fonts/charon/plain.normal.font -command {send prevchan select} -state disabled",
-	"button .f.bc -text Close -font /fonts/charon/plain.normal.font -command {send prevchan close} -state disabled",
+	"button .f.bs -text Select -font /sys/font/charon/plain.normal.font -command {send prevchan select} -state disabled",
+	"button .f.bc -text Close -font /sys/font/charon/plain.normal.font -command {send prevchan close} -state disabled",
 	"pack .f",
 	"grid .f.p -row 0 -column 0 -columnspan 2 -padx 5 -pady 5",
 	"grid .f.bs .f.bc -row 1 -padx 5 -pady 5",

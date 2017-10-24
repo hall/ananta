@@ -77,7 +77,7 @@ init(ctxt : ref Draw->Context, argv : list of string)
 	selectfile->init();
 	readjpg = load Readjpg Readjpg->PATH;
 	readjpg->init(display);
-	font = draw->Font.open(display, "/fonts/charon/plain.small.font");
+	font = draw->Font.open(display, "/sys/font/charon/plain.small.font");
 	runfrom := hd argv;
 	p := isat2(runfrom,"/");
 	savepath = runfrom[:p+1];
@@ -98,19 +98,19 @@ init(ctxt : ref Draw->Context, argv : list of string)
 	maxsize = (r.dx(), r.dy());
 
 	if (ssize == 1) {
-		tkfont = "/fonts/charon/plain.tiny.font";
-		tkfontb = "/fonts/charon/bold.tiny.font";
-		tkfontf = "/fonts/pelm/unicode.8.font";
+		tkfont = "/sys/font/charon/plain.tiny.font";
+		tkfontb = "/sys/font/charon/bold.tiny.font";
+		tkfontf = "/sys/font/pelm/unicode.8.font";
 	}
 	else if (ssize == 2) {
-		tkfont = "/fonts/charon/plain.small.font";
-		tkfontb = "/fonts/charon/bold.small.font";
-		tkfontf = "/fonts/pelm/unicode.8.font";
+		tkfont = "/sys/font/charon/plain.small.font";
+		tkfontb = "/sys/font/charon/bold.small.font";
+		tkfontf = "/sys/font/pelm/unicode.8.font";
 	}
 	else {
-		tkfont = "/fonts/charon/plain.normal.font";
-		tkfontb = "/fonts/charon/bold.normal.font";
-		tkfontf = "/fonts/pelm/unicode.8.font";
+		tkfont = "/sys/font/charon/plain.normal.font";
+		tkfontb = "/sys/font/charon/bold.normal.font";
+		tkfontf = "/sys/font/pelm/unicode.8.font";
 	}
 	if ((sys->stat(tkfont)).t0 == -1)
 		tkfont = "";

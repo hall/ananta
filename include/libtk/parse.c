@@ -747,7 +747,7 @@ pbmap(TkTop *t, TkOption *o, void *place, char **str, char *buf, char *ebuf)
 		if(file == nil)
 			return TkNomem;
 
-		snprint(file, Tkmaxitem, "/icons/tk/%s", buf);
+		snprint(file, Tkmaxitem, "/sys/icon/tk/%s", buf);
 		i = display_open(d, file);
 		free(file);
 	}

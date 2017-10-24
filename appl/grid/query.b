@@ -213,7 +213,7 @@ actionbutton(top: ref Tk->Toplevel, path, tkpath: string)
 		name := ".f.ftop.baction"+string i+" ";
 		(text,cmd) := hd buttons;
 		tkcmd(top, "button "+name+"-text {"+text+"} "+
-				"-font /fonts/charon/bold.normal.font "+
+				"-font /sys/font/charon/bold.normal.font "+
 				"-command {send butchan "+cmd+"}");
 		tkcmd(top, "grid "+name+" -row 0 -column "+string (4+i));
 		buttons = tl buttons;
@@ -236,8 +236,8 @@ mainscreen := array[] of {
 	"frame .f",
 	"frame .f.ftop",
 	"variable opt command",
-	"button .f.ftop.br -text {Refresh} -command {send butchan refresh} -font /fonts/charon/bold.normal.font",
-	"button .f.ftop.bs -text {Search} -command {send butchan search} -font /fonts/charon/bold.normal.font",
+	"button .f.ftop.br -text {Refresh} -command {send butchan refresh} -font /sys/font/charon/bold.normal.font",
+	"button .f.ftop.bs -text {Search} -command {send butchan search} -font /sys/font/charon/bold.normal.font",
   	"grid .f.ftop.br .f.ftop.bs -row 0",
 	"grid columnconfigure .f.ftop 3 -minsize 30",
 	"label .f.l -text { } -height 1 -bg red",
@@ -266,8 +266,8 @@ badmod(path: string)
 
 mountscr := array[] of {
 	"frame .f -borderwidth 2 -relief raised",
-	"text .f.t -width 200 -height 60 -borderwidth 1 -bg white -font /fonts/charon/plain.normal.font",
-	"button .f.b -text {Cancel} -command {send butchan cancel} -width 70 -font /fonts/charon/plain.normal.font",
+	"text .f.t -width 200 -height 60 -borderwidth 1 -bg white -font /sys/font/charon/plain.normal.font",
+	"button .f.b -text {Cancel} -command {send butchan cancel} -width 70 -font /sys/font/charon/plain.normal.font",
 	"grid .f.t -row 0 -column 0 -padx 10 -pady 10",
 	"grid .f.b -row 1 -column 0 -sticky n",
 	"grid rowconfigure .f 1 -minsize 30",

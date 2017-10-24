@@ -33,7 +33,7 @@ WmLogon: module {
 };
 
 cfg := array[] of {
-	"label .p -bitmap @/icons/inferno.bit -borderwidth 2 -relief raised",
+	"label .p -bitmap @/sys/icon/inferno.bit -borderwidth 2 -relief raised",
 	"label .ul -text {User Name:} -anchor w",
 	"entry .ue -bg white",
 	"label .pl -text {Password:} -anchor w",

@@ -21,6 +21,7 @@ some of the major ones follow.
  - return signals are strings: an empty string indicates success and a non-empty one contains a failure message
  - utilities are more strictly single purpose (e.g., without a thousand options, arguments, or flags)
  - strings are not NUL terminated (in fact, the NUL character is invalid in a string)
+ - no superuser account
 
 == windows differences
 

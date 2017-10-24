@@ -88,7 +88,7 @@ init(ctxt: ref Draw->Context, argv: list of string)
 mainscr := array[] of {
 	"frame .f",
 	"frame .f.flb",
-	"listbox .f.flb.lb1 -yscrollcommand {.f.flb.sb1 set} -selectmode single -bg white -selectbackground blue -font /fonts/charon/plain.normal.font",
+	"listbox .f.flb.lb1 -yscrollcommand {.f.flb.sb1 set} -selectmode single -bg white -selectbackground blue -font /sys/font/charon/plain.normal.font",
 	"bind .f.flb.lb1 <Double-Button-1> {send butchan double %y}",
 	"scrollbar .f.flb.sb1 -command {.f.flb.lb1 yview}",
 	"pack .f.flb.sb1 -fill y -side left",
@@ -102,11 +102,11 @@ mainscr := array[] of {
 errscr := array[] of {
 	"frame .f",
 	"frame .f.fl",
-	"label .f.fl.l1 -text {} -font /fonts/charon/plain.normal.font ",
-	"label .f.fl.l2 -text {Please try again later} -font /fonts/charon/plain.normal.font",
+	"label .f.fl.l1 -text {} -font /sys/font/charon/plain.normal.font ",
+	"label .f.fl.l2 -text {Please try again later} -font /sys/font/charon/plain.normal.font",
 	"pack .f.fl.l1 .f.fl.l2 -side top",
 	"button .f.b -text { Close } -command {send butchan exit} "+
-		"-font /fonts/charon/bold.normal.font",
+		"-font /sys/font/charon/bold.normal.font",
 	"grid .f.fl -row 0 -column 0 -padx 10 -pady 5",
 	"grid .f.b -row 1 -column 0 -pady 5",
 	"pack .f",
@@ -127,7 +127,7 @@ tkwin(ctxt: ref Draw->Context, lsrv: list of ref Service, cmds: array of (string
 			tkcmd(top, ".f.flb.lb1 insert end {"+(hd tmp).attrs.get("name")+"}");
 		for (i := 0; i < len cmds; i++) {
 			si := string i;
-			tkcmd(top, "button .f.fb.b"+si+" -font /fonts/charon/bold.normal.font "+
+			tkcmd(top, "button .f.fb.b"+si+" -font /sys/font/charon/bold.normal.font "+
 			"-text {"+cmds[i].t0+"} -command {send butchan go "+si+"}");
 			tkcmd(top, "grid .f.fb.b"+si+" -row 0 -column "+si+" -padx 5 -pady 5");
 		}
@@ -223,8 +223,8 @@ badmod(path: string)
 
 errorwin := array[] of {
 	"frame .f",
-	"label .f.l -font /fonts/charon/plain.normal.font",
-	"button .f.b -text {Ok} -font /fonts/charon/bold.normal.font "+
+	"label .f.l -font /sys/font/charon/plain.normal.font",
+	"button .f.b -text {Ok} -font /sys/font/charon/bold.normal.font "+
 		"-command {send butchan ok}",
 	"pack .f.l .f.b -side top -padx 5 -pady 5",
 	"pack .f",

@@ -35,7 +35,7 @@ include	"brutusext.m";
 
 EXTDIR:	con "/dis/wm/brutus";
 NEXTRA:	con NTAG-NFONTTAG;
-DEFFONT:	con "/fonts/lucidasans/unicode.8.font";
+DEFFONT:	con "/sys/font/lucidasans/unicode.8.font";
 DEFFONTNAME:	con "Roman";
 DEFSIZE:	con 10;
 DEFTAG:	con "Roman.10";
@@ -207,26 +207,26 @@ tagname = array[NTAG] of {
 };
 
 tagconfig = array[NTAG] of {
-	"-font /fonts/lucidasans/unicode.6.font",
-	"-font /fonts/lucidasans/unicode.7.font",
-	"-font /fonts/lucidasans/unicode.8.font",
-	"-font /fonts/lucidasans/unicode.10.font",
-	"-font /fonts/lucidasans/unicode.13.font",
-	"-font /fonts/lucidasans/italiclatin1.6.font",
-	"-font /fonts/lucidasans/italiclatin1.7.font",
-	"-font /fonts/lucidasans/italiclatin1.8.font",
-	"-font /fonts/lucidasans/italiclatin1.10.font",
-	"-font /fonts/lucidasans/italiclatin1.13.font",
-	"-font /fonts/lucidasans/boldlatin1.6.font",
-	"-font /fonts/lucidasans/boldlatin1.7.font",
-	"-font /fonts/lucidasans/boldlatin1.8.font",
-	"-font /fonts/lucidasans/boldlatin1.10.font",
-	"-font /fonts/lucidasans/boldlatin1.13.font",
-	"-font /fonts/lucidasans/typelatin1.6.font",
-	"-font /fonts/lucidasans/typelatin1.7.font",
-	"-font /fonts/pelm/latin1.9.font",
-	"-font /fonts/pelm/ascii.12.font",
-	"-font /fonts/pelm/ascii.16.font",
+	"-font /sys/font/lucidasans/unicode.6.font",
+	"-font /sys/font/lucidasans/unicode.7.font",
+	"-font /sys/font/lucidasans/unicode.8.font",
+	"-font /sys/font/lucidasans/unicode.10.font",
+	"-font /sys/font/lucidasans/unicode.13.font",
+	"-font /sys/font/lucidasans/italiclatin1.6.font",
+	"-font /sys/font/lucidasans/italiclatin1.7.font",
+	"-font /sys/font/lucidasans/italiclatin1.8.font",
+	"-font /sys/font/lucidasans/italiclatin1.10.font",
+	"-font /sys/font/lucidasans/italiclatin1.13.font",
+	"-font /sys/font/lucidasans/boldlatin1.6.font",
+	"-font /sys/font/lucidasans/boldlatin1.7.font",
+	"-font /sys/font/lucidasans/boldlatin1.8.font",
+	"-font /sys/font/lucidasans/boldlatin1.10.font",
+	"-font /sys/font/lucidasans/boldlatin1.13.font",
+	"-font /sys/font/lucidasans/typelatin1.6.font",
+	"-font /sys/font/lucidasans/typelatin1.7.font",
+	"-font /sys/font/pelm/latin1.9.font",
+	"-font /sys/font/pelm/ascii.12.font",
+	"-font /sys/font/pelm/ascii.16.font",
 	"-foreground #444444 -lmargin1 1c -lmargin2 1c; .ft.t tag lower Example",
 	"-foreground #444444; .ft.t tag lower Caption",
 	"-foreground #444444 -lmargin1 1c -lmargin2 1c; .ft.t tag lower List",

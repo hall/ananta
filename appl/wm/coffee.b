@@ -97,7 +97,7 @@ animate(ctl: chan of (string, int, int))
 {
 	stopped := 0;
 
-	fill := display.open("/icons/bigdelight.bit");
+	fill := display.open("/sys/icon/bigdelight.bit");
 	if (fill == nil) {
 		sys->fprint(sys->fildes(2), "coffee: failed to allocate image\n");	
 		exit;
@@ -107,8 +107,8 @@ animate(ctl: chan of (string, int, int))
 	m := array[NC] of ref Image;
 
 	for(i:=0; i<NC; i++){
-		c[i] = display.open("/icons/coffee"+string i+".bit");
-		m[i] = display.open("/icons/coffee"+string i+".mask");
+		c[i] = display.open("/sys/icon/coffee"+string i+".bit");
+		m[i] = display.open("/sys/icon/coffee"+string i+".mask");
 	if (c[i] == nil || m[i] == nil) {
 		sys->fprint(sys->fildes(2), "coffee: failed to allocate image\n");	
 		exit;

@@ -134,26 +134,26 @@ Table: adt
 DefaultFnum: con (DefFont*NSIZE + Size10);
 
 fontnames := array[NFONTTAG] of {
-	"/fonts/lucidasans/unicode.6.font",
-	"/fonts/lucidasans/unicode.7.font",
-	"/fonts/lucidasans/unicode.8.font",
-	"/fonts/lucidasans/unicode.10.font",
-	"/fonts/lucidasans/unicode.13.font",
-	"/fonts/lucidasans/italiclatin1.6.font",
-	"/fonts/lucidasans/italiclatin1.7.font",
-	"/fonts/lucidasans/italiclatin1.8.font",
-	"/fonts/lucidasans/italiclatin1.10.font",
-	"/fonts/lucidasans/italiclatin1.13.font",
-	"/fonts/lucidasans/boldlatin1.6.font",
-	"/fonts/lucidasans/boldlatin1.7.font",
-	"/fonts/lucidasans/boldlatin1.8.font",
-	"/fonts/lucidasans/boldlatin1.10.font",
-	"/fonts/lucidasans/boldlatin1.13.font",
-	"/fonts/lucidasans/typelatin1.6.font",
-	"/fonts/lucidasans/typelatin1.7.font",
-	"/fonts/pelm/latin1.9.font",
-	"/fonts/pelm/ascii.12.font",
-	"/fonts/pelm/ascii.16.font"
+	"/sys/font/lucidasans/unicode.6.font",
+	"/sys/font/lucidasans/unicode.7.font",
+	"/sys/font/lucidasans/unicode.8.font",
+	"/sys/font/lucidasans/unicode.10.font",
+	"/sys/font/lucidasans/unicode.13.font",
+	"/sys/font/lucidasans/italiclatin1.6.font",
+	"/sys/font/lucidasans/italiclatin1.7.font",
+	"/sys/font/lucidasans/italiclatin1.8.font",
+	"/sys/font/lucidasans/italiclatin1.10.font",
+	"/sys/font/lucidasans/italiclatin1.13.font",
+	"/sys/font/lucidasans/boldlatin1.6.font",
+	"/sys/font/lucidasans/boldlatin1.7.font",
+	"/sys/font/lucidasans/boldlatin1.8.font",
+	"/sys/font/lucidasans/boldlatin1.10.font",
+	"/sys/font/lucidasans/boldlatin1.13.font",
+	"/sys/font/lucidasans/typelatin1.6.font",
+	"/sys/font/lucidasans/typelatin1.7.font",
+	"/sys/font/pelm/latin1.9.font",
+	"/sys/font/pelm/ascii.12.font",
+	"/sys/font/pelm/ascii.16.font"
 };
 
 fontrefs := array[NFONTTAG] of ref Font;

@@ -44,7 +44,7 @@ Ebook: module {
 	init: fn(ctxt: ref Draw->Context, argv: list of string);
 };
 
-Font: con "/fonts/charon/plain.small.font";
+Font: con "/sys/font/charon/plain.small.font";
 LASTPAGE: con 16r7fffffff;
 
 Book: adt {

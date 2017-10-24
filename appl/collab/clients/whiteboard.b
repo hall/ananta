@@ -30,11 +30,11 @@ tksetup := array[] of {
 	"frame .f -bd 2",
 	"frame .c -bg white -width 234 -height 279",
 	"menu .penmenu",
-	".penmenu add command -command {send cmd pen 0} -bitmap @/icons/whiteboard/0.bit",
-	".penmenu add command -command {send cmd pen 1} -bitmap @/icons/whiteboard/1.bit",
-	".penmenu add command -command {send cmd pen 2} -bitmap @/icons/whiteboard/2.bit",
-	".penmenu add command -command {send cmd pen erase} -bitmap @/icons/whiteboard/erase.bit",
-	"menubutton .pen -menu .penmenu -bitmap @/icons/whiteboard/1.bit",
+	".penmenu add command -command {send cmd pen 0} -bitmap @/sys/icon/whiteboard/0.bit",
+	".penmenu add command -command {send cmd pen 1} -bitmap @/sys/icon/whiteboard/1.bit",
+	".penmenu add command -command {send cmd pen 2} -bitmap @/sys/icon/whiteboard/2.bit",
+	".penmenu add command -command {send cmd pen erase} -bitmap @/sys/icon/whiteboard/erase.bit",
+	"menubutton .pen -menu .penmenu -bitmap @/sys/icon/whiteboard/1.bit",
 	"button .colour -bg black -activebackground black -command {send cmd getcolour}",
 	"pack .c -in .f",
 	"pack .f -side top -anchor center",
@@ -213,7 +213,7 @@ Connect:
 				# colourmenu was dismissed
 				continue;
 			erase = 0;
-			tkcmd(win, ".pen configure -bitmap @/icons/whiteboard/" + string penwidth + ".bit");
+			tkcmd(win, ".pen configure -bitmap @/sys/icon/whiteboard/" + string penwidth + ".bit");
 			tkcmd(win, "update");
 			pencolour = int hd toks;
 			toks = tl toks;
@@ -234,7 +234,7 @@ Connect:
 				penwidth = int p;
 				i = p + ".bit";
 			}
-			tkcmd(win, ".pen configure -bitmap @/icons/whiteboard/" + i);
+			tkcmd(win, ".pen configure -bitmap @/sys/icon/whiteboard/" + i);
 			tkcmd(win, "update");
 		}
 

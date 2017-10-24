@@ -58,7 +58,7 @@ dirwin_cfg := array[] of {
 	"canvas .fc.c -relief sunken -yscrollincrement 25"+
 		" -borderwidth 2 -width 10c -height 300"+
 		" -yscrollcommand {.fc.scroll set}"+
-		" -font /fonts/misc/latin1.8x13.font",
+		" -font /sys/font/misc/latin1.8x13.font",
 	"frame .mbar",
 	"menubutton .mbar.opt -text {Options} -menu .opt",
 	"pack .mbar.opt -side left",

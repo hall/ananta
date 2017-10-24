@@ -114,7 +114,7 @@ init(ctxt: ref Draw->Context, args: list of string)
 	#	err(sys->sprint("can't read old values from /dev/touchctl: %r"));
 	#oldvalues = oldvalues[0:nr];
 	sys->fprint(ctl, "X %d %d %d\nY %d %d %d\n", FX(1,1), 0, 0, 0, FX(1,1), 0);	# identity
-	font := Font.open(display, sys->sprint("/fonts/lucida/unicode.%d.font", 6+(r.dx()/512)));
+	font := Font.open(display, sys->sprint("/sys/font/lucida/unicode.%d.font", 6+(r.dx()/512)));
 	if(font == nil)
 		font = Font.open(display, "*default*");
 	if(font != nil){

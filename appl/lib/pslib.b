@@ -132,9 +132,9 @@ stats(): (int,int,int)
 loadfonts() : string
 {
 	input : string;
-	iob:=bufmod->open("/fonts/psrename",bufmod->OREAD);
+	iob:=bufmod->open("/sys/font/psrename",bufmod->OREAD);
 	if (iob==nil)
-		return sys->sprint("can't open /fonts/psrename: %r");
+		return sys->sprint("can't open /sys/font/psrename: %r");
 	i:=0;
 	while((input=iob.gets('\n'))!=nil){
 		(tkfont,psfont):=str->splitl(input," ");
@@ -398,7 +398,7 @@ getfonts(input: string) : string
 	if (input[0]=='%')
 			return "";
 	# get a line of the form 
-	# 5::/fonts/lucida/moo.16.font
+	# 5::/sys/font/lucida/moo.16.font
 	# translate it to...
 	# 32 f32.16
 	# where 32==1<<5 and f32.16 is a postscript function that loads the 

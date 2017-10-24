@@ -1,5 +1,5 @@
 = {name}: one hell of an operating system
-:docpath: ./share/doc/manual
+:docpath: ./sys/doc/manual
 :name: inf
 
 link:{docpath}/intro.adoc[{name}] is a derivative of http://www.inferno-os.info/inferno/[Inferno] (a distributed operating system originally developed at http://www.bell-labs.com/[Bell Labs] and currently maintained by http://www.vitanuova.com/[Vita Nuova]) aimed at modernization for mass adoption.

@@ -3,7 +3,7 @@
 #define	ENT	subl $16, %esp
 #define	RET	addl $16, %esp; ret
 
-	.file	"setfcr-Linux-386.S"
+	.file	"setfcr-linux-386.S"
 FN(setfcr):
 	ENT
 	xorb	$0x3f, %al

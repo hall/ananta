@@ -1,4 +1,4 @@
-	.file	"getcallerpc-Linux-386.S"
+	.file	"getcallerpc-linux-386.S"
 	.type	getcallerpc,@function
 	.global	getcallerpc
 getcallerpc:

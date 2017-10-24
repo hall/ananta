@@ -29,8 +29,8 @@ EMUDIRS=\
 	arch/emu/$SYSTARG\
 
 KERNEL_DIRS=\
-	os\
-	os/boot/pc\
+	arch/native\
+	arch/native/boot/pc\
 
 
 DIRS=\
@@ -38,21 +38,21 @@ DIRS=\
 #	appl\
 
 foo:QV:
-	echo mk all, clean, install, installall or nuke
+	echo mk all, clean, install
 
 all:V:                  all-$HOSTMODEL
 clean:V:                clean-$HOSTMODEL
 install:V:              install-$HOSTMODEL
-installall:V:           installall-$HOSTMODEL
-emu:V:                  $ROOT/arch/all-$HOSTMODEL
-emuinstall:V:           $ROOT/arch/install-$HOSTMODEL
-emuclean:V:             $ROOT/arch/clean-$HOSTMODEL
+emu:V:                  $ROOT/arch/emu/all-$HOSTMODEL
+emuinstall:V:           $ROOT/arch/emu/install-$HOSTMODEL
+emuclean:V:             $ROOT/arch/emu/clean-$HOSTMODEL
 kernel:V:               kernel/all-$HOSTMODEL
 kernelclean:V:          kernel/clean-$HOSTMODEL
 kernelinstall:V:        kernel/install-$HOSTMODEL
 
-&-Posix:V:
+&-Posix:QV:
 	for j in $DIRS utils tools; do
+                echo "(cd $j; mk $MKFLAGS $stem)"
 		(cd $j; mk $MKFLAGS $stem) || exit 1
 	done
 &-Nt:V:
@@ -94,12 +94,56 @@ kernel/&-Plan9:V:
 		@{builtin cd $j; mk $MKFLAGS $stem }
 	}
 
-mkdirs:V:	mkdirs-$SHELLTYPE
-mkdirs-rc:V:
-	mkdir -p `{cat lib/emptydirs}
+emptydirs = \
+    keydb/countersigned\
+    keydb/signed\
+    mail\
+    mnt\
+    mnt/9win\
+    mnt/acme\
+    mnt/arch\
+    mnt/diary\
+    mnt/factotum\
+    mnt/gossip\
+    mnt/icontact\
+    mnt/ilog\
+    mnt/incall\
+    mnt/isubs\
+    mnt/itrack\
+    mnt/keys\
+    mnt/keysrv\
+    mnt/quiz\
+    mnt/registry\
+    mnt/rstyxreg\
+    mnt/schedule\
+    mnt/vmail\
+    mnt/wm\
+    mnt/wrap\
+    mnt/wsys\
+    n\
+    n/cd\
+    n/client\
+    n/client/chan\
+    n/client/dev\
+    n/disk\
+    n/dist\
+    n/dump\
+    n/ftp\
+    n/gridfs\
+    n/kfs\
+    n/local\
+    n/rdbg\
+    n/registry\
+    n/remote\
+    opt\
+    services/logs\
+    services/ppp\
+    src\
+    tmp\
+    usr/inferno/charon\
+    usr/inferno/keyring\
+    usr/inferno/tmp\
+
+mkdirs:V:
+	mkdir -p $emptydirs $OBJDIR/bin $OBJDIR/lib
 	chmod 555 mnt/* n/client/* n/*
-mkdirs-sh:V:
-	mkdir -p `cat lib/emptydirs`
-	chmod 555 mnt/* n/client/* n/*
-mkdirs-nt:V:
-	mkdir -p `{cmd /c type lib\emptydirs}

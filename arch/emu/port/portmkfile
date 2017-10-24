@@ -9,9 +9,9 @@ PORTHFILES=\
 	$ROOT/arch/emu/port/fns.h\
 
 LIBNAMES=${LIBS:%=lib%.a}
-LIBFILES=${LIBS:%=$OBJDIR/lib/lib%.a}
+LIBFILES=${LIBS:%=$ROOT/lib/lib%.a}
 
-$OBJDIR/lib/lib%.a:N:	lib%.a
+$ROOT/lib%.a:N:	lib%.a
 
 %.$O:	%.s
 	$AS $ASFLAGS $stem.s

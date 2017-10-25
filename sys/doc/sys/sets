@@ -1,126 +1,120 @@
-SETS(2)                  System Calls Manual                 SETS(2)
+= Sets: sets of non-negative integers
 
-NAME
-       Sets - sets of non-negative integers
+    include    "sets.m";
+    OR include "sets32.m";
+    sets := load Sets Sets->PATH;
+    A, B: import Sets;
 
-SYNOPSIS
-       include    "sets.m";
-       OR include "sets32.m";
-       sets := load Sets Sets->PATH;
-       A, B: import Sets;
+    Sets: adt {
+        init:       fn();
+        set:        fn(): Set;
+        str2set:    fn(str: string): Set;
+        bytes2set:  fn(d: array of byte): Set;
+        Set: adt {
+            # opaque data
+    
+            X:          fn(s1: self Set, op: int, s2: Set): Set;
+            add:        fn(s: self Set, n: int): Set;
+            addlist:    fn(s: self Set, ns: list of int): Set;
+            del:        fn(s: self Set, n: int): Set;
+            invert:     fn(s: self Set): Set;
+    
+            eq:         fn(s1: self Set, s2: Set): int;
+            holds:      fn(s: self Set, n: int): int;
+            isempty:      fn(s: self Set): int;
+            msb:        fn(s: self Set): int;
+            limit:      fn(s: self Set): int;
+    
+            str:        fn(s: self Set): string;
+            bytes:      fn(s: self Set, n: int): array of byte;
+        };
+    };
 
-       Sets: adt {
-           init:       fn();
-           set:        fn(): Set;
-           str2set:    fn(str: string): Set;
-           bytes2set:  fn(d: array of byte): Set;
-           Set: adt {
-               # opaque data
+The  Sets  module  provides routines for manipulating sets of
+small non-negative integers. There are currently  two  imple‐
+mentations available: the implementation declared in sets32.m
+stores sets of numbers from 0 to 31 inclusive; the  implemen‐
+tation  in sets.m stores arbitrary sets of non-negative inte‐
+gers.  The description given is for the more  general  imple‐
+mentation;  behaviour of the other is undefined if an integer
+higher than 31 is used.
 
-               X:          fn(s1: self Set, op: int, s2: Set): Set;
-               add:        fn(s: self Set, n: int): Set;
-               addlist:    fn(s: self Set, ns: list of int): Set;
-               del:        fn(s: self Set, n: int): Set;
-               invert:     fn(s: self Set): Set;
+Init must be called first, to allow Sets  to  initialise  its
+internal  state.   Set returns a new set, containing nothing.
+Str2set converts a string to a new  set;  the  string  should
+have  been  created  with  Set.str().   Bytes2set converts an
+array of bytes, d, as returned by Set.bytes(), to a new set.
 
-               eq:         fn(s1: self Set, s2: Set): int;
-               holds:      fn(s: self Set, n: int): int;
-               isempty:      fn(s: self Set): int;
-               msb:        fn(s: self Set): int;
-               limit:      fn(s: self Set): int;
+Note that all set operations are copy operations; none change
+an existing set.
 
-               str:        fn(s: self Set): string;
-               bytes:      fn(s: self Set, n: int): array of byte;
-           };
-       };
+s1.X(op, s2)
+          Returns  a  new set, the result of combining s1 and
+          s2 according to boolean operator op.  Op can be any
+          bitwise  boolean combination of the two constants A
+          and B, defined in the module. Notionally, each  set
+          is an infinitely long string of bits, each bit rep‐
+          resenting a non-negative integer: zero if the inte‐
+          ger is present, and one if absent.  For each corre‐
+          sponding bit in s1 and s2, X sets  a  corresponding
+          bit  in  the returned set according to the calcula‐
+          tion s1 op s2.
 
-DESCRIPTION
-       The  Sets  module  provides routines for manipulating sets of
-       small non-negative integers. There are currently  two  imple‐
-       mentations available: the implementation declared in sets32.m
-       stores sets of numbers from 0 to 31 inclusive; the  implemen‐
-       tation  in sets.m stores arbitrary sets of non-negative inte‐
-       gers.  The description given is for the more  general  imple‐
-       mentation;  behaviour of the other is undefined if an integer
-       higher than 31 is used.
+s.add(n)  Returns the set s with n added.
 
-       Init must be called first, to allow Sets  to  initialise  its
-       internal  state.   Set returns a new set, containing nothing.
-       Str2set converts a string to a new  set;  the  string  should
-       have  been  created  with  Set.str().   Bytes2set converts an
-       array of bytes, d, as returned by Set.bytes(), to a new set.
+s.addlist(ns)
+          Addlist is the same as calling add on  each  member
+          of the list ns, but somewhat more efficient.
 
-       Note that all set operations are copy operations; none change
-       an existing set.
+s.del(n)  Returns s with n removed.
 
-       s1.X(op, s2)
-                 Returns  a  new set, the result of combining s1 and
-                 s2 according to boolean operator op.  Op can be any
-                 bitwise  boolean combination of the two constants A
-                 and B, defined in the module. Notionally, each  set
-                 is an infinitely long string of bits, each bit rep‐
-                 resenting a non-negative integer: zero if the inte‐
-                 ger is present, and one if absent.  For each corre‐
-                 sponding bit in s1 and s2, X sets  a  corresponding
-                 bit  in  the returned set according to the calcula‐
-                 tion s1 op s2.
+s.invert()
+          Invert returns a set holding all non-negative inte‐
+          gers  other  than  those  already  in   s.    Hence
+          set().invert() holds all non-negative integers.
 
-       s.add(n)  Returns the set s with n added.
+s1.eq(s2) Returns non-zero if s1 is identical to s2.
 
-       s.addlist(ns)
-                 Addlist is the same as calling add on  each  member
-                 of the list ns, but somewhat more efficient.
+s.holds(n)
+          Returns non-zero if s holds n as a member.
 
-       s.del(n)  Returns s with n removed.
+s.isempty()
+          Returns non-zero if s holds no members.
 
-       s.invert()
-                 Invert returns a set holding all non-negative inte‐
-                 gers  other  than  those  already  in   s.    Hence
-                 set().invert() holds all non-negative integers.
+s.msb()   Returns  the "most significant bit": the membership
+          status of all members that have not been explicitly
+          set.     For    example,    set().msb()    is    0;
+          set().invert().msb() is 1.
 
-       s1.eq(s2) Returns non-zero if s1 is identical to s2.
+s.limit() If s.msb() is zero, s.limit() returns one more than
+          the  largest  member  contained  in s, otherwise it
+          returns one more than the largest member  not  con‐
+          tained  in  s.   Thus  set().limit()  yields 0, and
+          set().invert().del(5).limit() yields 6.
 
-       s.holds(n)
-                 Returns non-zero if s holds n as a member.
+s.str()   Returns a string corresponding to s.  The format is
+          hexdigits:msb,  where hexdigits give the least sig‐
+          nificant members of the set,  most  significant  on
+          the left, in hexadecimal format; msb gives the pad‐
+          ding bit that fills the rest of the set.  Note that
+          this format is compatible between the two implemen‐
+          tations.
 
-       s.isempty()
-                 Returns non-zero if s holds no members.
+s.bytes(n)
+          Returns a packed byte representaton  of  s  .   The
+          array is held in little-endian order, with the top‐
+          most bit of the top byte holding  the  msb  of  the
+          set.   The  array  returned will contain at least n
+          bytes.
 
-       s.msb()   Returns  the "most significant bit": the membership
-                 status of all members that have not been explicitly
-                 set.     For    example,    set().msb()    is    0;
-                 set().invert().msb() is 1.
+== examples
+Given two sets, s1 and s2, s1.X(A&B, s2) gives  their  inter‐
+section;  s1.X(A|B, s2) their union; s1.X(A&~B, s2) gives the
+set of all members of s1 that aren't in s2; s1.X(~(A|B),  s2)
+gives the set of all integers in neither s1 nor s2.
 
-       s.limit() If s.msb() is zero, s.limit() returns one more than
-                 the  largest  member  contained  in s, otherwise it
-                 returns one more than the largest member  not  con‐
-                 tained  in  s.   Thus  set().limit()  yields 0, and
-                 set().invert().del(5).limit() yields 6.
+     sys->print("%s\n", set().addlist(1::2::5::nil)
+          .invert().X(A|B, set().add(2)).str());
+produces the string ``dd:1'', corresponding to the set of all
+non-negative integers except 1 and 5.
 
-       s.str()   Returns a string corresponding to s.  The format is
-                 hexdigits:msb,  where hexdigits give the least sig‐
-                 nificant members of the set,  most  significant  on
-                 the left, in hexadecimal format; msb gives the pad‐
-                 ding bit that fills the rest of the set.  Note that
-                 this format is compatible between the two implemen‐
-                 tations.
-
-       s.bytes(n)
-                 Returns a packed byte representaton  of  s  .   The
-                 array is held in little-endian order, with the top‐
-                 most bit of the top byte holding  the  msb  of  the
-                 set.   The  array  returned will contain at least n
-                 bytes.
-
-EXAMPLES
-       Given two sets, s1 and s2, s1.X(A&B, s2) gives  their  inter‐
-       section;  s1.X(A|B, s2) their union; s1.X(A&~B, s2) gives the
-       set of all members of s1 that aren't in s2; s1.X(~(A|B),  s2)
-       gives the set of all integers in neither s1 nor s2.
-
-            sys->print("%s\n", set().addlist(1::2::5::nil)
-                 .invert().X(A|B, set().add(2)).str());
-       produces the string ``dd:1'', corresponding to the set of all
-       non-negative integers except 1 and 5.
-
-                                                             SETS(2)

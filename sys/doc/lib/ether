@@ -1,94 +1,87 @@
-ETHER(3)              Library Functions Manual              ETHER(3)
+= ether: Ethernet device
 
-NAME
-       ether - Ethernet device
+    bind -a #ln /net
 
-SYNOPSIS
-       bind -a #ln /net
+    /net/ethern/clone
+    /net/ethern/[0-7]
+    /net/ethern/[0-7]/data
+    /net/ethern/[0-7]/ctl
+    /net/ethern/[0-7]/stats
+    /net/ethern/[0-7]/type
+    /net/ethern/[0-7]/ifstats
 
-       /net/ethern/clone
-       /net/ethern/[0-7]
-       /net/ethern/[0-7]/data
-       /net/ethern/[0-7]/ctl
-       /net/ethern/[0-7]/stats
-       /net/ethern/[0-7]/type
-       /net/ethern/[0-7]/ifstats
+The Ethernet device #ln serves a three-level directory repre‐
+senting a physical Ethernet interface: AMD LANCE, 3Com 3C509,
+3Com 3C905, Intel 82557, and others.  If n is not given it is
+taken to be 0.
 
-DESCRIPTION
-       The Ethernet device #ln serves a three-level directory repre‐
-       senting a physical Ethernet interface: AMD LANCE, 3Com 3C509,
-       3Com 3C905, Intel 82557, and others.  If n is not given it is
-       taken to be 0.
+The top level directory has a single directory named  ethern,
+where n is the interface number, starting from 0, assigned in
+some platform-dependent way.  That directory contains a  con‐
+versation  directory for each of 8 Ethernet packet types, and
+a clone file.
 
-       The top level directory has a single directory named  ethern,
-       where n is the interface number, starting from 0, assigned in
-       some platform-dependent way.  That directory contains a  con‐
-       versation  directory for each of 8 Ethernet packet types, and
-       a clone file.
+Opening the clone file returns a file descriptor open on  the
+ctl  file  of  an unused conversation directory.  Reading the
+ctl file returns a text string representing the number of the
+connection.   The connection is controlled by writing textual
+commands to the associated ctl file:
 
-       Opening the clone file returns a file descriptor open on  the
-       ctl  file  of  an unused conversation directory.  Reading the
-       ctl file returns a text string representing the number of the
-       connection.   The connection is controlled by writing textual
-       commands to the associated ctl file:
+connect type
+       Set the type of Ethernet packets received on the  con‐
+       nection;  the type is expressed as an integer constant
+       (in hexadecimal if it has a leading 0x,  octal  if  it
+       has   a   leading  0,  and  otherwise  decimal).   For
+       instance, Ethernet packets carrying IP version  4  use
+       type  0x800.   The value -1 stands for all types.  The
+       value -2 causes at most the  first  64  bytes  of  all
+       types of packets to be copied to the conversation.  If
+       several conversations are  assigned  the  same  packet
+       type, a copy of the packet is given to each.
 
-       connect type
-              Set the type of Ethernet packets received on the  con‐
-              nection;  the type is expressed as an integer constant
-              (in hexadecimal if it has a leading 0x,  octal  if  it
-              has   a   leading  0,  and  otherwise  decimal).   For
-              instance, Ethernet packets carrying IP version  4  use
-              type  0x800.   The value -1 stands for all types.  The
-              value -2 causes at most the  first  64  bytes  of  all
-              types of packets to be copied to the conversation.  If
-              several conversations are  assigned  the  same  packet
-              type, a copy of the packet is given to each.
+promiscuous
+       Set the interface to capture all packets regardless of
+       destination address.  An interface  normally  receives
+       only  packets whose destination address is that of the
+       interface or is the broadcast  address,  ffffffffffff.
+       The  interface  remains  promiscuous until the control
+       file is closed.  The extra packets are  received  only
+       by  conversations  of  the  same  type as the incoming
+       packet (or of type -1).
 
-       promiscuous
-              Set the interface to capture all packets regardless of
-              destination address.  An interface  normally  receives
-              only  packets whose destination address is that of the
-              interface or is the broadcast  address,  ffffffffffff.
-              The  interface  remains  promiscuous until the control
-              file is closed.  The extra packets are  received  only
-              by  conversations  of  the  same  type as the incoming
-              packet (or of type -1).
+addmulti address
+       Add the given MAC multicast address to the set of mul‐
+       ticast  addresses  accepted by the interface.  Address
+       is a twelve digit MAC address in hexadecimal.
 
-       addmulti address
-              Add the given MAC multicast address to the set of mul‐
-              ticast  addresses  accepted by the interface.  Address
-              is a twelve digit MAC address in hexadecimal.
+remmulti address
+       Remove address from the  set  of  multicast  addresses
+       accepted by the interface.
 
-       remmulti address
-              Remove address from the  set  of  multicast  addresses
-              accepted by the interface.
+Incoming  Ethernet  packets  are demultiplexed by destination
+address and packet type and queued for reading by the  corre‐
+sponding  open  connection(s).   Each  read  of the data file
+returns each packet in turn, including the  Ethernet  header.
+A  read  will  terminate at packet boundaries.  Each write to
+the data file causes a  packet  to  be  sent.   The  Ethernet
+address  of  the interface is inserted into the packet header
+as the source address.
 
-       Incoming  Ethernet  packets  are demultiplexed by destination
-       address and packet type and queued for reading by the  corre‐
-       sponding  open  connection(s).   Each  read  of the data file
-       returns each packet in turn, including the  Ethernet  header.
-       A  read  will  terminate at packet boundaries.  Each write to
-       the data file causes a  packet  to  be  sent.   The  Ethernet
-       address  of  the interface is inserted into the packet header
-       as the source address.
+Reading the type  file  returns  the  decimal  value  of  the
+assigned Ethernet packet type.
 
-       Reading the type  file  returns  the  decimal  value  of  the
-       assigned Ethernet packet type.
+Reading  the stats file returns status information, the value
+of counters, the `promiscuous' state, and  the  Ethernet  MAC
+address of the interface.
 
-       Reading  the stats file returns status information, the value
-       of counters, the `promiscuous' state, and  the  Ethernet  MAC
-       address of the interface.
+Reading the ifstats file returns statistics and status infor‐
+mation specific to a given hardware interface.
 
-       Reading the ifstats file returns statistics and status infor‐
-       mation specific to a given hardware interface.
+== source
+/os/port/devlance.c
+/os/port/netif.c
+/os/*/devether.c
+/os/*/ether*.c
 
-SOURCE
-       /os/port/devlance.c
-       /os/port/netif.c
-       /os/*/devether.c
-       /os/*/ether*.c
-
-SEE ALSO
-       ip(3)
-
-                                                            ETHER(3)
+== see ALSO
+ip(3)

@@ -1,346 +1,340 @@
-GRID(9)               Kernel Developer's Manual              GRID(9)
+= grid: Geometry manager that arranges widgets in a grid
 
-NAME
-       grid - Geometry manager that arranges widgets in a grid
+    grid option arg ?arg ...?
 
-SYNOPSIS
-       grid option arg ?arg ...?
+The  grid command is used to communicate with the grid geome‐
+try manager that arranges widgets in rows and columns  inside
+of another window, called the geometry master (or master win‐
+dow).  The grid  command  can  have  any  of  several  forms,
+depending on the option argument:
 
-DESCRIPTION
-       The  grid command is used to communicate with the grid geome‐
-       try manager that arranges widgets in rows and columns  inside
-       of another window, called the geometry master (or master win‐
-       dow).  The grid  command  can  have  any  of  several  forms,
-       depending on the option argument:
+grid bbox master ?column row? ?column2 row2?
+       With no arguments, the bounding box (in pixels) of the
+       grid is returned.  The  return  value  consists  of  4
+       integers.  The first two are the pixel offset from the
+       master window (x then y) of the top-left corner of the
+       grid, and the second two integers are the bottom-right
+       corner of the grid, also in pixels.  If a single  col‐
+       umn and row is specified on the command line, then the
+       bounding box for that cell is returned, where the  top
+       left  cell  is numbered from zero.  If both column and
+       row arguments are specified,  then  the  bounding  box
+       spanning the rows and columns indicated is returned.
 
-       grid bbox master ?column row? ?column2 row2?
-              With no arguments, the bounding box (in pixels) of the
-              grid is returned.  The  return  value  consists  of  4
-              integers.  The first two are the pixel offset from the
-              master window (x then y) of the top-left corner of the
-              grid, and the second two integers are the bottom-right
-              corner of the grid, also in pixels.  If a single  col‐
-              umn and row is specified on the command line, then the
-              bounding box for that cell is returned, where the  top
-              left  cell  is numbered from zero.  If both column and
-              row arguments are specified,  then  the  bounding  box
-              spanning the rows and columns indicated is returned.
+grid cellinfo master column row
+       Returns a list giving information about the slave cur‐
+       rently held in the grid cell specified by  column  and
+       row.  The first element of the list is the name of the
+       slave, and the rest have the  same  option-value  form
+       that  might  be  specified to grid configure (the same
+       form as returned by grid info).
 
-       grid cellinfo master column row
-              Returns a list giving information about the slave cur‐
-              rently held in the grid cell specified by  column  and
-              row.  The first element of the list is the name of the
-              slave, and the rest have the  same  option-value  form
-              that  might  be  specified to grid configure (the same
-              form as returned by grid info).
+grid columnconfigure master index ?-option value...?
+       Set the column properties of the index column  of  the
+       geometry  master, master.  The valid options are -min‐
+       size, -weight, -pad and -name.  If one or more options
+       are  provided,  then  index  may be given as a list of
+       column indices to which the configuration options will
+       operate  on.   The  -minsize  option  sets the minimum
+       size, in screen units, that will be permitted for this
+       column.   The  -weight  option (an integer value) sets
+       the relative weight for apportioning any extra  spaces
+       among  columns.   A  weight  of zero (0) indicates the
+       column will not deviate from its  requested  size.   A
+       column whose weight is two will grow at twice the rate
+       as a column of weight one when extra  space  is  allo‐
+       cated  to the layout.  The -pad option specifies a pad
+       distance that will be added either side of the column;
+       adjacent  columns  merge their padding, creating a pad
+       sized to the larger of the pads on either column.  The
+       -name  option associates a name with the column, which
+       can then be used as an index to refer to that column.
 
-       grid columnconfigure master index ?-option value...?
-              Set the column properties of the index column  of  the
-              geometry  master, master.  The valid options are -min‐
-              size, -weight, -pad and -name.  If one or more options
-              are  provided,  then  index  may be given as a list of
-              column indices to which the configuration options will
-              operate  on.   The  -minsize  option  sets the minimum
-              size, in screen units, that will be permitted for this
-              column.   The  -weight  option (an integer value) sets
-              the relative weight for apportioning any extra  spaces
-              among  columns.   A  weight  of zero (0) indicates the
-              column will not deviate from its  requested  size.   A
-              column whose weight is two will grow at twice the rate
-              as a column of weight one when extra  space  is  allo‐
-              cated  to the layout.  The -pad option specifies a pad
-              distance that will be added either side of the column;
-              adjacent  columns  merge their padding, creating a pad
-              sized to the larger of the pads on either column.  The
-              -name  option associates a name with the column, which
-              can then be used as an index to refer to that column.
+grid slave ?slave ...? ?options?
+       The arguments consist of the  names  of  one  or  more
+       slave  windows  followed  by  pairs  of arguments that
+       specify how to manage the slaves.  The  characters  -,
+       x  and ^, can be specified instead of a window name to
+       alter the default location of a slave, as described in
+       the  ``RELATIVE  PLACEMENT'' section, below.  The fol‐
+       lowing options are supported:
 
-       grid slave ?slave ...? ?options?
-              The arguments consist of the  names  of  one  or  more
-              slave  windows  followed  by  pairs  of arguments that
-              specify how to manage the slaves.  The  characters  -,
-              x  and ^, can be specified instead of a window name to
-              alter the default location of a slave, as described in
-              the  ``RELATIVE  PLACEMENT'' section, below.  The fol‐
-              lowing options are supported:
+       -column index
+              Insert  the  slave  so  that  it  occupies  the
+              indexth  column  in  the  grid.  Column numbers
+              start with 0.  If this option is not  supplied,
+              then the slave is arranged just to the right of
+              previous slave specified on this call to  grid,
+              or  column  "0"  if it is the first slave.  For
+              each x that immediately precedes the slave, the
+              column  position  is  incremented by one.  Thus
+              the x represents a blank column for this row in
+              the grid.
 
-              -column index
-                     Insert  the  slave  so  that  it  occupies  the
-                     indexth  column  in  the  grid.  Column numbers
-                     start with 0.  If this option is not  supplied,
-                     then the slave is arranged just to the right of
-                     previous slave specified on this call to  grid,
-                     or  column  "0"  if it is the first slave.  For
-                     each x that immediately precedes the slave, the
-                     column  position  is  incremented by one.  Thus
-                     the x represents a blank column for this row in
-                     the grid.
+       -columnspan n
+              Insert  the slave so that it occupies n columns
+              in the grid.  The default is one column, unless
+              the  window  name  is followed by a -, in which
+              case the columnspan  is  incremented  once  for
+              each immediately following -.
 
-              -columnspan n
-                     Insert  the slave so that it occupies n columns
-                     in the grid.  The default is one column, unless
-                     the  window  name  is followed by a -, in which
-                     case the columnspan  is  incremented  once  for
-                     each immediately following -.
+       -in other
+              Insert  the slave(s) in the master window given
+              by other.  The default  is  the  first  slave's
+              parent window.
 
-              -in other
-                     Insert  the slave(s) in the master window given
-                     by other.  The default  is  the  first  slave's
-                     parent window.
+       -ipadx amount
+              The amount specifies how much horizontal inter‐
+              nal padding  to  leave  on  each  side  of  the
+              slave(s).   This  is  space is added inside the
+              slave(s) border.  The amount must  be  a  valid
+              screen distance, such as 2 or .5c.  It defaults
+              to 0.
 
-              -ipadx amount
-                     The amount specifies how much horizontal inter‐
-                     nal padding  to  leave  on  each  side  of  the
-                     slave(s).   This  is  space is added inside the
-                     slave(s) border.  The amount must  be  a  valid
-                     screen distance, such as 2 or .5c.  It defaults
-                     to 0.
+       -ipady amount
+              The amount specifies how much vertical internal
+              padding  to  leave  on on the top and bottom of
+              the slave(s).  This space is added  inside  the
+              slave(s) border.  The amount  defaults to 0.
 
-              -ipady amount
-                     The amount specifies how much vertical internal
-                     padding  to  leave  on on the top and bottom of
-                     the slave(s).  This space is added  inside  the
-                     slave(s) border.  The amount  defaults to 0.
+       -padx amount
+              The amount specifies how much horizontal exter‐
+              nal padding  to  leave  on  each  side  of  the
+              slave(s), in screen units.  The amount defaults
+              to 0.  This space is added outside the slave(s)
+              border.
 
-              -padx amount
-                     The amount specifies how much horizontal exter‐
-                     nal padding  to  leave  on  each  side  of  the
-                     slave(s), in screen units.  The amount defaults
-                     to 0.  This space is added outside the slave(s)
-                     border.
+       -pady amount
+              The amount specifies how much vertical external
+              padding to leave on the top and bottom  of  the
+              slave(s), in screen units.  The amount defaults
+              to 0.  This space is added outside the slave(s)
+              border.
 
-              -pady amount
-                     The amount specifies how much vertical external
-                     padding to leave on the top and bottom  of  the
-                     slave(s), in screen units.  The amount defaults
-                     to 0.  This space is added outside the slave(s)
-                     border.
+       -row index
+              Insert  the  slave  so  that  it  occupies  the
+              indexth row in the  grid.   Row  numbers  start
+              with  0.   If this option is not supplied, then
+              the slave is arranged on the same  row  as  the
+              previous  slave specified on this call to grid,
+              or the first unoccupied  row  if  this  is  the
+              first slave.
 
-              -row index
-                     Insert  the  slave  so  that  it  occupies  the
-                     indexth row in the  grid.   Row  numbers  start
-                     with  0.   If this option is not supplied, then
-                     the slave is arranged on the same  row  as  the
-                     previous  slave specified on this call to grid,
-                     or the first unoccupied  row  if  this  is  the
-                     first slave.
+       -rowspan n
+              Insert  the slave so that it occupies n rows in
+              the grid.  The default is one row.  If the next
+              grid  command  contains ^ characters instead of
+              slaves that line up with the  columns  of  this
+              slave,  then  the  rowspan  of  this  slave  is
+              extended by one.
 
-              -rowspan n
-                     Insert  the slave so that it occupies n rows in
-                     the grid.  The default is one row.  If the next
-                     grid  command  contains ^ characters instead of
-                     slaves that line up with the  columns  of  this
-                     slave,  then  the  rowspan  of  this  slave  is
-                     extended by one.
+       -sticky style
+              If a slave's cell is larger than its  requested
+              dimensions, this option may be used to position
+              (or stretch) the slave within its cell.   Style
+              is  a  string that contains zero or more of the
+              characters n,  s,  e  or  w.   The  string  can
+              optionally  contains spaces or commas, but they
+              are ignored.  Each  letter  refers  to  a  side
+              (north,  south,  east,  or west) that the slave
+              will "stick" to.  If both n and s (or e and  w)
+              are  specified,  the slave will be stretched to
+              fill the entire height (or width) of  its  cav‐
+              ity.   The  sticky option subsumes the combina‐
+              tion of -anchor and -fill that is used by pack.
+              The default is {}, which causes the slave to be
+              centered in its cavity, at its requested size.
 
-              -sticky style
-                     If a slave's cell is larger than its  requested
-                     dimensions, this option may be used to position
-                     (or stretch) the slave within its cell.   Style
-                     is  a  string that contains zero or more of the
-                     characters n,  s,  e  or  w.   The  string  can
-                     optionally  contains spaces or commas, but they
-                     are ignored.  Each  letter  refers  to  a  side
-                     (north,  south,  east,  or west) that the slave
-                     will "stick" to.  If both n and s (or e and  w)
-                     are  specified,  the slave will be stretched to
-                     fill the entire height (or width) of  its  cav‐
-                     ity.   The  sticky option subsumes the combina‐
-                     tion of -anchor and -fill that is used by pack.
-                     The default is {}, which causes the slave to be
-                     centered in its cavity, at its requested size.
+       If any of the slaves are already managed by the geome‐
+       try  manager  then  any  unspecified  options for them
+       retain their previous  values  rather  than  receiving
+       default values.
 
-              If any of the slaves are already managed by the geome‐
-              try  manager  then  any  unspecified  options for them
-              retain their previous  values  rather  than  receiving
-              default values.
+       It  is  an  error  if any slave covers an area already
+       covered by an existing slave of the grid.
 
-              It  is  an  error  if any slave covers an area already
-              covered by an existing slave of the grid.
+grid columndelete master index0 ?index1?
+       Deletes columns from index0 up to  but  not  including
+       index1,  If  index1  is  not  given,  it  defaults  to
+       index0+1.  The deleted columns may not  contain  cells
+       spanned by slaves outside the deleted columns.
 
-       grid columndelete master index0 ?index1?
-              Deletes columns from index0 up to  but  not  including
-              index1,  If  index1  is  not  given,  it  defaults  to
-              index0+1.  The deleted columns may not  contain  cells
-              spanned by slaves outside the deleted columns.
+grid columnindex master index
+       Returns index as a numerical index into the column.
 
-       grid columnindex master index
-              Returns index as a numerical index into the column.
+grid columninsert master index ?count?
+       Inserts  count  (default  1)  new  columns just before
+       index.  The inserted rows may  not  split  a  spanning
+       cell.
 
-       grid columninsert master index ?count?
-              Inserts  count  (default  1)  new  columns just before
-              index.  The inserted rows may  not  split  a  spanning
-              cell.
+grid forget slave ?slave ...?
+       Removes  each  of  the slaves from grid for its master
+       and unmaps their windows.  The slaves will  no  longer
+       be managed by the grid geometry manager.  The configu‐
+       ration options for that window are forgotten, so  that
+       if the slave is managed once more by the grid geometry
+       manager, the initial default settings are used.
 
-       grid forget slave ?slave ...?
-              Removes  each  of  the slaves from grid for its master
-              and unmaps their windows.  The slaves will  no  longer
-              be managed by the grid geometry manager.  The configu‐
-              ration options for that window are forgotten, so  that
-              if the slave is managed once more by the grid geometry
-              manager, the initial default settings are used.
+grid info slave
+       Returns a list whose elements are the current configu‐
+       ration  state  of the slave given by slave in the same
+       option-value form that might be specified to grid con‐
+       figure.   The first two elements of the list are ``-in
+       master'' where master is the slave's master.
 
-       grid info slave
-              Returns a list whose elements are the current configu‐
-              ration  state  of the slave given by slave in the same
-              option-value form that might be specified to grid con‐
-              figure.   The first two elements of the list are ``-in
-              master'' where master is the slave's master.
+grid location master x y
+       Given  x and y values in screen units relative to  the
+       master window, the column and row number at that x and
+       y location is returned.  For locations that are  above
+       or to the left of the grid, -1 is returned.
 
-       grid location master x y
-              Given  x and y values in screen units relative to  the
-              master window, the column and row number at that x and
-              y location is returned.  For locations that are  above
-              or to the left of the grid, -1 is returned.
+grid propagate master ?boolean?
+       If  boolean  has  a true boolean value such as 1 or on
+       then propagation is enabled for master, which must  be
+       a  window  name  (see ``GEOMETRY PROPAGATION'' below).
+       If boolean has a false boolean value then  propagation
+       is  disabled  for master.  In either of these cases an
+       empty string is returned.  If boolean is omitted  then
+       the  command returns 0 or 1 to indicate whether propa‐
+       gation is currently enabled for  master.   Propagation
+       is enabled by default.
 
-       grid propagate master ?boolean?
-              If  boolean  has  a true boolean value such as 1 or on
-              then propagation is enabled for master, which must  be
-              a  window  name  (see ``GEOMETRY PROPAGATION'' below).
-              If boolean has a false boolean value then  propagation
-              is  disabled  for master.  In either of these cases an
-              empty string is returned.  If boolean is omitted  then
-              the  command returns 0 or 1 to indicate whether propa‐
-              gation is currently enabled for  master.   Propagation
-              is enabled by default.
+grid rowconfigure master index ?-option value...?
+       Set  the row properties of the index row of the geome‐
+       try master, master.  The valid options  are  -minsize,
+       -weight,  -pad  and -name.  If one or more options are
+       provided, then index may be given as  a  list  of  row
+       indices  to which the configuration options will oper‐
+       ate on.  The -minsize option sets the minimum size, in
+       screen  units,  that  will  be permitted for this row.
+       The -weight option (an integer value) sets  the  rela‐
+       tive  weight  for  apportioning any extra spaces among
+       rows.  A weight of zero (0) indicates the row will not
+       deviate  from  its requested size.  A row whose weight
+       is two will grow at twice the rate as a row of  weight
+       one  when extra space is allocated to the layout.  The
+       -pad option specifies a  pad  distance  that  will  be
+       added  either  side  of  the  row; adjacent rows merge
+       their padding, creating a pad sized to the  larger  of
+       the pads on either row.  The -name option associates a
+       name with the row, which can then be used as an  index
+       to refer to that row.
 
-       grid rowconfigure master index ?-option value...?
-              Set  the row properties of the index row of the geome‐
-              try master, master.  The valid options  are  -minsize,
-              -weight,  -pad  and -name.  If one or more options are
-              provided, then index may be given as  a  list  of  row
-              indices  to which the configuration options will oper‐
-              ate on.  The -minsize option sets the minimum size, in
-              screen  units,  that  will  be permitted for this row.
-              The -weight option (an integer value) sets  the  rela‐
-              tive  weight  for  apportioning any extra spaces among
-              rows.  A weight of zero (0) indicates the row will not
-              deviate  from  its requested size.  A row whose weight
-              is two will grow at twice the rate as a row of  weight
-              one  when extra space is allocated to the layout.  The
-              -pad option specifies a  pad  distance  that  will  be
-              added  either  side  of  the  row; adjacent rows merge
-              their padding, creating a pad sized to the  larger  of
-              the pads on either row.  The -name option associates a
-              name with the row, which can then be used as an  index
-              to refer to that row.
+grid rowdelete master index0 ?index1?
+       Deletes  rows  from  index0  up  to  but not including
+       index1,  If  index1  is  not  given,  it  defaults  to
+       index0+1.   The  deleted  rows  may  not contain cells
+       spanned by slaves outside the deleted columns.
 
-       grid rowdelete master index0 ?index1?
-              Deletes  rows  from  index0  up  to  but not including
-              index1,  If  index1  is  not  given,  it  defaults  to
-              index0+1.   The  deleted  rows  may  not contain cells
-              spanned by slaves outside the deleted columns.
+grid rowindex master index
+       Returns index as a numerical index into the row.
 
-       grid rowindex master index
-              Returns index as a numerical index into the row.
+grid rowinsert master index ?count?
+       Inserts count (default 1) new rows just before  index.
+       The inserted rows may not split a spanning cell.
 
-       grid rowinsert master index ?count?
-              Inserts count (default 1) new rows just before  index.
-              The inserted rows may not split a spanning cell.
+grid size master
+       Returns  the  size  of the grid (in columns then rows)
+       for master.  The size  is  determined  either  by  the
+       largest  row  or  column  that  has been occupied by a
+       slave, or the largest column  or  row  that  has  been
+       explicitly configured.
 
-       grid size master
-              Returns  the  size  of the grid (in columns then rows)
-              for master.  The size  is  determined  either  by  the
-              largest  row  or  column  that  has been occupied by a
-              slave, or the largest column  or  row  that  has  been
-              explicitly configured.
-
-       grid slaves master ?-option value?
-              If  no  options  are  supplied,  a  list of all of the
-              slaves in master are returned, most  recently  manages
-              first.   Option  can  be  either -row or -column which
-              causes only the slaves in the row (or  column)  speci‐
-              fied by value to be returned.
+grid slaves master ?-option value?
+       If  no  options  are  supplied,  a  list of all of the
+       slaves in master are returned, most  recently  manages
+       first.   Option  can  be  either -row or -column which
+       causes only the slaves in the row (or  column)  speci‐
+       fied by value to be returned.
 
    INDICES
-       An  index  is either a non-negative integer value, the string
-       end, (one beyond the last index in the row or column in ques‐
-       tion), or a name identifying a row or column previously named
-       with the -name option to rowconfigure or columnconfigure.
+An  index  is either a non-negative integer value, the string
+end, (one beyond the last index in the row or column in ques‐
+tion), or a name identifying a row or column previously named
+with the -name option to rowconfigure or columnconfigure.
 
    RELATIVE PLACEMENT
-       The grid command contains a limited set of capabilities  that
-       permit  layouts  to be created without specifying the row and
-       column information for each slave.  This permits slaves to be
-       rearranged,  added, or removed without the need to explicitly
-       specify row and column information.  When no  column  or  row
-       information is specified for a slave, default values are cho‐
-       sen for column, row, columnspan and rowspan at the  time  the
-       slave  is  managed. The values are chosen based upon the cur‐
-       rent layout of the grid, the position of the  slave  relative
-       to other slaves in the same grid command, and the presence of
-       the characters -, ^, and ^ in grid command where slave  names
-       are normally expected.
+The grid command contains a limited set of capabilities  that
+permit  layouts  to be created without specifying the row and
+column information for each slave.  This permits slaves to be
+rearranged,  added, or removed without the need to explicitly
+specify row and column information.  When no  column  or  row
+information is specified for a slave, default values are cho‐
+sen for column, row, columnspan and rowspan at the  time  the
+slave  is  managed. The values are chosen based upon the cur‐
+rent layout of the grid, the position of the  slave  relative
+to other slaves in the same grid command, and the presence of
+the characters -, ^, and ^ in grid command where slave  names
+are normally expected.
 
-              -      This  increases  the columnspan of the slave to
-                     the left.  Several -'s in a  row  will  succes‐
-                     sively  increase  the  columnspan.  A - may not
-                     follow a ^ or a x.
+       -      This  increases  the columnspan of the slave to
+              the left.  Several -'s in a  row  will  succes‐
+= sively  increase  the  columnspan.  A: may not
+              follow a ^ or a x.
 
-              x      This leaves an empty column between  the  slave
-                     on the left and the slave on the right.
+       x      This leaves an empty column between  the  slave
+              on the left and the slave on the right.
 
-              ^      This extends the rowspan of the slave above the
-                     ^'s in the grid.  The number of ^'s  in  a  row
-                     must match the number of columns spanned by the
-                     slave above it.
+       ^      This extends the rowspan of the slave above the
+              ^'s in the grid.  The number of ^'s  in  a  row
+              must match the number of columns spanned by the
+              slave above it.
 
    THE GRID ALGORITHM
-       The grid geometry manager lays out its slaves in three steps.
-       In  the first step, the minimum size needed to fit all of the
-       slaves is computed, then (if propagation  is  turned  on),  a
-       request is made of the master window to become that size.  In
-       the second step, the requested size is compared  against  the
-       actual  size of the master.  If the sizes are different, then
-       spaces is added to or taken away from the layout  as  needed.
-       For  the  final  step, each slave is positioned in its row(s)
-       and column(s) based on the setting of its sticky flag.
+The grid geometry manager lays out its slaves in three steps.
+In  the first step, the minimum size needed to fit all of the
+slaves is computed, then (if propagation  is  turned  on),  a
+request is made of the master window to become that size.  In
+the second step, the requested size is compared  against  the
+actual  size of the master.  If the sizes are different, then
+spaces is added to or taken away from the layout  as  needed.
+For  the  final  step, each slave is positioned in its row(s)
+and column(s) based on the setting of its sticky flag.
 
-       To compute the minimum size of a layout,  the  grid  geometry
-       manager  first looks at all slaves whose columnspan and rows‐
-       pan values are one, and computes the nominal size of each row
-       or column to be either the minsize for that row or column, or
-       the sum of the padding plus the size of  the  largest  slave,
-       whichever  is  greater.   Then  the  slaves whose rowspans or
-       columnspans are greater than one are examined.  If a group of
-       rows  or  columns  need  to  be increased in size in order to
-       accommodate these slaves, then extra space is added  to  each
-       row or column in the group according to its weight.  For each
-       group whose weights are all zero,  the  additional  space  is
-       apportioned equally.
+To compute the minimum size of a layout,  the  grid  geometry
+manager  first looks at all slaves whose columnspan and rows‐
+pan values are one, and computes the nominal size of each row
+or column to be either the minsize for that row or column, or
+the sum of the padding plus the size of  the  largest  slave,
+whichever  is  greater.   Then  the  slaves whose rowspans or
+columnspans are greater than one are examined.  If a group of
+rows  or  columns  need  to  be increased in size in order to
+accommodate these slaves, then extra space is added  to  each
+row or column in the group according to its weight.  For each
+group whose weights are all zero,  the  additional  space  is
+apportioned equally.
 
-       For  masters  whose size is larger than the requested layout,
-       the additional space is apportioned according to the row  and
-       column  weights.   If all of the weights are zero, the layout
-       is centered within its master.  For  masters  whose  size  is
-       smaller  than  the requested layout, space is taken away from
-       columns and rows according to their weights.  However, once a
-       column  or row shrinks to its minsize, its weight is taken to
-       be zero.  If more space needs to be  removed  from  a  layout
-       than  would be permitted, as when all the rows or columns are
-       at their minimum sizes, the layout is clipped on  the  bottom
-       and right.
+For  masters  whose size is larger than the requested layout,
+the additional space is apportioned according to the row  and
+column  weights.   If all of the weights are zero, the layout
+is centered within its master.  For  masters  whose  size  is
+smaller  than  the requested layout, space is taken away from
+columns and rows according to their weights.  However, once a
+column  or row shrinks to its minsize, its weight is taken to
+be zero.  If more space needs to be  removed  from  a  layout
+than  would be permitted, as when all the rows or columns are
+at their minimum sizes, the layout is clipped on  the  bottom
+and right.
 
    GEOMETRY PROPAGATION
-       The  grid geometry manager normally computes how large a mas‐
-       ter must be to just exactly meet the needs of its slaves, and
-       it sets the requested width and height of the master to these
-       dimensions.  This causes geometry information to propagate up
-       through  a window hierarchy to a top-level window so that the
-       entire sub-tree sizes itself to fit the  needs  of  the  leaf
-       windows.   However, the grid propagate command may be used to
-       turn off propagation for one or more masters.  If propagation
-       is  disabled  then  grid will not set the requested width and
-       height of the master window.  This  may  be  useful  if,  for
-       example,  you  wish  for a master window to have a fixed size
-       that you specify.
+The  grid geometry manager normally computes how large a mas‐
+ter must be to just exactly meet the needs of its slaves, and
+it sets the requested width and height of the master to these
+dimensions.  This causes geometry information to propagate up
+through  a window hierarchy to a top-level window so that the
+entire sub-tree sizes itself to fit the  needs  of  the  leaf
+windows.   However, the grid propagate command may be used to
+turn off propagation for one or more masters.  If propagation
+is  disabled  then  grid will not set the requested width and
+height of the master window.  This  may  be  useful  if,  for
+example,  you  wish  for a master window to have a fixed size
+that you specify.
 
    CREDITS
-       The grid command is based on ideas  taken  from  the  GridBag
-       geometry  manager  written  by Doug. Stein, and the blt_table
-       geometry manager, written by George Howlett.
+The grid command is based on ideas  taken  from  the  GridBag
+geometry  manager  written  by Doug. Stein, and the blt_table
+geometry manager, written by George Howlett.
 
-SEE ALSO
-       pack(9), types(9), options(9)
+== see ALSO
+pack(9), types(9), options(9)
 
-                                                             GRID(9)

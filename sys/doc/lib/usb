@@ -1,111 +1,105 @@
-USB(3)                Library Functions Manual                USB(3)
+= usb: USB device interface
 
-NAME
-       usb - USB device interface
+== synopsys
+    bind -a '#U' /dev
 
-SYNOPSYS
-       bind -a '#U' /dev
+    /dev/usbctl
+    /dev/usbdata
+    /dev/usbstat
+    /dev/usbaddr
+    /dev/usbframe
+    /dev/usbsetup
 
-       /dev/usbctl
-       /dev/usbdata
-       /dev/usbstat
-       /dev/usbaddr
-       /dev/usbframe
-       /dev/usbsetup
+The USB device serves a one-level directory, giving access to
+six files.  They provide an interface to the  device  (slave)
+mode  of the 823/850 USB controller, allowing an Inferno sys‐
+tem to provide services to the USB  host.   The  controller's
+endpoints  are  configured  as  follows.   Endpoint  0 is the
+default USB control endpoint, as required by  the  USB  stan‐
+dard.   Endpoint  1 responds to bulk output requests from the
+host; endpoint 2 responds to bulk  input  requests  from  the
+host; endpoint 3 is unused.
 
-DESCRIPTION
-       The USB device serves a one-level directory, giving access to
-       six files.  They provide an interface to the  device  (slave)
-       mode  of the 823/850 USB controller, allowing an Inferno sys‐
-       tem to provide services to the USB  host.   The  controller's
-       endpoints  are  configured  as  follows.   Endpoint  0 is the
-       default USB control endpoint, as required by  the  USB  stan‐
-       dard.   Endpoint  1 responds to bulk output requests from the
-       host; endpoint 2 responds to bulk  input  requests  from  the
-       host; endpoint 3 is unused.
+The  data file usbdata provides read and write access to end‐
+points 1 and 2.  When the file is read, it returns data writ‐
+ten  to endpoint 1 by the USB host.  Data written to the file
+is provided in response to the host's read requests  on  end‐
+point  2.  Output data is converted to packets limited to the
+maximum packet length for the endpoint (see the  maxpkt  con‐
+trol  request,  below), which is 1023 bytes by default.  Note
+that zero length records can be transmitted and  received  on
+USB.
 
-       The  data file usbdata provides read and write access to end‐
-       points 1 and 2.  When the file is read, it returns data writ‐
-       ten  to endpoint 1 by the USB host.  Data written to the file
-       is provided in response to the host's read requests  on  end‐
-       point  2.  Output data is converted to packets limited to the
-       maximum packet length for the endpoint (see the  maxpkt  con‐
-       trol  request,  below), which is 1023 bytes by default.  Note
-       that zero length records can be transmitted and  received  on
-       USB.
+The  file usbsetup provides read and write access to endpoint
+0.  When the file is read, it returns SETUP requests from the
+host.  If a given request requires a reply, the reply must be
+written to the file (host requests will automatically be NAKd
+until  then).   Requests  and  replies  are in binary form as
+defined in the USB specification, except for the  reset  mes‐
+sage  described  below.   The  driver  itself  interprets all
+SET_ADDRESS requests from the host, and sets the controller's
+address accordingly.  That request will therefore not be vis‐
+ible on the usbsetup file.
 
-       The  file usbsetup provides read and write access to endpoint
-       0.  When the file is read, it returns SETUP requests from the
-       host.  If a given request requires a reply, the reply must be
-       written to the file (host requests will automatically be NAKd
-       until  then).   Requests  and  replies  are in binary form as
-       defined in the USB specification, except for the  reset  mes‐
-       sage  described  below.   The  driver  itself  interprets all
-       SET_ADDRESS requests from the host, and sets the controller's
-       address accordingly.  That request will therefore not be vis‐
-       ible on the usbsetup file.
+A USB bus or device reset sets the controller's  USB  address
+to  zero,  the  USB  `default address' for configuration.  It
+also resets all data toggles to DATA0.  A subsequent read  of
+usbsetup  will return the following special 8-byte reset mes‐
+sage:
 
-       A USB bus or device reset sets the controller's  USB  address
-       to  zero,  the  USB  `default address' for configuration.  It
-       also resets all data toggles to DATA0.  A subsequent read  of
-       usbsetup  will return the following special 8-byte reset mes‐
-       sage:
+       byte 16rFF, byte 16rFF, byte 'r', byte 'e',
+       byte 's', byte 'e', byte 't', byte '\n'
 
-              byte 16rFF, byte 16rFF, byte 'r', byte 'e',
-              byte 's', byte 'e', byte 't', byte '\n'
+which does not resemble  a  normal  SETUP  message.   Further
+reads  and  writes  on  usbdata will return errors until that
+file has been closed and reopened.
 
-       which does not resemble  a  normal  SETUP  message.   Further
-       reads  and  writes  on  usbdata will return errors until that
-       file has been closed and reopened.
+The control file usbctl  receives  textual  commands  to  set
+device parameters and responses:
 
-       The control file usbctl  receives  textual  commands  to  set
-       device parameters and responses:
+maxpktn nb
+       Set  the  maximum  packet  size  for  endpoint n to nb
+       bytes.  Nb must be between 8 and 64 bytes for the con‐
+       trol  endpoint 0, and between 1 and 1023 bytes for the
+       other endpoints.  The default is 8 bytes for  endpoint
+       0 and 1023 bytes for the others.
 
-       maxpktn nb
-              Set  the  maximum  packet  size  for  endpoint n to nb
-              bytes.  Nb must be between 8 and 64 bytes for the con‐
-              trol  endpoint 0, and between 1 and 1023 bytes for the
-              other endpoints.  The default is 8 bytes for  endpoint
-              0 and 1023 bytes for the others.
+rdtogn t
+       Set  the  data  toggle  for  input in endpoint n to t,
+       which must be either 0 (DATA0) or 1 (DATA1).
 
-       rdtogn t
-              Set  the  data  toggle  for  input in endpoint n to t,
-              which must be either 0 (DATA0) or 1 (DATA1).
+stalln Cause endpoint n to respond to host IN and OUT  tokens
+       by stalling.
 
-       stalln Cause endpoint n to respond to host IN and OUT  tokens
-              by stalling.
+unstalln
+       Cancel  the effect of a previous stall request on end‐
+       point n.
 
-       unstalln
-              Cancel  the effect of a previous stall request on end‐
-              point n.
+wrtogn t
+       Set the data toggle for the next packet output by end‐
+       point  n  to  t,  which  must be either 0 (DATA0) or 1
+       (DATA1).
 
-       wrtogn t
-              Set the data toggle for the next packet output by end‐
-              point  n  to  t,  which  must be either 0 (DATA0) or 1
-              (DATA1).
+Stalling an endpoint causes IN and OUT transactions from  the
+host to return a `stalled' error status.  On the control end‐
+point (endpoint 0), however, SETUP  transactions  will  still
+arrive on usbsetup, and the arrival of a SETUP will automati‐
+cally clear the `stalled' status for the  endpoint,  allowing
+an  application  to reject a control request (by stalling the
+subsequent status transaction) without stalling  the  control
+endpoint by rejecting subsequent SETUP transactions.
 
-       Stalling an endpoint causes IN and OUT transactions from  the
-       host to return a `stalled' error status.  On the control end‐
-       point (endpoint 0), however, SETUP  transactions  will  still
-       arrive on usbsetup, and the arrival of a SETUP will automati‐
-       cally clear the `stalled' status for the  endpoint,  allowing
-       an  application  to reject a control request (by stalling the
-       subsequent status transaction) without stalling  the  control
-       endpoint by rejecting subsequent SETUP transactions.
+The  status  file usbstat is a read-only file, containing one
+line of statistics for each endpoint, giving:  endpoint  num‐
+ber;  data  toggles;  maximum packet size; count of input and
+output bytes and packets; and counts of various error  condi‐
+tions.
 
-       The  status  file usbstat is a read-only file, containing one
-       line of statistics for each endpoint, giving:  endpoint  num‐
-       ber;  data  toggles;  maximum packet size; count of input and
-       output bytes and packets; and counts of various error  condi‐
-       tions.
+The  read-only  file  usbaddr contains a single number giving
+the current device address.
 
-       The  read-only  file  usbaddr contains a single number giving
-       the current device address.
+The read-only file usbframe contains a single line giving the
+current USB frame number.
 
-       The read-only file usbframe contains a single line giving the
-       current USB frame number.
-
-SOURCE
-       /os/mpc/devusb.c
-
-                               MPC823                         USB(3)
+== source
+/os/mpc/devusb.c

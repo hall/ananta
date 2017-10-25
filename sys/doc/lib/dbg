@@ -1,213 +1,206 @@
-DBG(3)                Library Functions Manual                DBG(3)
+= dbg: remote kernel debugging
 
-NAME
-       dbg - remote kernel debugging
+    bind -b '#b' /dev
 
-SYNOPSIS
-       bind -b '#b' /dev
+    /dev/dbgctl
+    /dev/dbglog
 
-       /dev/dbgctl
-       /dev/dbglog
+    echo r >/dev/dbgctl
 
-       echo r >/dev/dbgctl
+Dbg  allows a native kernel to be debugged remotely, by means
+of a simple protocol, typically run on  a  serial  port  (see
+eia(3)).   The  acid(10.1)  debugger  uses  the  protocol for
+instance; see its -R option.
 
-DESCRIPTION
-       Dbg  allows a native kernel to be debugged remotely, by means
-       of a simple protocol, typically run on  a  serial  port  (see
-       eia(3)).   The  acid(10.1)  debugger  uses  the  protocol for
-       instance; see its -R option.
+Dbg uses the values of several global variables  set  by  the
+kernel  configuration  file  (see  conf(10.6)),  all of which
+default values.  The variables and default values are  listed
+below:
 
-       Dbg uses the values of several global variables  set  by  the
-       kernel  configuration  file  (see  conf(10.6)),  all of which
-       default values.  The variables and default values are  listed
-       below:
+       int dbgstart = 0;
+       char *dbgdata = "#t/eia0";
+       char *dbgctl = "#t/eia0ctl";
+       char *dbgctlstart = "b19200";
+       char *dbgctlstop = "h";
+       char *dbgctlflush = "f";
 
-              int dbgstart = 0;
-              char *dbgdata = "#t/eia0";
-              char *dbgctl = "#t/eia0ctl";
-              char *dbgctlstart = "b19200";
-              char *dbgctlstop = "h";
-              char *dbgctlflush = "f";
+Different  values  can  be  set by including similar declara‐
+tions, with values as desired, in the  code  section  of  the
+configuration file.  Dbg uses the values as follows:
 
-       Different  values  can  be  set by including similar declara‐
-       tions, with values as desired, in the  code  section  of  the
-       configuration file.  Dbg uses the values as follows:
+dbgstart     if  non-zero, start the debugger protocol on the
+             configured connection during driver  initialisa‐
+             tion  (system  startup);  otherwise  it  must be
+             started explicitly by the r control request (see
+             below)
+dbgdata      data file for the debugging connection
+dbgctl       control file for the debugging connection
+dbgctlstart  control  request  to  initialise  link (eg, baud
+             rate)
+dbgctlstop   control request to hang up link
+dbgctlflush  control request to write to flush input and out‐
+             put on link
 
-       dbgstart     if  non-zero, start the debugger protocol on the
-                    configured connection during driver  initialisa‐
-                    tion  (system  startup);  otherwise  it  must be
-                    started explicitly by the r control request (see
-                    below)
-       dbgdata      data file for the debugging connection
-       dbgctl       control file for the debugging connection
-       dbgctlstart  control  request  to  initialise  link (eg, baud
-                    rate)
-       dbgctlstop   control request to hang up link
-       dbgctlflush  control request to write to flush input and out‐
-                    put on link
+Dbg serves two files that control and monitor its operation.
 
-       Dbg serves two files that control and monitor its operation.
+Dbgctl  accepts  several textual commands; normally only r is
+needed:
 
-       Dbgctl  accepts  several textual commands; normally only r is
-       needed:
+d dbgdata
+       set the value of dbgdata to  the  value  given  as  an
+       argument
 
-       d dbgdata
-              set the value of dbgdata to  the  value  given  as  an
-              argument
+c dbgctl
+i dbgctlstart
+h dbgctlstop
+f dbgctlflush
+       set the value of the corresponding control variable to
+       the value of the first argument
 
-       c dbgctl
-       i dbgctlstart
-       h dbgctlstop
-       f dbgctlflush
-              set the value of the corresponding control variable to
-              the value of the first argument
+r      start running the debugger  protocol  (not  needed  if
+       dbgstart was non-zero at boot)
 
-       r      start running the debugger  protocol  (not  needed  if
-              dbgstart was non-zero at boot)
+s      stop running the debugger protocol; stop and flush the
+       link
 
-       s      stop running the debugger protocol; stop and flush the
-              link
+When read, dbgctl yields a single line showing the status  of
+the device (`running' or `stopped') and the current values of
+the debugger control variables listed above.
 
-       When read, dbgctl yields a single line showing the status  of
-       the device (`running' or `stopped') and the current values of
-       the debugger control variables listed above.
-
-       Dbglog is a read-only text file containing lines representing
-       debugger  events,  one  per  line.   It  is mainly useful for
-       checking the  operation  of  the  device,  or  debugging  new
-       acid(10.1) functions.
+Dbglog is a read-only text file containing lines representing
+debugger  events,  one  per  line.   It  is mainly useful for
+checking the  operation  of  the  device,  or  debugging  new
+acid(10.1) functions.
 
    Debug protocol
-       The  protocol  is  subject  to  change.  The host running the
-       debugger and the target to be debugged exchange 10-byte  mes‐
-       sages containing a one byte message type and 9 bytes of data.
-       Bytes unused by a given type are set to zero.   Normally  the
-       host  sends one of the T-messages below and receives the cor‐
-       responding R-message, or Rerr.  (These are unrelated  to  the
-       T-messages  and  R-messages of intro(5).)  Exceptionally, the
-       target sends the first message, an Rerr to reset  the  proto‐
-       col,  and  thus  the  debugger  is  notified if the target is
-       rebooted during a debugging session and  can  reset  its  own
-       state.   Values,  including  addresses,  are sometimes repre‐
-       sented textually in hexadecimal, but are usually in binary as
-       a  single byte, or an array of 4 bytes, high-order byte first
-       (big endian).
+The  protocol  is  subject  to  change.  The host running the
+debugger and the target to be debugged exchange 10-byte  mes‐
+sages containing a one byte message type and 9 bytes of data.
+Bytes unused by a given type are set to zero.   Normally  the
+host  sends one of the T-messages below and receives the cor‐
+responding R-message, or Rerr.  (These are unrelated  to  the
+T-messages  and  R-messages of intro(5).)  Exceptionally, the
+target sends the first message, an Rerr to reset  the  proto‐
+col,  and  thus  the  debugger  is  notified if the target is
+rebooted during a debugging session and  can  reset  its  own
+state.   Values,  including  addresses,  are sometimes repre‐
+sented textually in hexadecimal, but are usually in binary as
+a  single byte, or an array of 4 bytes, high-order byte first
+(big endian).
 
-       The term process here refers  exclusively  to  those  created
-       directly  or  indirectly  by  kproc(10.2),  not to Limbo pro‐
-       cesses, which are not visible directly through  the  protocol
-       (although  it  is possible to write acid(10.1) functions that
-       interact through dbg with the Inferno data structures  repre‐
-       senting the state of the Dis virtual machine).  Many requests
-       read or write the memory or state of the current process  set
-       by  the  Tproc  message (see below).  Addresses are always 32
-       bits.  An address below the  size  of  Ureg  (saved  register
-       state)  for the target is interpreted as an offset within the
-       saved state for the current process.  Otherwise it refers  to
-       an  address  in  kernel  virtual memory.  Currently in native
-       Inferno all processes share the same address space.
+The term process here refers  exclusively  to  those  created
+directly  or  indirectly  by  kproc(10.2),  not to Limbo pro‐
+cesses, which are not visible directly through  the  protocol
+(although  it  is possible to write acid(10.1) functions that
+interact through dbg with the Inferno data structures  repre‐
+senting the state of the Dis virtual machine).  Many requests
+read or write the memory or state of the current process  set
+by  the  Tproc  message (see below).  Addresses are always 32
+bits.  An address below the  size  of  Ureg  (saved  register
+state)  for the target is interpreted as an offset within the
+saved state for the current process.  Otherwise it refers  to
+an  address  in  kernel  virtual memory.  Currently in native
+Inferno all processes share the same address space.
 
-       The message type names used below are assigned values by dec‐
-       larations  in  /include/rdbg.h.   The  following messages are
-       currently implemented:
+The message type names used below are assigned values by dec‐
+larations  in  /include/rdbg.h.   The  following messages are
+currently implemented:
 
-       Terr  unused
-       Rerr reason[9]
-             The last message failed for the given  reason,  a  text
-             string:   reset,   the   target  or  debug  driver  was
-             restarted; count,  bad  count;  unk,  unknown  command;
-             inval,  invalid parameter; pid, no such process; unsup,
-             unsupported action; notstop, action requires process to
-             be stopped first.
-       Tmget addr[4] n[1]
-             Request  n  bytes  of  memory  from  addr; n must be no
-             greater than 9
-       Rmget data[9]
-             Return data requested by Tmget
-       Tmput addr[4] n[1] data[4]
-             Write the first n bytes of data to memory at addr,  and
-             flush  the data and instruction caches for that region;
-             n must be no greater than 4
-       Rmput Reply to a successful Tmput
-       Tproc pid[4]
-             Set the current process to the one with integer process
-             ID pid for subsequent requests.
-       Rproc addr[8]
-             Addr  is  the  address  in hexadecimal text of the Proc
-             structure for process pid in the corresponding Tproc.
-       Tstatus pid[4]
-             Request the status of process pid leaving  the  current
-             process ID unchanged.
-       Rstatus status[9]
-             Return  the  textual  status  of  the process as a text
-             string, currently one of: Dead, Moribund, Ready, Sched‐
-             ing,  Running,  Queueing, Wakeme, Broken, Stopped, Ren‐
-             dezvous, or if invalid, the state value as a  hexadeci‐
-             mal number.
-       Trnote pid[4]
-             Retrieve the note (trap status) for the given pid
-       Rrnote status[9]
-             Provide  the  textual  trap  status  for  the requested
-             process (currently always returns null status)
-       Tstop pid[4]
-             Tell the kernel to stop running process pid  in  debug‐
-             ging  state  Stopped when it next appears in the sched‐
-             uler.
-       Rstop Reply to successful Tstop
-       Tstart
-             Cancel a previous Tstop; if  the  process  has  already
-             stopped, make it ready to run.
-       Rstart
-             Reply to successful Tstart
-       Tcondbreak val[4] op[4]
-             If  op  is  d, remove and delete the breakpoint with ID
-             val.  All other operations help  create  a  conditional
-             breakpoint,  providing  a possibly empty list of opera‐
-             tions representing a conditional expression in  Reverse
-             Polish  is  followed  by  a  breakpoint  request,  each
-             expression element represented by a  single  Tcondbreak
-             message.   Op  is  a  single  character representing an
-             operation, with val (integer, address, process ID) as a
-             parameter.   The  operator  n  should  appear first; it
-             assigns the breakpoint an ID  number  val  (no  greater
-             than  255).   Expression  primaries are: k val, true if
-             process val is at this breakpoint; b val, true if  pro‐
-             gram  counter  is  val; and p val, val as a 32-bit lit‐
-             eral.  Expression operators  are:  unary  *  (indirect,
-             yielding  32-bit  value);  &  (bit-wise AND); = (values
-             equal); !  (values not equal); a (logical AND); o (log‐
-             ical  OR).  Although the expression is interpreted fol‐
-             lowing Reverse Polish notation, when transmitted, the b
-             operation is sent last (to mark the end of the sequence
-             and create the breakpoint), but is moved to  the  start
-             of the expression before evaluation.
-       Rcondbreak
-             Reply to successful Tcondbreak.
-       Tstartstop pid[4]
-             If the process pid is not stopped, return Rerr notstop.
-             Otherwise, if the process is not stopped  at  a  break‐
-             point,  start it, and wait for it to reach a breakpoint
-             that evaluates `true'
-       Rstartstop id[1]
-             Process has stopped at breakpoint with the given id
-       Twaitstop
-             Unimplemented. See Tstartstop.
-       Rwaitstop
-             Unused.
-       Tkill pid[4] note[5]
-             Kill process pid with the given textual note.  Unimple‐
-             mented.
-       Rkill Reply to successful Tkill.  Unused.
-SOURCE
-       /os/port/devdbg.c
-       /os/*/*break.c
-       /os/*/trap.c
-SEE ALSO
-       acid(10.1)
-BUGS
-       The  protocol  is not itself error-detecting let alone error-
-       correcting, although that normally does not matter for debug‐
-       ging even over a serial line, provided the connection is rea‐
-       sonably sound.
-
-                                                              DBG(3)
+Terr  unused
+Rerr reason[9]
+      The last message failed for the given  reason,  a  text
+      string:   reset,   the   target  or  debug  driver  was
+      restarted; count,  bad  count;  unk,  unknown  command;
+      inval,  invalid parameter; pid, no such process; unsup,
+      unsupported action; notstop, action requires process to
+      be stopped first.
+Tmget addr[4] n[1]
+      Request  n  bytes  of  memory  from  addr; n must be no
+      greater than 9
+Rmget data[9]
+      Return data requested by Tmget
+Tmput addr[4] n[1] data[4]
+      Write the first n bytes of data to memory at addr,  and
+      flush  the data and instruction caches for that region;
+      n must be no greater than 4
+Rmput Reply to a successful Tmput
+Tproc pid[4]
+      Set the current process to the one with integer process
+      ID pid for subsequent requests.
+Rproc addr[8]
+      Addr  is  the  address  in hexadecimal text of the Proc
+      structure for process pid in the corresponding Tproc.
+Tstatus pid[4]
+      Request the status of process pid leaving  the  current
+      process ID unchanged.
+Rstatus status[9]
+      Return  the  textual  status  of  the process as a text
+      string, currently one of: Dead, Moribund, Ready, Sched‐
+      ing,  Running,  Queueing, Wakeme, Broken, Stopped, Ren‐
+      dezvous, or if invalid, the state value as a  hexadeci‐
+      mal number.
+Trnote pid[4]
+      Retrieve the note (trap status) for the given pid
+Rrnote status[9]
+      Provide  the  textual  trap  status  for  the requested
+      process (currently always returns null status)
+Tstop pid[4]
+      Tell the kernel to stop running process pid  in  debug‐
+      ging  state  Stopped when it next appears in the sched‐
+      uler.
+Rstop Reply to successful Tstop
+Tstart
+      Cancel a previous Tstop; if  the  process  has  already
+      stopped, make it ready to run.
+Rstart
+      Reply to successful Tstart
+Tcondbreak val[4] op[4]
+      If  op  is  d, remove and delete the breakpoint with ID
+      val.  All other operations help  create  a  conditional
+      breakpoint,  providing  a possibly empty list of opera‐
+      tions representing a conditional expression in  Reverse
+      Polish  is  followed  by  a  breakpoint  request,  each
+      expression element represented by a  single  Tcondbreak
+      message.   Op  is  a  single  character representing an
+      operation, with val (integer, address, process ID) as a
+      parameter.   The  operator  n  should  appear first; it
+      assigns the breakpoint an ID  number  val  (no  greater
+      than  255).   Expression  primaries are: k val, true if
+      process val is at this breakpoint; b val, true if  pro‐
+      gram  counter  is  val; and p val, val as a 32-bit lit‐
+      eral.  Expression operators  are:  unary  *  (indirect,
+      yielding  32-bit  value);  &  (bit-wise AND); = (values
+      equal); !  (values not equal); a (logical AND); o (log‐
+      ical  OR).  Although the expression is interpreted fol‐
+      lowing Reverse Polish notation, when transmitted, the b
+      operation is sent last (to mark the end of the sequence
+      and create the breakpoint), but is moved to  the  start
+      of the expression before evaluation.
+Rcondbreak
+      Reply to successful Tcondbreak.
+Tstartstop pid[4]
+      If the process pid is not stopped, return Rerr notstop.
+      Otherwise, if the process is not stopped  at  a  break‐
+      point,  start it, and wait for it to reach a breakpoint
+      that evaluates `true'
+Rstartstop id[1]
+      Process has stopped at breakpoint with the given id
+Twaitstop
+      Unimplemented. See Tstartstop.
+Rwaitstop
+      Unused.
+Tkill pid[4] note[5]
+      Kill process pid with the given textual note.  Unimple‐
+      mented.
+Rkill Reply to successful Tkill.  Unused.
+== source
+/os/port/devdbg.c
+/os/*/*break.c
+/os/*/trap.c
+== see ALSO
+acid(10.1)
+== bugs
+The  protocol  is not itself error-detecting let alone error-
+correcting, although that normally does not matter for debug‐
+ging even over a serial line, provided the connection is rea‐
+sonably sound.

@@ -1,46 +1,39 @@
-BOOT(3)               Library Functions Manual               BOOT(3)
+= boot: reboot under program control
 
-NAME
-       boot - reboot under program control
+    bind -a #B /dev
 
-SYNOPSIS
-       bind -a #B /dev
+    /dev/boot
+    /dev/kexec
+    /dev/mem
 
-       /dev/boot
-       /dev/kexec
-       /dev/mem
+Boot serves a directory containing three files that control a
+reboot of the system.  The files can only be  opened  by  the
+host owner (see eve(10.2)).
 
-DESCRIPTION
-       Boot serves a directory containing three files that control a
-       reboot of the system.  The files can only be  opened  by  the
-       host owner (see eve(10.2)).
+Boot is a write-only file that accepts 4 bytes representing a
+kernel address,  high-order  byte  first.   The  system  will
+transfer  control to that address, which is assumed to be the
+start of low-level reboot code.  There is no return from  the
+write on success or failure.
 
-       Boot is a write-only file that accepts 4 bytes representing a
-       kernel address,  high-order  byte  first.   The  system  will
-       transfer  control to that address, which is assumed to be the
-       start of low-level reboot code.  There is no return from  the
-       write on success or failure.
+Kexec  is  a  write-only file to which an uncompressed kernel
+image can be written, a chunk at a time.  When  the  file  is
+closed,  the system will transfer control to the start of the
+image, which again is assumed to be low-level reboot code.
 
-       Kexec  is  a  write-only file to which an uncompressed kernel
-       image can be written, a chunk at a time.  When  the  file  is
-       closed,  the system will transfer control to the start of the
-       image, which again is assumed to be low-level reboot code.
+Mem copies data to and from kernel memory, taking the current
+file offset as an address therein.
 
-       Mem copies data to and from kernel memory, taking the current
-       file offset as an address therein.
+Boot  flushes  caches  as  necessary to ensure that writes to
+kernel memory through any of these files will be visible when
+subsequently executed as instructions.
 
-       Boot  flushes  caches  as  necessary to ensure that writes to
-       kernel memory through any of these files will be visible when
-       subsequently executed as instructions.
+== source
+/os/port/devboot.c
 
-SOURCE
-       /os/port/devboot.c
+== see ALSO
+tftp(2), cons(3)
 
-SEE ALSO
-       tftp(2), cons(3)
-
-DIAGNOSTICS
-       Invalid  addresses  are  diagnosed, but otherwise there is no
-       error return.
-
-                                                             BOOT(3)
+== diagnostics
+Invalid  addresses  are  diagnosed, but otherwise there is no
+error return.

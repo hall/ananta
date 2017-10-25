@@ -1,77 +1,70 @@
-SYS-OPEN(2)              System Calls Manual             SYS-OPEN(2)
+= open,  create :  open  a file for reading or writing, create file
 
-NAME
-       open,  create  -  open  a file for reading or writing, create
-       file
+    include "sys.m";
+    sys := load Sys Sys->PATH;
 
-SYNOPSIS
-       include "sys.m";
-       sys := load Sys Sys->PATH;
+    create: fn(file: string, omode, perm: int): ref FD;
+    open:   fn(file: string, omode: int):       ref FD;
 
-       create: fn(file: string, omode, perm: int): ref FD;
-       open:   fn(file: string, omode: int):       ref FD;
+Open opens the file for I/O and returns  an  associated  file
+descriptor.   Omode  is  one  of  Sys->OREAD, Sys->OWRITE, or
+Sys->ORDWR, asking for permission to read, write, or read and
+write,  respectively.   There are two values that can be OR'd
+with those to form omode: Sys->OTRUNC says  to  truncate  the
+file  before opening it, which requires write permission even
+if omode is Sys->OREAD; and Sys->ORCLOSE says to  remove  the
+file  when  it is closed (ie, when the last reference to this
+file descriptor goes away).
 
-DESCRIPTION
-       Open opens the file for I/O and returns  an  associated  file
-       descriptor.   Omode  is  one  of  Sys->OREAD, Sys->OWRITE, or
-       Sys->ORDWR, asking for permission to read, write, or read and
-       write,  respectively.   There are two values that can be OR'd
-       with those to form omode: Sys->OTRUNC says  to  truncate  the
-       file  before opening it, which requires write permission even
-       if omode is Sys->OREAD; and Sys->ORCLOSE says to  remove  the
-       file  when  it is closed (ie, when the last reference to this
-       file descriptor goes away).
+Open returns nil if the file does not exist, if the file name
+is unacceptable, if the user does not have permission to open
+it as requested (see sys-stat(2) for a description of permis‐
+sions), or if any other error occurs.
 
-       Open returns nil if the file does not exist, if the file name
-       is unacceptable, if the user does not have permission to open
-       it as requested (see sys-stat(2) for a description of permis‐
-       sions), or if any other error occurs.
+Create  creates a new file or prepares to rewrite an existing
+file, opens it according to omode (as  described  for  open),
+and returns an associated file descriptor.
 
-       Create  creates a new file or prepares to rewrite an existing
-       file, opens it according to omode (as  described  for  open),
-       and returns an associated file descriptor.
+If  the  file  is new, the owner is set to the user id of the
+creating process group, the group to that of  the  containing
+directory, and the permissions to perm ANDed with the permis‐
+sions of the containing directory.  The bits in perm are  the
+same as those in the file mode returned by sys-stat(2).
 
-       If  the  file  is new, the owner is set to the user id of the
-       creating process group, the group to that of  the  containing
-       directory, and the permissions to perm ANDed with the permis‐
-       sions of the containing directory.  The bits in perm are  the
-       same as those in the file mode returned by sys-stat(2).
+If  the file already exists, it is truncated to 0 length, but
+the permissions, owner, and group remain unchanged.
 
-       If  the file already exists, it is truncated to 0 length, but
-       the permissions, owner, and group remain unchanged.
+The created file will be a directory if the Sys->DMDIR bit is
+set  in  perm,  and  omode  is  Sys->OREAD.  The file will be
+exclusive-use if the Sys->DMEXCL bit is set in perm  and  the
+underlying  file server supports it; see open(5) for details.
+It will be append-only if the Sys->DMAPPEND bit is  set,  and
+the underlying file server supports it.
 
-       The created file will be a directory if the Sys->DMDIR bit is
-       set  in  perm,  and  omode  is  Sys->OREAD.  The file will be
-       exclusive-use if the Sys->DMEXCL bit is set in perm  and  the
-       underlying  file server supports it; see open(5) for details.
-       It will be append-only if the Sys->DMAPPEND bit is  set,  and
-       the underlying file server supports it.
+Create returns nil if the path up to the last element of file
+cannot be evaluated, if the file name is unacceptable, if the
+user  does  not have write permission in the final directory,
+if the file already exists and does  not  permit  the  access
+defined by omode, or if any other error occurs.
 
-       Create returns nil if the path up to the last element of file
-       cannot be evaluated, if the file name is unacceptable, if the
-       user  does  not have write permission in the final directory,
-       if the file already exists and does  not  permit  the  access
-       defined by omode, or if any other error occurs.
+If  the  file is new and the directory in which it is created
+is a union directory (see sys-intro(2)) then the  constituent
+directory  where the file is created depends on the structure
+of the union: see sys-bind(2).
 
-       If  the  file is new and the directory in which it is created
-       is a union directory (see sys-intro(2)) then the  constituent
-       directory  where the file is created depends on the structure
-       of the union: see sys-bind(2).
+Since create may succeed even if the file exists,  a  special
+mechanism  is  necessary  for  applications  that  require an
+atomic create operation.  If the Sys->OEXCL bit is set in the
+mode  for  a  create, the call succeeds only if the file does
+not already exist; see open(5) for details.
 
-       Since create may succeed even if the file exists,  a  special
-       mechanism  is  necessary  for  applications  that  require an
-       atomic create operation.  If the Sys->OEXCL bit is set in the
-       mode  for  a  create, the call succeeds only if the file does
-       not already exist; see open(5) for details.
+There is no explicit ``close'' routine: when the last  refer‐
+ence  to  the  file descriptor is released, the system closes
+the associated file.  For devices and network protocols where
+shutdown  must  be  guaranteed, write a hangup message to the
+associated control file and use the return value of the write
+to verify closure.
 
-       There is no explicit ``close'' routine: when the last  refer‐
-       ence  to  the  file descriptor is released, the system closes
-       the associated file.  For devices and network protocols where
-       shutdown  must  be  guaranteed, write a hangup message to the
-       associated control file and use the return value of the write
-       to verify closure.
+== see ALSO
+sys-intro(2), sys-bind(2), sys-stat(2)
 
-SEE ALSO
-       sys-intro(2), sys-bind(2), sys-stat(2)
-
-                                                         SYS-OPEN(2)

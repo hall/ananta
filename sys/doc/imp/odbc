@@ -1,183 +1,177 @@
-ODBC(10.4)                                                ODBC(10.4)
+= ODBC: A Windows ODBC file server
 
-NAME
-       ODBC - A Windows ODBC file server
+    odbc.exe [ -d ] [ -p port ] [ -u user ]
 
-SYNOPSIS
-       odbc.exe [ -d ] [ -p port ] [ -u user ]
+Odbc  is  a file server that runs under Windows and exports a
+9P namespace (see intro(5)).  An Inferno process that  mounts
+the  namespace  can  use  it to manipulate Windows ODBC data‐
+bases.
 
-DESCRIPTION
-       Odbc  is  a file server that runs under Windows and exports a
-       9P namespace (see intro(5)).  An Inferno process that  mounts
-       the  namespace  can  use  it to manipulate Windows ODBC data‐
-       bases.
+The -d option causes odbc to print debugging information.
 
-       The -d option causes odbc to print debugging information.
+The -p option gives the port number to listen on for  connec‐
+tions. The default is 6700.
 
-       The -p option gives the port number to listen on for  connec‐
-       tions. The default is 6700.
-
-       By  default,  the  user  inferno  owns  the files in the name
-       space.  The -u option makes user own the files instead.
+By  default,  the  user  inferno  owns  the files in the name
+space.  The -u option makes user own the files instead.
 
    Name space
-       Odbc presents the following name space:
+Odbc presents the following name space:
 
-       /nclients
-       /db
-       /db/new
-       /db/n
-       /db/n/cmd
-       /db/n/ctl
-       /db/n/data
-       /db/n/error
-       /db/n/format
-       /db/n/sources
-       /db/n/status
+/nclients
+/db
+/db/new
+/db/n
+/db/n/cmd
+/db/n/ctl
+/db/n/data
+/db/n/error
+/db/n/format
+/db/n/sources
+/db/n/status
 
-       The top level read-only file nclients  contains  the  current
-       number of active clients on the server.
+The top level read-only file nclients  contains  the  current
+number of active clients on the server.
 
-       The  top level db directory contains a new file and subdirec‐
-       tories numbered n from zero to the maximum number of  config‐
-       ured conversations.
+The  top level db directory contains a new file and subdirec‐
+tories numbered n from zero to the maximum number of  config‐
+ured conversations.
 
-       Opening  the new file reserves a conversation, represented by
-       one of the numbered directories. The resulting file  descrip‐
-       tor will be open on the control file, ctl, of the newly allo‐
-       cated conversation.  Reading the  ctl  file  returns  a  text
-       string  representing  the number of the conversation.  A con‐
-       versation is used to converse with the server - in ODBC terms
-       it  is  equivalent  to obtaining a connection handle. This is
-       the level at which ODBC transactions are managed.
+Opening  the new file reserves a conversation, represented by
+one of the numbered directories. The resulting file  descrip‐
+tor will be open on the control file, ctl, of the newly allo‐
+cated conversation.  Reading the  ctl  file  returns  a  text
+string  representing  the number of the conversation.  A con‐
+= versation is used to converse with the server: in ODBC terms
+it  is  equivalent  to obtaining a connection handle. This is
+the level at which ODBC transactions are managed.
 
-       A conversation is controlled by writing text strings  to  the
-       associated  ctl file. ODBC commands may be sent to the server
-       by writing them, as text strings, to the cmd file.  For  com‐
-       mands  that return a record set, the results may be read from
-       the data file; each read returning a  single  record.   If  a
-       command  results  in an error, the write to the cmd file will
-       fail. The full ODBC error message can be obtained by  reading
-       the  error  file.  A conversation remains open while at least
-       one of the ctl, cmd or data files remains open.
+A conversation is controlled by writing text strings  to  the
+associated  ctl file. ODBC commands may be sent to the server
+by writing them, as text strings, to the cmd file.  For  com‐
+mands  that return a record set, the results may be read from
+the data file; each read returning a  single  record.   If  a
+command  results  in an error, the write to the cmd file will
+fail. The full ODBC error message can be obtained by  reading
+the  error  file.  A conversation remains open while at least
+one of the ctl, cmd or data files remains open.
 
-       The following commands can be written to the ctl file:
+The following commands can be written to the ctl file:
 
-       connect  datasource  [user!auth]
-              Connect to the ODBC datasource using the username  and
-              authentication, if given.
+connect  datasource  [user!auth]
+       Connect to the ODBC datasource using the username  and
+       authentication, if given.
 
-       disconnect
-              Disconnect from the datasource.
+disconnect
+       Disconnect from the datasource.
 
-       fixed  Reads  from  the data file will return data in a fixed
-              format. The format can be read from  the  format  file
-              after  writing  the command to the cmd file and before
-              reading the data from the data file.
+fixed  Reads  from  the data file will return data in a fixed
+       format. The format can be read from  the  format  file
+       after  writing  the command to the cmd file and before
+       reading the data from the data file.
 
-       float  [fs< [rs<]]
-              Reads from the data file will return  data  using  the
-              character  fs  to separate fields and the character rs
-              to separate records.  The default values for fs and rs
-              are the pipe symbol '|' and the newline character.
+float  [fs< [rs<]]
+       Reads from the data file will return  data  using  the
+       character  fs  to separate fields and the character rs
+       to separate records.  The default values for fs and rs
+       are the pipe symbol '|' and the newline character.
 
-       trans  begin
-              Enter  ODBC  manual-commit  mode  for  transactions. A
-              transaction will not complete until one of trans  com‐
-              mit or trans rollback is written to the ctl file.
+trans  begin
+       Enter  ODBC  manual-commit  mode  for  transactions. A
+       transaction will not complete until one of trans  com‐
+       mit or trans rollback is written to the ctl file.
 
-       trans  auto
-              Enter  ODBC  auto-commit  mode  for  transactions (the
-              default).  Each database statement  is  wrapped  by  a
-              transaction  that  is  automatically commited when the
-              statement is executed.
+trans  auto
+       Enter  ODBC  auto-commit  mode  for  transactions (the
+       default).  Each database statement  is  wrapped  by  a
+       transaction  that  is  automatically commited when the
+       statement is executed.
 
-       trans  commit
-              Commit a transaction when in manual-commit mode.
+trans  commit
+       Commit a transaction when in manual-commit mode.
 
-       trans  rollback
-              Rollback a transation when in manual-commit mode.
+trans  rollback
+       Rollback a transation when in manual-commit mode.
 
-       Once a conversation has been established and transaction mode
-       and  output  formats  determined the cmd file is used to send
-       ODBC commands to the server.  The following commands  can  be
-       written to the cmd file:
+Once a conversation has been established and transaction mode
+and  output  formats  determined the cmd file is used to send
+ODBC commands to the server.  The following commands  can  be
+written to the cmd file:
 
-       tables The  result of calling the ODBC API function SQLTables
-              is returned in the data file.
+tables The  result of calling the ODBC API function SQLTables
+       is returned in the data file.
 
-       columns  tablename
-              The result of calling the ODBC API function SQLColumns
-              with the given tablename as a parameter is returned in
-              the data file.
+columns  tablename
+       The result of calling the ODBC API function SQLColumns
+       with the given tablename as a parameter is returned in
+       the data file.
 
-       any  ODBC  command
-              Any ODBC command written to the cmd file is passed  to
-              the  ODBC  API  function SQLExecDirect. This most com‐
-              monly includes select, update, insert, and delete com‐
-              mands.
+any  ODBC  command
+       Any ODBC command written to the cmd file is passed  to
+       the  ODBC  API  function SQLExecDirect. This most com‐
+       monly includes select, update, insert, and delete com‐
+       mands.
 
-       The  format file is used to determine column names and how to
-       extract individual columns from the record read from the data
-       file  when  using  fixed  format output. A read of it gives a
-       single record read returning one line for each column in  the
-       result  data.  Each  line has three components separated by a
-       single space: a number giving the character position  of  the
-       start  of  the  field in the result data, a number giving the
-       character position one beyond the end of  the  field  in  the
-       result data, and the field name.
+The  format file is used to determine column names and how to
+extract individual columns from the record read from the data
+file  when  using  fixed  format output. A read of it gives a
+single record read returning one line for each column in  the
+result  data.  Each  line has three components separated by a
+single space: a number giving the character position  of  the
+start  of  the  field in the result data, a number giving the
+character position one beyond the end of  the  field  in  the
+result data, and the field name.
 
-       The  result  of  database enquiries can be read from the data
-       file.  After writing a command that returns data to  the  cmd
-       file,  reads  from  the data file will return the results one
-       record at a time.  When the last record  has  been  read  the
-       following  read  will return zero bytes indicating the end of
-       the data.
+The  result  of  database enquiries can be read from the data
+file.  After writing a command that returns data to  the  cmd
+file,  reads  from  the data file will return the results one
+record at a time.  When the last record  has  been  read  the
+following  read  will return zero bytes indicating the end of
+the data.
 
-       The read-only file sources gives a newline separated list  of
-       sources. Each line consists of the source name and the source
-       type separated by a colon.
+The read-only file sources gives a newline separated list  of
+sources. Each line consists of the source name and the source
+type separated by a colon.
 
-       The read-only file status return the status  of  the  current
-       conversation.
+The read-only file status return the status  of  the  current
+conversation.
 
-EXAMPLE
-       For example, the Inferno shell can be used to retrieve values
-       from a database. The shell commands:
+== example
+For example, the Inferno shell can be used to retrieve values
+from a database. The shell commands:
 
-       mount -A tcp!localhost!6700 /n/remote
-       {
-            d=/n/remote/db/`{cat}
-            echo -n 'float' > $d/ctl
-            echo -n 'connect cellar' > $d/ctl
-            echo -n 'select name from wine' > $d/cmd
-            cat $d/data
-       } < /n/remote/db/new
+mount -A tcp!localhost!6700 /n/remote
+{
+     d=/n/remote/db/`{cat}
+     echo -n 'float' > $d/ctl
+     echo -n 'connect cellar' > $d/ctl
+     echo -n 'select name from wine' > $d/cmd
+     cat $d/data
+} < /n/remote/db/new
 
-       produces the output:
+produces the output:
 
-       Chardonnay
-       Jo. Riesling
-       Fume Blanc
-       Wh. Burgundy
-       Gewurztraminer
-       Cab. Sauvignon
-       Pinot Noir
-       Zinfandel
-       Gamay
+Chardonnay
+Jo. Riesling
+Fume Blanc
+Wh. Burgundy
+Gewurztraminer
+Cab. Sauvignon
+Pinot Noir
+Zinfandel
+Gamay
 
-       Here the server has been started on the local  machine,  lis‐
-       tening  on  port  6700  for  network connections.  The braced
-       block and the redirection  from  /n/remote/db/new  reserve  a
-       conversation with the server and ensures that it remains open
-       for the duration of the execution  of  the  set  of  commands
-       within  the  block.   The  -A option to mount is used because
-       this server can not authenticate a connection.
+Here the server has been started on the local  machine,  lis‐
+tening  on  port  6700  for  network connections.  The braced
+block and the redirection  from  /n/remote/db/new  reserve  a
+conversation with the server and ensures that it remains open
+for the duration of the execution  of  the  set  of  commands
+within  the  block.   The  -A option to mount is used because
+this server can not authenticate a connection.
 
-SOURCE
-       /tools/odbc/odbc.c
+== source
+/tools/odbc/odbc.c
 
-SEE ALSO
-       bind(1), sys-bind(2), intro(5), db(7), dbsrv(7), svc(8)
+== see ALSO
+bind(1), sys-bind(2), intro(5), db(7), dbsrv(7), svc(8)
 
-                                                          ODBC(10.4)

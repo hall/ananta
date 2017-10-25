@@ -1,113 +1,105 @@
-STRING(2)                System Calls Manual               STRING(2)
+= string: append, drop, in, prefix, quoted, splitl, splitr, splitstrl, splitstrr, take, tobig, toint, toreal, tolower, toupper, unquoted: string operations
 
-NAME
-       string:  append,  drop,  in,  prefix, quoted, splitl, splitr,
-       splitstrl, splitstrr, take, tobig,  toint,  toreal,  tolower,
-       toupper, unquoted - string operations
+    include "string.m";
+    str := load String String->PATH;
 
-SYNOPSIS
-       include "string.m";
-       str := load String String->PATH;
+    append:    fn(s: string, l: list of string): list of string;
+    drop:      fn(s, cl: string): string;
+    in:        fn(c: int, cl: string): int;
+    prefix:    fn(pre, s: string): int;
+    splitl:    fn(s, cl: string): (string, string);
+    splitr:    fn(s, cl: string): (string, string);
+    splitstrl: fn(s, t: string): (string, string);
+    splitstrr: fn(s, t: string): (string, string);
+    take:      fn(s, cl: string): string;
+    tobig:     fn(s: string, base: int): (big, string);
+    toint:     fn(s: string, base: int): (int, string);
+    toreal:    fn(s: string, base: int): (real, string);
+    tolower:   fn(s: string): string;
+    toupper:   fn(s: string): string;
+    quoted:    fn(args: list of string): string;
+    unquoted:  fn(s: string): list of string;
 
-       append:    fn(s: string, l: list of string): list of string;
-       drop:      fn(s, cl: string): string;
-       in:        fn(c: int, cl: string): int;
-       prefix:    fn(pre, s: string): int;
-       splitl:    fn(s, cl: string): (string, string);
-       splitr:    fn(s, cl: string): (string, string);
-       splitstrl: fn(s, t: string): (string, string);
-       splitstrr: fn(s, t: string): (string, string);
-       take:      fn(s, cl: string): string;
-       tobig:     fn(s: string, base: int): (big, string);
-       toint:     fn(s: string, base: int): (int, string);
-       toreal:    fn(s: string, base: int): (real, string);
-       tolower:   fn(s: string): string;
-       toupper:   fn(s: string): string;
-       quoted:    fn(args: list of string): string;
-       unquoted:  fn(s: string): list of string;
+The  cl  argument  to  some of these functions is a character
+= class in which a: between any  two  characters  indicates  a
+range  and  a ^ in the first position means not in the class.
+Example of classes are "a-zA-Z" and "^acg-mr".
 
-DESCRIPTION
-       The  cl  argument  to  some of these functions is a character
-       class in which a - between any  two  characters  indicates  a
-       range  and  a ^ in the first position means not in the class.
-       Example of classes are "a-zA-Z" and "^acg-mr".
+Append appends string s to the end of string list l.
 
-       Append appends string s to the end of string list l.
+Drop removes the maximal prefix of string s that is in  class
+cl.
 
-       Drop removes the maximal prefix of string s that is in  class
-       cl.
+In  returns  1  if  character c is in class cl and 0 if it is
+not.
 
-       In  returns  1  if  character c is in class cl and 0 if it is
-       not.
+Prefix returns 1 if string pre is a prefix of string s and  0
+if it is not.
 
-       Prefix returns 1 if string pre is a prefix of string s and  0
-       if it is not.
+Splitl  splits  string  s  just before the first character in
+class cl.
 
-       Splitl  splits  string  s  just before the first character in
-       class cl.
+Splitr splits string s just after the last character in class
+cl.
 
-       Splitr splits string s just after the last character in class
-       cl.
+Splitstrl splits string s just before the leftmost segment of
+string s that consists entirely of string t,  and  returns  a
+tuple  with  the  resulting  pair  of strings.  If t does not
+occur in s, the result is (s,nil).
 
-       Splitstrl splits string s just before the leftmost segment of
-       string s that consists entirely of string t,  and  returns  a
-       tuple  with  the  resulting  pair  of strings.  If t does not
-       occur in s, the result is (s,nil).
+Splitstrr splits string s just after the rightmost segment of
+string  s  that  consists entirely of string t, and returns a
+tuple with the resulting pair of  strings.   If  t  does  not
+occur in s, the result is (nil,s).
 
-       Splitstrr splits string s just after the rightmost segment of
-       string  s  that  consists entirely of string t, and returns a
-       tuple with the resulting pair of  strings.   If  t  does  not
-       occur in s, the result is (nil,s).
+Take  returns the maximal prefix of string s that is in class
+cl.
 
-       Take  returns the maximal prefix of string s that is in class
-       cl.
+Toint returns as an integer  the  value  represented  by  the
+string  s.   The  string is scanned up to the first character
+inconsistent with base.   The  first  inconsistent  character
+marks  the  beginning of the returned string.  Leading white-
+space characters are ignored.  The base can be any integer in
+the range 2 to 36, inclusive; or 0 in which case the base can
+be specified as part of the  string,  in  Limbo  style  (e.g.
+16rffff).
 
-       Toint returns as an integer  the  value  represented  by  the
-       string  s.   The  string is scanned up to the first character
-       inconsistent with base.   The  first  inconsistent  character
-       marks  the  beginning of the returned string.  Leading white-
-       space characters are ignored.  The base can be any integer in
-       the range 2 to 36, inclusive; or 0 in which case the base can
-       be specified as part of the  string,  in  Limbo  style  (e.g.
-       16rffff).
+Tobig  has  the  same specification as toint except that con‐
+verts to 64-bit big.
 
-       Tobig  has  the  same specification as toint except that con‐
-       verts to 64-bit big.
+Toreal is similar to toint, except that it expects  a  float‐
+ing-point  number  after  optional  leading  white  space: an
+optional sign, then a string of digits containing  a  decimal
+point,  then an optional `e' or `E' followed by an optionally
+signed decimal integer exponent.  The string  of  digits  can
+optionally  be  preceded  by  a base (radix) specifier of the
+form Br, as for integers.  Any exponent is  then  interpreted
+as  a power of that base.  Alternatively, following any lead‐
+ing white space and an optional sign, either nan or  infinity
+can appear, in any case, and toreal will return the appropri‐
+ate value for IEEE floating-point.
 
-       Toreal is similar to toint, except that it expects  a  float‐
-       ing-point  number  after  optional  leading  white  space: an
-       optional sign, then a string of digits containing  a  decimal
-       point,  then an optional `e' or `E' followed by an optionally
-       signed decimal integer exponent.  The string  of  digits  can
-       optionally  be  preceded  by  a base (radix) specifier of the
-       form Br, as for integers.  Any exponent is  then  interpreted
-       as  a power of that base.  Alternatively, following any lead‐
-       ing white space and an optional sign, either nan or  infinity
-       can appear, in any case, and toreal will return the appropri‐
-       ate value for IEEE floating-point.
+Tolower converts all upper case letters in the  string  s  to
+lower case letters.
 
-       Tolower converts all upper case letters in the  string  s  to
-       lower case letters.
+Toupper  converts  all  lower case letters in the string s to
+upper case letters.
 
-       Toupper  converts  all  lower case letters in the string s to
-       upper case letters.
+Quoted takes a list of strings, args, and  returns  a  single
+string  with the value of each element of args separated from
+the next by a single space.  When  forming  the  string,  the
+text  of  any  element  that  contains  white space or single
+quotes is first quoted by surrounding  it  by  single  quotes
+('...')   within  which each existing single quote is doubled
+(''), following the conventions of sh(1).
 
-       Quoted takes a list of strings, args, and  returns  a  single
-       string  with the value of each element of args separated from
-       the next by a single space.  When  forming  the  string,  the
-       text  of  any  element  that  contains  white space or single
-       quotes is first quoted by surrounding  it  by  single  quotes
-       ('...')   within  which each existing single quote is doubled
-       (''), following the conventions of sh(1).
+Unquoted takes a string s, quoted according  to  the  conven‐
+tions  of  quoted,  and  splits it into separate strings.  It
+splits the string at each maximal sequence of unquoted  white
+space (blank, newline or tab), stripping single quotes except
+where paired, to form  the  corresponding  list  of  strings,
+which it returns.
 
-       Unquoted takes a string s, quoted according  to  the  conven‐
-       tions  of  quoted,  and  splits it into separate strings.  It
-       splits the string at each maximal sequence of unquoted  white
-       space (blank, newline or tab), stripping single quotes except
-       where paired, to form  the  corresponding  list  of  strings,
-       which it returns.
+== source
+/appl/lib/string.b
 
-SOURCE
-       /appl/lib/string.b
-
-                                                           STRING(2)

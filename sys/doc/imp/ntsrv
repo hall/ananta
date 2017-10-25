@@ -1,48 +1,42 @@
-NTSRV(10.1)                                              NTSRV(10.1)
+= ntsrv: start hosted Inferno as Windows service
 
-NAME
-       ntsrv - start hosted Inferno as Windows service
+    ntsrv add svcname rootdir cmd [arg ... ]
 
-SYNOPSIS
-       ntsrv add svcname rootdir cmd [arg ... ]
+    ntsrv del svcname
 
-       ntsrv del svcname
+Ntsrv  is  a  command  (for  Windows only) that allows hosted
+Inferno to run automatically as a Windows service, under Win‐
+dows  2000  and  XP.  For Windows NT, use the command ntsrv4,
+which otherwise has  identical  interface.   Svcname  is  the
+(proposed)  Windows  service name; rootdir is the root of the
+Inferno directory tree, including  the  drive  letter.   Once
+added,  a service can be controlled using the Windows service
+manager: it may be stopped, started, or have  its  attributes
+changed.   Svcname is set to start automatically when Windows
+starts up.  Services run by default under the  local  Windows
+`System'  identity.   All  Windows  processes and threads the
+service creates (eg, using cmd(3))  are  destroyed  when  the
+service  is  stopped.   There may be many different services,
+each with a distinct svcname.
 
-DESCRIPTION
-       Ntsrv  is  a  command  (for  Windows only) that allows hosted
-       Inferno to run automatically as a Windows service, under Win‐
-       dows  2000  and  XP.  For Windows NT, use the command ntsrv4,
-       which otherwise has  identical  interface.   Svcname  is  the
-       (proposed)  Windows  service name; rootdir is the root of the
-       Inferno directory tree, including  the  drive  letter.   Once
-       added,  a service can be controlled using the Windows service
-       manager: it may be stopped, started, or have  its  attributes
-       changed.   Svcname is set to start automatically when Windows
-       starts up.  Services run by default under the  local  Windows
-       `System'  identity.   All  Windows  processes and threads the
-       service creates (eg, using cmd(3))  are  destroyed  when  the
-       service  is  stopped.   There may be many different services,
-       each with a distinct svcname.
+Ntsrv 's first parameter tells it what to do:
 
-       Ntsrv 's first parameter tells it what to do:
+add    Add a new  service  svcname  that  when  started  will
+       invoke  emu(1) to run the Inferno command cmd with any
+       additional arguments.
 
-       add    Add a new  service  svcname  that  when  started  will
-              invoke  emu(1) to run the Inferno command cmd with any
-              additional arguments.
+del    Delete an existing service svcname.
 
-       del    Delete an existing service svcname.
+Ntsrv requires the directory  rootdir/Nt/386/bin  to  contain
+both emu.exe (ie, emu(1)) and ntsrv.exe itself.
 
-       Ntsrv requires the directory  rootdir/Nt/386/bin  to  contain
-       both emu.exe (ie, emu(1)) and ntsrv.exe itself.
+== files
+rootdir/Nt/386/bin
+       Windows host executables
 
-FILES
-       rootdir/Nt/386/bin
-              Windows host executables
+== source
+/utils/ntsrv
 
-SOURCE
-       /utils/ntsrv
+== see ALSO
+emu(1)
 
-SEE ALSO
-       emu(1)
-
-                               Windows                   NTSRV(10.1)

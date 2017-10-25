@@ -1,19 +1,13 @@
-PANIC(10.2)                                              PANIC(10.2)
+= panic: abandon hope
 
-NAME
-       panic - abandon hope
+    void  panic(char *fmt, ...)
 
-SYNOPSIS
-       void  panic(char *fmt, ...)
+Panic  writes  a message to the console and causes the system
+to give up the ghost.  It enables interrupts, dumps the  ker‐
+nel stack, and halts the current processor; if more than one,
+others will gradually come to a halt.  Depending on  configu‐
+ration settings, the platform-dependent exit might reboot the
+system.  The format fmt and associated arguments are the same
+as those for print(10.2).  Panic adds a prefix and a trailing
+newline.
 
-DESCRIPTION
-       Panic  writes  a message to the console and causes the system
-       to give up the ghost.  It enables interrupts, dumps the  ker‐
-       nel stack, and halts the current processor; if more than one,
-       others will gradually come to a halt.  Depending on  configu‐
-       ration settings, the platform-dependent exit might reboot the
-       system.  The format fmt and associated arguments are the same
-       as those for print(10.2).  Panic adds a prefix and a trailing
-       newline.
-
-                                                         PANIC(10.2)

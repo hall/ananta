@@ -1,53 +1,47 @@
-KEYSET(2)                System Calls Manual               KEYSET(2)
+= keyset: find authentication keys matching a signer
 
-NAME
-       keyset - find authentication keys matching a signer
+    include "keyset.m";
+    keyset := load Keyset Keyset->PATH;
 
-SYNOPSIS
-       include "keyset.m";
-       keyset := load Keyset Keyset->PATH;
+    init:      fn(): string;
+    keysforsigner: fn(signername: string, spkthumb: string,
+                      user: string, dir: string):
+                      (list of (string, string, string), string);
+    pkhash:    fn(pk: string): string;
+    
+Keyset  looks  through a set of certified public keys to find
+one or more keys that have were certified by a given signer.
 
-       init:      fn(): string;
-       keysforsigner: fn(signername: string, spkthumb: string,
-                         user: string, dir: string):
-                         (list of (string, string, string), string);
-       pkhash:    fn(pk: string): string;
+Init must be called before any other function in the  module.
+It returns nil on success or a diagnostic string on failure.
 
-DESCRIPTION
-       Keyset  looks  through a set of certified public keys to find
-       one or more keys that have were certified by a given signer.
+Keysforsigner looks for public keys that satisfy given condi‐
+tions: signername is either the  name  of  a  signer  or  nil
+(don't care); spkthumb is either a thumbprint of the signer's
+public key (as produced by  pkhash,  below),  or  nil  (don't
+care).   User  is  the  name of the user that owns the set of
+keys; if it is nil, the user's name is read  from  /dev/user.
+Dir  is the name of the directory holding a collection of the
+user's signed keys as  obtained  for  instance  using  getau‐
+thinfo(8);  if  it is nil, the directory /usr/user/keyring is
+used by default.  Only signed (certified) unexpired keys  are
+considered.   Keysforsigner returns a tuple (keys,err).  Keys
+is list of tuples (keyfile, owner, signername) where  keyfile
+is  the  full  name of a file in dir that holds an apparently
+suitable key; owner is the name of the key's owner; and sign‐
+ername  is the name of the signer in the certificate attached
+to the key.  The list is nil if no keys could be  found  that
+matched  the criteria.  On an error, err is non-nil and gives
+a diagnostic.
 
-       Init must be called before any other function in the  module.
-       It returns nil on success or a diagnostic string on failure.
+Pkhash returns the hexadecimal representation  of  the  SHA-1
+hash of public key pk, which must be in the canonical textual
+form produced by Keyring->pktostr (see keyring-certtostr(2)).
 
-       Keysforsigner looks for public keys that satisfy given condi‐
-       tions: signername is either the  name  of  a  signer  or  nil
-       (don't care); spkthumb is either a thumbprint of the signer's
-       public key (as produced by  pkhash,  below),  or  nil  (don't
-       care).   User  is  the  name of the user that owns the set of
-       keys; if it is nil, the user's name is read  from  /dev/user.
-       Dir  is the name of the directory holding a collection of the
-       user's signed keys as  obtained  for  instance  using  getau‐
-       thinfo(8);  if  it is nil, the directory /usr/user/keyring is
-       used by default.  Only signed (certified) unexpired keys  are
-       considered.   Keysforsigner returns a tuple (keys,err).  Keys
-       is list of tuples (keyfile, owner, signername) where  keyfile
-       is  the  full  name of a file in dir that holds an apparently
-       suitable key; owner is the name of the key's owner; and sign‐
-       ername  is the name of the signer in the certificate attached
-       to the key.  The list is nil if no keys could be  found  that
-       matched  the criteria.  On an error, err is non-nil and gives
-       a diagnostic.
+== source
+/appl/lib/keyset.b
 
-       Pkhash returns the hexadecimal representation  of  the  SHA-1
-       hash of public key pk, which must be in the canonical textual
-       form produced by Keyring->pktostr (see keyring-certtostr(2)).
+== see ALSO
+bind(1), keyring-gensk(2), keyring-sha1(2), security-auth(2),
+logind(8)
 
-SOURCE
-       /appl/lib/keyset.b
-
-SEE ALSO
-       bind(1), keyring-gensk(2), keyring-sha1(2), security-auth(2),
-       logind(8)
-
-                                                           KEYSET(2)

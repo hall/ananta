@@ -1,57 +1,51 @@
-SYS-READ(2)              System Calls Manual             SYS-READ(2)
+= read, write, pread, pwrite, stream: read or write file
 
-NAME
-       read, write, pread, pwrite, stream - read or write file
+    include "sys.m";
+    sys := load Sys Sys->PATH;
 
-SYNOPSIS
-       include "sys.m";
-       sys := load Sys Sys->PATH;
+    read:   fn(fd: ref FD, buf: array of byte, nbytes: int): int;
+    readn:  fn(fd: ref FD, buf: array of byte, nbytes: int): int;
+    write:  fn(fd: ref FD, buf: array of byte, nbytes: int): int;
 
-       read:   fn(fd: ref FD, buf: array of byte, nbytes: int): int;
-       readn:  fn(fd: ref FD, buf: array of byte, nbytes: int): int;
-       write:  fn(fd: ref FD, buf: array of byte, nbytes: int): int;
+    pread:  fn(fd: ref FD, buf: array of byte, nbytes: int,
+               offset: big): int;
+    pwrite: fn(fd: ref FD, buf: array of byte, nbytes: int,
+               offset: big): int;
 
-       pread:  fn(fd: ref FD, buf: array of byte, nbytes: int,
-                  offset: big): int;
-       pwrite: fn(fd: ref FD, buf: array of byte, nbytes: int,
-                  offset: big): int;
+    stream: fn(src, dst: ref FD, bufsiz: int): int;
 
-       stream: fn(src, dst: ref FD, bufsiz: int): int;
+Read  reads  nbytes bytes of data from the offset in the file
+associated with fd into memory at buf.  The  file  offset  is
+advanced  by  the number of bytes read.  It is not guaranteed
+that all nbytes bytes will be read; for example if  the  file
+refers to the console, at most one line will be returned.  In
+any event the number of bytes read  is  returned.   A  return
+value of 0 is conventionally interpreted as end of file.
 
-DESCRIPTION
-       Read  reads  nbytes bytes of data from the offset in the file
-       associated with fd into memory at buf.  The  file  offset  is
-       advanced  by  the number of bytes read.  It is not guaranteed
-       that all nbytes bytes will be read; for example if  the  file
-       refers to the console, at most one line will be returned.  In
-       any event the number of bytes read  is  returned.   A  return
-       value of 0 is conventionally interpreted as end of file.
+Readn  continues to read from fd sequentially into buf, until
+nbytes have been read, or read returns a non-positive count.
 
-       Readn  continues to read from fd sequentially into buf, until
-       nbytes have been read, or read returns a non-positive count.
+Write writes nbytes bytes of data starting at buf to the file
+associated  with  fd  at  the  file  offset.   The  offset is
+advanced by the number of bytes written.  The number of bytes
+actually  written  is  returned.  It should be regarded as an
+error if this is not the same as requested.
 
-       Write writes nbytes bytes of data starting at buf to the file
-       associated  with  fd  at  the  file  offset.   The  offset is
-       advanced by the number of bytes written.  The number of bytes
-       actually  written  is  returned.  It should be regarded as an
-       error if this is not the same as requested.
+Pread and pwrite take an explicit file offset as a parameter,
+leaving  fd's  current  offset  untouched; they are otherwise
+identical in behaviour to read and write.  They are  particu‐
+lary  useful  when  several processes must access the same fd
+concurrently and it is inconvenient or  undesirable  to  syn‐
+chronise their activity to avoid interference.
 
-       Pread and pwrite take an explicit file offset as a parameter,
-       leaving  fd's  current  offset  untouched; they are otherwise
-       identical in behaviour to read and write.  They are  particu‐
-       lary  useful  when  several processes must access the same fd
-       concurrently and it is inconvenient or  undesirable  to  syn‐
-       chronise their activity to avoid interference.
+Stream  continually  reads  data  from src, using a buffer of
+bufsiz bytes, and writes the data to  dst.   It  copies  data
+until  a  read  fails (returning zero bytes or an error) or a
+write fails.  Stream returns the  number  of  bytes  actually
+copied.   The  implementation  may  be  more efficient than a
+read/write loop in the application, but is otherwise  equiva‐
+lent to calling read and write directly.
 
-       Stream  continually  reads  data  from src, using a buffer of
-       bufsiz bytes, and writes the data to  dst.   It  copies  data
-       until  a  read  fails (returning zero bytes or an error) or a
-       write fails.  Stream returns the  number  of  bytes  actually
-       copied.   The  implementation  may  be  more efficient than a
-       read/write loop in the application, but is otherwise  equiva‐
-       lent to calling read and write directly.
+== see ALSO
+bufio(2), sys-intro(2), sys-dup(2), sys-open(2), read(5)
 
-SEE ALSO
-       bufio(2), sys-intro(2), sys-dup(2), sys-open(2), read(5)
-
-                                                         SYS-READ(2)

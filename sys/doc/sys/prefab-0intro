@@ -1,49 +1,43 @@
-PREFAB-INTRO(2)          System Calls Manual         PREFAB-INTRO(2)
+= Prefab: intro: Interactive TV tookit
 
-NAME
-       Prefab: intro - Interactive TV tookit
+    include "draw.m";
+    include "prefab.m";
+    prefab := load Prefab Prefab->PATH;
 
-SYNOPSIS
-       include "draw.m";
-       include "prefab.m";
-       prefab := load Prefab Prefab->PATH;
+The  Prefab  module contains components for building graphics
+objects suitable for Interactive  Television  (ITV)  applica‐
+tions  using  infrared  remote controls.  Using the Draw mod‐
+ule's operations  for  simple  text  and  images  (see  draw-
+intro(2)),  the  toolkit  can  group  individual items, treat
+those groups as units, and then activate the  items  on  com‐
+mand.   The  other  user  interface  toolkit, tk(2), provides
+facilities for keyboard- and mouse-driven applications.
 
-DESCRIPTION
-       The  Prefab  module contains components for building graphics
-       objects suitable for Interactive  Television  (ITV)  applica‐
-       tions  using  infrared  remote controls.  Using the Draw mod‐
-       ule's operations  for  simple  text  and  images  (see  draw-
-       intro(2)),  the  toolkit  can  group  individual items, treat
-       those groups as units, and then activate the  items  on  com‐
-       mand.   The  other  user  interface  toolkit, tk(2), provides
-       facilities for keyboard- and mouse-driven applications.
+The objects on the screen are of type Compound, each of which
+occupies  a unique window on the display and contains objects
+of type Element.  An Element may be a single object or a list
+of  further Elements, to build hierarchically structured com‐
+ponents.
 
-       The objects on the screen are of type Compound, each of which
-       occupies  a unique window on the display and contains objects
-       of type Element.  An Element may be a single object or a list
-       of  further Elements, to build hierarchically structured com‐
-       ponents.
+Prefab defines Environ  and  Style  types  that  specify  the
+appearance of objects: their colours, fonts, backgrounds, and
+so on.  A Style gives font and colour information,  while  an
+Environ  identifies  the  Screen upon which the items will be
+displayed and the Style in which they will be drawn.
 
-       Prefab defines Environ  and  Style  types  that  specify  the
-       appearance of objects: their colours, fonts, backgrounds, and
-       so on.  A Style gives font and colour information,  while  an
-       Environ  identifies  the  Screen upon which the items will be
-       displayed and the Style in which they will be drawn.
+Applications should  allocate  Elements  and  Compounds  only
+through the appropriate member functions, as described in the
+corresponding sections of the  manual.   Items  created  with
+regular  Limbo definitions will not work properly.  Moreover,
+except where indicated, applications should  not  modify  the
+data  members  directly.   Although the type definitions make
+data members visible, the members should usually  be  treated
+as read-only data.
 
-       Applications should  allocate  Elements  and  Compounds  only
-       through the appropriate member functions, as described in the
-       corresponding sections of the  manual.   Items  created  with
-       regular  Limbo definitions will not work properly.  Moreover,
-       except where indicated, applications should  not  modify  the
-       data  members  directly.   Although the type definitions make
-       data members visible, the members should usually  be  treated
-       as read-only data.
+== source
+/libinterp/prefab.c
+/libprefab/*.c
 
-SOURCE
-       /libinterp/prefab.c
-       /libprefab/*.c
+== see ALSO
+draw-intro(2), ir(2)
 
-SEE ALSO
-       draw-intro(2), ir(2)
-
-                                                     PREFAB-INTRO(2)

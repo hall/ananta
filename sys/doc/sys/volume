@@ -1,40 +1,34 @@
-VOLUME(2)                System Calls Manual               VOLUME(2)
+= volume: volume control for an infrared interface
 
-NAME
-       volume - volume control for an infrared interface
+    include "volume.m";
+    vctl := load Volumectl Volumectl->PATH;
 
-SYNOPSIS
-       include "volume.m";
-       vctl := load Volumectl Volumectl->PATH;
+    volumectl: fn(ctxt: ref Draw->Context, ch: chan of int,
+                   device: string);
 
-       volumectl: fn(ctxt: ref Draw->Context, ch: chan of int,
-                      device: string);
+Volumectl  should  be  spawned as a separate process from any
+process that desires volume control via  an  infrared  inter‐
+face.  Ctxt provides volumectl with access to the display, on
+which it displays a slider widget.  The slider  automatically
+disappears  after  several  seconds of inactivity.  Volumectl
+receives input from the infrared controller  on  channel  ch.
+The values recognized are:
 
-DESCRIPTION
-       Volumectl  should  be  spawned as a separate process from any
-       process that desires volume control via  an  infrared  inter‐
-       face.  Ctxt provides volumectl with access to the display, on
-       which it displays a slider widget.  The slider  automatically
-       disappears  after  several  seconds of inactivity.  Volumectl
-       receives input from the infrared controller  on  channel  ch.
-       The values recognized are:
+VolUP  increase volume
 
-       VolUP  increase volume
+VolDN  decrease volume
 
-       VolDN  decrease volume
+Enter  exit
 
-       Enter  exit
+Device  is  a  string  used  as  a  prefix to commands to the
+device; for example "audio out" for audio(3).
 
-       Device  is  a  string  used  as  a  prefix to commands to the
-       device; for example "audio out" for audio(3).
+== files
+/dev/volume
 
-FILES
-       /dev/volume
+== source
+/appl/lib/volume.b
 
-SOURCE
-       /appl/lib/volume.b
+== see ALSO
+ir(2), prefab-intro(2)
 
-SEE ALSO
-       ir(2), prefab-intro(2)
-
-                                 mux                       VOLUME(2)

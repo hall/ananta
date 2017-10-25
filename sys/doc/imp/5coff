@@ -1,40 +1,34 @@
-5COFF(10.1)                                              5COFF(10.1)
+= 5coff: converter to coff format
 
-NAME
-       5coff - converter to coff format
+    5coff [ -T t ] [ -D d ] [ -R r ] [ -E e ] [ -d ] ifile ofile
 
-SYNOPSIS
-       5coff [ -T t ] [ -D d ] [ -R r ] [ -E e ] [ -d ] ifile ofile
+5coff converts an executable file ifile in a.out(10.6) format
+as produced by 5l (see 2l(10.1)) to one in COFF format, which
+it writes to ofile.  The options to 5coff are as follows:
 
-DESCRIPTION
-       5coff converts an executable file ifile in a.out(10.6) format
-       as produced by 5l (see 2l(10.1)) to one in COFF format, which
-       it writes to ofile.  The options to 5coff are as follows:
+-Tt    The text segment starts at address t.
 
-       -Tt    The text segment starts at address t.
+-Dd    The data segment starts at address d.
 
-       -Dd    The data segment starts at address d.
+-Rr    The  text  segment is rounded up to a multiple of r if
+       non-zero.
 
-       -Rr    The  text  segment is rounded up to a multiple of r if
-              non-zero.
+-Ee    The entry point is at address e.
 
-       -Ee    The entry point is at address e.
+-d     Print debugging information.
 
-       -d     Print debugging information.
+== example
+An executable built with the command
 
-EXAMPLE
-       An executable built with the command
+       5l -T0x04010000 -R4 -o abc ...
 
-              5l -T0x04010000 -R4 -o abc ...
+can be converted to coff format by
 
-       can be converted to coff format by
+       5coff -T0x04010000 -R4 abc abc.coff
 
-              5coff -T0x04010000 -R4 abc abc.coff
+== source
+/utils/5coff
 
-SOURCE
-       /utils/5coff
+== see ALSO
+2l(10.1), 5cv(10.1), a.out(10.6)
 
-SEE ALSO
-       2l(10.1), 5cv(10.1), a.out(10.6)
-
-                                                         5COFF(10.1)

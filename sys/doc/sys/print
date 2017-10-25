@@ -1,296 +1,289 @@
-PRINT(2)                 System Calls Manual                PRINT(2)
+= Print: printing system
 
-NAME
-       Print - printing system
+    include "print.m";
+    print := load Print Print->PATH;
 
-SYNOPSIS
-       include "print.m";
-       print := load Print Print->PATH;
+    Print: module
+    {
+         PATH: con "/dis/lib/print/print.dis";
+         CONFIG_PATH: con "/lib/print/";
+    
+         init: fn(): int;
+         set_printfd: fn(fd: ref Sys->FD);
+         print_image: fn(p: ref Printer, display: ref Draw->Display, im: ref Draw->Image, pcwidth: int): int;
+         print_textfd: fn(p: ref Printer, fd: ref Sys->FD, ps: real, pr: int, wrap: int): int;
+         get_defprinter: fn(): ref Printer;
+         set_defprinter: fn(p: ref Printer);
+         get_size: fn(p: ref Printer): (int, real, real);  # dpi, xinches, yinches
+         get_printers: fn(): list of ref Printer;
+         get_papers: fn(): list of ref Paper;
+         save_settings: fn(): int;
 
-       Print: module
-       {
-            PATH: con "/dis/lib/print/print.dis";
-            CONFIG_PATH: con "/lib/print/";
-
-            init: fn(): int;
-            set_printfd: fn(fd: ref Sys->FD);
-            print_image: fn(p: ref Printer, display: ref Draw->Display, im: ref Draw->Image, pcwidth: int): int;
-            print_textfd: fn(p: ref Printer, fd: ref Sys->FD, ps: real, pr: int, wrap: int): int;
-            get_defprinter: fn(): ref Printer;
-            set_defprinter: fn(p: ref Printer);
-            get_size: fn(p: ref Printer): (int, real, real);  # dpi, xinches, yinches
-            get_printers: fn(): list of ref Printer;
-            get_papers: fn(): list of ref Paper;
-            save_settings: fn(): int;
-
-       # Printer types
-
-       Ptype: adt {
-            name: string;
-            modes: list of ref Pmode;
-            driver: string;
-            hpmapfile: string;
-       };
-
-       # Paper sizes
-
-       Paper: adt {
-            name: string;
-            hpcode: string;
-            width_inches: real;
-            height_inches: real;
-       };
-
-       # Print modes
-
-       Pmode: adt {
-            name: string;
-            desc: string;
-            resx: int;
-            resy: int;
-            blackdepth: int;
-            coldepth: int;
-            blackresmult: int;
-       };
-
-       # Print options
-
-       Popt: adt {
-            name: string;
-            mode: ref Pmode;
-            paper: ref Paper;
-            orientation: int;
-            duplex: int;
-       };
-
-       # Printer instance
-
-       PORTRAIT: con 0;
-       LANDSCAPE: con 1;
-
-       DUPLEX_OFF: con 0;
-       DUPLEX_LONG: con 1;
-       DUPLEX_SHORT: con 2;
-
-       Printer: adt {
-            name: string;
-            ptype: ref Ptype;
-            device: string;
-            popt: ref Popt;
-            pdriver: Pdriver;
-       };
-
-       };
-
-       Pdriver: module
-       {
-            PATHPREFIX: con "/dis/lib/print/";
-            DATAPREFIX: con "/lib/print/";
-
-            init: fn(debug: int);
-            sendimage: fn(p: ref Print->Printer, tfd: ref Sys->FD, display: ref Draw->Display, im: ref Draw->Image, width: int, lmargin: int): int;
-            sendtextfd: fn(p: ref Print->Printer, pfd, tfd: ref Sys->FD, ps: real, pr: int, wrap: int): int;
-            printable_pixels: fn(p: ref Print->Printer): (int, int);
-
-       };
-
-DESCRIPTION
-       The  Print module provides an interface to one or more print‐
-       ers.
+        # Printer types
+    
+        Ptype: adt {
+             name: string;
+             modes: list of ref Pmode;
+             driver: string;
+             hpmapfile: string;
+        };
+        
+        # Paper sizes
+        
+        Paper: adt {
+             name: string;
+             hpcode: string;
+             width_inches: real;
+             height_inches: real;
+        };
+        
+        # Print modes
+        
+        Pmode: adt {
+             name: string;
+             desc: string;
+             resx: int;
+             resy: int;
+             blackdepth: int;
+             coldepth: int;
+             blackresmult: int;
+        };
+        
+        # Print options
+        
+        Popt: adt {
+             name: string;
+             mode: ref Pmode;
+             paper: ref Paper;
+             orientation: int;
+             duplex: int;
+        };
+        
+        # Printer instance
+        
+        PORTRAIT: con 0;
+        LANDSCAPE: con 1;
+        
+        DUPLEX_OFF: con 0;
+        DUPLEX_LONG: con 1;
+        DUPLEX_SHORT: con 2;
+        
+        Printer: adt {
+             name: string;
+             ptype: ref Ptype;
+             device: string;
+             popt: ref Popt;
+             pdriver: Pdriver;
+        };
+        
+    };
+    
+    Pdriver: module
+    {
+         PATHPREFIX: con "/dis/lib/print/";
+         DATAPREFIX: con "/lib/print/";
+    
+         init: fn(debug: int);
+         sendimage: fn(p: ref Print->Printer, tfd: ref Sys->FD, display: ref Draw->Display, im: ref Draw->Image, width: int, lmargin: int): int;
+         sendtextfd: fn(p: ref Print->Printer, pfd, tfd: ref Sys->FD, ps: real, pr: int, wrap: int): int;
+         printable_pixels: fn(p: ref Print->Printer): (int, int);
+    
+    };
+    
+The  Print module provides an interface to one or more printers.
 
    The Print module
-       init() Init must be called once to  initialise  the  internal
-              state of Print.
+init() Init must be called once to  initialise  the  internal
+       state of Print.
 
-       set_printfd(fd)
-              set_printfd  provides a file descriptor to be used for
-              output. By default, output is  sent  to  the  file  or
-              device specified in the Printer adt.
+set_printfd(fd)
+       set_printfd  provides a file descriptor to be used for
+       output. By default, output is  sent  to  the  file  or
+       device specified in the Printer adt.
 
-       print_image(p,display,im,pcwidth)
-              print_image  prints  a page containing a single image.
-              The image is centred horizontally, and is scaled up to
-              fill  the  percentage of the available width specified
-              by pcwidth.
+print_image(p,display,im,pcwidth)
+       print_image  prints  a page containing a single image.
+       The image is centred horizontally, and is scaled up to
+       fill  the  percentage of the available width specified
+       by pcwidth.
 
-       print_textfd(p,fd,ps,pr,wrap)
-              print_textfd prints one  or  more  pages  of  text  on
-              printer  p  from the file open for reading on fd.  The
-              point size is controlled by p.  If  the  printer  does
-              not  support  the  specified point size an alternative
-              size will be used.  A point size of 0.0 can be used to
-              select  the printer's default size (usually 12 point).
-              If pr is non-zero, a proportionally-spaced  font  will
-              be  used  (if  available).  If wrap is non-zero, lines
-              will be wrapped if they overflow the  page  width  (if
-              this feature is supported by the printer).
+print_textfd(p,fd,ps,pr,wrap)
+       print_textfd prints one  or  more  pages  of  text  on
+       printer  p  from the file open for reading on fd.  The
+       point size is controlled by p.  If  the  printer  does
+       not  support  the  specified point size an alternative
+       size will be used.  A point size of 0.0 can be used to
+       select  the printer's default size (usually 12 point).
+       If pr is non-zero, a proportionally-spaced  font  will
+       be  used  (if  available).  If wrap is non-zero, lines
+       will be wrapped if they overflow the  page  width  (if
+       this feature is supported by the printer).
 
-       get_defprinter()
-              get_defprinter   returns   the   default  printer  (in
-              /lib/print/defprinter).
+get_defprinter()
+       get_defprinter   returns   the   default  printer  (in
+       /lib/print/defprinter).
 
-       set_defprinter(p)
-              set_defprinter   sets   the   default   printer    (in
-              /lib/print/defprinter).
+set_defprinter(p)
+       set_defprinter   sets   the   default   printer    (in
+       /lib/print/defprinter).
 
-       get_size(p)
-              get_size  returns  the resolution in dots per inch and
-              the total number of pixels available for  printing  in
-              the  x  and y direction.  Before calling this function
-              the orientation should be set if required.
+get_size(p)
+       get_size  returns  the resolution in dots per inch and
+       the total number of pixels available for  printing  in
+       the  x  and y direction.  Before calling this function
+       the orientation should be set if required.
 
-       get_printers()
-              get_printers returns a list of all available  printers
-              (in /lib/print/printer.cfg).
+get_printers()
+       get_printers returns a list of all available  printers
+       (in /lib/print/printer.cfg).
 
-       get_papers()
-              get_papers returns a list of all available paper sizes
-              (in /lib/print/paper.cfg).
+get_papers()
+       get_papers returns a list of all available paper sizes
+       (in /lib/print/paper.cfg).
 
    Data Structures
-       Ptype
-               - specifies a Printer Type, with fields:
+Ptype
+        - specifies a Printer Type, with fields:
 
-              name:  Name used to refer to this printer type
+       name:  Name used to refer to this printer type
 
-              desc   Description
+       desc   Description
 
-              modes  List of supported print modes
+       modes  List of supported print modes
 
-              driver:
-                     The .dis  file  specification  of  the  printer
-                     driver
+       driver:
+              The .dis  file  specification  of  the  printer
+              driver
 
-              hpmapfile:
-                     For HP printers, the name of the color map file
+       hpmapfile:
+              For HP printers, the name of the color map file
 
-       Paper
-               - specifies the dimensions of a type of paper
+Paper
+        - specifies the dimensions of a type of paper
 
-              name:  Name used to refer to this paper size
+       name:  Name used to refer to this paper size
 
-              hpcode:
-                     For  HP  printers, PCL code used for this paper
-                     size
+       hpcode:
+              For  HP  printers, PCL code used for this paper
+              size
 
-              width_inches:
-                     Width of paper in inches
+       width_inches:
+              Width of paper in inches
 
-              height_inches:
-                     Height of paper in inches
+       height_inches:
+              Height of paper in inches
 
-       Pmode
-               - specifies a print mode
+Pmode
+        - specifies a print mode
 
-              name:  Name used to refer to this print mode
+       name:  Name used to refer to this print mode
 
-              desc:  Description
+       desc:  Description
 
-              resx:  X resolution in dots per inch
+       resx:  X resolution in dots per inch
 
-              resx:  Y resolution in dots per inch
+       resx:  Y resolution in dots per inch
 
-              blackdepth:
-                     Depth of black component in bytes
+       blackdepth:
+              Depth of black component in bytes
 
-              coldepth:
-                     Depth of color components in bytes
+       coldepth:
+              Depth of color components in bytes
 
-              blackresmult:
-                     Resolution multiplier  of  black  component  (1
-                     means same as base x resolution)
+       blackresmult:
+              Resolution multiplier  of  black  component  (1
+              means same as base x resolution)
 
-       Popt
-               - specifies a set of Print Options
+Popt
+        - specifies a set of Print Options
 
-              name:  Name  of a Printer to which these print options
-                     apply
+       name:  Name  of a Printer to which these print options
+              apply
 
-              mode:  The name of a print mode
+       mode:  The name of a print mode
 
-              paper: The name of a paper size
+       paper: The name of a paper size
 
-              orientation:
-                     Paper orientation - either  PORTRAIT  or  LAND‐
-                     SCAPE
+       orientation:
+= Paper orientation: either  PORTRAIT  or  LAND‐
+              SCAPE
 
-              duplex (NB DUPLEX IS NOT CURRENTLY SUPPORTED):
-                     Duplex  setting - DUPLEX_OFF or DUPLEX_SHORT or
-                     DUPLEX_LONG
+       duplex (NB DUPLEX IS NOT CURRENTLY SUPPORTED):
+= Duplex  setting: DUPLEX_OFF or DUPLEX_SHORT or
+              DUPLEX_LONG
 
-       Printer
-               - specifies a printer instance
+Printer
+        - specifies a printer instance
 
-              name:  Name used to refer to this printer
+       name:  Name used to refer to this printer
 
-              ptype: The printer type
+       ptype: The printer type
 
-              device:
-                     The name of the file to be used for output  (eg
-                     /dev/lpt1data)
+       device:
+              The name of the file to be used for output  (eg
+              /dev/lpt1data)
 
-              popt:  The print options
+       popt:  The print options
 
-              driver:
-                     The printer driver module handle
+       driver:
+              The printer driver module handle
 
    Configuration Files
-       There  are  configuration  files  to  initialize  the Printer
-       Types, Print Modes, Paper Sizes  Printers  and  Print  Modes.
-       They  all have a similar format, with fields corresponding to
-       the relevant adt.  Here is  an  extract  from  the  paper.cfg
-       file:
+There  are  configuration  files  to  initialize  the Printer
+Types, Print Modes, Paper Sizes  Printers  and  Print  Modes.
+They  all have a similar format, with fields corresponding to
+the relevant adt.  Here is  an  extract  from  the  paper.cfg
+file:
 
-       A4=
-            hpcode=26
-            width_inches=8.3
-            height_inches=11.7
-       A5=
-            hpcode=25
-            width_inches=4.15
-            height_inches=5.85
+A4=
+     hpcode=26
+     width_inches=8.3
+     height_inches=11.7
+A5=
+     hpcode=25
+     width_inches=4.15
+     height_inches=5.85
 
-       Aliases can also be defined, such as
+Aliases can also be defined, such as
 
-       myA4=A4
+myA4=A4
 
-       The  final  configuration file, defprinter, just contains the
-       name of the default printer.
+The  final  configuration file, defprinter, just contains the
+name of the default printer.
 
-FILES
-       /lib/print/*.map
-              HP color maps.
+== files
+/lib/print/*.map
+       HP color maps.
 
-       /lib/print/ptype.cfg
-              Print Type configuration file.
+/lib/print/ptype.cfg
+       Print Type configuration file.
 
-       /lib/print/pmode.cfg
-              Print Mode configuration file.
+/lib/print/pmode.cfg
+       Print Mode configuration file.
 
-       /lib/print/paper.cfg
-              Paper Size configuration file.
+/lib/print/paper.cfg
+       Paper Size configuration file.
 
-       /lib/print/printer.cfg
-              Printer Instance configuration file.
+/lib/print/printer.cfg
+       Printer Instance configuration file.
 
-       /lib/print/popts.cfg
-              Print options configuration file.
+/lib/print/popts.cfg
+       Print options configuration file.
 
-       /lib/print/defprinter
-              Holds the name of the default printer. Not  needed  if
-              there is only one printer available.
+/lib/print/defprinter
+       Holds the name of the default printer. Not  needed  if
+       there is only one printer available.
 
-SOURCE
-       /appl/lib/print/print.b
-              Implementation of the Print module.
+== source
+/appl/lib/print/print.b
+       Implementation of the Print module.
 
-       /appl/lib/print/*_driver.b
-              Printer-specific driver modules
+/appl/lib/print/*_driver.b
+       Printer-specific driver modules
 
-       /appl/lib/print/scaler.b
-              Scaler module
+/appl/lib/print/scaler.b
+       Scaler module
 
-SEE ALSO
-       draw-image(2), image(6)
+== see ALSO
+draw-image(2), image(6)
 
-                                                            PRINT(2)

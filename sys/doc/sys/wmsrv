@@ -1,180 +1,173 @@
-WMSRV(2)                 System Calls Manual                WMSRV(2)
+= Wmsrv :  core  window-manager functionality and helper functions
 
-NAME
-       Wmsrv  -  core  window-manager functionality and helper func‐
-       tions
+    include "sys.m";
+    include "draw.m";
+    include "wmsrv.m";
+    wmsrv := load Wmsrv Wmsrv->PATH;
+    Client, Window: import wmsrv;
 
-SYNOPSIS
-       include "sys.m";
-       include "draw.m";
-       include "wmsrv.m";
-       wmsrv := load Wmsrv Wmsrv->PATH;
-       Client, Window: import wmsrv;
+    init:   fn():
+        (chan of (string, chan of (string, ref Draw->Wmcontext)),
+        chan of (ref Client, chan of string),
+        chan of (ref Client, array of byte, Sys->Rwrite));
+    find:   fn(p: Draw->Point): ref Client;
+    top:    fn(): ref Client;
 
-       init:   fn():
-           (chan of (string, chan of (string, ref Draw->Wmcontext)),
-           chan of (ref Client, chan of string),
-           chan of (ref Client, array of byte, Sys->Rwrite));
-       find:   fn(p: Draw->Point): ref Client;
-       top:    fn(): ref Client;
+    Window: adt {
+        tag:    string;
+        r:  Rect;
+        img:    ref Image;
+    };
 
-       Window: adt {
-           tag:    string;
-           r:  Rect;
-           img:    ref Image;
-       };
+    Client: adt {
+        kbd:    chan of int;
+        ptr:    chan of ref Draw->Pointer;
+        ctl:    chan of string;
+        stop:   chan of int;
+        images: chan of (ref Draw->Point, ref Draw->Image, chan of int);
+        flags:  int;
+        wins:   list of ref Window;
+        znext:  cyclic ref Client;
+        id:     int;
+    
+        window:   fn(c: self ref Client, tag: string): ref Window;
+        contains: fn(c: self ref Client, p: Draw->Point): int;
+        setimage: fn(c: self ref Client, tag: string, i: ref Draw->Image): int;
+        setorigin:fn(c: self ref Client, tag: string, o: Draw->Point): int;
+        top:      fn(c: self ref Client);
+        bottom:   fn(c: self ref Client);
+        remove:   fn(w: self ref Client);
+    };
 
-       Client: adt {
-           kbd:    chan of int;
-           ptr:    chan of ref Draw->Pointer;
-           ctl:    chan of string;
-           stop:   chan of int;
-           images: chan of (ref Draw->Point, ref Draw->Image, chan of int);
-           flags:  int;
-           wins:   list of ref Window;
-           znext:  cyclic ref Client;
-           id:     int;
+Wmsrv acts as a kind of ``buffer'' module between  an  actual
+window-manager   implementation   and   possibly  misbehaving
+clients.  It provides notification when clients arrive,  make
+window-manager  requests, and leave. For each client, it pro‐
+vides  a  set  of  channels  that  mirror  those   found   in
+Draw->Wmcontext,  (see  draw-context(2)), except that writing
+to the Client's channels is guaranteed not  to  block.   Each
+client  holds  zero  or more Windows, each of which is tagged
+with an identifying string and which can hold  the  image  of
+that  window.  A given client's windows are layered in strict
+order, most recently created at the top.  Most  clients  will
+have  only  one  window;  others  are generally used only for
+ephemeral purposes, such as pop-up menus.
 
-           window:   fn(c: self ref Client, tag: string): ref Window;
-           contains: fn(c: self ref Client, p: Draw->Point): int;
-           setimage: fn(c: self ref Client, tag: string, i: ref Draw->Image): int;
-           setorigin:fn(c: self ref Client, tag: string, o: Draw->Point): int;
-           top:      fn(c: self ref Client);
-           bottom:   fn(c: self ref Client);
-           remove:   fn(w: self ref Client);
-       };
+A Client, say c, holds some channels directly  equivalent  to
+their  Wmcontext  namesakes: c.kbd c.ptr, and c.ctl.  The be‐
+haviour of c.images is described below.  Wmsrv starts  a  new
+process to mediate interaction between the window manager and
+its clients; sending a value on c.stop causes this process to
+exit.   C.wins  gives  the list of all the windows associated
+with this client; c.flags is not used by  wmsrv:  it  may  be
+used  to  store  arbitrary  information;  c.id holds a unique
+identifier for the client; it will  be  no  larger  than  the
+largest  number  of clients that have simultaneously existed;
+c.znext links clients together  by  window  depth  (see  top,
+below).
 
-DESCRIPTION
-       Wmsrv acts as a kind of ``buffer'' module between  an  actual
-       window-manager   implementation   and   possibly  misbehaving
-       clients.  It provides notification when clients arrive,  make
-       window-manager  requests, and leave. For each client, it pro‐
-       vides  a  set  of  channels  that  mirror  those   found   in
-       Draw->Wmcontext,  (see  draw-context(2)), except that writing
-       to the Client's channels is guaranteed not  to  block.   Each
-       client  holds  zero  or more Windows, each of which is tagged
-       with an identifying string and which can hold  the  image  of
-       that  window.  A given client's windows are layered in strict
-       order, most recently created at the top.  Most  clients  will
-       have  only  one  window;  others  are generally used only for
-       ephemeral purposes, such as pop-up menus.
+Init  must  be called before any other wmsrv function to ini‐
+tialise  the  wmsrv  module.  It  creates  the  virtual  file
+/chan/wm,  and  returns  a  tuple of channels, say (wm, join,
+rq).  Wm is the channel that should be passed to  prospective
+clients in the Draw->Context structure; communication on this
+channel is used to establish a new client  connection.   Join
+is used to receive notifications of new clients arriving. The
+tuple received on this channel, say (c,  rc)  holds  the  new
+client,  and  a  channel  on  which  a  reply  should be sent
+acknowledging the new client.  If the  string  sent  is  non-
+empty,  it  represents an error message that will be returned
+to the client, and the client will not be  allowed  to  join.
+c.ptr,  c.kbd,  and c.ctl are all direct equivalents of their
+Wmcontext namesakes; the behaviour of c.images  is  described
+below.  Rq is used to receive requests made by clients to the
+window manager by writing to the file  /chan/wm.   The  tuple
+received on rq, say (c, data, reply) holds the client that is
+making the request, the data that has been sent, and a  chan‐
+nel  that  can  be used (as described in sys-file2chan(2)) to
+return a reply to the request, The request is  conventionally
+formatted  as a utf8-encoded string, holding a list of tokens
+quoted as described in quoted in string(2).
 
-       A Client, say c, holds some channels directly  equivalent  to
-       their  Wmcontext  namesakes: c.kbd c.ptr, and c.ctl.  The be‐
-       haviour of c.images is described below.  Wmsrv starts  a  new
-       process to mediate interaction between the window manager and
-       its clients; sending a value on c.stop causes this process to
-       exit.   C.wins  gives  the list of all the windows associated
-       with this client; c.flags is not used by  wmsrv:  it  may  be
-       used  to  store  arbitrary  information;  c.id holds a unique
-       identifier for the client; it will  be  no  larger  than  the
-       largest  number  of clients that have simultaneously existed;
-       c.znext links clients together  by  window  depth  (see  top,
-       below).
+If the first character of  a  window-manager  request  is  an
+exclamation  mark  (!),  it should be a request to change the
+image of a client's window (or create a new window).  In this
+case,  the  first three tokens should be the name of the com‐
+mand (starting with an exclamation mark), the tag of the win‐
+dow to which the request refers, and a tag used by clients to
+match requests to replies.  If such a request is  allowed  to
+succeed, then clients expect that a new image will be sent to
+them.  The images channel in a client  is  used  to  do  this
+(normally  accessed  through the setimage and setorigin meth‐
+ods, see below). Sending a tuple, say (o, i,  rc)  on  images
+buffers  an image to be returned to the client.  If o is non-
+nil, the request will change the physical origin of i  to  o,
+otherwise  i gives a new image (its logical origin must match
+its physical origin).  Only one such request is allowed to be
+outstanding  at  any  one time; the channel passed in rc will
+yield the value -1 if the image from a previous  request  has
+not  yet  been  consumed,  in  which case the current request
+should be caused to fail.
 
-       Init  must  be called before any other wmsrv function to ini‐
-       tialise  the  wmsrv  module.  It  creates  the  virtual  file
-       /chan/wm,  and  returns  a  tuple of channels, say (wm, join,
-       rq).  Wm is the channel that should be passed to  prospective
-       clients in the Draw->Context structure; communication on this
-       channel is used to establish a new client  connection.   Join
-       is used to receive notifications of new clients arriving. The
-       tuple received on this channel, say (c,  rc)  holds  the  new
-       client,  and  a  channel  on  which  a  reply  should be sent
-       acknowledging the new client.  If the  string  sent  is  non-
-       empty,  it  represents an error message that will be returned
-       to the client, and the client will not be  allowed  to  join.
-       c.ptr,  c.kbd,  and c.ctl are all direct equivalents of their
-       Wmcontext namesakes; the behaviour of c.images  is  described
-       below.  Rq is used to receive requests made by clients to the
-       window manager by writing to the file  /chan/wm.   The  tuple
-       received on rq, say (c, data, reply) holds the client that is
-       making the request, the data that has been sent, and a  chan‐
-       nel  that  can  be used (as described in sys-file2chan(2)) to
-       return a reply to the request, The request is  conventionally
-       formatted  as a utf8-encoded string, holding a list of tokens
-       quoted as described in quoted in string(2).
+Wmsrv can maintain a record of the current windows and  their
+stacking  order relative to one other.  Top returns a pointer
+to the client at the top of the stack; the other clients  can
+be  accessed,  in stacking order, via their znext references.
+Find finds the top client that has a  window  containing  the
+point  p.   Wmsrv provides various Client methods that may be
+used to help implement a window manager's interface:
 
-       If the first character of  a  window-manager  request  is  an
-       exclamation  mark  (!),  it should be a request to change the
-       image of a client's window (or create a new window).  In this
-       case,  the  first three tokens should be the name of the com‐
-       mand (starting with an exclamation mark), the tag of the win‐
-       dow to which the request refers, and a tag used by clients to
-       match requests to replies.  If such a request is  allowed  to
-       succeed, then clients expect that a new image will be sent to
-       them.  The images channel in a client  is  used  to  do  this
-       (normally  accessed  through the setimage and setorigin meth‐
-       ods, see below). Sending a tuple, say (o, i,  rc)  on  images
-       buffers  an image to be returned to the client.  If o is non-
-       nil, the request will change the physical origin of i  to  o,
-       otherwise  i gives a new image (its logical origin must match
-       its physical origin).  Only one such request is allowed to be
-       outstanding  at  any  one time; the channel passed in rc will
-       yield the value -1 if the image from a previous  request  has
-       not  yet  been  consumed,  in  which case the current request
-       should be caused to fail.
+c.window(tag)
+          Yield the Window, w, corresponding to tag,  or  nil
+          if  there  is none.  Note that w.r holds the actual
+          screen rectangle of the image; the client  is  free
+          to modify the image's logical coordinate system, so
+          w.img.r cannot be relied upon to  contain  a  value
+          with a meaningful origin.
 
-       Wmsrv can maintain a record of the current windows and  their
-       stacking  order relative to one other.  Top returns a pointer
-       to the client at the top of the stack; the other clients  can
-       be  accessed,  in stacking order, via their znext references.
-       Find finds the top client that has a  window  containing  the
-       point  p.   Wmsrv provides various Client methods that may be
-       used to help implement a window manager's interface:
+c.contains(p)
+          Return non-zero if any of the client's windows con‐
+          tain the point p.
 
-       c.window(tag)
-                 Yield the Window, w, corresponding to tag,  or  nil
-                 if  there  is none.  Note that w.r holds the actual
-                 screen rectangle of the image; the client  is  free
-                 to modify the image's logical coordinate system, so
-                 w.img.r cannot be relied upon to  contain  a  value
-                 with a meaningful origin.
+c.setimage(tag, i)
+          Set the image associated with window tag to i.   If
+          this  is in response to a window manager request, i
+          must be non-nil, and wmsrv will  arrange  that  the
+          new  image  is  sent to the client.  If this is not
+          possible, then setimage will return -1.   If  i  is
+          nil,  no  image  will be sent to the client and the
+          window will be deleted.
 
-       c.contains(p)
-                 Return non-zero if any of the client's windows con‐
-                 tain the point p.
+c.setorigin(tag, o)
+          Similar to setimage, except that only the origin of
+          the  window is changed.  In order to enable clients
+          to maintain their own  logical  coordinate  system,
+          wmsrv first sends nil on the Wmcontext.images chan‐
+          nel, allowing the client to suspend  operations  on
+          the  image momentarily; it then sends to same chan‐
+          nel, with its origin set to its actual screen  ori‐
+          gin.   The  client  is then free to set the logical
+          origin again.
 
-       c.setimage(tag, i)
-                 Set the image associated with window tag to i.   If
-                 this  is in response to a window manager request, i
-                 must be non-nil, and wmsrv will  arrange  that  the
-                 new  image  is  sent to the client.  If this is not
-                 possible, then setimage will return -1.   If  i  is
-                 nil,  no  image  will be sent to the client and the
-                 window will be deleted.
+c.top()   Raise the client's windows above the other clients'
+          windows.
 
-       c.setorigin(tag, o)
-                 Similar to setimage, except that only the origin of
-                 the  window is changed.  In order to enable clients
-                 to maintain their own  logical  coordinate  system,
-                 wmsrv first sends nil on the Wmcontext.images chan‐
-                 nel, allowing the client to suspend  operations  on
-                 the  image momentarily; it then sends to same chan‐
-                 nel, with its origin set to its actual screen  ori‐
-                 gin.   The  client  is then free to set the logical
-                 origin again.
+c.bottom()
+          Send  the client's windows below the other clients'
+          windows.
 
-       c.top()   Raise the client's windows above the other clients'
-                 windows.
+c.remove()
+          Remove the client and its windows from wmsrv's win‐
+          dow stack.
 
-       c.bottom()
-                 Send  the client's windows below the other clients'
-                 windows.
+== files
+/chan/wm  Created  by  wmsrv using file2chan(2) to serve con‐
+          nection requests.
 
-       c.remove()
-                 Remove the client and its windows from wmsrv's win‐
-                 dow stack.
+== source
+/appl/lib/wmsrv.b
 
-FILES
-       /chan/wm  Created  by  wmsrv using file2chan(2) to serve con‐
-                 nection requests.
+== see ALSO
+wm(1), draw-screen(2),  wmlib(2),  wmexport(1),  wmclient(2),
+tkclient(2),
 
-SOURCE
-       /appl/lib/wmsrv.b
-
-SEE ALSO
-       wm(1), draw-screen(2),  wmlib(2),  wmexport(1),  wmclient(2),
-       tkclient(2),
-
-                                                            WMSRV(2)

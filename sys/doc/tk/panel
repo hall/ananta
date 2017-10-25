@@ -1,105 +1,99 @@
-PANEL(9)              Kernel Developer's Manual             PANEL(9)
+= panel: embedded graphics
 
-NAME
-       panel - embedded graphics
+    panel pathName ?options?
 
-SYNOPSIS
-       panel pathName ?options?
+== standard OPTIONS
+-anchor       -borderwidth  -background   -relief
 
-STANDARD OPTIONS
-       -anchor       -borderwidth  -background   -relief
+== widget-SPECIFIC OPTIONS
+-height dist
+       Specifies  a  desired  height  for the panel.  If this
+       option isn't specified, the panel's desired height  is
+       computed  from the image and mask images. If these are
+       replicated, the default is zero.
 
-WIDGET-SPECIFIC OPTIONS
-       -height dist
-              Specifies  a  desired  height  for the panel.  If this
-              option isn't specified, the panel's desired height  is
-              computed  from the image and mask images. If these are
-              replicated, the default is zero.
+-width dist
+       Specifies a desired width  for  the  panel.   If  this
+       option  isn't specified, the panel's desired height is
+       computed from the image and mask images. If these  are
+       replicated, the default is zero.
 
-       -width dist
-              Specifies a desired width  for  the  panel.   If  this
-              option  isn't specified, the panel's desired height is
-              computed from the image and mask images. If these  are
-              replicated, the default is zero.
+The panel command creates a new window (given by the pathName
+argument) and makes  it  into  a  panel  widget.   Additional
+options,  described  above,  may  be specified on the command
+line to configure aspects of the panel such as its background
+colour  and  3-D relief.  The panel command returns its path‐
+Name argument.  At the time this command  is  invoked,  there
+must not exist a window named pathName.
 
-DESCRIPTION
-       The panel command creates a new window (given by the pathName
-       argument) and makes  it  into  a  panel  widget.   Additional
-       options,  described  above,  may  be specified on the command
-       line to configure aspects of the panel such as its background
-       colour  and  3-D relief.  The panel command returns its path‐
-       Name argument.  At the time this command  is  invoked,  there
-       must not exist a window named pathName.
+A  panel  is  a widget that displays arbitrary graphics drawn
+outside of Tk. An application is free to  use  any  image  or
+mask  that  it  chooses to create; the panel will display the
+contents of the image through the mask (see draw(2)).
 
-       A  panel  is  a widget that displays arbitrary graphics drawn
-       outside of Tk. An application is free to  use  any  image  or
-       mask  that  it  chooses to create; the panel will display the
-       contents of the image through the mask (see draw(2)).
+A panel widget will not display anything until its image  has
+been set using putimage (see tk(2)).
 
-       A panel widget will not display anything until its image  has
-       been set using putimage (see tk(2)).
+== widget COMMAND
+The  panel  command  creates  a  new Tk command whose name is
+pathName. This command may be used to invoke  various  opera‐
+tions on the widget: It has the following general form:
+       pathName option ?arg arg ...?
+Option and the args determine the exact behaviour of the com‐
+mand.  The following commands are possible for panel widgets:
 
-WIDGET COMMAND
-       The  panel  command  creates  a  new Tk command whose name is
-       pathName. This command may be used to invoke  various  opera‐
-       tions on the widget: It has the following general form:
-              pathName option ?arg arg ...?
-       Option and the args determine the exact behaviour of the com‐
-       mand.  The following commands are possible for panel widgets:
+pathName cget option
+       Returns the current value of the configuration  option
+       given  by  option.   Option may have any of the values
+       accepted by the panel function.
 
-       pathName cget option
-              Returns the current value of the configuration  option
-              given  by  option.   Option may have any of the values
-              accepted by the panel function.
+pathName configure ?option? ?value option value ...?
+       Query or modify the configuration options of the  wid‐
+       get.  If no option is specified, returns a list of all
+       of the available options for pathName.  If one or more
+       option-value  pairs  are  specified,  then the command
+       modifies the given widget option(s) to have the  given
+       value(s);   in  this case the command returns an empty
+       string.  Option may have any of the values accepted by
+       the panel function
 
-       pathName configure ?option? ?value option value ...?
-              Query or modify the configuration options of the  wid‐
-              get.  If no option is specified, returns a list of all
-              of the available options for pathName.  If one or more
-              option-value  pairs  are  specified,  then the command
-              modifies the given widget option(s) to have the  given
-              value(s);   in  this case the command returns an empty
-              string.  Option may have any of the values accepted by
-              the panel function
+pathName dirty ?minx miny maxx maxy?
+       Mark  the  area  inside  the  given  rectangle ((minx,
+       miny), (maxx, maxy)) to be flushed to the  screen.  If
+       the  rectangle  is  not  given, the whole area will be
+       marked.  The coordinates are relative to  the  image's
+       origin.
 
-       pathName dirty ?minx miny maxx maxy?
-              Mark  the  area  inside  the  given  rectangle ((minx,
-              miny), (maxx, maxy)) to be flushed to the  screen.  If
-              the  rectangle  is  not  given, the whole area will be
-              marked.  The coordinates are relative to  the  image's
-              origin.
+pathName origin ?x y?
+       Set  the point within the image that will be displayed
+       at the top left of the panel's rectangle.  If the area
+       allocated  to the panel is more than the area drawn by
+       the image,  the  ``top  left''  will  positioned  with
+       respect  to  the  value of the -anchor option.  If the
+       point is not given, the current origin is returned.
 
-       pathName origin ?x y?
-              Set  the point within the image that will be displayed
-              at the top left of the panel's rectangle.  If the area
-              allocated  to the panel is more than the area drawn by
-              the image,  the  ``top  left''  will  positioned  with
-              respect  to  the  value of the -anchor option.  If the
-              point is not given, the current origin is returned.
+pathName panelx ?screenx?
+       Given a screen  x-coordinate,  screenx,  this  command
+       returns the image x-coordinate displayed at that loca‐
+       tion.
 
-       pathName panelx ?screenx?
-              Given a screen  x-coordinate,  screenx,  this  command
-              returns the image x-coordinate displayed at that loca‐
-              tion.
+pathName panely ?screeny?
+       Given a screen  y-coordinate,  screeny,  this  command
+       returns the image y-coordinate displayed at that loca‐
+       tion.
 
-       pathName panely ?screeny?
-              Given a screen  y-coordinate,  screeny,  this  command
-              returns the image y-coordinate displayed at that loca‐
-              tion.
+pathName screenx ?panelx?
+       Given an  image  x-coordinate,  panelx,  this  command
+       returns the equivalent screen x-coordinate.
 
-       pathName screenx ?panelx?
-              Given an  image  x-coordinate,  panelx,  this  command
-              returns the equivalent screen x-coordinate.
+pathName screeny ?panely?
+       Given  an  image  y-coordinate,  panely,  this command
+       returns the equivalent screen y-coordinate.
 
-       pathName screeny ?panely?
-              Given  an  image  y-coordinate,  panely,  this command
-              returns the equivalent screen y-coordinate.
+== bindings
+When a new panel is created, it has no  default  event  bind‐
+ings.
 
-BINDINGS
-       When a new panel is created, it has no  default  event  bind‐
-       ings.
+== see ALSO
+draw(2), tk(2), options(9), types(9)
 
-SEE ALSO
-       draw(2), tk(2), options(9), types(9)
-
-                                                            PANEL(9)

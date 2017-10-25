@@ -1,189 +1,183 @@
-CHECKBUTTON(9)        Kernel Developer's Manual       CHECKBUTTON(9)
+= checkbutton: Create and manipulate checkbutton widgets
 
-NAME
-       checkbutton - Create and manipulate checkbutton widgets
+    checkbutton pathname ?options?
 
-SYNOPSIS
-       checkbutton pathname ?options?
+== standard OPTIONS
+-activebackground -disabledcolor      -justify
+-activeforeground -font               -relief
+-anchor           -foreground         -takefocus
+-background       -highlightcolor     -text
+-bitmap           -highlightthickness -underline
+-borderwidth      -image
 
-STANDARD OPTIONS
-       -activebackground -disabledcolor      -justify
-       -activeforeground -font               -relief
-       -anchor           -foreground         -takefocus
-       -background       -highlightcolor     -text
-       -bitmap           -highlightthickness -underline
-       -borderwidth      -image
+== widget-SPECIFIC OPTIONS
+-command command
+       Specifies  a  Tk command to associate with the button.
+       This command is typically invoked when mouse button  1
+       is  released  over  the  button  window.  The button's
+       global variable (-variable  option)  will  be  updated
+       before the command is invoked.
 
-WIDGET-SPECIFIC OPTIONS
-       -command command
-              Specifies  a  Tk command to associate with the button.
-              This command is typically invoked when mouse button  1
-              is  released  over  the  button  window.  The button's
-              global variable (-variable  option)  will  be  updated
-              before the command is invoked.
+-height dist
+       Specifies  a  desired  height for the button.  If this
+       option isn't specified, the button's desired height is
+       computed  from the size of the image or bitmap or text
+       being displayed in it.
 
-       -height dist
-              Specifies  a  desired  height for the button.  If this
-              option isn't specified, the button's desired height is
-              computed  from the size of the image or bitmap or text
-              being displayed in it.
+-indicatoron boolean
+       Specifies whether  or  not  the  indicator  should  be
+       drawn.  If false, the relief option is ignored and the
+       widget's relief is always  sunken  if  the  widget  is
+       selected and raised otherwise.
 
-       -indicatoron boolean
-              Specifies whether  or  not  the  indicator  should  be
-              drawn.  If false, the relief option is ignored and the
-              widget's relief is always  sunken  if  the  widget  is
-              selected and raised otherwise.
+-offvalue string
+       Specifies  value  to  store in the button's associated
+       variable whenever this button is deselected.  Defaults
+       to ``0''.
 
-       -offvalue string
-              Specifies  value  to  store in the button's associated
-              variable whenever this button is deselected.  Defaults
-              to ``0''.
+-onvalue string
+       Specifies  value  to  store in the button's associated
+       variable whenever this button is  selected.   Defaults
+       to ``1''.
 
-       -onvalue string
-              Specifies  value  to  store in the button's associated
-              variable whenever this button is  selected.   Defaults
-              to ``1''.
+-selectcolor colour
+       Specifies  a  background colour to use when the button
+       is selected.  If indicatoron is true then  the  colour
+       applies  to  the  indicator.  If indicatoron is false,
+       this colour is used as the background for  the  entire
+       widget,  in  place  of background or activebackground,
+       whenever the widget is selected.  If specified  as  an
+       empty  string  then no special colour is used for dis‐
+       playing when the widget is selected.
 
-       -selectcolor colour
-              Specifies  a  background colour to use when the button
-              is selected.  If indicatoron is true then  the  colour
-              applies  to  the  indicator.  If indicatoron is false,
-              this colour is used as the background for  the  entire
-              widget,  in  place  of background or activebackground,
-              whenever the widget is selected.  If specified  as  an
-              empty  string  then no special colour is used for dis‐
-              playing when the widget is selected.
+-state state
+       Specifies one of three  states  for  the  checkbutton:
+       normal,  active,  or  disabled.   In  normal state the
+       checkbutton is  displayed  using  the  foreground  and
+       background  options.   The  active  state is typically
+       used when the pointer is  over  the  checkbutton.   In
+       active  state  the  checkbutton is displayed using the
+       activeforeground and activebackground  options.   Dis‐
+       abled  state  means  that  the  checkbutton  should be
+       insensitive:  the  default  bindings  will  refuse  to
+       activate  the  widget  and  will  ignore  mouse button
+       presses.  In this state the  disabledcolor  and  back‐
+       ground  options  determine how the checkbutton is dis‐
+       played.
 
-       -state state
-              Specifies one of three  states  for  the  checkbutton:
-              normal,  active,  or  disabled.   In  normal state the
-              checkbutton is  displayed  using  the  foreground  and
-              background  options.   The  active  state is typically
-              used when the pointer is  over  the  checkbutton.   In
-              active  state  the  checkbutton is displayed using the
-              activeforeground and activebackground  options.   Dis‐
-              abled  state  means  that  the  checkbutton  should be
-              insensitive:  the  default  bindings  will  refuse  to
-              activate  the  widget  and  will  ignore  mouse button
-              presses.  In this state the  disabledcolor  and  back‐
-              ground  options  determine how the checkbutton is dis‐
-              played.
+-variable string
+       Specifies name of global variable to set whenever this
+       button  is  selected.   Changes  in this variable also
+       cause the button to select or deselect itself.
 
-       -variable string
-              Specifies name of global variable to set whenever this
-              button  is  selected.   Changes  in this variable also
-              cause the button to select or deselect itself.
+-width dist
+       Specifies a desired width for  the  button.   If  this
+       option  isn't specified, the button's desired width is
+       computed from the size of the image or bitmap or  text
+       being displayed in it.
 
-       -width dist
-              Specifies a desired width for  the  button.   If  this
-              option  isn't specified, the button's desired width is
-              computed from the size of the image or bitmap or  text
-              being displayed in it.
+The  checkbutton  command  creates a new window (given by the
+pathname argument) and makes it into  a  checkbutton  widget.
+Additional  options, described above, may be specified on the
+command line to configure aspects of the checkbutton such  as
+its colours, font, text, and initial relief.  The checkbutton
+command returns its pathname argument.  At the time this com‐
+mand  is  invoked,  there must not exist a window named path‐
+name.
 
-DESCRIPTION
-       The  checkbutton  command  creates a new window (given by the
-       pathname argument) and makes it into  a  checkbutton  widget.
-       Additional  options, described above, may be specified on the
-       command line to configure aspects of the checkbutton such  as
-       its colours, font, text, and initial relief.  The checkbutton
-       command returns its pathname argument.  At the time this com‐
-       mand  is  invoked,  there must not exist a window named path‐
-       name.
+A checkbutton is a widget that  displays  a  textual  string,
+bitmap or image and a square called an indicator.  If text is
+displayed, it must all be in a single font, but it can occupy
+multiple  lines  on  the screen (if it contains newlines) and
+one of the characters may optionally be underlined using  the
+underline  option.  A checkbutton has all of the behaviour of
+a simple button, including  the  following:  it  can  display
+itself  in  either  of three different ways, according to the
+state option; it can be made to  appear  raised,  sunken,  or
+flat;  and it invokes a Tk command whenever mouse button 1 is
+clicked over the checkbutton.
 
-       A checkbutton is a widget that  displays  a  textual  string,
-       bitmap or image and a square called an indicator.  If text is
-       displayed, it must all be in a single font, but it can occupy
-       multiple  lines  on  the screen (if it contains newlines) and
-       one of the characters may optionally be underlined using  the
-       underline  option.  A checkbutton has all of the behaviour of
-       a simple button, including  the  following:  it  can  display
-       itself  in  either  of three different ways, according to the
-       state option; it can be made to  appear  raised,  sunken,  or
-       flat;  and it invokes a Tk command whenever mouse button 1 is
-       clicked over the checkbutton.
+In addition, checkbuttons can be selected.  If a  checkbutton
+is  selected  then  the  indicator  is  normally drawn with a
+sunken relief and a tick (check)  mark,  and  a  Tk  variable
+associated  with  the checkbutton is set to the onvalue (nor‐
+mally 1).  If the checkbutton is not selected, then the indi‐
+cator  is  drawn  as an empty box with raised relief, and the
+associated variable is set to the offvalue (normally 0).  The
+variable  name  may  be  modified with options on the command
+line (-variable option).  Configuration options may  also  be
+used to modify the way the indicator is displayed (or whether
+it is displayed at all).  By default a checkbutton is config‐
+ured  to  select  and  deselect  itself  on  alternate button
+clicks.
 
-       In addition, checkbuttons can be selected.  If a  checkbutton
-       is  selected  then  the  indicator  is  normally drawn with a
-       sunken relief and a tick (check)  mark,  and  a  Tk  variable
-       associated  with  the checkbutton is set to the onvalue (nor‐
-       mally 1).  If the checkbutton is not selected, then the indi‐
-       cator  is  drawn  as an empty box with raised relief, and the
-       associated variable is set to the offvalue (normally 0).  The
-       variable  name  may  be  modified with options on the command
-       line (-variable option).  Configuration options may  also  be
-       used to modify the way the indicator is displayed (or whether
-       it is displayed at all).  By default a checkbutton is config‐
-       ured  to  select  and  deselect  itself  on  alternate button
-       clicks.
+== widget COMMAND
+The checkbutton command creates a new Tk command  whose  name
+is  pathname.   This  command  may  be used to invoke various
+operations on the widget.  It has the following general form:
+       pathname option ?arg arg ...?
+Option and the args determine the exact behaviour of the com‐
+mand.   The  following  commands are possible for checkbutton
+widgets:
 
-WIDGET COMMAND
-       The checkbutton command creates a new Tk command  whose  name
-       is  pathname.   This  command  may  be used to invoke various
-       operations on the widget.  It has the following general form:
-              pathname option ?arg arg ...?
-       Option and the args determine the exact behaviour of the com‐
-       mand.   The  following  commands are possible for checkbutton
-       widgets:
+pathname cget option
+       Returns the current value of the configuration  option
+       given  by  option.   Option may have any of the values
+       accepted by the checkbutton command.
 
-       pathname cget option
-              Returns the current value of the configuration  option
-              given  by  option.   Option may have any of the values
-              accepted by the checkbutton command.
+pathname configure ?option? ?value option value ...?
+       Query or modify the configuration options of the  wid‐
+       get.  If no option is specified, returns a list of all
+       of the available options for pathname.  If one or more
+       option-value  pairs  are  specified,  then the command
+       modifies the given widget option(s) to have the  given
+       value(s);   in  this case the command returns an empty
+       string.  Option may have any of the values accepted by
+       the checkbutton command.
 
-       pathname configure ?option? ?value option value ...?
-              Query or modify the configuration options of the  wid‐
-              get.  If no option is specified, returns a list of all
-              of the available options for pathname.  If one or more
-              option-value  pairs  are  specified,  then the command
-              modifies the given widget option(s) to have the  given
-              value(s);   in  this case the command returns an empty
-              string.  Option may have any of the values accepted by
-              the checkbutton command.
+pathname deselect
+       Deselects  the  checkbutton  and  sets  the associated
+       variable to its ``off'' value.
 
-       pathname deselect
-              Deselects  the  checkbutton  and  sets  the associated
-              variable to its ``off'' value.
+pathname invoke
+       Does just what would have happened if the user invoked
+       the  checkbutton  with the mouse: toggle the selection
+       state of the button and invoke the Tk command  associ‐
+       ated  with  the  checkbutton,  if  there  is one.  The
+       return value is the return value from the Tk  command,
+       or  an  empty string if there is no command associated
+       with the checkbutton.  This command is ignored if  the
+       checkbutton's state is disabled.
 
-       pathname invoke
-              Does just what would have happened if the user invoked
-              the  checkbutton  with the mouse: toggle the selection
-              state of the button and invoke the Tk command  associ‐
-              ated  with  the  checkbutton,  if  there  is one.  The
-              return value is the return value from the Tk  command,
-              or  an  empty string if there is no command associated
-              with the checkbutton.  This command is ignored if  the
-              checkbutton's state is disabled.
+pathname select
+       Selects  the checkbutton and sets the associated vari‐
+       able to 1.
 
-       pathname select
-              Selects  the checkbutton and sets the associated vari‐
-              able to 1.
+pathname toggle
+       Toggles the selection state of the button,  redisplay‐
+       ing  it  and  modifying  its  associated  variable  to
+       reflect the new state.
 
-       pathname toggle
-              Toggles the selection state of the button,  redisplay‐
-              ing  it  and  modifying  its  associated  variable  to
-              reflect the new state.
+== bindings
+Tk automatically creates bindings for checkbuttons that  give
+them the following default behaviour:
 
-BINDINGS
-       Tk automatically creates bindings for checkbuttons that  give
-       them the following default behaviour:
+[1]    A checkbutton activates whenever the mouse passes over
+       it and  deactivates  whenever  the  mouse  leaves  the
+       checkbutton.
 
-       [1]    A checkbutton activates whenever the mouse passes over
-              it and  deactivates  whenever  the  mouse  leaves  the
-              checkbutton.
+[2]    When  mouse  button 1 is pressed over a checkbutton it
+       is invoked (its selection state toggles and  the  com‐
+       mand  associated  with the button is invoked, if there
+       is one).
 
-       [2]    When  mouse  button 1 is pressed over a checkbutton it
-              is invoked (its selection state toggles and  the  com‐
-              mand  associated  with the button is invoked, if there
-              is one).
+If the checkbutton's state is disabled then none of the above
+actions occur:  the checkbutton is completely non-responsive.
 
-       If the checkbutton's state is disabled then none of the above
-       actions occur:  the checkbutton is completely non-responsive.
+The  behaviour of checkbuttons can be changed by defining new
+bindings for individual widgets.
 
-       The  behaviour of checkbuttons can be changed by defining new
-       bindings for individual widgets.
+== see ALSO
+button(9),   choicebutton(9),   options(9),   radiobutton(9),
+types(9)
 
-SEE ALSO
-       button(9),   choicebutton(9),   options(9),   radiobutton(9),
-       types(9)
-
-                                                      CHECKBUTTON(9)

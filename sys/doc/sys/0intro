@@ -1,144 +1,138 @@
-INTRO(2)                 System Calls Manual                INTRO(2)
+= intro: introduction to Limbo modules for the Inferno system
 
-NAME
-       intro - introduction to Limbo modules for the Inferno system
+    include "sys.m";
+    sys := load Sys Sys->PATH;
 
-SYNOPSIS
-       include "sys.m";
-       sys := load Sys Sys->PATH;
+    include "draw.m";
+    draw := load Draw Draw->PATH;
 
-       include "draw.m";
-       draw := load Draw Draw->PATH;
+    include "tk.m";
+    tk := load Tk Tk->PATH;
 
-       include "tk.m";
-       tk := load Tk Tk->PATH;
+    ... etc.
 
-       ... etc.
+Generically:
+    include "module.m";
+    module := load Module Module->PATH;
 
-       Generically:
-       include "module.m";
-       module := load Module Module->PATH;
+This  section  introduces  the Limbo modules available to the
+programmer; see  the  corresponding  manual  pages  for  more
+information.   Each  module  is  declared with a single Limbo
+include file.  Before calling a module's functions, an appli‐
+cation  must  load  the  module;  the  application stores the
+resulting value in a variable for later  use  as  the  module
+qualifier.  The examples above illustrate the style.  It will
+usually be necessary in some cases to qualify names with  the
+appropriate  module  pointer or to import the types and func‐
+tions; the manual pages assume the names  are  accessible  in
+the current scope.
 
-DESCRIPTION
-       This  section  introduces  the Limbo modules available to the
-       programmer; see  the  corresponding  manual  pages  for  more
-       information.   Each  module  is  declared with a single Limbo
-       include file.  Before calling a module's functions, an appli‐
-       cation  must  load  the  module;  the  application stores the
-       resulting value in a variable for later  use  as  the  module
-       qualifier.  The examples above illustrate the style.  It will
-       usually be necessary in some cases to qualify names with  the
-       appropriate  module  pointer or to import the types and func‐
-       tions; the manual pages assume the names  are  accessible  in
-       the current scope.
+Although  many  modules  are self-contained, dependencies may
+exist.  For example, the system module, Sys,  provides  basic
+services  that  many  other  modules  require.  These are the
+Inferno equivalent to `system calls'.
 
-       Although  many  modules  are self-contained, dependencies may
-       exist.  For example, the system module, Sys,  provides  basic
-       services  that  many  other  modules  require.  These are the
-       Inferno equivalent to `system calls'.
+In a few  cases,  several  related  modules  share  a  single
+include file; for instance, security.m.
 
-       In a few  cases,  several  related  modules  share  a  single
-       include file; for instance, security.m.
+The  manual pages describe how to include a module definition
+during compilation and load an implementation  during  execu‐
+tion.   The  documentation  also  lists relevant functions or
+abstract data types.   Although  the  include  files  declare
+these  components, the manual pages list them explicitly.  In
+all cases, the enclosing module  declaration  is  assumed  so
+that  unqualified identifiers can be used in the text without
+ambiguity, reducing clutter in the text.   In  practice  when
+programming,  many  consider it good style to use an explicit
+module reference for functions and constants.
 
-       The  manual pages describe how to include a module definition
-       during compilation and load an implementation  during  execu‐
-       tion.   The  documentation  also  lists relevant functions or
-       abstract data types.   Although  the  include  files  declare
-       these  components, the manual pages list them explicitly.  In
-       all cases, the enclosing module  declaration  is  assumed  so
-       that  unqualified identifiers can be used in the text without
-       ambiguity, reducing clutter in the text.   In  practice  when
-       programming,  many  consider it good style to use an explicit
-       module reference for functions and constants.
+The Limbo modules are identical on any machine that  is  run‐
+ning  Inferno,  whether native or hosted, which enables Limbo
+programs to be written and tested on any Inferno system.
 
-       The Limbo modules are identical on any machine that  is  run‐
-       ning  Inferno,  whether native or hosted, which enables Limbo
-       programs to be written and tested on any Inferno system.
-
-       Many  modules  are  described  in  a  single  page,  such  as
-       regex(2).   Several  larger  modules are explained in several
-       sections, such as  math-intro(2),  math-elem(2),  math-fp(2),
-       and math-linalg(2).
+Many  modules  are  described  in  a  single  page,  such  as
+regex(2).   Several  larger  modules are explained in several
+sections, such as  math-intro(2),  math-elem(2),  math-fp(2),
+and math-linalg(2).
 
    Exceptions
-       Exception handling is now part of the Limbo language, replac‐
-       ing an older scheme that used special system calls.   Various
-       exceptions can be raised by the virtual machine when run-time
-       errors are detected.  These are the common ones:
+Exception handling is now part of the Limbo language, replac‐
+ing an older scheme that used special system calls.   Various
+exceptions can be raised by the virtual machine when run-time
+errors are detected.  These are the common ones:
 
-              alt send/recv on same chan
-                     It is currently illegal for a channel to appear
-                     in  two  alt  statements  if  they  either both
-                     receive or both send on it.   (It  is  fine  to
-                     send in one and receive in the other.)
+       alt send/recv on same chan
+              It is currently illegal for a channel to appear
+              in  two  alt  statements  if  they  either both
+              receive or both send on it.   (It  is  fine  to
+              send in one and receive in the other.)
 
-              array bounds error
-                     Array subscript out of bounds.
+       array bounds error
+              Array subscript out of bounds.
 
-              dereference of nil
-                     Attempt to use a ref adt or index an array with
-                     value nil .
+       dereference of nil
+              Attempt to use a ref adt or index an array with
+              value nil .
 
-              invalid math argument
-                     Inconsistent values provided  to  functions  of
-                     math-intro(2).
+       invalid math argument
+              Inconsistent values provided  to  functions  of
+              math-intro(2).
 
-              module not loaded
-                     Attempt  to  use  an uninitialised module vari‐
-                     able.
+       module not loaded
+              Attempt  to  use  an uninitialised module vari‐
+              able.
 
-              negative array size
-                     The limit in an array constructor was negative.
+       negative array size
+              The limit in an array constructor was negative.
 
-              out of memory: pool
-                     The given memory pool is  exhausted.   Pool  is
-                     currently  one of main (kernel memory including
-                     Tk allocations), heap (most  Limbo  data),  and
-                     image memory for draw(3).
+       out of memory: pool
+              The given memory pool is  exhausted.   Pool  is
+              currently  one of main (kernel memory including
+              Tk allocations), heap (most  Limbo  data),  and
+              image memory for draw(3).
 
-              zero divide
-                     Integer division (or mod) by zero.
+       zero divide
+              Integer division (or mod) by zero.
 
-       There are currently two more classes of exception string with
-       a conventional interpretation imposed  not  by  the  run-time
-       system proper, but by Limbo components:
+There are currently two more classes of exception string with
+a conventional interpretation imposed  not  by  the  run-time
+system proper, but by Limbo components:
 
-              fail:reason
-                     Commands use this exception to provide an `exit
-                     status' to a calling program, particularly  the
-                     shell  sh(1);  see  also  sh(2).  The status is
-                     given by the reason following the `fail:'  pre‐
-                     fix.
+       fail:reason
+              Commands use this exception to provide an `exit
+              status' to a calling program, particularly  the
+              shell  sh(1);  see  also  sh(2).  The status is
+              given by the reason following the `fail:'  pre‐
+              fix.
 
-              assertion:error
-                     A module detected the specified internal error.
-                     This is most often used for cases where a  par‐
-                     ticular possibility ``cannot happen'' and there
-                     is no other need for  an  error  value  in  the
-                     interface.
+       assertion:error
+              A module detected the specified internal error.
+              This is most often used for cases where a  par‐
+              ticular possibility ``cannot happen'' and there
+              is no other need for  an  error  value  in  the
+              interface.
 
-       Otherwise,  most module interfaces tend to use explicit error
-       return values, not exceptions.
+Otherwise,  most module interfaces tend to use explicit error
+return values, not exceptions.
 
-       Note that a Limbo exception handler can do  pattern  matching
-       to catch a class of exceptions:
+Note that a Limbo exception handler can do  pattern  matching
+to catch a class of exceptions:
 
-              {
-                   body of code to protect
-              } exception e {
-              "out of memory:*" =>
-                   recovery action
-              "assertion:*" =>
-                   fatal_error(e);
-              }
+       {
+            body of code to protect
+       } exception e {
+       "out of memory:*" =>
+            recovery action
+       "assertion:*" =>
+            fatal_error(e);
+       }
 
-       The  effect  of  an  unhandled exception in a process that is
-       part of an error-recovery group can be controlled  using  the
-       mechanisms  described  in  prog(3)  as  accessed using excep‐
-       tion(2).
+The  effect  of  an  unhandled exception in a process that is
+part of an error-recovery group can be controlled  using  the
+mechanisms  described  in  prog(3)  as  accessed using excep‐
+tion(2).
 
-SEE ALSO
-       draw-intro(2), exception(2), keyring-intro(2), math-intro(2),
-       prefab-intro(2), security-intro(2), sys-intro(2)
+== see ALSO
+draw-intro(2), exception(2), keyring-intro(2), math-intro(2),
+prefab-intro(2), security-intro(2), sys-intro(2)
 
-                                                            INTRO(2)

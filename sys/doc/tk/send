@@ -1,31 +1,25 @@
-SEND(9)               Kernel Developer's Manual              SEND(9)
+= send: send a value down a Tk channel
 
-NAME
-       send - send a value down a Tk channel
+    send chan string
 
-SYNOPSIS
-       send chan string
+Send  is  the gateway from the Tk world into the Limbo world.
+It sends string down chan, which should previously have  been
+named  with  a call to namechan (see tk(2)).  Tk channels are
+non blocking, so the call will  return  immediately,  whether
+the  message  has been sent or not. If too many messages have
+been queued on the chan, then the message will be  discarded,
+and  a warning printed on the console.  String is not subject
+to interpretation by the usual Tk quoting rules.
 
-DESCRIPTION
-       Send  is  the gateway from the Tk world into the Limbo world.
-       It sends string down chan, which should previously have  been
-       named  with  a call to namechan (see tk(2)).  Tk channels are
-       non blocking, so the call will  return  immediately,  whether
-       the  message  has been sent or not. If too many messages have
-       been queued on the chan, then the message will be  discarded,
-       and  a warning printed on the console.  String is not subject
-       to interpretation by the usual Tk quoting rules.
+== bugs
+String is not subject to interpretation by the usual Tk quot‐
+ing rules.  This means, for example that:
+     radiobutton .x -text X -variable x -value x
+     radiobutton .y -text Y -variable y -value y
+     button .z -text Submit {send chan submit [variable X]}
+will not work as expected. Instead, one must interrogate val‐
+ues directly in Limbo.
 
-BUGS
-       String is not subject to interpretation by the usual Tk quot‐
-       ing rules.  This means, for example that:
-            radiobutton .x -text X -variable x -value x
-            radiobutton .y -text Y -variable y -value y
-            button .z -text Submit {send chan submit [variable X]}
-       will not work as expected. Instead, one must interrogate val‐
-       ues directly in Limbo.
+The specialised queued channels will be replaced by  buffered
+channels in Limbo in a future edition of Inferno.
 
-       The specialised queued channels will be replaced by  buffered
-       channels in Limbo in a future edition of Inferno.
-
-                                                             SEND(9)

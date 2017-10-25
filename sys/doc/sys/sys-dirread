@@ -1,42 +1,36 @@
-SYS-DIRREAD(2)           System Calls Manual          SYS-DIRREAD(2)
+= dirread: read directory
 
-NAME
-       dirread - read directory
+    include "sys.m";
+    sys := load Sys Sys->PATH;
 
-SYNOPSIS
-       include "sys.m";
-       sys := load Sys Sys->PATH;
+    dirread:  fn(fd: ref FD): (int, array of Dir);
 
-       dirread:  fn(fd: ref FD): (int, array of Dir);
+Dirread reads the contents of the directory pointed to by the
+open file descriptor fd,  returning  a  tuple  containing  an
+array  with  one Dir structure for each directory entry read.
+These Dir structures are equivalent to the result of  a  stat
+call  on  each  file in the directory.  See sys-stat(2) for a
+description of stat and Dir.
 
-DESCRIPTION
-       Dirread reads the contents of the directory pointed to by the
-       open file descriptor fd,  returning  a  tuple  containing  an
-       array  with  one Dir structure for each directory entry read.
-       These Dir structures are equivalent to the result of  a  stat
-       call  on  each  file in the directory.  See sys-stat(2) for a
-       description of stat and Dir.
+A successful dirread returns a tuple  giving  the  number  of
+entries  read  and  the resulting array.  A return of (0,nil)
+indicates the end of the directory.   Directory  entries  are
+variable  length  in  general; the file offset is advanced by
+the number of bytes actually read.
 
-       A successful dirread returns a tuple  giving  the  number  of
-       entries  read  and  the resulting array.  A return of (0,nil)
-       indicates the end of the directory.   Directory  entries  are
-       variable  length  in  general; the file offset is advanced by
-       the number of bytes actually read.
+Seeks (see sys-seek(2)) are allowed on  directories  only  to
+seek to the start.
 
-       Seeks (see sys-seek(2)) are allowed on  directories  only  to
-       seek to the start.
+In  general,  several calls to dirread will be needed to read
+the whole directory.  Readdir  (2)  provides  functions  that
+return all the directory entries at once, optionally sorted.
 
-       In  general,  several calls to dirread will be needed to read
-       the whole directory.  Readdir  (2)  provides  functions  that
-       return all the directory entries at once, optionally sorted.
+== see ALSO
+readdir(2),   sys-intro(2),  sys-open(2),  sys-read(2),  sys-
+seek(2), sys-stat(2)
 
-SEE ALSO
-       readdir(2),   sys-intro(2),  sys-open(2),  sys-read(2),  sys-
-       seek(2), sys-stat(2)
+== diagnostics
+The integer in dirread's return tuple has a value  of  -1  on
+error,  and 0 on end of file.  The array element of the tuple
+is nil in both cases.
 
-DIAGNOSTICS
-       The integer in dirread's return tuple has a value  of  -1  on
-       error,  and 0 on end of file.  The array element of the tuple
-       is nil in both cases.
-
-                                                      SYS-DIRREAD(2)

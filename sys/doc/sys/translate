@@ -1,109 +1,102 @@
-TRANSLATE(2)             System Calls Manual            TRANSLATE(2)
+= translate: opendict, opendicts, mkdictname: translation dictionaries
 
-NAME
-       translate: opendict, opendicts, mkdictname - translation dic‐
-       tionaries
+    include "translate.m";
+    translate := load Translate Translate->PATH;
 
-SYNOPSIS
-       include "translate.m";
-       translate := load Translate Translate->PATH;
+    Dict: adt {
+        new:    fn(): ref Dict;
+        add:    fn(d: self ref Dict, file: string): string;
+        xlate:  fn(d: self ref Dict, s: string): string;
+        xlaten: fn(d: self ref Dict, s: string, note: string): string;
+    };
 
-       Dict: adt {
-           new:    fn(): ref Dict;
-           add:    fn(d: self ref Dict, file: string): string;
-           xlate:  fn(d: self ref Dict, s: string): string;
-           xlaten: fn(d: self ref Dict, s: string, note: string): string;
-       };
+    init:       fn();
+    opendict:   fn(file: string): (ref Dict, string);
+    opendicts:  fn(files: list of string): (ref Dict, string);
+    mkdictname: fn(locale, app: string): string;
 
-       init:       fn();
-       opendict:   fn(file: string): (ref Dict, string);
-       opendicts:  fn(files: list of string): (ref Dict, string);
-       mkdictname: fn(locale, app: string): string;
+The Translate module provides access to the translation  dic‐
+tionaries  defined by translate(6), intended for the transla‐
+tion of text from one natural language to another.
 
-DESCRIPTION
-       The Translate module provides access to the translation  dic‐
-       tionaries  defined by translate(6), intended for the transla‐
-       tion of text from one natural language to another.
+Init should be called before using any of these functions.
 
-       Init should be called before using any of these functions.
+Opendict opens a  dictionary  file  (of  the  format  defined
+below) and returns a tuple: a reference to a Dict that repre‐
+sents it and a diagnostic string (which is nil  if  no  error
+occurred).  Opendicts is similar, but loads each of the files
+in turn into the same Dict, producing a composite  dictionary
+in  which  translations  in later files can override transla‐
+tions in earlier ones; the diagnostic string  summarises  all
+errors (if any).
 
-       Opendict opens a  dictionary  file  (of  the  format  defined
-       below) and returns a tuple: a reference to a Dict that repre‐
-       sents it and a diagnostic string (which is nil  if  no  error
-       occurred).  Opendicts is similar, but loads each of the files
-       in turn into the same Dict, producing a composite  dictionary
-       in  which  translations  in later files can override transla‐
-       tions in earlier ones; the diagnostic string  summarises  all
-       errors (if any).
+Mkdictname returns the conventional name of a dictionary file
+given locale and application names.  The locale  is  normally
+nil to use the current locale, which is formed by binding the
+desired locale directory (or directories) onto /lib/locale.
 
-       Mkdictname returns the conventional name of a dictionary file
-       given locale and application names.  The locale  is  normally
-       nil to use the current locale, which is formed by binding the
-       desired locale directory (or directories) onto /lib/locale.
+Dict.new returns an empty  dictionary.   Dict.add  loads  the
+given  dictionary file into an existing dictionary, returning
+a non-nil diagnostic string on error.  Translations are  made
+by  Dict.xlate and Dict.xlaten: they look for a string s (eg,
+text in one language), optionally qualified by  a  note,  and
+return  the  corresponding  translation text from the dictio‐
+nary.  If no such translation exists, they return the  origi‐
+nal text s.
 
-       Dict.new returns an empty  dictionary.   Dict.add  loads  the
-       given  dictionary file into an existing dictionary, returning
-       a non-nil diagnostic string on error.  Translations are  made
-       by  Dict.xlate and Dict.xlaten: they look for a string s (eg,
-       text in one language), optionally qualified by  a  note,  and
-       return  the  corresponding  translation text from the dictio‐
-       nary.  If no such translation exists, they return the  origi‐
-       nal text s.
+== example
+The following shows one possible style of use:
 
-EXAMPLE
-       The following shows one possible style of use:
+include "translate.m";
+    translate: Translate;
+    Dict: import translate;
 
-       include "translate.m";
-           translate: Translate;
-           Dict: import translate;
+dict: ref Dict;
 
-       dict: ref Dict;
+X(s: string): string
+{
+    if(dict == nil)
+        return s;
+    return dict.xlate(s);
+}
 
-       X(s: string): string
-       {
-           if(dict == nil)
-               return s;
-           return dict.xlate(s);
-       }
+init(ctxt: ref Draw->Context, args: list of string)
+{
+    ...
+    translate = load Translate Translate->PATH;
+    if(translate != nil){
+        translate->init();
+        (dict, nil) = translate->opendict(
+                    translate->mkdictname("", "vmail"));
+    }
+    ...
+    optioncfg := array [] of {
+        "frame .op -relief flat -borderwidth 8",
+        "frame .op.lbs",
+        "label .op.lbs.a -text {" +
+            X("Voice Mail Active") + ":}",
+        "label .op.lbs.g -text {" +
+            X("Answer Calls With") + ":}",
+        "label .op.lbs.r -text {" +
+            X("Rings before Answering") + ":}",
+        "label .op.lbs.l -text {" +
+            X("Length of Incoming Messages") + ":}}",
+        ...
+    };
+    ...
+    wmlib->tkcmds(top, optioncfg);
+}
 
-       init(ctxt: ref Draw->Context, args: list of string)
-       {
-           ...
-           translate = load Translate Translate->PATH;
-           if(translate != nil){
-               translate->init();
-               (dict, nil) = translate->opendict(
-                           translate->mkdictname("", "vmail"));
-           }
-           ...
-           optioncfg := array [] of {
-               "frame .op -relief flat -borderwidth 8",
-               "frame .op.lbs",
-               "label .op.lbs.a -text {" +
-                   X("Voice Mail Active") + ":}",
-               "label .op.lbs.g -text {" +
-                   X("Answer Calls With") + ":}",
-               "label .op.lbs.r -text {" +
-                   X("Rings before Answering") + ":}",
-               "label .op.lbs.l -text {" +
-                   X("Length of Incoming Messages") + ":}}",
-               ...
-           };
-           ...
-           wmlib->tkcmds(top, optioncfg);
-       }
+The  intermediate  function X is defined to allow the program
+to be used (albeit with text in English) even when the Trans‐
+late module cannot be loaded.
 
-       The  intermediate  function X is defined to allow the program
-       to be used (albeit with text in English) even when the Trans‐
-       late module cannot be loaded.
+== files
+/locale/locale/dict/app
 
-FILES
-       /locale/locale/dict/app
+== source
+/appl/lib/translate.b
 
-SOURCE
-       /appl/lib/translate.b
+== see ALSO
+translate(6)
 
-SEE ALSO
-       translate(6)
-
-                                                        TRANSLATE(2)

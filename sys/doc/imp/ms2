@@ -1,40 +1,33 @@
-MS2(10.1)                                                  MS2(10.1)
+= ms2 :  convert  executable  or raw file to Motorola S record format
 
-NAME
-       ms2  -  convert  executable  or raw file to Motorola S record
-       format
+    ms2 [ option ...  ] infile
 
-SYNOPSIS
-       ms2 [ option ...  ] infile
+ms2 converts the infile onto the standard output in  Motorola
+S record format. If the -b option is not given, the infile is
+presumed to be an executable, and the header and symbol table
+stripped.  If  the -b option is given, the file is treated as
+raw binary.  The options are:
 
-DESCRIPTION
-       ms2 converts the infile onto the standard output in  Motorola
-       S record format. If the -b option is not given, the infile is
-       presumed to be an executable, and the header and symbol table
-       stripped.  If  the -b option is given, the file is treated as
-       raw binary.  The options are:
+-d        Encode the data segment only.
 
-       -d        Encode the data segment only.
+-s        Omit  the  end  record,  presumably  to  accomodate
+          poorly implemented decoders.
 
-       -s        Omit  the  end  record,  presumably  to  accomodate
-                 poorly implemented decoders.
+-Taddr
 
-       -Taddr
+-Aaddr    Set the address of the text segment, i.e. the first
+          record output.  -a is an older, deprecated option.
 
-       -Aaddr    Set the address of the text segment, i.e. the first
-                 record output.  -a is an older, deprecated option.
+-Rn
 
-       -Rn
+-pn       Set the page size in use by the linker.  -p  is  an
+          older, deprecated option.
 
-       -pn       Set the page size in use by the linker.  -p  is  an
-                 older, deprecated option.
+-b        The  infile  is  binary.  Ignores  the  -R  and  -d
+          options.
 
-       -b        The  infile  is  binary.  Ignores  the  -R  and  -d
-                 options.
+-Saddr    Sets the entry address output in the end record.
 
-       -Saddr    Sets the entry address output in the end record.
+== source
+5cv(10.1)
 
-SOURCE
-       5cv(10.1)
-
-                                                           MS2(10.1)

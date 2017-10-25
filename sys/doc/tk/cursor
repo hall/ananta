@@ -1,40 +1,35 @@
-CURSOR(9)             Kernel Developer's Manual            CURSOR(9)
+= cursor: change the current mouse cursor
 
-NAME
-       cursor - change the current mouse cursor
+    cursor ?options?
 
-SYNOPSIS
-       cursor ?options?
+== introduction
+Cursor changes the image displayed at the current mouse posi‐
+tion.  The following options are supported:
 
-INTRODUCTION
-       Cursor changes the image displayed at the current mouse posi‐
-       tion.  The following options are supported:
+-image image
+       Image gives a name created using the image(9) command;
+       the  image  must  conform  to the rules given for Dis‐
+       play.cursor (see draw-display(2)).
 
-       -image image
-              Image gives a name created using the image(9) command;
-              the  image  must  conform  to the rules given for Dis‐
-              play.cursor (see draw-display(2)).
+-bitmap bitmap
+       Similar to -image but using  the  bitmap  syntax  (see
+       types(9)).
 
-       -bitmap bitmap
-              Similar to -image but using  the  bitmap  syntax  (see
-              types(9)).
+-x dist
+       The  cursor  will  be  drawn  dist to the right of the
+       actual position of the mouse.
 
-       -x dist
-              The  cursor  will  be  drawn  dist to the right of the
-              actual position of the mouse.
+-y dist
+       The cursor will be drawn dist below the  actual  posi‐
+       tion of the mouse.
 
-       -y dist
-              The cursor will be drawn dist below the  actual  posi‐
-              tion of the mouse.
+-default
+       Revert the cursor to its default image.
 
-       -default
-              Revert the cursor to its default image.
+== bugs
+A cursor image should have some inherent association with its
+hot-spot offset.
 
-BUGS
-       A cursor image should have some inherent association with its
-       hot-spot offset.
+== see ALSO
+options(9), types(9)
 
-SEE ALSO
-       options(9), types(9)
-
-                                                           CURSOR(9)

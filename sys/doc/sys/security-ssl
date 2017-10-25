@@ -1,45 +1,39 @@
-SECURITY-SSL(2)          System Calls Manual         SECURITY-SSL(2)
+= ssl: connect, secret: interface to the Secure Sockets Layer
 
-NAME
-       ssl: connect, secret - interface to the Secure Sockets Layer
+    include "sys.m";
+    include "security.m";
+    ssl := load SSL SSL->PATH;
 
-SYNOPSIS
-       include "sys.m";
-       include "security.m";
-       ssl := load SSL SSL->PATH;
+    connect: fn(fd: ref Sys->FD): (string, ref Sys->Connection);
+    secret:  fn(c: ref Sys->Connection, secretin,
+                    secretout: array of byte): string;
 
-       connect: fn(fd: ref Sys->FD): (string, ref Sys->Connection);
-       secret:  fn(c: ref Sys->Connection, secretin,
-                       secretout: array of byte): string;
+SSL  provides an interface to the secure sockets layer device
+ssl(3).
 
-DESCRIPTION
-       SSL  provides an interface to the secure sockets layer device
-       ssl(3).
+Connect allocates a  new  ssl(3)  connection  directory.   It
+pushes  file descriptor fd into the data file of that connec‐
+tion, and if successful, returns a reference to a  Connection
+adt  describing  the  connection.  The Connection adt has its
+members set as follows: dir names  the  resulting  connection
+directory;  cfd is open on the connection's control file; and
+dfd is open on the connection's data file, which is read  and
+written to exchange data on the original fd using SSL.
 
-       Connect allocates a  new  ssl(3)  connection  directory.   It
-       pushes  file descriptor fd into the data file of that connec‐
-       tion, and if successful, returns a reference to a  Connection
-       adt  describing  the  connection.  The Connection adt has its
-       members set as follows: dir names  the  resulting  connection
-       directory;  cfd is open on the connection's control file; and
-       dfd is open on the connection's data file, which is read  and
-       written to exchange data on the original fd using SSL.
+Secret  sets the secrets for each direction on Connection c ;
+if a secret is nil, the existing setting for  that  direction
+remains  unchanged.   The  string  returned  describes errors
+encountered, if any; otherwise it is nil.
 
-       Secret  sets the secrets for each direction on Connection c ;
-       if a secret is nil, the existing setting for  that  direction
-       remains  unchanged.   The  string  returned  describes errors
-       encountered, if any; otherwise it is nil.
+== source
+/appl/lib/ssl.b
 
-SOURCE
-       /appl/lib/ssl.b
+== see ALSO
+security-auth(2), ssl(3)
 
-SEE ALSO
-       security-auth(2), ssl(3)
+== diagnostics
+Connect returns a tuple containing a string and a  Connection
+reference.   On success the string is nil, and the connection
+reference is not nil; on error, the string contains  a  diag‐
+nostic, and the connection reference is nil.
 
-DIAGNOSTICS
-       Connect returns a tuple containing a string and a  Connection
-       reference.   On success the string is nil, and the connection
-       reference is not nil; on error, the string contains  a  diag‐
-       nostic, and the connection reference is nil.
-
-                                                     SECURITY-SSL(2)

@@ -1,156 +1,149 @@
-IPINTS(2)                System Calls Manual               IPINTS(2)
+= ipints: IPint : `infinite' precision integer utility functions
 
-NAME
-       ipints:  IPint  -  `infinite' precision integer utility func‐
-       tions
+    include "ipints.m"
+    ipints:= load IPints IPints->PATH;
 
-SYNOPSIS
-       include "ipints.m"
-       ipints:= load IPints IPints->PATH;
+    IPint: adt
+    {
+      iptob64:   fn(i: self ref IPint): string;
+      iptob64z:  fn(i: self ref IPint): string;
+      b64toip:   fn(str: string)  : ref IPint;
+      iptobytes: fn(i: self ref IPint): array of byte;
+      bytestoip: fn(buf: array of byte): ref IPint;
+      iptobebytes: fn(i: self ref IPint): array of byte;
+      bebytestoip: fn(buf: array of byte): ref IPint;
+      inttoip:   fn(i: int): ref IPint;
+      iptoint:   fn(i: self ref IPint): int;
+      iptostr:   fn(i: self ref IPint, base: int): string;
+      strtoip:   fn(str: string, base: int): ref IPint;
+      random:    fn(nbits: int): ref IPint;
+      copy:      fn(i: self ref IPint): ref IPint;
+      bits:      fn(i:  self ref IPint): int;
+      expmod:    fn(base: self ref IPint, exp, mod: ref IPint):ref IPint;
+      add:  fn(i1: self ref IPint, i2: ref IPint): ref IPint;
+      sub:  fn(i1: self ref IPint, i2: ref IPint): ref IPint;
+      neg:  fn(i: self ref IPint): ref IPint;
+      mul:  fn(i1: self ref IPint, i2: ref IPint): ref IPint;
+      div:  fn(i1: self ref IPint, i2: ref IPint): (ref IPint, ref IPint);
+      mod:  fn(i1: self ref IPint, i2: ref IPint): ref IPint;
+      eq:   fn(i1:  self ref IPint, i2: ref IPint): int;
+      cmp:  fn(i1: self ref IPint, i2: ref IPint): int;
+      shl:  fn(i: self ref IPint, n: int): ref IPint;
+      shr:  fn(i: self ref IPint, n: int): ref IPint;
+      and:  fn(i1: self ref IPint, i2: ref IPint): ref IPint;
+      ori:  fn(i1: self ref IPint, i2: ref IPint): ref IPint;
+      not:  fn(i: self ref IPint): ref IPint;
+      xor:  fn(i1: self ref IPint, i2: ref IPint): ref IPint;
+    };
 
-       IPint: adt
-       {
-         iptob64:   fn(i: self ref IPint): string;
-         iptob64z:  fn(i: self ref IPint): string;
-         b64toip:   fn(str: string)  : ref IPint;
-         iptobytes: fn(i: self ref IPint): array of byte;
-         bytestoip: fn(buf: array of byte): ref IPint;
-         iptobebytes: fn(i: self ref IPint): array of byte;
-         bebytestoip: fn(buf: array of byte): ref IPint;
-         inttoip:   fn(i: int): ref IPint;
-         iptoint:   fn(i: self ref IPint): int;
-         iptostr:   fn(i: self ref IPint, base: int): string;
-         strtoip:   fn(str: string, base: int): ref IPint;
-         random:    fn(nbits: int): ref IPint;
-         copy:      fn(i: self ref IPint): ref IPint;
-         bits:      fn(i:  self ref IPint): int;
-         expmod:    fn(base: self ref IPint, exp, mod: ref IPint):ref IPint;
-         add:  fn(i1: self ref IPint, i2: ref IPint): ref IPint;
-         sub:  fn(i1: self ref IPint, i2: ref IPint): ref IPint;
-         neg:  fn(i: self ref IPint): ref IPint;
-         mul:  fn(i1: self ref IPint, i2: ref IPint): ref IPint;
-         div:  fn(i1: self ref IPint, i2: ref IPint): (ref IPint, ref IPint);
-         mod:  fn(i1: self ref IPint, i2: ref IPint): ref IPint;
-         eq:   fn(i1:  self ref IPint, i2: ref IPint): int;
-         cmp:  fn(i1: self ref IPint, i2: ref IPint): int;
-         shl:  fn(i: self ref IPint, n: int): ref IPint;
-         shr:  fn(i: self ref IPint, n: int): ref IPint;
-         and:  fn(i1: self ref IPint, i2: ref IPint): ref IPint;
-         ori:  fn(i1: self ref IPint, i2: ref IPint): ref IPint;
-         not:  fn(i: self ref IPint): ref IPint;
-         xor:  fn(i1: self ref IPint, i2: ref IPint): ref IPint;
-       };
+IPint provides the following arbitrary-length integer manipu‐
+lation functions required for cryptographic support in Limbo:
 
-DESCRIPTION
-       IPint provides the following arbitrary-length integer manipu‐
-       lation functions required for cryptographic support in Limbo:
+i.iptob64()
+       Returns  a string that represents a large integer tex‐
+       tually in base 64 for convenient transmission  over  a
+       network connection.
 
-       i.iptob64()
-              Returns  a string that represents a large integer tex‐
-              tually in base 64 for convenient transmission  over  a
-              network connection.
+i.iptob64z()
+       Returns   a  similar  representation  to  iptob64  but
+       ensures that the top bit  of  the  received  value  is
+       zero.
 
-       i.iptob64z()
-              Returns   a  similar  representation  to  iptob64  but
-              ensures that the top bit  of  the  received  value  is
-              zero.
+b64toip(str)
+       Returns  the  IPint represented by the base-64 encoded
+       str.
 
-       b64toip(str)
-              Returns  the  IPint represented by the base-64 encoded
-              str.
+i.iptobytes()
+       Returns an array of bytes representing a  large  inte‐
+       ger.  The  representation  includes  both positive and
+       negative numbers.
 
-       i.iptobytes()
-              Returns an array of bytes representing a  large  inte‐
-              ger.  The  representation  includes  both positive and
-              negative numbers.
+bytestoip(buf)
+       The inverse operation of iptobytes.
 
-       bytestoip(buf)
-              The inverse operation of iptobytes.
+i.iptobebytes()
+       Returns an array of bytes in big-endian format  repre‐
+       senting  the  magnitude  of  a large integer; used for
+       instance to pass a value to ssl(3).  Only non-negative
+       numbers are represented.
 
-       i.iptobebytes()
-              Returns an array of bytes in big-endian format  repre‐
-              senting  the  magnitude  of  a large integer; used for
-              instance to pass a value to ssl(3).  Only non-negative
-              numbers are represented.
+bebytestoip(buf)
+       The inverse operation of iptobebytes.
 
-       bebytestoip(buf)
-              The inverse operation of iptobebytes.
+inttoip(i)
+       Creates a new large integer from integer i.
 
-       inttoip(i)
-              Creates a new large integer from integer i.
+i.iptoint()
+       Converts  a  large  integer  i to an int; returns 0 on
+       error.
 
-       i.iptoint()
-              Converts  a  large  integer  i to an int; returns 0 on
-              error.
+i.iptostr(base)
+       Converts a large integer to a  string  in  base  base;
+       returns  nil on error.  Only the bases 10, 16, 32, and
+       64 are supported.  Anything else defaults to 16.
 
-       i.iptostr(base)
-              Converts a large integer to a  string  in  base  base;
-              returns  nil on error.  Only the bases 10, 16, 32, and
-              64 are supported.  Anything else defaults to 16.
+strtoip(str,base)
+       Converts a string str representing a number in in base
+       base  to  a large integer; returns nil on error.  Only
+       the bases 10, 16, 32, and 64 are supported.
 
-       strtoip(str,base)
-              Converts a string str representing a number in in base
-              base  to  a large integer; returns nil on error.  Only
-              the bases 10, 16, 32, and 64 are supported.
+random(nbits)
+       Returns a large random number of length at  most  min‐
+       bits.   The  largest  number  allowed  in  the current
+       implementation is 2^8192-1 .  The seed for the genera‐
+       tor is obtained by duelling clocks.
 
-       random(nbits)
-              Returns a large random number of length at  most  min‐
-              bits.   The  largest  number  allowed  in  the current
-              implementation is 2^8192-1 .  The seed for the genera‐
-              tor is obtained by duelling clocks.
+i.copy()
+       Returns a reference to the same value as i.
 
-       i.copy()
-              Returns a reference to the same value as i.
+i.bits()
+       Returns the number of bits of precision of i.
 
-       i.bits()
-              Returns the number of bits of precision of i.
+base.expmod(exp , mod)
+       Returns (base**exp) mod mod.
 
-       base.expmod(exp , mod)
-              Returns (base**exp) mod mod.
+i1.add(i2)
+       Returns (i1+i2).
 
-       i1.add(i2)
-              Returns (i1+i2).
+i1.sub(i2)
+       Returns (i1-i2).
 
-       i1.sub(i2)
-              Returns (i1-i2).
+i1.mul(i2)
+       Returns i1*i2.
 
-       i1.mul(i2)
-              Returns i1*i2.
+i1.div(i2)
+       Returns (i1/i2, i1remi2).
 
-       i1.div(i2)
-              Returns (i1/i2, i1remi2).
+i1.mod(i2)
+       Returns (i1modi2).
 
-       i1.mod(i2)
-              Returns (i1modi2).
+i1.eq(i2)
+       Returns 1 if i1 and i2 are equal; 0 otherwise.
 
-       i1.eq(i2)
-              Returns 1 if i1 and i2 are equal; 0 otherwise.
+i1.cmp(i2)
+       Compares  two  large  integers,  returning  1 if i1 is
+       larger, -1 if i2 is larger, and 0 if they are equal.
 
-       i1.cmp(i2)
-              Compares  two  large  integers,  returning  1 if i1 is
-              larger, -1 if i2 is larger, and 0 if they are equal.
+i.shl(n)
+       Returns i<<n
 
-       i.shl(n)
-              Returns i<<n
+i.shr(n)
+       Returns i>>n
 
-       i.shr(n)
-              Returns i>>n
+i1.and(i2)
+       Returns i&n, bitwise AND
 
-       i1.and(i2)
-              Returns i&n, bitwise AND
+i1.ori(i2)
+       Returns i|n, bitwise inclusive-OR (it is  ori  because
+       plain or is a Limbo keyword)
 
-       i1.ori(i2)
-              Returns i|n, bitwise inclusive-OR (it is  ori  because
-              plain or is a Limbo keyword)
+i.not()
+       Returns ~i, bitwise ones-complement
 
-       i.not()
-              Returns ~i, bitwise ones-complement
+i1.xor(i2)
+       Returns i^n, bitwise exclusive-OR
 
-       i1.xor(i2)
-              Returns i^n, bitwise exclusive-OR
+== source
+/libinterp/ipint.c
+/libmp
 
-SOURCE
-       /libinterp/ipint.c
-       /libmp
-
-                                                           IPINTS(2)

@@ -1,227 +1,221 @@
-W3C-CSS(2)               System Calls Manual              W3C-CSS(2)
+= w3c-css: cascading style sheet parser
 
-NAME
-       w3c-css - cascading style sheet parser
+    include "css.m";
 
-SYNOPSIS
-       include "css.m";
+    css := load CSS CSS->PATH;
 
-       css := load CSS CSS->PATH;
+    Stylesheet: adt {
+       charset:    string;
+       imports:    list of ref Import;
+       statements: list of ref Statement;
+    };
+    
+    Import: adt {
+       name:   string;
+       media:  list of string;
+    };
+    
+    Statement: adt {
+       pick{
+       Media =>
+           media:  list of string;
+           rules:  list of ref Statement.Ruleset;
+       Page =>
+           pseudo: string;
+           decls:  list of ref Decl;
+       Ruleset =>
+           selectors: list of Selector;
+           decls:     list of ref Decl;
+       }
+    };
+    
+    Decl: adt {
+       property:   string;
+       values:     list of ref Value;
+       important:  int;
+    };
+    
+    Selector:   type list of (int, Simplesel);   # (combinator, simplesel)
+    Simplesel:  type list of ref Select;
+    
+    Select: adt {
+       name:   string;
+       pick{
+       Element or ID or Any or Class or Pseudo =>
+           # empty
+       Attrib =>
+           op:     string; # "=" "~=" "|="
+           value:  ref Value;  # optional Ident or String
+       Pseudofn =>
+           arg:    string;
+       }
+    };
+    
+    Value: adt {
+       sep:    int;    # operator preceding this term
+       pick{
+       String or
+       Number or
+       Percentage or
+       Url or
+       Unicoderange =>
+           value:  string;
+       Hexcolour =>
+           value:  string;             # as given
+           rgb:    (int, int, int);    # converted
+       RGB =>
+           args:   cyclic list of ref Value;  # as given
+           rgb:    (int, int, int);           # converted
+       Ident =>
+           name:   string;
+       Unit =>
+           value:  string; # int or float
+           units:  string; # suffix giving units
+       Function =>
+           name:   string;
+           args:   cyclic list of ref Value;
+       }
+    };
+    
+    init:       fn(diag: int);
+    parse:      fn(s: string): (ref Stylesheet, string);
+    parsedecl:  fn(s: string): (list of ref Decl, string);
 
-       Stylesheet: adt {
-          charset:    string;
-          imports:    list of ref Import;
-          statements: list of ref Statement;
-       };
+Css  implements  a parser for the World-Wide Web Consortium's
+Cascading Style Sheet, specification 2.1.
 
-       Import: adt {
-          name:   string;
-          media:  list of string;
-       };
+Init must be called before any other operation in the module.
+If  diag  is  non-zero,  the module will print diagnostics on
+standard output for malformed or unrecognised items that  are
+ignored during parsing (as required by the specification).
 
-       Statement: adt {
-          pick{
-          Media =>
-              media:  list of string;
-              rules:  list of ref Statement.Ruleset;
-          Page =>
-              pseudo: string;
-              decls:  list of ref Decl;
-          Ruleset =>
-              selectors: list of Selector;
-              decls:     list of ref Decl;
-          }
-       };
+Parse takes a complete stylesheet in string s, parses it, and
+returns  a  tuple  (sheet, err)  where  sheet  refers  to   a
+Stylesheet  value  containing  the  logical  content of s, as
+described below.  On a fatal error, sheet is nil and err is a
+diagnostic.  Most syntactic errors are ignored, as the speci‐
+fication requires.
 
-       Decl: adt {
-          property:   string;
-          values:     list of ref Value;
-          important:  int;
-       };
+In some applications there can be auxiliary declarations out‐
+side  a  stylesheet.  Parsedecl takes a string s containing a
+sequence of declarations, and returns  a  tuple  (decls, err)
+where decls is a list of references to Decl values, each rep‐
+resenting a single declaration in s.  On a fatal error, decls
+is nil, and err is a diagnostic.
 
-       Selector:   type list of (int, Simplesel);   # (combinator, simplesel)
-       Simplesel:  type list of ref Select;
+The  adts  represent  an  abstract syntax of the CSS grammar.
+The concrete syntax is presented below in  an  extended  BNF,
+derived   from  the  reference  grammar,  with  each  section
+labelled by the name of the corresponding adts.  (Compared to
+the reference grammar in the specification, it abstracts away
+from the complex rules about where whitespace can appear.)
 
-       Select: adt {
-          name:   string;
-          pick{
-          Element or ID or Any or Class or Pseudo =>
-              # empty
-          Attrib =>
-              op:     string; # "=" "~=" "|="
-              value:  ref Value;  # optional Ident or String
-          Pseudofn =>
-              arg:    string;
-          }
-       };
+Stylesheet
+       stylesheet ::= [ '@charset' STRING ';' ] import* statement*
 
-       Value: adt {
-          sep:    int;    # operator preceding this term
-          pick{
-          String or
-          Number or
-          Percentage or
-          Url or
-          Unicoderange =>
-              value:  string;
-          Hexcolour =>
-              value:  string;             # as given
-              rgb:    (int, int, int);    # converted
-          RGB =>
-              args:   cyclic list of ref Value;  # as given
-              rgb:    (int, int, int);           # converted
-          Ident =>
-              name:   string;
-          Unit =>
-              value:  string; # int or float
-              units:  string; # suffix giving units
-          Function =>
-              name:   string;
-              args:   cyclic list of ref Value;
-          }
-       };
+       Limbo lists represent lists of items in  the  grammar.
+       Nil  values  denote optional components that are miss‐
+       ing.  Upper-case names such as IDENT, STRING and  NUM‐
+       BER are terminals; see the CSS specification for their
+       often subtle definitions.   They  are  usually  repre‐
+       sented by Limbo string values in the adts.
 
-       init:       fn(diag: int);
-       parse:      fn(s: string): (ref Stylesheet, string);
-       parsedecl:  fn(s: string): (list of ref Decl, string);
+Import
+       import ::= '@import' (STRING|uri) [medium (',' medium)*] ';'
+       uri ::= 'url(' STRING ')'
 
-DESCRIPTION
-       Css  implements  a parser for the World-Wide Web Consortium's
-       Cascading Style Sheet, specification 2.1.
+       Import.name holds the text of the STRING or uri.
 
-       Init must be called before any other operation in the module.
-       If  diag  is  non-zero,  the module will print diagnostics on
-       standard output for malformed or unrecognised items that  are
-       ignored during parsing (as required by the specification).
+Statement
+       statement ::= ruleset | media | page
+       media ::= '@media' medium (',' medium)* '{' ruleset* '}'
+       medium ::= IDENT
+       page ::= '@page' [pseudo_page] '{' declaration (';' declaration)* '}'
+       pseudo_page ::= ':' IDENT
+       ruleset ::= selector (',' selector)* '{' declaration (';' declaration)* '}'
 
-       Parse takes a complete stylesheet in string s, parses it, and
-       returns  a  tuple  (sheet, err)  where  sheet  refers  to   a
-       Stylesheet  value  containing  the  logical  content of s, as
-       described below.  On a fatal error, sheet is nil and err is a
-       diagnostic.  Most syntactic errors are ignored, as the speci‐
-       fication requires.
+       Statement  is  not  in  the  reference grammar, but is
+       introduced here to give a name  corresponding  to  the
+       pick adt.
 
-       In some applications there can be auxiliary declarations out‐
-       side  a  stylesheet.  Parsedecl takes a string s containing a
-       sequence of declarations, and returns  a  tuple  (decls, err)
-       where decls is a list of references to Decl values, each rep‐
-       resenting a single declaration in s.  On a fatal error, decls
-       is nil, and err is a diagnostic.
+Decl
+       declaration ::= property ':' expr ['!' 'important'] | /* empty */
+       property ::= IDENT
+       Decl.values  is  a  list representing the terms of the
+       expr (see below for details).  Decl's field  important
+       is  non-zero  if  the optional `important' priority is
+       given.
 
-       The  adts  represent  an  abstract syntax of the CSS grammar.
-       The concrete syntax is presented below in  an  extended  BNF,
-       derived   from  the  reference  grammar,  with  each  section
-       labelled by the name of the corresponding adts.  (Compared to
-       the reference grammar in the specification, it abstracts away
-       from the complex rules about where whitespace can appear.)
+list of ref Value
+       expr ::= term (operator term)*
+       operator ::= '/' | ',' | /* empty */
 
-       Stylesheet
-              stylesheet ::= [ '@charset' STRING ';' ] import* statement*
+       An expr is always represented as a list of  references
+       to  Value  in  some  containing structure (where Value
+       represents a term, see below).  The operator preceding
+       each  term appears as the field sep of the correspond‐
+       ing Value, where a space character represents  `empty'
+       (concatenation).
 
-              Limbo lists represent lists of items in  the  grammar.
-              Nil  values  denote optional components that are miss‐
-              ing.  Upper-case names such as IDENT, STRING and  NUM‐
-              BER are terminals; see the CSS specification for their
-              often subtle definitions.   They  are  usually  repre‐
-              sented by Limbo string values in the adts.
+Selector
+       selector ::= simple_selector (combinator simple_selector)*
+       combinator ::= '+' | '>' | /* empty */
 
-       Import
-              import ::= '@import' (STRING|uri) [medium (',' medium)*] ';'
-              uri ::= 'url(' STRING ')'
+       Selector  is just a type synonym for a list of tuples,
+       say (com, simplesel) where the simplesel value  repre‐
+       sents simple_selector (see below), and the integer com
+       is one of the characters space (representing `empty'),
+       `>'  or  `+',  giving the combinator that preceded the
+       simple selector.  (The first in  the  list  is  always
+       space.)
 
-              Import.name holds the text of the STRING or uri.
+Simplesel, Select
+       simple_selector ::= element_name (hash | class | attrib | pseudo)*
+            | (hash | class | attrib | pseudo)+
+       hash ::= '#' NAME
+       class ::= '.' IDENT
+       element_name ::= IDENT | '*'
+       attrib ::= '[' IDENT [('=' | '|=' | '~=') (IDENT | STRING)] ']'
+       pseudo ::= ':' ( IDENT | IDENT '(' [IDENT] ')' )
 
-       Statement
-              statement ::= ruleset | media | page
-              media ::= '@media' medium (',' medium)* '{' ruleset* '}'
-              medium ::= IDENT
-              page ::= '@page' [pseudo_page] '{' declaration (';' declaration)* '}'
-              pseudo_page ::= ':' IDENT
-              ruleset ::= selector (',' selector)* '{' declaration (';' declaration)* '}'
+       A  simple_selector is represented by Simplesel, a list
+       of references to Select values, each representing  one
+       element_name  or qualifier.  An element_name is repre‐
+       sented by Select.Element for an IDENT,  or  Select.Any
+       for  `*'.   The qualifiers are hash (Select.ID), class
+       (Select.Class), attrib (Select.Attrib, where  the com‐
+       parison  operator  is  the  string op), pseudo (either
+       Select.Pseudo if a plain identifier, or  Select.Pseud‐
+       ofn for a function with optional parameter).
 
-              Statement  is  not  in  the  reference grammar, but is
-              introduced here to give a name  corresponding  to  the
-              pick adt.
+Value
+       term ::= ['+' | '-'] (NUMBER | percent | unit) | STRING | IDENT | uri | function | hexcolour | rgb
+       function ::= IDENT '(' expr ')'
+       hash ::= '#' NAME
+       hexcolour ::= '#' HEXDIGIT+
+       percent ::= NUMBER '%'
+       unit ::= NUMBER STRING
+       rgb ::= 'rgb(' term ',' term ',' term ')'
+       uri ::= 'url(' STRING ')'
 
-       Decl
-              declaration ::= property ':' expr ['!' 'important'] | /* empty */
-              property ::= IDENT
-              Decl.values  is  a  list representing the terms of the
-              expr (see below for details).  Decl's field  important
-              is  non-zero  if  the optional `important' priority is
-              given.
+       Any  sign  before a Number, Percentage or Unit appears
+       as the first character of value.  All the  dimensional
+       units (LENGTH, EMS, EXS, ANGLE, TIME, FREQ and others)
+       in the reference grammar  are  mapped  to  Value.Unit,
+       with  the field units containing the name of the rele‐
+       vant unit (eg, etc.) in lower case.  Values and  names
+       appear   shorn   of   the   surrounding   punctuation.
+       Value.Hexcolour includes the original sequence of  hex
+       digits  as  a  string,  and a decoding of it as an rgb
+       triple.  The arguments to the  CSS  rgb  function  are
+       similarly  presented in original and decoded forms, in
+       Value.RGB.  Other  function  references  are  returned
+       uninterpreted in Value.Function.
 
-       list of ref Value
-              expr ::= term (operator term)*
-              operator ::= '/' | ',' | /* empty */
+== source
+/appl/lib/w3c/css.b
 
-              An expr is always represented as a list of  references
-              to  Value  in  some  containing structure (where Value
-              represents a term, see below).  The operator preceding
-              each  term appears as the field sep of the correspond‐
-              ing Value, where a space character represents  `empty'
-              (concatenation).
+== see ALSO
+``Cascading    Style    Sheets,   level   2   revision   1'',
+http://www.w3.org/TR/CSS21
 
-       Selector
-              selector ::= simple_selector (combinator simple_selector)*
-              combinator ::= '+' | '>' | /* empty */
-
-              Selector  is just a type synonym for a list of tuples,
-              say (com, simplesel) where the simplesel value  repre‐
-              sents simple_selector (see below), and the integer com
-              is one of the characters space (representing `empty'),
-              `>'  or  `+',  giving the combinator that preceded the
-              simple selector.  (The first in  the  list  is  always
-              space.)
-
-       Simplesel, Select
-              simple_selector ::= element_name (hash | class | attrib | pseudo)*
-                   | (hash | class | attrib | pseudo)+
-              hash ::= '#' NAME
-              class ::= '.' IDENT
-              element_name ::= IDENT | '*'
-              attrib ::= '[' IDENT [('=' | '|=' | '~=') (IDENT | STRING)] ']'
-              pseudo ::= ':' ( IDENT | IDENT '(' [IDENT] ')' )
-
-              A  simple_selector is represented by Simplesel, a list
-              of references to Select values, each representing  one
-              element_name  or qualifier.  An element_name is repre‐
-              sented by Select.Element for an IDENT,  or  Select.Any
-              for  `*'.   The qualifiers are hash (Select.ID), class
-              (Select.Class), attrib (Select.Attrib, where  the com‐
-              parison  operator  is  the  string op), pseudo (either
-              Select.Pseudo if a plain identifier, or  Select.Pseud‐
-              ofn for a function with optional parameter).
-
-       Value
-              term ::= ['+' | '-'] (NUMBER | percent | unit) | STRING | IDENT | uri | function | hexcolour | rgb
-              function ::= IDENT '(' expr ')'
-              hash ::= '#' NAME
-              hexcolour ::= '#' HEXDIGIT+
-              percent ::= NUMBER '%'
-              unit ::= NUMBER STRING
-              rgb ::= 'rgb(' term ',' term ',' term ')'
-              uri ::= 'url(' STRING ')'
-
-              Any  sign  before a Number, Percentage or Unit appears
-              as the first character of value.  All the  dimensional
-              units (LENGTH, EMS, EXS, ANGLE, TIME, FREQ and others)
-              in the reference grammar  are  mapped  to  Value.Unit,
-              with  the field units containing the name of the rele‐
-              vant unit (eg, etc.) in lower case.  Values and  names
-              appear   shorn   of   the   surrounding   punctuation.
-              Value.Hexcolour includes the original sequence of  hex
-              digits  as  a  string,  and a decoding of it as an rgb
-              triple.  The arguments to the  CSS  rgb  function  are
-              similarly  presented in original and decoded forms, in
-              Value.RGB.  Other  function  references  are  returned
-              uninterpreted in Value.Function.
-
-SOURCE
-       /appl/lib/w3c/css.b
-
-SEE ALSO
-       ``Cascading    Style    Sheets,   level   2   revision   1'',
-       http://www.w3.org/TR/CSS21
-
-                                                          W3C-CSS(2)

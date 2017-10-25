@@ -1,66 +1,60 @@
-REGEX(2)                 System Calls Manual                REGEX(2)
+= regex: regular expression recognizer module
 
-NAME
-       regex - regular expression recognizer module
+    include "regex.m";
+    regex := load Regex Regex->PATH;
 
-SYNOPSIS
-       include "regex.m";
-       regex := load Regex Regex->PATH;
+    compile:   fn(e: string, flag: int): (Re, string);
+    execute:   fn(x: Re; s: string): array of (int,int);
+    executese: fn(x: Re, s: string, se: (int, int), bol: int, eol: int):
+                   array of (int, int);
 
-       compile:   fn(e: string, flag: int): (Re, string);
-       execute:   fn(x: Re; s: string): array of (int,int);
-       executese: fn(x: Re, s: string, se: (int, int), bol: int, eol: int):
-                      array of (int, int);
+Regular   expressions  are  defined  by  regexp(6).   Compile
+returns (as the first element of the result tuple) a compiled
+form  of  the  regular expression given in string e.  If e is
+not a valid regular expression,  compile  returns  the  tuple
+(nil, diag) where diag is a diagnostic string.  The effect of
+flag is described below.
 
-DESCRIPTION
-       Regular   expressions  are  defined  by  regexp(6).   Compile
-       returns (as the first element of the result tuple) a compiled
-       form  of  the  regular expression given in string e.  If e is
-       not a valid regular expression,  compile  returns  the  tuple
-       (nil, diag) where diag is a diagnostic string.  The effect of
-       flag is described below.
+Execute matches the compiled  regular  expression  x  against
+string  s.   It returns nil on no match, otherwise it returns
+an array.  The element with index 0 gives the character posi‐
+tions  of  the first character of some longest leftmost match
+and the first character beyond the match.  If the compilation
+flag was 0, there are no more elements.  If flag was 1, there
+is one element for each pair of parentheses  in  the  regular
+expression,  counting left parentheses left to right starting
+at 1.  The nth element gives the position of the  last  match
+to  the  nth  parenthesized  subexpression, or (-1,-1) if the
+subexpression does not participate in the overall match.
 
-       Execute matches the compiled  regular  expression  x  against
-       string  s.   It returns nil on no match, otherwise it returns
-       an array.  The element with index 0 gives the character posi‐
-       tions  of  the first character of some longest leftmost match
-       and the first character beyond the match.  If the compilation
-       flag was 0, there are no more elements.  If flag was 1, there
-       is one element for each pair of parentheses  in  the  regular
-       expression,  counting left parentheses left to right starting
-       at 1.  The nth element gives the position of the  last  match
-       to  the  nth  parenthesized  subexpression, or (-1,-1) if the
-       subexpression does not participate in the overall match.
+Executese is similar to execute but allows the start and  end
+points  in  the string to be specified, as tuple se: (start ,
+end), where start is the index in s of the initial  character
+to be matched, and end is the index in s of the first charac‐
+ter beyond the substring to be matched (and can be the length
+of  s).   If bol is non-zero, the initial character is at the
+beginning of a line, allowing an initial match by the regular
+expression operator `^'; if eol is non-zero, the last charac‐
+ter is at the end of a line, allowing a match by the operator
+`$'.
 
-       Executese is similar to execute but allows the start and  end
-       points  in  the string to be specified, as tuple se: (start ,
-       end), where start is the index in s of the initial  character
-       to be matched, and end is the index in s of the first charac‐
-       ter beyond the substring to be matched (and can be the length
-       of  s).   If bol is non-zero, the initial character is at the
-       beginning of a line, allowing an initial match by the regular
-       expression operator `^'; if eol is non-zero, the last charac‐
-       ter is at the end of a line, allowing a match by the operator
-       `$'.
+== examples
+(re, nil) := regex->compile("(thick )*(chocolate |raspberry )?"+
+               "(topp|fill)ing", 0);
 
-EXAMPLES
-       (re, nil) := regex->compile("(thick )*(chocolate |raspberry )?"+
-                      "(topp|fill)ing", 0);
+(re, nil) := regex->compile("[ABCb-z]+", 0);
+a := regex->execute(re, s:="aAbBcCdD");
+(beg, end) := a[0];
+s[beg:end] == "AbBcCd";
 
-       (re, nil) := regex->compile("[ABCb-z]+", 0);
-       a := regex->execute(re, s:="aAbBcCdD");
-       (beg, end) := a[0];
-       s[beg:end] == "AbBcCd";
+(re, nil) := regex->compile("a*b*", 0);
+a := regex->execute(re, "bbaabb");
+(beg, end) := a[0];
+(beg, end) == (0,2);
 
-       (re, nil) := regex->compile("a*b*", 0);
-       a := regex->execute(re, "bbaabb");
-       (beg, end) := a[0];
-       (beg, end) == (0,2);
+== source
+/appl/lib/regex.b
 
-SOURCE
-       /appl/lib/regex.b
+== see ALSO
+regexp(6)
 
-SEE ALSO
-       regexp(6)
-
-                                                            REGEX(2)

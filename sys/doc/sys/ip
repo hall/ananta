@@ -1,222 +1,216 @@
-IP(2)                    System Calls Manual                   IP(2)
+= IP: Internet Protocol addresses and interfaces
 
-NAME
-       IP - Internet Protocol addresses and interfaces
+    include "ip.m";
+    ip := load IP IP->PATH;
+    IPaddr: import IP;
 
-SYNOPSIS
-       include "ip.m";
-       ip := load IP IP->PATH;
-       IPaddr: import IP;
+    IPaddr: adt {
+       newv6:   fn(nil: array of byte): IPaddr;
+       newv4:   fn(nil: array of byte): IPaddr;
+       copy:    fn(nil: self IPaddr): IPaddr;
+       eq:      fn(nil: self IPaddr, v: IPaddr): int;
+       mask:    fn(nil: self IPaddr, m: IPaddr): IPaddr;
+       isv4:    fn(nil: self IPaddr): int;
+       ismulticast: fn(nil: self IPaddr): int;
+       isvalid: fn(nil: self IPaddr): int;
+    
+       v4:      fn(nil: self IPaddr): array of byte;
+       v6:      fn(nil: self IPaddr): array of byte;
+       class:   fn(nil: self IPaddr): int;
+       classmask: fn(nil: self IPaddr): IPaddr;
+    
+       parse:     fn(s: string): (int, IPaddr);
+       parsemask: fn(s: string): (int, IPaddr);
+       parsecidr: fn(s: string): (int, IPaddr, IPaddr);
+    
+       text:     fn(nil: self IPaddr): string;
+       masktext: fn(nil: self IPaddr): string;
+    };
 
-       IPaddr: adt {
-          newv6:   fn(nil: array of byte): IPaddr;
-          newv4:   fn(nil: array of byte): IPaddr;
-          copy:    fn(nil: self IPaddr): IPaddr;
-          eq:      fn(nil: self IPaddr, v: IPaddr): int;
-          mask:    fn(nil: self IPaddr, m: IPaddr): IPaddr;
-          isv4:    fn(nil: self IPaddr): int;
-          ismulticast: fn(nil: self IPaddr): int;
-          isvalid: fn(nil: self IPaddr): int;
+    v4bcast, v4allsys, v4allrouter, noaddr, allbits: IPaddr;
+    selfv6, selfv4: IPaddr;
+    v4prefix: array of byte;
+    
+    Ifcaddr: adt {
+       ip:   IPaddr;     # local interface address
+       mask: IPaddr;     # subnet mask
+       net:  IPaddr;     # ip & mask
+       preflt:  big;     # preferred life time
+       validlt: big;     # valid life time
+    };
+    
+    Ipifc: adt {
+       index:   int;     # /net/ipifc/N
+       dev:     string;  # bound device
+       addrs:   list of ref Ifcaddr;
+       sendra:  int;     # !=0, send router adverts
+       recvra:  int;     # !=0, receive router adverts
+       mtu:     int;
+       pktin:   big;     # packets in
+       pktout:  big;     # packets out
+       errin:   big;     # input errors
+       errout:  big;     # output errors
+       rp:      IPv6rp;  # IPv6 route advert parameters
+    };
+    
+    IPv6rp: adt {
+       mflag:   int;
+       oflag:   int;
+       maxraint: int;    # max route advert interval
+       minraint: int;    # min route advert interval
+       linkmtu:  int;
+       reachtime: int;
+       rxmitra:   int;
+       ttl:       int;
+       routerlt:  int;
+    };
+    
+    init: fn();
+    readipifc:  fn(net: string, index: int): (list of ref Ipifc, string);
 
-          v4:      fn(nil: self IPaddr): array of byte;
-          v6:      fn(nil: self IPaddr): array of byte;
-          class:   fn(nil: self IPaddr): int;
-          classmask: fn(nil: self IPaddr): IPaddr;
+IP  provides data types and operations that manipulate Inter‐
+net Protocol addresses, and operations that  convert  between
+internal  and  textual address forms, for both IPv4 and IPv6.
+The textual forms are those defined by RFC2373.  Briefly,  an
+IPv6 address is 16 bytes, represented textually as a sequence
+of 8 colon-separated hexadecimal values  ranging  from  0  to
+FFFF,  except that any one sequence of zeroes can be replaced
+by ::.  IPv4 addresses are embedded in the IPv6 space with  a
+prefix   of   either   0:0:0:0:0:FFFF   (for   addresses   of
+`IPv4-mapped' nodes), or 0:0:0:0:0:0  (for  `IPv4-compatible'
+IPv6  nodes).   See  RFC2373 for the distinction.  For conve‐
+nience in working with such  addresses,  the  textual  syntax
+allows  the  last  4 bytes of an IPv6 address to be specified
+using a restricted IPv4 syntax, allowing an address to end in
+four    dot-separated    decimal    values    (for   example,
+0:0:0:0:0:FFFF:127.0.0.1 for the IPv4 loopback address).  The
+functions  here  also  accept the common forms of IPv4 syntax
+with one or two values omitted (eg, 127.1  for  the  loopback
+address),   and   accept   IPv4   format   for   masks   (eg,
+255.255.254.0).
 
-          parse:     fn(s: string): (int, IPaddr);
-          parsemask: fn(s: string): (int, IPaddr);
-          parsecidr: fn(s: string): (int, IPaddr, IPaddr);
+Init must be called once before using any value  or  function
+of the module.
 
-          text:     fn(nil: self IPaddr): string;
-          masktext: fn(nil: self IPaddr): string;
-       };
+An  Internet  address  or  network mask  is represented by an
+IPaddr value.  It has the following operations:
 
-       v4bcast, v4allsys, v4allrouter, noaddr, allbits: IPaddr;
-       selfv6, selfv4: IPaddr;
-       v4prefix: array of byte;
+IPaddr.newv6(a)
+       Return an IPaddr representing the IPv6 address  stored
+       in a as an array of 16 bytes
 
-       Ifcaddr: adt {
-          ip:   IPaddr;     # local interface address
-          mask: IPaddr;     # subnet mask
-          net:  IPaddr;     # ip & mask
-          preflt:  big;     # preferred life time
-          validlt: big;     # valid life time
-       };
+IPaddr.newv4(a)
+       Return  an IPaddr representing the IPv4 address stored
+       in a as an array of 4 bytes
 
-       Ipifc: adt {
-          index:   int;     # /net/ipifc/N
-          dev:     string;  # bound device
-          addrs:   list of ref Ifcaddr;
-          sendra:  int;     # !=0, send router adverts
-          recvra:  int;     # !=0, receive router adverts
-          mtu:     int;
-          pktin:   big;     # packets in
-          pktout:  big;     # packets out
-          errin:   big;     # input errors
-          errout:  big;     # output errors
-          rp:      IPv6rp;  # IPv6 route advert parameters
-       };
+IPaddr.parse(s)
+       Return a tuple (ok,ip).  If ok is 0, ip is  an  IPaddr
+       representing  the  address  in  textual  format in the
+       string s, which can be in either IPv4 or IPv6  syntax.
+       If ok is negative, s was invalid.
 
-       IPv6rp: adt {
-          mflag:   int;
-          oflag:   int;
-          maxraint: int;    # max route advert interval
-          minraint: int;    # min route advert interval
-          linkmtu:  int;
-          reachtime: int;
-          rxmitra:   int;
-          ttl:       int;
-          routerlt:  int;
-       };
+IPaddr.parsemask(s)
+       S  is  a  text string defining a mask, in one of three
+       forms: /nbits where nbits is the number of leading one
+       bits  in the mask, ranging from 0 to 128; an IPv4 mask
+       (eg, 255.255.254.0); or an IPv6 mask.  Return a  tuple
+       (ok,m).   If  ok is 0, m is an IPaddr representing the
+       mask given by s.  If ok is negative, s was invalid.
 
-       init: fn();
-       readipifc:  fn(net: string, index: int): (list of ref Ipifc, string);
+IPaddr.parsecidr(s)
+       S is an address-mask combination in  Classless  Inter-
+       Domain   Routing   (CIDR)  format:  ip-address/prefix-
+       length, where ip-address is an  address  in  any  form
+       accepted  by parse above, and prefix-length is a deci‐
+       mal value giving the number of leftmost  bits  in  ip-
+       address  that  form  the addressing prefix (ie, subnet
+       prefix).  Return a tuple (ok,ip,m).  If ok  is  0,  ip
+       and m are IPaddr values for the address and mask given
+       by s.  If ok is negative, s is invalid.
 
-DESCRIPTION
-       IP  provides data types and operations that manipulate Inter‐
-       net Protocol addresses, and operations that  convert  between
-       internal  and  textual address forms, for both IPv4 and IPv6.
-       The textual forms are those defined by RFC2373.  Briefly,  an
-       IPv6 address is 16 bytes, represented textually as a sequence
-       of 8 colon-separated hexadecimal values  ranging  from  0  to
-       FFFF,  except that any one sequence of zeroes can be replaced
-       by ::.  IPv4 addresses are embedded in the IPv6 space with  a
-       prefix   of   either   0:0:0:0:0:FFFF   (for   addresses   of
-       `IPv4-mapped' nodes), or 0:0:0:0:0:0  (for  `IPv4-compatible'
-       IPv6  nodes).   See  RFC2373 for the distinction.  For conve‐
-       nience in working with such  addresses,  the  textual  syntax
-       allows  the  last  4 bytes of an IPv6 address to be specified
-       using a restricted IPv4 syntax, allowing an address to end in
-       four    dot-separated    decimal    values    (for   example,
-       0:0:0:0:0:FFFF:127.0.0.1 for the IPv4 loopback address).  The
-       functions  here  also  accept the common forms of IPv4 syntax
-       with one or two values omitted (eg, 127.1  for  the  loopback
-       address),   and   accept   IPv4   format   for   masks   (eg,
-       255.255.254.0).
+ip.copy()
+       Return a copy of the value ip
 
-       Init must be called once before using any value  or  function
-       of the module.
+ip.eq(v)
+       Return true  (non-zero)  if  ip  represents  the  same
+       address as v; return false (zero) otherwise.
 
-       An  Internet  address  or  network mask  is represented by an
-       IPaddr value.  It has the following operations:
+ip.mask(m)
+       Return the value (ip&m), that is, address ip masked by
+       m
 
-       IPaddr.newv6(a)
-              Return an IPaddr representing the IPv6 address  stored
-              in a as an array of 16 bytes
+ip.isv4()
+       Return true if ip is an IPv4 address; return false  if
+       otherwise (it can only be used on a full IPv6 network)
 
-       IPaddr.newv4(a)
-              Return  an IPaddr representing the IPv4 address stored
-              in a as an array of 4 bytes
+ip.v4()
+       Return  the value of ip as a 4-byte array in IPv4 rep‐
+       resentation if it can be so represented; if ip is  not
+       an IPv4 address, return nil.
 
-       IPaddr.parse(s)
-              Return a tuple (ok,ip).  If ok is 0, ip is  an  IPaddr
-              representing  the  address  in  textual  format in the
-              string s, which can be in either IPv4 or IPv6  syntax.
-              If ok is negative, s was invalid.
+ip.v6()
+       Return the value of ip in IPv6 addressing format as an
+       array of 16 bytes
 
-       IPaddr.parsemask(s)
-              S  is  a  text string defining a mask, in one of three
-              forms: /nbits where nbits is the number of leading one
-              bits  in the mask, ranging from 0 to 128; an IPv4 mask
-              (eg, 255.255.254.0); or an IPv6 mask.  Return a  tuple
-              (ok,m).   If  ok is 0, m is an IPaddr representing the
-              mask given by s.  If ok is negative, s was invalid.
+ip.class()
+       If ip is an IPv4 address, return its class (0  to  3);
+       if it is an IPv6 address, return 6.
 
-       IPaddr.parsecidr(s)
-              S is an address-mask combination in  Classless  Inter-
-              Domain   Routing   (CIDR)  format:  ip-address/prefix-
-              length, where ip-address is an  address  in  any  form
-              accepted  by parse above, and prefix-length is a deci‐
-              mal value giving the number of leftmost  bits  in  ip-
-              address  that  form  the addressing prefix (ie, subnet
-              prefix).  Return a tuple (ok,ip,m).  If ok  is  0,  ip
-              and m are IPaddr values for the address and mask given
-              by s.  If ok is negative, s is invalid.
+ip.classmask()
+       If  ip  is an IPv4 address, return the mask associated
+       with its class; if ip is an  IPv6  address,  return  a
+       mask that is all ones.
 
-       ip.copy()
-              Return a copy of the value ip
+ip.ismulticast()
+       Return true if ip is a multicast or broadcast address.
 
-       ip.eq(v)
-              Return true  (non-zero)  if  ip  represents  the  same
-              address as v; return false (zero) otherwise.
+ip.isvalid()
+       Return  true  if  ip is not the zero address in either
+       IPv4 or IPv6 address space
 
-       ip.mask(m)
-              Return the value (ip&m), that is, address ip masked by
-              m
+ip.text()
+       Return a textual representation of the address  ip  in
+       either IPv4 or IPv6 format as appropriate.
 
-       ip.isv4()
-              Return true if ip is an IPv4 address; return false  if
-              otherwise (it can only be used on a full IPv6 network)
+ip.masktext()
+       Return  a  textual representation of the address ip as
+       one of: an IPv4 mask; /n where  n  is  the  number  of
+       leading  1  bits, as used in CIDR syntax; or as a full
+       IPv6 textual address.  The format used is  appropriate
+       to the structure of the value.
 
-       ip.v4()
-              Return  the value of ip as a 4-byte array in IPv4 rep‐
-              resentation if it can be so represented; if ip is  not
-              an IPv4 address, return nil.
+The module provides some predefined IPaddr values, mainly for
+common IPv4 addresses: v4bcast (broadcast address),  v4allsys
+(all  hosts multicast address), v4allrouter (all routers mul‐
+ticast address), selfv4 (loopback in IPv4), selfv6  (loopback
+in IPv6), noaddr (all zero address, used before a node has an
+address), v4noaddr (all zero address with IPv4  prefix),  and
+allbits (address of all 1 bits).  The 12-byte IPv6 prefix for
+IPv4 embedded addresses is provided in  the  array  of  bytes
+v4prefix.
 
-       ip.v6()
-              Return the value of ip in IPv6 addressing format as an
-              array of 16 bytes
+Readipifc  returns a list of the host's IP interfaces and the
+attributes and addresses of each,  read  from  the  interface
+status  files  in /net/ipifc.  On an error, the string in the
+returned tuple contains a diagnostic and  the  list  is  nil.
+Each  interface  is represented by an Ipifc value, which con‐
+tains a list of local interface addresses, addrs.  Each local
+address is represented by an Iplifc value in that list.
 
-       ip.class()
-              If ip is an IPv4 address, return its class (0  to  3);
-              if it is an IPv6 address, return 6.
+== files
+/net/ipifc
+       directory of IP interfaces
 
-       ip.classmask()
-              If  ip  is an IPv4 address, return the mask associated
-              with its class; if ip is an  IPv6  address,  return  a
-              mask that is all ones.
+/net/ipifc/n/status
+       status and addresses of interface n
 
-       ip.ismulticast()
-              Return true if ip is a multicast or broadcast address.
+== source
+/appl/lib/ip.b
 
-       ip.isvalid()
-              Return  true  if  ip is not the zero address in either
-              IPv4 or IPv6 address space
+== see ALSO
+ether(2), ip(3)
 
-       ip.text()
-              Return a textual representation of the address  ip  in
-              either IPv4 or IPv6 format as appropriate.
+== bugs
+Readipifc  is  currently only usable in native Inferno.  That
+will change shortly.
 
-       ip.masktext()
-              Return  a  textual representation of the address ip as
-              one of: an IPv4 mask; /n where  n  is  the  number  of
-              leading  1  bits, as used in CIDR syntax; or as a full
-              IPv6 textual address.  The format used is  appropriate
-              to the structure of the value.
-
-       The module provides some predefined IPaddr values, mainly for
-       common IPv4 addresses: v4bcast (broadcast address),  v4allsys
-       (all  hosts multicast address), v4allrouter (all routers mul‐
-       ticast address), selfv4 (loopback in IPv4), selfv6  (loopback
-       in IPv6), noaddr (all zero address, used before a node has an
-       address), v4noaddr (all zero address with IPv4  prefix),  and
-       allbits (address of all 1 bits).  The 12-byte IPv6 prefix for
-       IPv4 embedded addresses is provided in  the  array  of  bytes
-       v4prefix.
-
-       Readipifc  returns a list of the host's IP interfaces and the
-       attributes and addresses of each,  read  from  the  interface
-       status  files  in /net/ipifc.  On an error, the string in the
-       returned tuple contains a diagnostic and  the  list  is  nil.
-       Each  interface  is represented by an Ipifc value, which con‐
-       tains a list of local interface addresses, addrs.  Each local
-       address is represented by an Iplifc value in that list.
-
-FILES
-       /net/ipifc
-              directory of IP interfaces
-
-       /net/ipifc/n/status
-              status and addresses of interface n
-
-SOURCE
-       /appl/lib/ip.b
-
-SEE ALSO
-       ether(2), ip(3)
-
-BUGS
-       Readipifc  is  currently only usable in native Inferno.  That
-       will change shortly.
-
-                                                               IP(2)

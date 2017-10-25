@@ -1,31 +1,25 @@
-EVE(10.2)                                                  EVE(10.2)
+= eve, iseve: privileged user
 
-NAME
-       eve, iseve - privileged user
+    char  eve[NAMELEN] = "inferno";
 
-SYNOPSIS
-       char  eve[NAMELEN] = "inferno";
+    int   iseve(void)
 
-       int   iseve(void)
+Eve  is  a  null-terminated string containing the name of the
+privileged user,  often  called  the  `host  owner',  in  the
+Inferno  system.   The  default identity in native systems is
+and in hosted Inferno it is the user who started emu(1).  The
+initial process created by system initialisation is given the
+eve identity.
 
-DESCRIPTION
-       Eve  is  a  null-terminated string containing the name of the
-       privileged user,  often  called  the  `host  owner',  in  the
-       Inferno  system.   The  default identity in native systems is
-       and in hosted Inferno it is the user who started emu(1).  The
-       initial process created by system initialisation is given the
-       eve identity.
+Iseve returns true if the current user is eve.  Several driv‐
+ers  use iseve to check the caller's identity before granting
+permission to perform certain actions.  For example, the con‐
+sole  driver allows only the user eve to write a new identity
+into the /dev/user file.  The privileges are  strictly  local
+and  do  not  extend into the network (in particular, to file
+servers).
 
-       Iseve returns true if the current user is eve.  Several driv‐
-       ers  use iseve to check the caller's identity before granting
-       permission to perform certain actions.  For example, the con‐
-       sole  driver allows only the user eve to write a new identity
-       into the /dev/user file.  The privileges are  strictly  local
-       and  do  not  extend into the network (in particular, to file
-       servers).
+Note that the comparison performed by  iseve  is  case-sensi‐
+tive, even when running hosted on systems where usernames are
+case-insensitive.
 
-       Note that the comparison performed by  iseve  is  case-sensi‐
-       tive, even when running hosted on systems where usernames are
-       case-insensitive.
-
-                                                           EVE(10.2)

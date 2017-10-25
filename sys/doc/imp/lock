@@ -1,82 +1,76 @@
-LOCK(10.2)                                                LOCK(10.2)
+= lock, canlock, ilock, iunlock, unlock: spin locks
 
-NAME
-       lock, canlock, ilock, iunlock, unlock - spin locks
+    void    lock(Lock *l)
 
-SYNOPSIS
-       void    lock(Lock *l)
+    int     canlock(Lock *l)
 
-       int     canlock(Lock *l)
+    void    unlock(Lock *l)
 
-       void    unlock(Lock *l)
+    void    ilock(Lock *l)
 
-       void    ilock(Lock *l)
+    void    iunlock(Lock *l)
 
-       void    iunlock(Lock *l)
+These  primitives  control  access  to shared resources using
+spin locks.  They in turn are used to build higher-level syn‐
+chronisation   mechanisms   such   as   those   described  in
+sleep(10.2), qlock(10.2) and qio(10.2).  They should be  used
+only  to  protect  short critical sections that update shared
+data structures.
 
-DESCRIPTION
-       These  primitives  control  access  to shared resources using
-       spin locks.  They in turn are used to build higher-level syn‐
-       chronisation   mechanisms   such   as   those   described  in
-       sleep(10.2), qlock(10.2) and qio(10.2).  They should be  used
-       only  to  protect  short critical sections that update shared
-       data structures.
+Lock loops repeatedly attempting  acquire  the  spin  lock  l
+until  it succeeds.  Lock should not be used to lock a struc‐
+ture shared with an interrupt handler unless  interrupts  are
+disabled  by  splhi(10.2)  before  attempting the lock; it is
+better to use ilock, below.
 
-       Lock loops repeatedly attempting  acquire  the  spin  lock  l
-       until  it succeeds.  Lock should not be used to lock a struc‐
-       ture shared with an interrupt handler unless  interrupts  are
-       disabled  by  splhi(10.2)  before  attempting the lock; it is
-       better to use ilock, below.
+Canlock is non-blocking.  Only one attempt is  made  for  the
+lock.   It  returns  non-zero  if  the  lock was successfully
+acquired; 0 otherwise.
 
-       Canlock is non-blocking.  Only one attempt is  made  for  the
-       lock.   It  returns  non-zero  if  the  lock was successfully
-       acquired; 0 otherwise.
+Unlock releases the lock l.  A lock must be unlocked only  by
+the locking process.
 
-       Unlock releases the lock l.  A lock must be unlocked only  by
-       the locking process.
+When  called  by  a  process, the functions above temporarily
+boost its priority to  the  highest  priority,  PriLock;  its
+original priority is restored at the end of the critical sec‐
+tion by unlock.  On a uniprocessor, if l is unavailable, lock
+can reschedule unless interrupts are disabled before entering
+lock or there is no current process (eg, when  executing  the
+scheduler).
 
-       When  called  by  a  process, the functions above temporarily
-       boost its priority to  the  highest  priority,  PriLock;  its
-       original priority is restored at the end of the critical sec‐
-       tion by unlock.  On a uniprocessor, if l is unavailable, lock
-       can reschedule unless interrupts are disabled before entering
-       lock or there is no current process (eg, when  executing  the
-       scheduler).
+Ilock  disables  interrupts  before attempting to acquire the
+lock.  It should be used to lock a resource shared between  a
+process  and  an  interrupt handler.  On a uniprocessor, dis‐
+abling interrupts is sufficient to exclude an interrupt  han‐
+dler  from  the critical section, and on a multiprocessor the
+spin lock excludes an interrupt handler  running  on  another
+processor.   Ilock  never  reschedules the caller, nor must a
+caller  allow  itself  to  be  rescheduled  (eg,  by  calling
+sleep(10.2)) before releasing the lock.
 
-       Ilock  disables  interrupts  before attempting to acquire the
-       lock.  It should be used to lock a resource shared between  a
-       process  and  an  interrupt handler.  On a uniprocessor, dis‐
-       abling interrupts is sufficient to exclude an interrupt  han‐
-       dler  from  the critical section, and on a multiprocessor the
-       spin lock excludes an interrupt handler  running  on  another
-       processor.   Ilock  never  reschedules the caller, nor must a
-       caller  allow  itself  to  be  rescheduled  (eg,  by  calling
-       sleep(10.2)) before releasing the lock.
+Iunlock releases a lock previously got by ilock.
 
-       Iunlock releases a lock previously got by ilock.
+== diagnostics
+The  lock  functions  guard  against the possibility of never
+acquiring the lock by capping the number  of  lock  attempts.
+If  the  limit is reached, a message of the following form is
+written on the console:
 
-DIAGNOSTICS
-       The  lock  functions  guard  against the possibility of never
-       acquiring the lock by capping the number  of  lock  attempts.
-       If  the  limit is reached, a message of the following form is
-       written on the console:
+       lock loop on lock-address key key-value pc caller-pc held by pc lock-pc
 
-              lock loop on lock-address key key-value pc caller-pc held by pc lock-pc
+Most lock loops represent  deadlocks  caused  by  failing  to
+unlock a resource, attempting to lock (eg, by recursive call)
+a resource already held by the process, inconsistent  locking
+and unlocking of nested resources, using a spin-lock to guard
+code that reschedules, using lock not ilock to interlock with
+an interrupt routine, and similar blunders.
 
-       Most lock loops represent  deadlocks  caused  by  failing  to
-       unlock a resource, attempting to lock (eg, by recursive call)
-       a resource already held by the process, inconsistent  locking
-       and unlocking of nested resources, using a spin-lock to guard
-       code that reschedules, using lock not ilock to interlock with
-       an interrupt routine, and similar blunders.
+== source
+/os/port/taslock.c
+/os/*/l.s
+/emu/port/lock.c
+/emu/*/os.c
 
-SOURCE
-       /os/port/taslock.c
-       /os/*/l.s
-       /emu/port/lock.c
-       /emu/*/os.c
+== see ALSO
+qlock(10.2)
 
-SEE ALSO
-       qlock(10.2)
-
-                                                          LOCK(10.2)

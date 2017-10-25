@@ -1,43 +1,37 @@
-VIRGIL(2)                System Calls Manual               VIRGIL(2)
+= virgil: pose question to name resolver
 
-NAME
-       virgil - pose question to name resolver
+    include "security.m";
+    virgil := load Virgil Virgil->PATH;
 
-SYNOPSIS
-       include "security.m";
-       virgil := load Virgil Virgil->PATH;
+    virgil:   fn(args: list of string): string;
+    
+Virgil provides a client side interface for interactions with
+the name resolution service virgild(8).
 
-       virgil:   fn(args: list of string): string;
+Args is a command line of the form:
 
-DESCRIPTION
-       Virgil provides a client side interface for interactions with
-       the name resolution service virgild(8).
+       virgil [-v address] [name]
 
-       Args is a command line of the form:
+Name is the host name to be resolved to  a  network  address.
+Normally  the  request  is  broadcast  to any and all virgild
+servers on the network,  which  virgil  expects  to  find  on
+UDP/IP  port 2202.  The -v option instead directs the request
+to the given numeric IP address.
 
-              virgil [-v address] [name]
+Virgil waits up to 5 seconds for a reply, retransmitting  the
+request  once  a  second.   It  accepts and returns the first
+answer it receives.
 
-       Name is the host name to be resolved to  a  network  address.
-       Normally  the  request  is  broadcast  to any and all virgild
-       servers on the network,  which  virgil  expects  to  find  on
-       UDP/IP  port 2202.  The -v option instead directs the request
-       to the given numeric IP address.
+== source
+/appl/lib/virgil.b
 
-       Virgil waits up to 5 seconds for a reply, retransmitting  the
-       request  once  a  second.   It  accepts and returns the first
-       answer it receives.
+== see ALSO
+dial(2), cs(8), register(8), virgild(8)
 
-SOURCE
-       /appl/lib/virgil.b
+== diagnostics
+Virgil returns for invalid arguments and if the name was  not
+resolved.
 
-SEE ALSO
-       dial(2), cs(8), register(8), virgild(8)
+== bugs
+The virgild port is hard coded.
 
-DIAGNOSTICS
-       Virgil returns for invalid arguments and if the name was  not
-       resolved.
-
-BUGS
-       The virgild port is hard coded.
-
-                                                           VIRGIL(2)

@@ -1,72 +1,65 @@
-KEYRING-AUTH(2)          System Calls Manual         KEYRING-AUTH(2)
+= keyring: auth, readauthinfo, writeauthinfo: authenticate a connection
 
-NAME
-       keyring:  auth,  readauthinfo, writeauthinfo - authenticate a
-       connection
+    include "keyring.m";
+    keyring := load Keyring Keyring->PATH;
+    auth:           fn(fd: ref Sys->FD, info: ref Authinfo, setid: int)
+                    : (string, array of byte);
+    readauthinfo:   fn(filename: string): ref Authinfo;
+    writeauthinfo:  fn(filename: string, info: ref Authinfo): int;
 
-SYNOPSIS
-       include "keyring.m";
-       keyring := load Keyring Keyring->PATH;
-       auth:           fn(fd: ref Sys->FD, info: ref Authinfo, setid: int)
-                       : (string, array of byte);
-       readauthinfo:   fn(filename: string): ref Authinfo;
-       writeauthinfo:  fn(filename: string, info: ref Authinfo): int;
+Auth performs mutual authentication over  a  network  connec‐
+tion, usually between a client and a server.  The function is
+symmetric: each party runs it on their end of the connection.
+Info  holds  the public key of a certifying authority (PKca),
+the private key of the user (SKu), the public  key  (PKu)  of
+the  user  signed  by  the  certifying authority (CERTu), and
+Diffie-Hellman parameters (alpha, p).
 
-DESCRIPTION
-       Auth performs mutual authentication over  a  network  connec‐
-       tion, usually between a client and a server.  The function is
-       symmetric: each party runs it on their end of the connection.
-       Info  holds  the public key of a certifying authority (PKca),
-       the private key of the user (SKu), the public  key  (PKu)  of
-       the  user  signed  by  the  certifying authority (CERTu), and
-       Diffie-Hellman parameters (alpha, p).
+Auth returns a string and a byte array.  If the byte array is
+nil  then  the authentication has failed and the string is an
+error message. If the byte array is non-nil, it represents  a
+secret  shared  by  the  two  communicating  parties, and the
+string names the party at the other end of the connection.
 
-       Auth returns a string and a byte array.  If the byte array is
-       nil  then  the authentication has failed and the string is an
-       error message. If the byte array is non-nil, it represents  a
-       secret  shared  by  the  two  communicating  parties, and the
-       string names the party at the other end of the connection.
+If the authentication is successful  and  setid  is  non-zero
+then  auth  attempts  to  write  the name of the party at the
+other end of the connection into /dev/user (see cons(3));  no
+error  is generated if that does not succeed.  If the authen‐
+tication is not successful and setid is non-zero, auth writes
+the name nobody into /dev/user.
 
-       If the authentication is successful  and  setid  is  non-zero
-       then  auth  attempts  to  write  the name of the party at the
-       other end of the connection into /dev/user (see cons(3));  no
-       error  is generated if that does not succeed.  If the authen‐
-       tication is not successful and setid is non-zero, auth writes
-       the name nobody into /dev/user.
+The  authentication  protocol is based on the Station-to-Sta‐
+tion protocol. In the following, the parties are  labelled  0
+and 1.  Sig0(x) is x signed with 0's private key.
 
-       The  authentication  protocol is based on the Station-to-Sta‐
-       tion protocol. In the following, the parties are  labelled  0
-       and 1.  Sig0(x) is x signed with 0's private key.
+       0 → 1  alpha**r0 mod p, CERTu0, PKu0
+       1 → 0  alpha**r1 mod p, CERTu1, PKu1
+       0 → 1  sig0(alpha**r0 mod p, alpha**r1 mod p)
+       1 → 0  sig1(alpha**r0 mod p, alpha**r1 mod p)
 
-              0 → 1  alpha**r0 mod p, CERTu0, PKu0
-              1 → 0  alpha**r1 mod p, CERTu1, PKu1
-              0 → 1  sig0(alpha**r0 mod p, alpha**r1 mod p)
-              1 → 0  sig1(alpha**r0 mod p, alpha**r1 mod p)
+At  this  point  both 0 and 1 share the secret alpha**(r0*r1)
+which is returned in the byte array.  Amongst  other  things,
+it can be the secret to digest or encrypt a conversation (see
+security-ssl(2)).
 
-       At  this  point  both 0 and 1 share the secret alpha**(r0*r1)
-       which is returned in the byte array.  Amongst  other  things,
-       it can be the secret to digest or encrypt a conversation (see
-       security-ssl(2)).
+Readauthinfo reads a representation of  an  Authinfo  from  a
+file.   It  returns nil if there is a read error or a conver‐
+sion error; it returns a reference to the Authinfo otherwise.
 
-       Readauthinfo reads a representation of  an  Authinfo  from  a
-       file.   It  returns nil if there is a read error or a conver‐
-       sion error; it returns a reference to the Authinfo otherwise.
+Writeauthinfo writes a representation of info to a  file.  It
+returns -1 if the write operation fails, 0 otherwise.
 
-       Writeauthinfo writes a representation of info to a  file.  It
-       returns -1 if the write operation fails, 0 otherwise.
+== files
+/usr/user/keyring
+       The conventional directory for storing Authinfo files
 
-FILES
-       /usr/user/keyring
-              The conventional directory for storing Authinfo files
+/usr/user/keyring/default
+       The key file normally used by server programs
 
-       /usr/user/keyring/default
-              The key file normally used by server programs
+/usr/user/keyring/net!server
+       The  key  file  normally  used  by clients for a given
+       server
 
-       /usr/user/keyring/net!server
-              The  key  file  normally  used  by clients for a given
-              server
+== source
+/libinterp/keyring.c
 
-SOURCE
-       /libinterp/keyring.c
-
-                                                     KEYRING-AUTH(2)

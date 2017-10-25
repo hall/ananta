@@ -1,53 +1,46 @@
-VID(3)                Library Functions Manual                VID(3)
+= vid: Motorola 823 video output
 
-NAME
-       vid - Motorola 823 video output
+    bind -b #v /dev
 
-SYNOPSIS
-       bind -b #v /dev
+    /dev/viddata
+    /dev/vidctl
+    /dev/vidcram
 
-       /dev/viddata
-       /dev/vidctl
-       /dev/vidcram
+The  vid  device  serves two files giving basic access to the
+on-chip video output of the Motorola 823.  It assumes a video
+hardware  configuration  exactly  like  that  of  the 823FADS
+board, with an I²C interface to an off-chip ADV7176  NTSC/PAL
+converter at I²C address 0x54.
 
-DESCRIPTION
-       The  vid  device  serves two files giving basic access to the
-       on-chip video output of the Motorola 823.  It assumes a video
-       hardware  configuration  exactly  like  that  of  the 823FADS
-       board, with an I²C interface to an off-chip ADV7176  NTSC/PAL
-       converter at I²C address 0x54.
+The control device vidctl accepts the following commands:
 
-       The control device vidctl accepts the following commands:
+on     Disable  LCD panel (if present) and enable output from
+       the video frame buffer.
 
-       on     Disable  LCD panel (if present) and enable output from
-              the video frame buffer.
+off    Stop display from the video frame buffer and re-enable
+       the LCD panel (if present).
 
-       off    Stop display from the video frame buffer and re-enable
-              the LCD panel (if present).
+mode m Set  the  video  output  format to m, which is one of:
+       ntsc, pal-i, pal-m or pal-n.   This  command  is  only
+       effective   when  video  output  is  off.   When  next
+       switched on, the both the  video  controller  RAM  and
+       ADV7176 are reprogrammed to the new format.
 
-       mode m Set  the  video  output  format to m, which is one of:
-              ntsc, pal-i, pal-m or pal-n.   This  command  is  only
-              effective   when  video  output  is  off.   When  next
-              switched on, the both the  video  controller  RAM  and
-              ADV7176 are reprogrammed to the new format.
+Video data can be written to the video frame buffer by writes
+of the viddata file.  The file offset  selects  the  starting
+byte within the frame buffer.  Reads return the corresponding
+data from the frame buffer.  The application  is  responsible
+for  formatting the data as the 823's video encoder requires,
+for the selected video format.
 
-       Video data can be written to the video frame buffer by writes
-       of the viddata file.  The file offset  selects  the  starting
-       byte within the frame buffer.  Reads return the corresponding
-       data from the frame buffer.  The application  is  responsible
-       for  formatting the data as the 823's video encoder requires,
-       for the selected video format.
+The file vidcram gives read and write access to the  contents
+of the video control RAM.  The file offset addresses bytes in
+the RAM; values can be read from or written  to  the  RAM  in
+groups of 4-byte big-endian words.
 
-       The file vidcram gives read and write access to the  contents
-       of the video control RAM.  The file offset addresses bytes in
-       the RAM; values can be read from or written  to  the  RAM  in
-       groups of 4-byte big-endian words.
+== source
+/os/mpc/devvid.c
 
-SOURCE
-       /os/mpc/devvid.c
-
-BUGS
-       Square  pixel mode cannot be used on the FADS board: no suit‐
-       able video clock source is available.
-
-                               MPC823                         VID(3)
+== bugs
+Square  pixel mode cannot be used on the FADS board: no suit‐
+able video clock source is available.

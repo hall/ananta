@@ -1,56 +1,50 @@
-ETHER(2)                 System Calls Manual                ETHER(2)
+= ether: Ethernet address manipulation
 
-NAME
-       ether - Ethernet address manipulation
+    include "ether.m";
+    ether := load Ether Ether->PATH;
 
-SYNOPSIS
-       include "ether.m";
-       ether := load Ether Ether->PATH;
+    Eaddrlen: con 6;
 
-       Eaddrlen: con 6;
+    init:   fn();
+    parse:  fn(s: string): array of byte;
+    text:   fn(a: array of byte): string;
+    addressof:  fn(dev: string): array of byte;
+    eqaddr: fn(a, b: array of byte): int;
 
-       init:   fn();
-       parse:  fn(s: string): array of byte;
-       text:   fn(a: array of byte): string;
-       addressof:  fn(dev: string): array of byte;
-       eqaddr: fn(a, b: array of byte): int;
+Ether  provides  a  small  set  of  functions that manipulate
+Ethernet MAC addresses, for the use of the  few  applications
+such as bootpd(8) that must work with them.
 
-DESCRIPTION
-       Ether  provides  a  small  set  of  functions that manipulate
-       Ethernet MAC addresses, for the use of the  few  applications
-       such as bootpd(8) that must work with them.
+Init  must  be  called before using any other function in the
+module.
 
-       Init  must  be  called before using any other function in the
-       module.
+Parse takes a textual representation of a MAC  address  in  s
+and  returns its internal representation as an array of bytes
+of length Eaddrlen, the form used in packets read and written
+via  ether(3).   S  is a string of twelve hexadecimal digits,
+corresponding to the six bytes of a MAC address.   Each  pair
+of  digits  can  optionally be separated by a colon.  If s is
+invalid, parse returns nil.
 
-       Parse takes a textual representation of a MAC  address  in  s
-       and  returns its internal representation as an array of bytes
-       of length Eaddrlen, the form used in packets read and written
-       via  ether(3).   S  is a string of twelve hexadecimal digits,
-       corresponding to the six bytes of a MAC address.   Each  pair
-       of  digits  can  optionally be separated by a colon.  If s is
-       invalid, parse returns nil.
+Text takes an array of bytes of length Eaddrlen  and  returns
+its  textual  representation  (a string of twelve hexadecimal
+digits).  It returns if the array is less than Eaddrlen,  but
+it ignores any bytes beyond that.
 
-       Text takes an array of bytes of length Eaddrlen  and  returns
-       its  textual  representation  (a string of twelve hexadecimal
-       digits).  It returns if the array is less than Eaddrlen,  but
-       it ignores any bytes beyond that.
+Addressof  returns  the MAC address of the given Ether device
+dev (eg, which it reads from dev/addr.  It  returns  nil  and
+sets  the  error  string  if  that  file does not exist or is
+invalid.
 
-       Addressof  returns  the MAC address of the given Ether device
-       dev (eg, which it reads from dev/addr.  It  returns  nil  and
-       sets  the  error  string  if  that  file does not exist or is
-       invalid.
+Eqaddr returns true iff a and b are the same address.
 
-       Eqaddr returns true iff a and b are the same address.
+== files
+net/etherN/addr
+       hardware address of Ether N
 
-FILES
-       net/etherN/addr
-              hardware address of Ether N
+== source
+/appl/lib/ether.b
 
-SOURCE
-       /appl/lib/ether.b
+== see ALSO
+ip(2), ether(3)
 
-SEE ALSO
-       ip(2), ether(3)
-
-                                                            ETHER(2)

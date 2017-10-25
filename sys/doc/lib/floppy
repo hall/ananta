@@ -1,40 +1,33 @@
-FLOPPY(3)             Library Functions Manual             FLOPPY(3)
+= floppy: floppy disk interface
 
-NAME
-       floppy - floppy disk interface
+    bind -a '#f' /dev
 
-SYNOPSIS
-       bind -a '#f' /dev
+    /dev/fd0disk
+    /dev/fd0ctl
+    /dev/fd1disk
+    /dev/fd1ctl
+    /dev/fd2disk
+    /dev/fd2ctl
+    /dev/fd3disk
+    /dev/fd3ctl
 
-       /dev/fd0disk
-       /dev/fd0ctl
-       /dev/fd1disk
-       /dev/fd1ctl
-       /dev/fd2disk
-       /dev/fd2ctl
-       /dev/fd3disk
-       /dev/fd3ctl
+The floppy disk interface serves a one-level directory giving
+access to up to four floppy disk drives.  Each drive is  rep‐
+resented  by  a  data  and control file.  There are no parti‐
+tions.
 
-DESCRIPTION
-       The floppy disk interface serves a one-level directory giving
-       access to up to four floppy disk drives.  Each drive is  rep‐
-       resented  by  a  data  and control file.  There are no parti‐
-       tions.
+Messages accepted by the ctl file include:
 
-       Messages accepted by the ctl file include:
+eject  Eject the floppy, if possible.
 
-       eject  Eject the floppy, if possible.
+reset  Reset the drive.
 
-       reset  Reset the drive.
+format type
+       Format the floppy.  The type sets the density and type
+       of disk to be formatted; see format(8).
 
-       format type
-              Format the floppy.  The type sets the density and type
-              of disk to be formatted; see format(8).
+A  read  of the ctl file returns a string describing the form
+factor of the disk, one of 3½DD, 3½HD, 5¼DD, or 5¼HD.
 
-       A  read  of the ctl file returns a string describing the form
-       factor of the disk, one of 3½DD, 3½HD, 5¼DD, or 5¼HD.
-
-SOURCE
-       /os/pc/devfloppy.c
-
-                                                           FLOPPY(3)
+== source
+/os/pc/devfloppy.c

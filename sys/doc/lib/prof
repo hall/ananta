@@ -1,92 +1,85 @@
-PROF(3)               Library Functions Manual               PROF(3)
+= prof: profiling device
 
-NAME
-       prof - profiling device
+    bind #P /prof
 
-SYNOPSIS
-       bind #P /prof
+    /prof/ctl
+    /prof/n/name
+    /prof/n/path
+    /prof/n/histogram
+    /prof/n/pctl
 
-       /prof/ctl
-       /prof/n/name
-       /prof/n/path
-       /prof/n/histogram
-       /prof/n/pctl
+The  prof  device serves a two-level directory structure. The
+first level contains a control file ctl and zero or more num‐
+bered  directories  each corresponding to a module being pro‐
+filed. Inside each of these numbered directories are  further
+files which describe the particular module being profiled.
 
-DESCRIPTION
-       The  prof  device serves a two-level directory structure. The
-       first level contains a control file ctl and zero or more num‐
-       bered  directories  each corresponding to a module being pro‐
-       filed. Inside each of these numbered directories are  further
-       files which describe the particular module being profiled.
+The  write-only  control  file ctl provides the facilities to
+profile a module. Messages written to this file initiate  and
+control the profiling.
 
-       The  write-only  control  file ctl provides the facilities to
-       profile a module. Messages written to this file initiate  and
-       control the profiling.
+module name
+          Add  the module or the module whose path is name to
+          the list of modules to be profiled.
 
-       module name
-                 Add  the module or the module whose path is name to
-                 the list of modules to be profiled.
+start     Start profiling all modules in the above  list  or,
+          if  the  list is empty, start profiling all modules
+          loaded by the kernel. The profiling is done by sam‐
+          pling.
 
-       start     Start profiling all modules in the above  list  or,
-                 if  the  list is empty, start profiling all modules
-                 loaded by the kernel. The profiling is done by sam‐
-                 pling.
+startcp   As  above  but  do coverage profiling. All instruc‐
+          tions executed in the wanted modules are counted.
 
-       startcp   As  above  but  do coverage profiling. All instruc‐
-                 tions executed in the wanted modules are counted.
+startmp   As above but do memory profiling. All  heap  memory
+          allocations  are  associated  with  a line of limbo
+          source and all deallocations with the line that did
+          the allocation.
 
-       startmp   As above but do memory profiling. All  heap  memory
-                 allocations  are  associated  with  a line of limbo
-                 source and all deallocations with the line that did
-                 the allocation.
+stop      Stop all profiling.
 
-       stop      Stop all profiling.
+end       Stop  all  profiling and free all memory associated
+          with the  modules  being  profiled.   The  profiler
+          returns to it's initial state with no modules under
+          profile.
 
-       end       Stop  all  profiling and free all memory associated
-                 with the  modules  being  profiled.   The  profiler
-                 returns to it's initial state with no modules under
-                 profile.
+interval i
+          Change the sampling interval to i ms.  The  default
+          sampling rate is 100 ms.
 
-       interval i
-                 Change the sampling interval to i ms.  The  default
-                 sampling rate is 100 ms.
+The  second  level directories contain information about each
+module under profile.
 
-       The  second  level directories contain information about each
-       module under profile.
+The read-only file name contains the name of  the  module  in
+the form it appears in it's module source file.
 
-       The read-only file name contains the name of  the  module  in
-       the form it appears in it's module source file.
+The  read-only  file  path  contains the path of the dis file
+that implements the module.
 
-       The  read-only  file  path  contains the path of the dis file
-       that implements the module.
+The write-only control file pctl allows finer control of  the
+profiling of a module. It is not used at present.
 
-       The write-only control file pctl allows finer control of  the
-       profiling of a module. It is not used at present.
+The  read-only  file  histogram contains statistics about the
+profiled module. The file contains a list of pairs  of  inte‐
+gers  seperated by a space. The first number of the pair is a
+program counter value  representing  the  address  of  a  dis
+instruction.  Addresses start from 0 and the list is in order
+of increasing address. The second  number  is  the  frequency
+with  which  this address was sampled. Each read of this file
+returns the next pair in the list. The frequency  is  guaran‐
+teed to be non-zero.
 
-       The  read-only  file  histogram contains statistics about the
-       profiled module. The file contains a list of pairs  of  inte‐
-       gers  seperated by a space. The first number of the pair is a
-       program counter value  representing  the  address  of  a  dis
-       instruction.  Addresses start from 0 and the list is in order
-       of increasing address. The second  number  is  the  frequency
-       with  which  this address was sampled. Each read of this file
-       returns the next pair in the list. The frequency  is  guaran‐
-       teed to be non-zero.
+When coverage profiling the second number of each pair is the
+number of times that dis instruction was executed, when  mem‐
+ory profiling it's the amount of memory in bytes.
 
-       When coverage profiling the second number of each pair is the
-       number of times that dis instruction was executed, when  mem‐
-       ory profiling it's the amount of memory in bytes.
+== source
+/emu/port/devprof.c
 
-SOURCE
-       /emu/port/devprof.c
+== bugs
+The  device profiles on a global basis and therefore does not
+distinguish between multiple profilers running at once.
 
-BUGS
-       The  device profiles on a global basis and therefore does not
-       distinguish between multiple profilers running at once.
+The coverage profiling can only be done on dis instructions.
 
-       The coverage profiling can only be done on dis instructions.
-
-       The device can do only one of time, coverage or  memory  pro‐
-       filing at once.
-
-                                                             PROF(3)
+The device can do only one of time, coverage or  memory  pro‐
+filing at once.

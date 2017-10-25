@@ -1,68 +1,62 @@
-PREFAB-STYLE(2)          System Calls Manual         PREFAB-STYLE(2)
+= prefab: Style: fonts and colours for ITV toolkit
 
-NAME
-       prefab: Style - fonts and colours for ITV toolkit
+    include "draw.m";
+    include "prefab.m";
+    prefab := load Prefab Prefab->PATH;
 
-SYNOPSIS
-       include "draw.m";
-       include "prefab.m";
-       prefab := load Prefab Prefab->PATH;
+    Style: adt
+    {
+        titlefont:      ref Draw->Font;
+        textfont:       ref Draw->Font;
+        elemcolor:      ref Draw->Image;
+        edgecolor:      ref Draw->Image;
+        titlecolor:     ref Draw->Image;
+        textcolor:      ref Draw->Image;
+        highlightcolor: ref Draw->Image;
+    };
 
-       Style: adt
-       {
-           titlefont:      ref Draw->Font;
-           textfont:       ref Draw->Font;
-           elemcolor:      ref Draw->Image;
-           edgecolor:      ref Draw->Image;
-           titlecolor:     ref Draw->Image;
-           textcolor:      ref Draw->Image;
-           highlightcolor: ref Draw->Image;
-       };
+The  Style  type collects the font and colour information for
+an application or a  set  of  items  within  an  application.
+Except when using the layout routines (see prefab-compound(2)
+and prefab-element(2)), the members of a Style are  the  only
+way  to  control  the  appearance of Prefab items.  Note that
+although the `...color' members of Style  in  practice  often
+refer  to  a  literal  colour  (a  single replicated pixel of
+colour), they can be any image.
 
-DESCRIPTION
-       The  Style  type collects the font and colour information for
-       an application or a  set  of  items  within  an  application.
-       Except when using the layout routines (see prefab-compound(2)
-       and prefab-element(2)), the members of a Style are  the  only
-       way  to  control  the  appearance of Prefab items.  Note that
-       although the `...color' members of Style  in  practice  often
-       refer  to  a  literal  colour  (a  single replicated pixel of
-       colour), they can be any image.
+Styles are allocated by regular Limbo definitions;  there  is
+no  allocation  function.  All the members of a Style must be
+defined.  Although it will not cause  errors  to  modify  the
+members  of a Style after it has been created and passed to a
+Prefab routine, the results may be unpredictable.
 
-       Styles are allocated by regular Limbo definitions;  there  is
-       no  allocation  function.  All the members of a Style must be
-       defined.  Although it will not cause  errors  to  modify  the
-       members  of a Style after it has been created and passed to a
-       Prefab routine, the results may be unpredictable.
+edgecolor This Image specifies how to draw the edges, or bor‐
+          ders, of compounds.
 
-       edgecolor This Image specifies how to draw the edges, or bor‐
-                 ders, of compounds.
+elemcolor This Image specifies how to draw the base, or back‐
+          ground, of elements and compounds.
 
-       elemcolor This Image specifies how to draw the base, or back‐
-                 ground, of elements and compounds.
+highlightcolor
+          This Image specifies the colour to use to highlight
+          a selected element.
 
-       highlightcolor
-                 This Image specifies the colour to use to highlight
-                 a selected element.
+textcolor This Image specifies the colour in which to draw an
+          item's regular text.
 
-       textcolor This Image specifies the colour in which to draw an
-                 item's regular text.
+textfont  This Font specifies the font in which  to  draw  an
+          item's regular text.
 
-       textfont  This Font specifies the font in which  to  draw  an
-                 item's regular text.
+titlecolor
+          This Image specifies the colour in which to draw an
+          item's title text.
 
-       titlecolor
-                 This Image specifies the colour in which to draw an
-                 item's title text.
+titlefont This Font specifies the font in which  to  draw  an
+          item's title text.
 
-       titlefont This Font specifies the font in which  to  draw  an
-                 item's title text.
+== source
+/libinterp/prefab.c
+/libprefab/*.c
 
-SOURCE
-       /libinterp/prefab.c
-       /libprefab/*.c
+== see ALSO
+prefab-intro(2), prefab-environ(2)
 
-SEE ALSO
-       prefab-intro(2), prefab-environ(2)
-
-                                                     PREFAB-STYLE(2)

@@ -1,90 +1,84 @@
-DRAW-RECT(2)             System Calls Manual            DRAW-RECT(2)
+= Rect: rectangular portion of the plane
 
-NAME
-       Rect - rectangular portion of the plane
+    include   "draw.m";
+    draw := load Draw Draw->PATH;
 
-SYNOPSIS
-       include   "draw.m";
-       draw := load Draw Draw->PATH;
+    Rect: adt
+    {
+      min:      Point;
+      max:      Point;
+    
+      canon:    fn(r: self Rect):             Rect;
+      dx:       fn(r: self Rect):             int;
+      dy:       fn(r: self Rect):             int;
+      eq:       fn(r: self Rect, s: Rect):    int;
+      Xrect:    fn(r: self Rect, s: Rect):    int;
+      inrect:   fn(r: self Rect, s: Rect):    int;
+      clip:     fn(r: self Rect, s: Rect):    (Rect, int);
+      combine:  fn(r: self Rect, s: Rect):    Rect;
+      contains: fn(r: self Rect, p: Point):   int;
+      addpt:    fn(r: self Rect, p: Point):   Rect;
+      subpt:    fn(r: self Rect, p: Point):   Rect;
+      inset:    fn(r: self Rect; n: int):     Rect;
+    };
 
-       Rect: adt
-       {
-         min:      Point;
-         max:      Point;
+The  type  Rect  defines a rectangular portion of the integer
+grid.
 
-         canon:    fn(r: self Rect):             Rect;
-         dx:       fn(r: self Rect):             int;
-         dy:       fn(r: self Rect):             int;
-         eq:       fn(r: self Rect, s: Rect):    int;
-         Xrect:    fn(r: self Rect, s: Rect):    int;
-         inrect:   fn(r: self Rect, s: Rect):    int;
-         clip:     fn(r: self Rect, s: Rect):    (Rect, int);
-         combine:  fn(r: self Rect, s: Rect):    Rect;
-         contains: fn(r: self Rect, p: Point):   int;
-         addpt:    fn(r: self Rect, p: Point):   Rect;
-         subpt:    fn(r: self Rect, p: Point):   Rect;
-         inset:    fn(r: self Rect; n: int):     Rect;
-       };
+min, max  These members define the upper left (min) and lower
+          right  (max) points for the rectangle.  The rectan‐
+          gle  contains  the  pixels  min.x ≤ x < max.x   and
+          min.y ≤ y < max.y.   In  general,  Rect coordinates
+          should be  in  canonical  form:  min.x ≤ max.x  and
+          min.y ≤ max.y.    Some   functions  give  undefined
+          results if the input rectangles are not canonical.
 
-DESCRIPTION
-       The  type  Rect  defines a rectangular portion of the integer
-       grid.
+r.canon() Returns a canonical rectangle by sorting the  coor‐
+          dinates of r.
 
-       min, max  These members define the upper left (min) and lower
-                 right  (max) points for the rectangle.  The rectan‐
-                 gle  contains  the  pixels  min.x ≤ x < max.x   and
-                 min.y ≤ y < max.y.   In  general,  Rect coordinates
-                 should be  in  canonical  form:  min.x ≤ max.x  and
-                 min.y ≤ max.y.    Some   functions  give  undefined
-                 results if the input rectangles are not canonical.
+r.dx()    Returns the horizontal dimension of r.
 
-       r.canon() Returns a canonical rectangle by sorting the  coor‐
-                 dinates of r.
+r.dy()    Returns the vertical dimension of r.
 
-       r.dx()    Returns the horizontal dimension of r.
+r.eq(s)   Returns non-zero if the rectangles r and s have the
+          same coordinates and zero otherwise.
 
-       r.dy()    Returns the vertical dimension of r.
+r.Xrect(s)
+          Returns non-zero if the rectangles r and  s  inter‐
+          sect  and  zero  otherwise.  Intersection means the
+          rectangles share at  least  one  pixel;  zero-sized
+          rectangles do not intersect.
 
-       r.eq(s)   Returns non-zero if the rectangles r and s have the
-                 same coordinates and zero otherwise.
+r.inrect(s)
+          Returns  non-zero  if  r is completely inside s and
+          zero otherwise.  Rectangles with equal  coordinates
+          are considered to be inside each other.  Zero-sized
+          rectangles contain no rectangles.
 
-       r.Xrect(s)
-                 Returns non-zero if the rectangles r and  s  inter‐
-                 sect  and  zero  otherwise.  Intersection means the
-                 rectangles share at  least  one  pixel;  zero-sized
-                 rectangles do not intersect.
+r.clip(s) Computes the intersection between r and s.  If  the
+          input   rectangles   intersect,  clip  returns  the
+          resulting rectangle and a non-zero  integer  value.
+          If  the rectangles do not intersect, clip returns r
+          and a zero value.
 
-       r.inrect(s)
-                 Returns  non-zero  if  r is completely inside s and
-                 zero otherwise.  Rectangles with equal  coordinates
-                 are considered to be inside each other.  Zero-sized
-                 rectangles contain no rectangles.
+r.combine(s)
+          Returns the smallest rectangle sufficient to  cover
+          all the pixels of r and s.
 
-       r.clip(s) Computes the intersection between r and s.  If  the
-                 input   rectangles   intersect,  clip  returns  the
-                 resulting rectangle and a non-zero  integer  value.
-                 If  the rectangles do not intersect, clip returns r
-                 and a zero value.
+r.contains(p)
+          Returns  non-zero  if  the rectangle r contains the
+          pixel with the coordinates of p and zero otherwise.
+          Zero-sized rectangles contain no points.
 
-       r.combine(s)
-                 Returns the smallest rectangle sufficient to  cover
-                 all the pixels of r and s.
+r.addpt(p)
+          Returns the rectangle (r.min.add(p), r.max.add(p)).
 
-       r.contains(p)
-                 Returns  non-zero  if  the rectangle r contains the
-                 pixel with the coordinates of p and zero otherwise.
-                 Zero-sized rectangles contain no points.
+r.subpt(p)
+          Returns the rectangle (r.min.sub(p), r.max.sub(p)).
 
-       r.addpt(p)
-                 Returns the rectangle (r.min.add(p), r.max.add(p)).
+r.inset(n)
+          Returns    the    rectangle   (r.min.add((n,   n)),
+          r.max.sub((n, n)).   The  result  will  not  be  in
+          canonical form if the inset amount is too large for
+          the rectangle.
 
-       r.subpt(p)
-                 Returns the rectangle (r.min.sub(p), r.max.sub(p)).
-
-       r.inset(n)
-                 Returns    the    rectangle   (r.min.add((n,   n)),
-                 r.max.sub((n, n)).   The  result  will  not  be  in
-                 canonical form if the inset amount is too large for
-                 the rectangle.
-
-                                                        DRAW-RECT(2)

@@ -1,48 +1,42 @@
-DIALOG(2)                System Calls Manual               DIALOG(2)
+= dialog: prompt, getstring: basic dialog boxes
 
-NAME
-       dialog: prompt, getstring - basic dialog boxes
+    include "dialog.m";
+    dialog := load Dialog Dialog->PATH;
 
-SYNOPSIS
-       include "dialog.m";
-       dialog := load Dialog Dialog->PATH;
+    init:        fn();
+    prompt:      fn(ctxt: ref Draw->Context, p: ref Draw->Image,
+                   icon, title, msg: string,
+                   dflt: int, labs: list of string): int;
+    getstring:   fn(ctxt: ref Draw->Context, p: ref Draw->Image,
+                   s: string): string;
 
-       init:        fn();
-       prompt:      fn(ctxt: ref Draw->Context, p: ref Draw->Image,
-                      icon, title, msg: string,
-                      dflt: int, labs: list of string): int;
-       getstring:   fn(ctxt: ref Draw->Context, p: ref Draw->Image,
-                      s: string): string;
+Dialog  module  provides  two  simple dialog boxes for use by
+wm(1) applications.  Init should be called once to initialise
+its internal state.
 
-DESCRIPTION
-       Dialog  module  provides  two  simple dialog boxes for use by
-       wm(1) applications.  Init should be called once to initialise
-       its internal state.
+Prompt  uses the graphics context ctxt to pop up a dialog box
+to prompt the user to choose from a set of  alternatives,  or
+to acknowledge a message.  The box is created near the north‐
+west corner of the parent window p, represented by  the  win‐
+dow's  image.   (If the parent window is a Tk Toplevel t, for
+instance, the appropriate value is t.image.)  If  p  is  nil,
+the  box  is  centred  on  the screen.  The box has the given
+title and an optional icon.  It displays the given msg and  a
+number  of  buttons,  labelled with the strings in labs.  The
+dialog box waits for the user to  push  a  button,  and  then
+returns  the index of the button pushed (the first element of
+labs is index 0).  If the user  types  a  newline,  the  dflt
+value  is  returned.   The button with the dflt index is spe‐
+cially outlined in the dialog box.
 
-       Prompt  uses the graphics context ctxt to pop up a dialog box
-       to prompt the user to choose from a set of  alternatives,  or
-       to acknowledge a message.  The box is created near the north‐
-       west corner of the parent window p, represented by  the  win‐
-       dow's  image.   (If the parent window is a Tk Toplevel t, for
-       instance, the appropriate value is t.image.)  If  p  is  nil,
-       the  box  is  centred  on  the screen.  The box has the given
-       title and an optional icon.  It displays the given msg and  a
-       number  of  buttons,  labelled with the strings in labs.  The
-       dialog box waits for the user to  push  a  button,  and  then
-       returns  the index of the button pushed (the first element of
-       labs is index 0).  If the user  types  a  newline,  the  dflt
-       value  is  returned.   The button with the dflt index is spe‐
-       cially outlined in the dialog box.
+Getstring pops up a dialog box near the parent window p.  The
+box  contains  the msg and an entry widget.  It waits for the
+user to type a string and a newline,  and  then  returns  the
+typed string, without the newline.
 
-       Getstring pops up a dialog box near the parent window p.  The
-       box  contains  the msg and an entry widget.  It waits for the
-       user to type a string and a newline,  and  then  returns  the
-       typed string, without the newline.
+== source
+/appl/lib/dialog.b
 
-SOURCE
-       /appl/lib/dialog.b
+== see ALSO
+draw-context(2), tk(2), wmlib(2)
 
-SEE ALSO
-       draw-context(2), tk(2), wmlib(2)
-
-                                                           DIALOG(2)

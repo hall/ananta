@@ -1,43 +1,37 @@
-FILTER-SLIP(2)           System Calls Manual          FILTER-SLIP(2)
+= slip: SLIP data framing protocol
 
-NAME
-       slip - SLIP data framing protocol
+    include "filter.m";
 
-SYNOPSIS
-       include "filter.m";
+    slip := load Filter Filter->SLIPPATH;
 
-       slip := load Filter Filter->SLIPPATH;
+    init:  fn();
+    start: fn(param: string): chan of ref Rq;
 
-       init:  fn();
-       start: fn(param: string): chan of ref Rq;
+Slip  provides  the  SLIP  data framing protocol described by
+RFC1055.  The module is  an  implementation  of  the  general
+data-processing module type Filter; see filter(2) for details
+of that general interface.
 
-DESCRIPTION
-       Slip  provides  the  SLIP  data framing protocol described by
-       RFC1055.  The module is  an  implementation  of  the  general
-       data-processing module type Filter; see filter(2) for details
-       of that general interface.
+Init must be called before any other operation of the module.
 
-       Init must be called before any other operation of the module.
+Start begins SLIP line encoding or decoding via  the  channel
+it  returns,  following  the protocol of filter(2).  Param is
+one of the two following strings:
 
-       Start begins SLIP line encoding or decoding via  the  channel
-       it  returns,  following  the protocol of filter(2).  Param is
-       one of the two following strings:
+encode The filter takes the block of data  obtained  by  each
+       Rq.Fill message, adds framing and escape characters as
+       required, and returns the resulting data block  in  an
+       Rq.Result message.
 
-       encode The filter takes the block of data  obtained  by  each
-              Rq.Fill message, adds framing and escape characters as
-              required, and returns the resulting data block  in  an
-              Rq.Result message.
+decode The filter operates on the data in Rq.Fill messages as
+       a single stream of bytes, providing an Rq.Result  mes‐
+       sage for each framed message found in the stream, with
+       escape characters processed to retrieve  the  original
+       data.
 
-       decode The filter operates on the data in Rq.Fill messages as
-              a single stream of bytes, providing an Rq.Result  mes‐
-              sage for each framed message found in the stream, with
-              escape characters processed to retrieve  the  original
-              data.
+== source
+/appl/lib/slip.b
 
-SOURCE
-       /appl/lib/slip.b
+== see ALSO
+filter(2)
 
-SEE ALSO
-       filter(2)
-
-                                                      FILTER-SLIP(2)

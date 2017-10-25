@@ -1,131 +1,125 @@
-SYS-DIAL(2)              System Calls Manual             SYS-DIAL(2)
+= announce, dial, listen: make network connections
 
-NAME
-       announce, dial, listen - make network connections
+    include "sys.m";
+    sys := load Sys Sys->PATH;
 
-SYNOPSIS
-       include "sys.m";
-       sys := load Sys Sys->PATH;
+    Connection: adt
+    {
+        dfd:  ref FD;  # data file
+        cfd:  ref FD;  # control file
+        dir:  string;  # pathname of line directory
+    };
+    
+    announce: fn(addr: string):           (int, Connection);
+    dial:     fn(addr, local: string):    (int, Connection);
+    listen:   fn(c: Connection):          (int, Connection);
 
-       Connection: adt
-       {
-           dfd:  ref FD;  # data file
-           cfd:  ref FD;  # control file
-           dir:  string;  # pathname of line directory
-       };
+These  routines  in  the  Sys  module  are still used by some
+existing code.  They are  deprecated,  and  new  applications
+should use the Dial module described in dial(2).
 
-       announce: fn(addr: string):           (int, Connection);
-       dial:     fn(addr, local: string):    (int, Connection);
-       listen:   fn(c: Connection):          (int, Connection);
+These routines establish network connections.  Their descrip‐
+tion uses the following definitions:
 
-DESCRIPTION
-       These  routines  in  the  Sys  module  are still used by some
-       existing code.  They are  deprecated,  and  new  applications
-       should use the Dial module described in dial(2).
+addr   is a network address in one of the following forms:
 
-       These routines establish network connections.  Their descrip‐
-       tion uses the following definitions:
-
-       addr   is a network address in one of the following forms:
-
-              network!netaddr!service
-              network!netaddr
-              netaddr
-
-       network
-              Any directory listed in /net (eg, tcp), or the special
-              token, net.  The name net acts as a free variable that
-              stands for any network in common  between  the  source
-              and  netaddr.   A  network name can be preceded by the
-              full path name of a directory of networks,  using  the
-              form /dir/network (eg, /net.alt/tcp).
-
+       network!netaddr!service
+       network!netaddr
        netaddr
-              A  host  name,  a domain name, a network address, or a
-              meta-name of the form $attribute, which is replaced by
-              value  from  the corresponding attribute-value pair in
-              the connection server data base (see db(6)).
 
-       The functions dial and announce translate a given addr to  an
-       actual network address using the connection server cs(8).  If
-       a logical name addr corresponds to several network addresses,
-       for instance if a destination machine has several interfaces,
-       cs will return them all.  In particular, if addr is  net,  cs
-       will  return  addresses  on  all  networks that are common to
-       source and destination.  The translation  procedure  accesses
-       cs  using  its interface file cs, which is sought as follows:
-       first, in an explicit directory /dir if one was given in net‐
-       work;  second, in the standard directory /net; and finally in
-       the directory /net.alt (dial only).  If the connection server
-       cannot be found, the addr is used as-is.
+network
+       Any directory listed in /net (eg, tcp), or the special
+       token, net.  The name net acts as a free variable that
+       stands for any network in common  between  the  source
+       and  netaddr.   A  network name can be preceded by the
+       full path name of a directory of networks,  using  the
+       form /dir/network (eg, /net.alt/tcp).
 
-       If  a connection attempt is successful, the dir member of the
-       resulting Connection will be the path name of a  line  direc‐
-       tory  that  has files for accessing the connection.  One line
-       directory exists for each possible connection.  The data file
-       in  the  line  directory  is opened to make a connection, and
-       read and written to communicate with  the  destination.   The
-       ctl  file  in the line directory can be used to send commands
-       to the line.  See ip(3) for messages that can be  written  to
-       the  ctl  file.   The last close of the data or ctl file will
-       close the connection.  The remote file in the line  directory
-       contains  the  address  called;  the  file local contains the
-       local address assigned.
+netaddr
+       A  host  name,  a domain name, a network address, or a
+       meta-name of the form $attribute, which is replaced by
+       value  from  the corresponding attribute-value pair in
+       the connection server data base (see db(6)).
 
-       The dial routine makes a call to destination addr on a multi‐
-       plexed  network.   If  the  connection server returns several
-       addresses, dial tries each in turn,  until  a  connection  is
-       made  or  no addresses remain to be tried.  It returns a Con‐
-       nection containing a file descriptor dfd open for reading and
-       writing  the  data  file  in  the  line directory, and a file
-       descriptor cfd open for reading and writing the ctl file.  If
-       local  is non-empty, and the network allows the local address
-       to be set, as is the case with UDP and TCP port numbers,  the
-       local address will be set to local.
+The functions dial and announce translate a given addr to  an
+actual network address using the connection server cs(8).  If
+a logical name addr corresponds to several network addresses,
+for instance if a destination machine has several interfaces,
+cs will return them all.  In particular, if addr is  net,  cs
+will  return  addresses  on  all  networks that are common to
+source and destination.  The translation  procedure  accesses
+cs  using  its interface file cs, which is sought as follows:
+first, in an explicit directory /dir if one was given in net‐
+work;  second, in the standard directory /net; and finally in
+the directory /net.alt (dial only).  If the connection server
+cannot be found, the addr is used as-is.
 
-       Announce  and  listen  are the complements of dial.  Announce
-       establishes a network name to which  incoming  calls  can  be
-       made.   In  addr, netaddr gives the name or address of one of
-       the local host's interfaces on which to listen for  calls  to
-       the  given  service;  it  can be * to listen for calls on any
-       interface on network.  Announce returns a  Connection  struc‐
-       ture in which only the cfd descriptor is open, on the control
-       file representing the announcement.  Listen takes as its only
-       argument  the  Connection  structure  of a successful call to
-       announce.  When a call is received, listen  returns  an  open
-       Connection  structure  as  if from dial, except that only the
-       cfd descriptor is open, dfd is nil, and the caller must  open
-       the data file for itself.
+If  a connection attempt is successful, the dir member of the
+resulting Connection will be the path name of a  line  direc‐
+tory  that  has files for accessing the connection.  One line
+directory exists for each possible connection.  The data file
+in  the  line  directory  is opened to make a connection, and
+read and written to communicate with  the  destination.   The
+ctl  file  in the line directory can be used to send commands
+to the line.  See ip(3) for messages that can be  written  to
+the  ctl  file.   The last close of the data or ctl file will
+close the connection.  The remote file in the line  directory
+contains  the  address  called;  the  file local contains the
+local address assigned.
 
-EXAMPLES
-       Make  a  call  and  return an open file descriptor to use for
-       communications:
+The dial routine makes a call to destination addr on a multi‐
+plexed  network.   If  the  connection server returns several
+addresses, dial tries each in turn,  until  a  connection  is
+made  or  no addresses remain to be tried.  It returns a Con‐
+nection containing a file descriptor dfd open for reading and
+writing  the  data  file  in  the  line directory, and a file
+descriptor cfd open for reading and writing the ctl file.  If
+local  is non-empty, and the network allows the local address
+to be set, as is the case with UDP and TCP port numbers,  the
+local address will be set to local.
 
-              callkremvax(): (int, Connection)
-              {
-                   return sys->dial("tcp!kremvax!80", nil);
-              }
+Announce  and  listen  are the complements of dial.  Announce
+establishes a network name to which  incoming  calls  can  be
+made.   In  addr, netaddr gives the name or address of one of
+the local host's interfaces on which to listen for  calls  to
+the  given  service;  it  can be * to listen for calls on any
+interface on network.  Announce returns a  Connection  struc‐
+ture in which only the cfd descriptor is open, on the control
+file representing the announcement.  Listen takes as its only
+argument  the  Connection  structure  of a successful call to
+announce.  When a call is received, listen  returns  an  open
+Connection  structure  as  if from dial, except that only the
+cfd descriptor is open, dfd is nil, and the caller must  open
+the data file for itself.
 
-       Call the local certificate signer:
+== examples
+Make  a  call  and  return an open file descriptor to use for
+communications:
 
-              dialsigner(service: string): (int, Connection)
-              {
-                   return sys->dial("net!$SIGNER!inflogin", nil);
-              }
+       callkremvax(): (int, Connection)
+       {
+            return sys->dial("tcp!kremvax!80", nil);
+       }
 
-SOURCE
-       /emu/port/inferno.c
-       /emu/port/dial.c
-       /os/port/inferno.c
-       /os/port/dial.c
+Call the local certificate signer:
 
-DIAGNOSTICS
-       The integer valued functions return 0 on success  and  -1  on
-       error; the system error string is set.  The integer component
-       of the tuple returned by the other functions follows the same
-       convention.
+       dialsigner(service: string): (int, Connection)
+       {
+            return sys->dial("net!$SIGNER!inflogin", nil);
+       }
 
-BUGS
-       Note that listen does not open the data file.
+== source
+/emu/port/inferno.c
+/emu/port/dial.c
+/os/port/inferno.c
+/os/port/dial.c
 
-                                                         SYS-DIAL(2)
+== diagnostics
+The integer valued functions return 0 on success  and  -1  on
+error; the system error string is set.  The integer component
+of the tuple returned by the other functions follows the same
+convention.
+
+== bugs
+Note that listen does not open the data file.
+

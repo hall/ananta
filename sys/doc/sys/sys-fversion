@@ -1,50 +1,44 @@
-SYS-FVERSION(2)          System Calls Manual         SYS-FVERSION(2)
+= fversion: initialize 9P connection and negotiate version
 
-NAME
-       fversion - initialize 9P connection and negotiate version
+    include "sys.m";
+    sys := load Sys Sys->PATH;
 
-SYNOPSIS
-       include "sys.m";
-       sys := load Sys Sys->PATH;
+    fversion: fn(fd: ref FD, bufsize: int, version: string): (int, string);
 
-       fversion: fn(fd: ref FD, bufsize: int, version: string): (int, string);
+Fversion  initialises the 9P connection represented by fd and
+negotiates the maximum message size and the  version  of  the
+protocol to be used.
 
-DESCRIPTION
-       Fversion  initialises the 9P connection represented by fd and
-       negotiates the maximum message size and the  version  of  the
-       protocol to be used.
+The  bufsize  determines  the  size of the I/O buffer used to
+stage 9P requests to the server, subject to  the  constraints
+of the server itself.  The version is a text string that rep‐
+resents the highest version level the protocol will support.
 
-       The  bufsize  determines  the  size of the I/O buffer used to
-       stage 9P requests to the server, subject to  the  constraints
-       of the server itself.  The version is a text string that rep‐
-       resents the highest version level the protocol will support.
+Fversion returns a tuple (n,useversion) where n is -1 if  the
+request  was rejected, and otherwise n is bufsize and usever‐
+sion is a string representing the negotiated, possibly lower,
+version of the protocol.
 
-       Fversion returns a tuple (n,useversion) where n is -1 if  the
-       request  was rejected, and otherwise n is bufsize and usever‐
-       sion is a string representing the negotiated, possibly lower,
-       version of the protocol.
+Default  values  of zero for bufsize and the empty string for
+version will negotiate sensible defaults for the connection.
 
-       Default  values  of zero for bufsize and the empty string for
-       version will negotiate sensible defaults for the connection.
+The interpretation of the version strings is defined in  ver‐
+sion(5).
 
-       The interpretation of the version strings is defined in  ver‐
-       sion(5).
+It  is  rare  to  use  fversion directly; usually the default
+negotiation performed by the kernel during  mount  (see  sys-
+bind(2)) is sufficient.
 
-       It  is  rare  to  use  fversion directly; usually the default
-       negotiation performed by the kernel during  mount  (see  sys-
-       bind(2)) is sufficient.
+== see ALSO
+sys-fauth(2), intro(5), version(5).
 
-SEE ALSO
-       sys-fauth(2), intro(5), version(5).
+== diagnostics
+Fversion  returns  a  value  of  -1 for n on error, including
+failure to negotiate acceptable values, and sets  the  system
+error string.
 
-DIAGNOSTICS
-       Fversion  returns  a  value  of  -1 for n on error, including
-       failure to negotiate acceptable values, and sets  the  system
-       error string.
+== bugs
+The  returned  value  of n when no error occurs should be the
+negotiated message size but is currently the original bufsize
+parameter.
 
-BUGS
-       The  returned  value  of n when no error occurs should be the
-       negotiated message size but is currently the original bufsize
-       parameter.
-
-                                                     SYS-FVERSION(2)

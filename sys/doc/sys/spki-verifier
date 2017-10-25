@@ -1,66 +1,60 @@
-SPKI-VERIFIER(2)         System Calls Manual        SPKI-VERIFIER(2)
+= verifier: verify: verify sequence of SPKI elements
 
-NAME
-       verifier: verify - verify sequence of SPKI elements
+    include "bufio.m";
+    include "sexprs.m";
+    include "spki.m";
 
-SYNOPSIS
-       include "bufio.m";
-       include "sexprs.m";
-       include "spki.m";
+    sexprs := load Sexprs Sexprs->PATH;
+    Sexp: import sexprs;
 
-       sexprs := load Sexprs Sexprs->PATH;
-       Sexp: import sexprs;
+    spki := load SPKI SPKI->PATH;
+    Name, Seqel, Subject, Valid: import spki;
 
-       spki := load SPKI SPKI->PATH;
-       Name, Seqel, Subject, Valid: import spki;
+    verifier := load Verifier Verifier->PATH;
 
-       verifier := load Verifier Verifier->PATH;
+    Speaksfor: adt {
+       subject:   ref Subject;
+       name:      ref Name;
+       regarding: ref Sexp;
+       valid:     ref Valid;
+    };
 
-       Speaksfor: adt {
-          subject:   ref Subject;
-          name:      ref Name;
-          regarding: ref Sexp;
-          valid:     ref Valid;
-       };
+    init:   fn();
+    verify: fn(seq: list of ref Seqel):
+              (ref Speaksfor, list of ref Seqel, string);
 
-       init:   fn();
-       verify: fn(seq: list of ref Seqel):
-                 (ref Speaksfor, list of ref Seqel, string);
+Verifier checks SPKI proof sequences.  This initial implemen‐
+tation provides a single basic operation.  Further work  will
+allow (via channels and processes) verification to detect and
+refresh expired credentials, to  support  `pull'  authentica‐
+tion, for instance.
 
-DESCRIPTION
-       Verifier checks SPKI proof sequences.  This initial implemen‐
-       tation provides a single basic operation.  Further work  will
-       allow (via channels and processes) verification to detect and
-       refresh expired credentials, to  support  `pull'  authentica‐
-       tion, for instance.
+Init must be called before any other operation of the module.
 
-       Init must be called before any other operation of the module.
+A  Speaksfor  value  represents  a claim that a given subject
+entity speaks for (on behalf of) a given name regarding a set
+of  statements,  with  validity optionally limited to a given
+period.  That is, when during the agreed time, subject  makes
+a  statement  that  is in the agreed set, it is treated as if
+name had said it directly.  The set of statements is  defined
+by  a  SPKI `tag' expression, represented as an S-expression.
+In particular, the (tag (*)) means that  subject  speaks  for
+name  about everything.  A claim can be taken as true if sup‐
+ported by acceptable evidence, for instance a  collection  of
+signed certificates.
 
-       A  Speaksfor  value  represents  a claim that a given subject
-       entity speaks for (on behalf of) a given name regarding a set
-       of  statements,  with  validity optionally limited to a given
-       period.  That is, when during the agreed time, subject  makes
-       a  statement  that  is in the agreed set, it is treated as if
-       name had said it directly.  The set of statements is  defined
-       by  a  SPKI `tag' expression, represented as an S-expression.
-       In particular, the (tag (*)) means that  subject  speaks  for
-       name  about everything.  A claim can be taken as true if sup‐
-       ported by acceptable evidence, for instance a  collection  of
-       signed certificates.
+Verify does the actual verification of a sequence seq of SPKI
+certificates, signatures and operations that makes  and  sup‐
+ports  a claim that an entity speaks for another.  It returns
+a tuple (claim, badel, err).  On success, claim refers  to  a
+Speaksfor  value that summaries the statement verified by the
+sequence.  On failure, claim is  nil,  badel  is  a  list  of
+sequence  elements  headed  by  the first element of seq that
+failed verification, and err is the reason it failed.
 
-       Verify does the actual verification of a sequence seq of SPKI
-       certificates, signatures and operations that makes  and  sup‐
-       ports  a claim that an entity speaks for another.  It returns
-       a tuple (claim, badel, err).  On success, claim refers  to  a
-       Speaksfor  value that summaries the statement verified by the
-       sequence.  On failure, claim is  nil,  badel  is  a  list  of
-       sequence  elements  headed  by  the first element of seq that
-       failed verification, and err is the reason it failed.
+== source
+/appl/lib/spki/verifier.b
 
-SOURCE
-       /appl/lib/spki/verifier.b
+== see ALSO
+sexprs(2), spki(2)
 
-SEE ALSO
-       sexprs(2), spki(2)
-
-                                                    SPKI-VERIFIER(2)

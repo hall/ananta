@@ -1,153 +1,146 @@
-TK(2)                    System Calls Manual                   TK(2)
+= Tk: toplevel, namechan, cmd, pointer, keyboard, imageget, imageput, quote, rect: graphics toolkit
 
-NAME
-       Tk:  toplevel,  namechan,  cmd,  pointer, keyboard, imageget,
-       imageput, quote, rect - graphics toolkit
+    include "draw.m";
+    include "tk.m";
+    tk := load Tk Tk->PATH;
+    Image:    import Draw;
+    
+    Toplevel: adt
+    {
+        display:    ref Draw->Display;
+        wreq:       chan of string;
+        image:      ref Image;
+        ctxt:       ref Draw->Wmcontext;
+        screenr:    Draw->Rect;
+    };
+    
+    toplevel: fn(display: ref Draw->Display, arg: string): ref Toplevel;
+    namechan: fn(top: ref Toplevel, c: chan of string, n: string): string;
+    cmd:      fn(top: ref Toplevel, arg: string): string;
+    pointer:    fn(top: ref Toplevel, p: Draw->Pointer);
+    keyboard: fn(top: ref Toplevel, key: int);
+    getimage: fn(top: ref Toplevel, name: string):
+                 (ref Image, ref Image, string);
+    putimage: fn(top: ref Toplevel, name: string, i, m: ref Image): string;
+    rect:     fn(top: ref Toplevel, name: string, flags: int): Draw->Rect;
+    quote:    fn(s: string): string;
+    color:    fn(s: string): int;
 
-SYNOPSIS
-       include "draw.m";
-       include "tk.m";
-       tk := load Tk Tk->PATH;
-       Image:    import Draw;
+The Tk module provides primitives for  building  user  inter‐
+faces,  based  on  Ousterhout's Tcl/TK.  The interface to the
+toolkit itself is primarily the passing  of  strings  to  and
+from  the elements of the toolkit using the cmd function; see
+section 9 of this manual for more information about the  syn‐
+tax  of those strings.  Tkclient(2) is conventionally used to
+create tk windows that interact correctly with a running win‐
+dow manager.
 
-       Toplevel: adt
-       {
-           display:    ref Draw->Display;
-           wreq:       chan of string;
-           image:      ref Image;
-           ctxt:       ref Draw->Wmcontext;
-           screenr:    Draw->Rect;
-       };
+Toplevel  creates  a  new  window called a Toplevel, which is
+under the control of the Tk toolkit, on an existing  display,
+usually  one  inherited  from the graphics Context (see draw-
+context(2)).  The Toplevel is  passed  to  cmd  and  namechan
+(q.v.)   to drive the widgets in the window.  Arg is a string
+containing creation options (such as -borderwidth 2) that are
+applied when creating the toplevel window.
 
-       toplevel: fn(display: ref Draw->Display, arg: string): ref Toplevel;
-       namechan: fn(top: ref Toplevel, c: chan of string, n: string): string;
-       cmd:      fn(top: ref Toplevel, arg: string): string;
-       pointer:    fn(top: ref Toplevel, p: Draw->Pointer);
-       keyboard: fn(top: ref Toplevel, key: int);
-       getimage: fn(top: ref Toplevel, name: string):
-                    (ref Image, ref Image, string);
-       putimage: fn(top: ref Toplevel, name: string, i, m: ref Image): string;
-       rect:     fn(top: ref Toplevel, name: string, flags: int): Draw->Rect;
-       quote:    fn(s: string): string;
-       color:    fn(s: string): int;
+Cmd  passes  command strings to the widgets in the Toplevel t
+and returns the string resulting from their  execution.   For
+example, given a canvas .c in the Toplevel t,
+    x := int tk->cmd(t, ".c cget -actx");
+returns the integer x coordinate of the canvas.
 
-DESCRIPTION
-       The Tk module provides primitives for  building  user  inter‐
-       faces,  based  on  Ousterhout's Tcl/TK.  The interface to the
-       toolkit itself is primarily the passing  of  strings  to  and
-       from  the elements of the toolkit using the cmd function; see
-       section 9 of this manual for more information about the  syn‐
-       tax  of those strings.  Tkclient(2) is conventionally used to
-       create tk windows that interact correctly with a running win‐
-       dow manager.
+Bindings can be created in a Toplevel that trigger strings to
+be sent on Limbo channels.  Such channels must be declared to
+the  Tk module using namechan.  For example, to create a but‐
+ton that sends the word Ouch when it is pressed:
+    hitchannel := chan of string;
+    tk->namechan(t, hitchannel, "channel");
+    tk->cmd(t,
+         "button .b.Hit -text Hit -command {send channel Ouch}");
+    expl := <-hitchannel;     # will see Ouch when button pressed
 
-       Toplevel  creates  a  new  window called a Toplevel, which is
-       under the control of the Tk toolkit, on an existing  display,
-       usually  one  inherited  from the graphics Context (see draw-
-       context(2)).  The Toplevel is  passed  to  cmd  and  namechan
-       (q.v.)   to drive the widgets in the window.  Arg is a string
-       containing creation options (such as -borderwidth 2) that are
-       applied when creating the toplevel window.
+Pointer and keyboard pass mouse and keyboard events to  a  Tk
+window  for  delivery to widgets; they must be called by each
+application, which usually  receives  them  via  a  Wmcontext
+structure (see draw-context(2)) obtained from the window man‐
+ager, often via tkclient(2).
 
-       Cmd  passes  command strings to the widgets in the Toplevel t
-       and returns the string resulting from their  execution.   For
-       example, given a canvas .c in the Toplevel t,
-           x := int tk->cmd(t, ".c cget -actx");
-       returns the integer x coordinate of the canvas.
+Putimage passes an image and a mask into Tk.  If name is  the
+name  of a Tk widget, it must be either a panel(9) widget, or
+a top level widget (ie, ``.'')  ``.'')  or a menu widget,  in
+which  case the associated image or window image is set to i.
+(m is ignored for menu and  top-level  widgets.)   Otherwise,
+name  must  be the name of an existing image(9) which has its
+image and mask set to copies of i and m respectively.
 
-       Bindings can be created in a Toplevel that trigger strings to
-       be sent on Limbo channels.  Such channels must be declared to
-       the  Tk module using namechan.  For example, to create a but‐
-       ton that sends the word Ouch when it is pressed:
-           hitchannel := chan of string;
-           tk->namechan(t, hitchannel, "channel");
-           tk->cmd(t,
-                "button .b.Hit -text Hit -command {send channel Ouch}");
-           expl := <-hitchannel;     # will see Ouch when button pressed
+Initially, a Tk toplevel has no image to draw  on.   Tk  uses
+wreq  to  request new images of an external authority, and to
+inform said authority when the images are to be deleted.  The
+requests  are  formatted as per quoted in string(2), and hold
+one of the following:
 
-       Pointer and keyboard pass mouse and keyboard events to  a  Tk
-       window  for  delivery to widgets; they must be called by each
-       application, which usually  receives  them  via  a  Wmcontext
-       structure (see draw-context(2)) obtained from the window man‐
-       ager, often via tkclient(2).
+!reshape name reqid minx miny maxx maxy
+       A new image for name is requested (name is either  the
+       toplevel widget or a menu).  The desired rectangle for
+       the new image is given by [minx miny maxx  maxy],  and
+       the application should respond by creating a new image
+       and using putimage to pass it to Tk.  Reqid is used by
+       Tk  to  filter  out responses to out-of-date requests;
+       when responding to a reshape request, the name  passed
+       to  putimage  should  have a space and reqid appended.
+       Tkclient(2) usually deals with the details of this.
 
-       Putimage passes an image and a mask into Tk.  If name is  the
-       name  of a Tk widget, it must be either a panel(9) widget, or
-       a top level widget (ie, ``.'')  ``.'')  or a menu widget,  in
-       which  case the associated image or window image is set to i.
-       (m is ignored for menu and  top-level  widgets.)   Otherwise,
-       name  must  be the name of an existing image(9) which has its
-       image and mask set to copies of i and m respectively.
+delete name
+       The image name has been deleted. This is generated for
+       menu(9) widgets when they are unmapped.
 
-       Initially, a Tk toplevel has no image to draw  on.   Tk  uses
-       wreq  to  request new images of an external authority, and to
-       inform said authority when the images are to be deleted.  The
-       requests  are  formatted as per quoted in string(2), and hold
-       one of the following:
+raise name
+       Tk widget name should be raised above other windows on
+       the same screen.
 
-       !reshape name reqid minx miny maxx maxy
-              A new image for name is requested (name is either  the
-              toplevel widget or a menu).  The desired rectangle for
-              the new image is given by [minx miny maxx  maxy],  and
-              the application should respond by creating a new image
-              and using putimage to pass it to Tk.  Reqid is used by
-              Tk  to  filter  out responses to out-of-date requests;
-              when responding to a reshape request, the name  passed
-              to  putimage  should  have a space and reqid appended.
-              Tkclient(2) usually deals with the details of this.
+lower name
+       Tk widget name should be lowered beneath other windows
+       on the same screen.
 
-       delete name
-              The image name has been deleted. This is generated for
-              menu(9) widgets when they are unmapped.
+Wreq  may  be set to nil if an application is not prepared to
+read requests sent on this channel.
 
-       raise name
-              Tk widget name should be raised above other windows on
-              the same screen.
+Rect returns the bounding rectangle of widget  name  in  top.
+Flags determines the form of rectangle returned.  If flags is
+zero, the actual rectangle of name in screen coordinates, not
+including its border, is returned. The bitmask flags that can
+change this are:
 
-       lower name
-              Tk widget name should be lowered beneath other windows
-              on the same screen.
+Border Include the widget's border.
 
-       Wreq  may  be set to nil if an application is not prepared to
-       read requests sent on this channel.
+Required
+       Return the rectangle required by  the  widget,  rather
+       than the rectangle that has been actually allocated to
+       it.
 
-       Rect returns the bounding rectangle of widget  name  in  top.
-       Flags determines the form of rectangle returned.  If flags is
-       zero, the actual rectangle of name in screen coordinates, not
-       including its border, is returned. The bitmask flags that can
-       change this are:
+Local  Return the rectangle in coordinates  relative  to  the
+       logical origin of the actual top level image.
 
-       Border Include the widget's border.
+Quote returns a string that is the same as its arguments, but
+enclosed in curly  braces  and  with  internal  curly  braces
+escaped.  This can be used to make an arbitrary string into a
+word suitable as an argument to a Tk function.
 
-       Required
-              Return the rectangle required by  the  widget,  rather
-              than the rectangle that has been actually allocated to
-              it.
+Color returns a colour in 32-bit RGBA format corresponding to
+the tk colour name s.  (see types(9) for details).
 
-       Local  Return the rectangle in coordinates  relative  to  the
-              logical origin of the actual top level image.
+Screenr  gives  the  rectangle  of  the screen containing the
+toplevel window.  Tk has no a priori way of knowing what this
+is;  it  is  initially  set  to  the rectangle of the display
+image, and may be set by the application if it  knows  better
+(e.g. from the wmrect file served by wm(1)).
 
-       Quote returns a string that is the same as its arguments, but
-       enclosed in curly  braces  and  with  internal  curly  braces
-       escaped.  This can be used to make an arbitrary string into a
-       word suitable as an argument to a Tk function.
+== source
+/libinterp/tk.c
+/libtk/*.c
 
-       Color returns a colour in 32-bit RGBA format corresponding to
-       the tk colour name s.  (see types(9) for details).
+== see ALSO
+intro(9),  image(9),  panel(9), tkcmd(1), sh-tk(1), draw-con‐
+text(2), tkclient(2), wmlib(2)
+`An Overview of Limbo/Tk', this manual, Volume 2.
 
-       Screenr  gives  the  rectangle  of  the screen containing the
-       toplevel window.  Tk has no a priori way of knowing what this
-       is;  it  is  initially  set  to  the rectangle of the display
-       image, and may be set by the application if it  knows  better
-       (e.g. from the wmrect file served by wm(1)).
-
-SOURCE
-       /libinterp/tk.c
-       /libtk/*.c
-
-SEE ALSO
-       intro(9),  image(9),  panel(9), tkcmd(1), sh-tk(1), draw-con‐
-       text(2), tkclient(2), wmlib(2)
-       `An Overview of Limbo/Tk', this manual, Volume 2.
-
-                                                               TK(2)

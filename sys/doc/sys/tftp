@@ -1,37 +1,31 @@
-TFTP(2)                  System Calls Manual                 TFTP(2)
+= tftp: Trivial File Transfer Protocol
 
-NAME
-       tftp - Trivial File Transfer Protocol
+    tftp := load Tftp Tftp->PATH;
+    Tftp: module
+    {
+       init:    fn(progress: int);
+       receive: fn(host: string, filename: string,
+                   fd: ref Sys->FD): string;
+    };
 
-SYNOPSIS
-       tftp := load Tftp Tftp->PATH;
-       Tftp: module
-       {
-          init:    fn(progress: int);
-          receive: fn(host: string, filename: string,
-                      fd: ref Sys->FD): string;
-       };
+Tftp fetches files from an Internet TFTP server.  It is typi‐
+cally used only to fetch kernels or configuration files  when
+booting.  Only one transfer can be active at any given time.
 
-DESCRIPTION
-       Tftp fetches files from an Internet TFTP server.  It is typi‐
-       cally used only to fetch kernels or configuration files  when
-       booting.  Only one transfer can be active at any given time.
+Init  must  be called once before using any other function of
+the module.  If progress is non-zero, receive  will  periodi‐
+cally  print  a  character  as  blocks are received: `.'  for
+every 25 blocks, `S' for a sequence error, `T' for a timeout.
 
-       Init  must  be called once before using any other function of
-       the module.  If progress is non-zero, receive  will  periodi‐
-       cally  print  a  character  as  blocks are received: `.'  for
-       every 25 blocks, `S' for a sequence error, `T' for a timeout.
+Receive attempts to fetch the contents of filename from  host
+and writes the blocks of data to fd as they are received.  It
+returns when the file transfer has completed, returning a nil
+string  on  success  or  a diagnostic string otherwise.  When
+booting, fd is typically open on the kexec file of boot(3).
 
-       Receive attempts to fetch the contents of filename from  host
-       and writes the blocks of data to fd as they are received.  It
-       returns when the file transfer has completed, returning a nil
-       string  on  success  or  a diagnostic string otherwise.  When
-       booting, fd is typically open on the kexec file of boot(3).
+== source
+/appl/lib/tftp.b
 
-SOURCE
-       /appl/lib/tftp.b
+== see ALSO
+ip(2), bootpd(8)
 
-SEE ALSO
-       ip(2), bootpd(8)
-
-                                                             TFTP(2)

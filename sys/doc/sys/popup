@@ -1,64 +1,57 @@
-POPUP(2)                 System Calls Manual                POPUP(2)
+= Popup: mkbutton, changebutton, event, add: popup list box pseudo-widget
 
-NAME
-       Popup:  mkbutton,  changebutton,  event, add - popup list box
-       pseudo-widget
+    include "popup.m";
+    popup := load Popup Popup->PATH;
 
-SYNOPSIS
-       include "popup.m";
-       popup := load Popup Popup->PATH;
+    init:         fn();
+    mkbutton:     fn(win: ref Tk->Toplevel, name: string,
+                     items: array of string, n: int): chan of string;
+    changebutton: fn(win: ref Tk->Toplevel, name: string,
+                     items: array of string, n: int);
+    event:        fn(win: ref Tk->Toplevel, e: string,
+                     items: array of string): int;
+    add:          fn(items: array of string, s: string):
+                     (array of string, int);
 
-       init:         fn();
-       mkbutton:     fn(win: ref Tk->Toplevel, name: string,
-                        items: array of string, n: int): chan of string;
-       changebutton: fn(win: ref Tk->Toplevel, name: string,
-                        items: array of string, n: int);
-       event:        fn(win: ref Tk->Toplevel, e: string,
-                        items: array of string): int;
-       add:          fn(items: array of string, s: string):
-                        (array of string, int);
+Popup implements popup list boxes as Tk pseudo-widgets.  This
+module  has  since  been  superseded by choicebutton(2) in Tk
+itself, but remains for the moment for compatibility.
 
-DESCRIPTION
-       Popup implements popup list boxes as Tk pseudo-widgets.  This
-       module  has  since  been  superseded by choicebutton(2) in Tk
-       itself, but remains for the moment for compatibility.
+Init must be called once to initialise the module.
 
-       Init must be called once to initialise the module.
+Mkbutton creates a new button name, in Tk toplevel  win.   It
+returns  a  channel  on  which it delivers events (see event,
+below).  Once created, name can be packed like any  other  Tk
+widget.   When  the  button  is pressed with button 1, a menu
+pops up offering a choice from the given items.  The value  n
+is  the  index  in  items of the button's initial value.  The
+current choice is always displayed in the button.   If  items
+is  nil  or  an  empty array, the string `-----' is displayed
+instead.
 
-       Mkbutton creates a new button name, in Tk toplevel  win.   It
-       returns  a  channel  on  which it delivers events (see event,
-       below).  Once created, name can be packed like any  other  Tk
-       widget.   When  the  button  is pressed with button 1, a menu
-       pops up offering a choice from the given items.  The value  n
-       is  the  index  in  items of the button's initial value.  The
-       current choice is always displayed in the button.   If  items
-       is  nil  or  an  empty array, the string `-----' is displayed
-       instead.
+Having created a popup button, the application  must  receive
+values  on  the  channel  returned  by mkbutton and pass each
+value it receives to event (as parameter e).  (Typically  the
+application  will  receive on the channel in an alt statement
+that watches other channels too.)  Event returns  the  result
+of  a  selection,  or -1 if no selection was made.  In either
+case, the text of the button name will reflect the  currently
+active   selection   (the  application  can  fetch  it  using
+`cget -text').  The items parameter must match that given  to
+mkbutton (or most recently given to changebutton).
 
-       Having created a popup button, the application  must  receive
-       values  on  the  channel  returned  by mkbutton and pass each
-       value it receives to event (as parameter e).  (Typically  the
-       application  will  receive on the channel in an alt statement
-       that watches other channels too.)  Event returns  the  result
-       of  a  selection,  or -1 if no selection was made.  In either
-       case, the text of the button name will reflect the  currently
-       active   selection   (the  application  can  fetch  it  using
-       `cget -text').  The items parameter must match that given  to
-       mkbutton (or most recently given to changebutton).
+Changebutton  changes  the list of items in an existing popup
+button name, and sets its initial selection to the item  with
+index n.
 
-       Changebutton  changes  the list of items in an existing popup
-       button name, and sets its initial selection to the item  with
-       index n.
+Add  adds  string  s to the array items, if it is not already
+there, and in either case returns the resulting new array and
+the  index of s therein.  It is useful for calculating a list
+of items dynamically.
 
-       Add  adds  string  s to the array items, if it is not already
-       there, and in either case returns the resulting new array and
-       the  index of s therein.  It is useful for calculating a list
-       of items dynamically.
+== source
+/appl/lib/popup.b
 
-SOURCE
-       /appl/lib/popup.b
+== see ALSO
+tabs(2), tk(2)
 
-SEE ALSO
-       tabs(2), tk(2)
-
-                                                            POPUP(2)

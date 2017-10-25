@@ -1,105 +1,99 @@
-CFG(2)                   System Calls Manual                  CFG(2)
+= Cfg, Record, Tuple, Attr: configuration file parser
 
-NAME
-       Cfg, Record, Tuple, Attr - configuration file parser
+    include "cfg.m";
+    cfg := load Cfg Cfg->PATH;
 
-SYNOPSIS
-       include "cfg.m";
-       cfg := load Cfg Cfg->PATH;
+    Attr: adt {
+         name: string;
+         value: string;
+    };
+    
+    Tuple: adt {
+         lnum: int;
+         attrs: list of Attr;
+         lookup: fn(t: self ref Tuple, name: string): string;
+    };
+    
+    Record: adt {
+         tuples: list of ref Tuple;
+         lookup: fn(r: self ref Record, name: string)
+              : (string, ref Tuple);
+    };
+    
+    init: fn(path: string): string;
+    lookup: fn(name: string): list of (string, ref Record);
+    getkeys: fn(): list of string;
+    
+Cfg  parses  its  configuration  file  format  into  a set of
+Records.
 
-       Attr: adt {
-            name: string;
-            value: string;
-       };
+Each line of the configuration file is comprised of  a  tuple
+of  attributes.  Comments are introduced by the '#' character
+and run to the end of the input line.  Empty lines  and  com‐
+ments are ignored.
 
-       Tuple: adt {
-            lnum: int;
-            attrs: list of Attr;
-            lookup: fn(t: self ref Tuple, name: string): string;
-       };
+An  attribute  has a name followed by an optional value.  The
+value is specified by separating the name and value by an '='
+character.   Attribute  names  and values are input words.  A
+word is delimited by spacing characters and the  '='  charac‐
+ter.  If a word needs to include any of these characters then
+the word may be quoted using single or  double  quotes.   The
+start and end quotes must be the same.  The quoting character
+may be included in the word by appearing twice.
 
-       Record: adt {
-            tuples: list of ref Tuple;
-            lookup: fn(r: self ref Record, name: string)
-                 : (string, ref Tuple);
-       };
+Examples:
+     'a b c'   yields    a b c
+     "a b c"   yields    a b c
+     'a " c'   yields    a " c
+     'a '' c'  yields    a ' c
 
-       init: fn(path: string): string;
-       lookup: fn(name: string): list of (string, ref Record);
-       getkeys: fn(): list of string;
+The name of the first attribute of a tuple is its  key.   The
+primary tuple value is the value of its first attribute.
 
-DESCRIPTION
-       Cfg  parses  its  configuration  file  format  into  a set of
-       Records.
+Tuples  whose  first attribute name appears at the start of a
+line (having no preceeding spacing characters) are treated as
+the  start of a new record.  A record incorporates all tuples
+up to the start of  the  next  record.   The  record  key  is
+defined  to  be the name of its first attribute.  The primary
+record value is the value of the first attribute.
 
-       Each line of the configuration file is comprised of  a  tuple
-       of  attributes.  Comments are introduced by the '#' character
-       and run to the end of the input line.  Empty lines  and  com‐
-       ments are ignored.
+The adt types Attr, Tuple and Record are direct analogues  of
+the constructs defined above.
 
-       An  attribute  has a name followed by an optional value.  The
-       value is specified by separating the name and value by an '='
-       character.   Attribute  names  and values are input words.  A
-       word is delimited by spacing characters and the  '='  charac‐
-       ter.  If a word needs to include any of these characters then
-       the word may be quoted using single or  double  quotes.   The
-       start and end quotes must be the same.  The quoting character
-       may be included in the word by appearing twice.
+init(path)
+       Init  initialises  the  Cfg module, causing it to open
+       and parse the configuration file  given  by  the  path
+       argument.   If  an  error is encountered in processing
+       the file then an error string is returned.   If  there
+       are no errors init returns nil.
 
-       Examples:
-            'a b c'   yields    a b c
-            "a b c"   yields    a b c
-            'a " c'   yields    a " c
-            'a '' c'  yields    a ' c
+lookup(name)
+       Lookup  returns  the  set of Records whose key matches
+       the name argument.  The return  value  is  a  list  of
+       (primary record value, record) pairs.
 
-       The name of the first attribute of a tuple is its  key.   The
-       primary tuple value is the value of its first attribute.
+getkeys()
+       Getkeys  returns a list of the record keys that appear
+       in the configuration file.  Note that  more  than  one
+       record can have the same key.  Duplicate key names are
+       not returned by getkeys().
 
-       Tuples  whose  first attribute name appears at the start of a
-       line (having no preceeding spacing characters) are treated as
-       the  start of a new record.  A record incorporates all tuples
-       up to the start of  the  next  record.   The  record  key  is
-       defined  to  be the name of its first attribute.  The primary
-       record value is the value of the first attribute.
+record.lookup(name)
+       Returns the first tuple in record  whose  key  matches
+       name.   The  return  value  is  (primary  tuple value,
+       tuple).  If no matching tuple is found then the  value
+       (nil, nil) is returned.  Note that more than one tuple
+       of the record could have  a  key  that  matches  name.
+       Only  the  first  matching  tuple  is returned.  If an
+       application makes use of multiple tuples with the same
+       key then the record.tuple list will have to be handled
+       explicitly by the application.
 
-       The adt types Attr, Tuple and Record are direct analogues  of
-       the constructs defined above.
+tuple.lookup(name)
+       Returns  the  first  attribute  in  tuple  whose  name
+       matches  name.   The  return value is the value of the
+       attribute or nil if no matching attribute was found.
 
-       init(path)
-              Init  initialises  the  Cfg module, causing it to open
-              and parse the configuration file  given  by  the  path
-              argument.   If  an  error is encountered in processing
-              the file then an error string is returned.   If  there
-              are no errors init returns nil.
+== source
+/appl/lib/cfg.b
 
-       lookup(name)
-              Lookup  returns  the  set of Records whose key matches
-              the name argument.  The return  value  is  a  list  of
-              (primary record value, record) pairs.
-
-       getkeys()
-              Getkeys  returns a list of the record keys that appear
-              in the configuration file.  Note that  more  than  one
-              record can have the same key.  Duplicate key names are
-              not returned by getkeys().
-
-       record.lookup(name)
-              Returns the first tuple in record  whose  key  matches
-              name.   The  return  value  is  (primary  tuple value,
-              tuple).  If no matching tuple is found then the  value
-              (nil, nil) is returned.  Note that more than one tuple
-              of the record could have  a  key  that  matches  name.
-              Only  the  first  matching  tuple  is returned.  If an
-              application makes use of multiple tuples with the same
-              key then the record.tuple list will have to be handled
-              explicitly by the application.
-
-       tuple.lookup(name)
-              Returns  the  first  attribute  in  tuple  whose  name
-              matches  name.   The  return value is the value of the
-              attribute or nil if no matching attribute was found.
-
-SOURCE
-       /appl/lib/cfg.b
-
-                                                              CFG(2)

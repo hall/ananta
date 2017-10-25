@@ -1,54 +1,48 @@
-BLOOMFILTER(2)           System Calls Manual          BLOOMFILTER(2)
+= Bloomfilter: Bloom filters
 
-NAME
-       Bloomfilter - Bloom filters
+    include "sets.m";
+    include "bloomfilter.m";
+    bloomfilter := load Bloomfilter Bloomfilter->PATH;
 
-SYNOPSIS
-       include "sets.m";
-       include "bloomfilter.m";
-       bloomfilter := load Bloomfilter Bloomfilter->PATH;
+    init:   fn();
+    filter: fn(d: array of byte, logm, k: int): Sets->Set;
 
-       init:   fn();
-       filter: fn(d: array of byte, logm, k: int): Sets->Set;
+A  Bloom  filter is a method of representing a set to support
+probabilistic membership queries. It  uses  independent  hash
+functions of members of the set to set elements of a bit-vec‐
+tor.  Init should be called first to initialise  the  module.
+Filter  returns a Set s representing the Bloom filter for the
+single-member set {d}.   K  independent  hash  functions  are
+used,  each  of  range  [0, 2^logm), to return a Bloom filter
+2^logm bits wide. It is an error if logm is less  than  3  or
+greater than 30.
 
-DESCRIPTION
-       A  Bloom  filter is a method of representing a set to support
-       probabilistic membership queries. It  uses  independent  hash
-       functions of members of the set to set elements of a bit-vec‐
-       tor.  Init should be called first to initialise  the  module.
-       Filter  returns a Set s representing the Bloom filter for the
-       single-member set {d}.   K  independent  hash  functions  are
-       used,  each  of  range  [0, 2^logm), to return a Bloom filter
-       2^logm bits wide. It is an error if logm is less  than  3  or
-       greater than 30.
+Bloom  filters  can be combined by set union.  The set repre‐
+sented by Bloom filter a is not a  subset  of  another  b  if
+there  are  any  members  in  a that are not in b.  Together,
+logm, k, and n (the number of members in the  set)  determine
+the  false  positve  rate  (the probability that a membership
+test will not eliminate a member that is not in fact  in  the
+set).   The  probability of a false positive is approximately
+(1-e^(-kn/(2^logm))^k.  For a given false positive rate, f, a
+useful   formula  to  determine  appropriate  parameters  is:
+k=ceil(-log₂(f)), and logm=ceil(log₂(nk)).
 
-       Bloom  filters  can be combined by set union.  The set repre‐
-       sented by Bloom filter a is not a  subset  of  another  b  if
-       there  are  any  members  in  a that are not in b.  Together,
-       logm, k, and n (the number of members in the  set)  determine
-       the  false  positve  rate  (the probability that a membership
-       test will not eliminate a member that is not in fact  in  the
-       set).   The  probability of a false positive is approximately
-       (1-e^(-kn/(2^logm))^k.  For a given false positive rate, f, a
-       useful   formula  to  determine  appropriate  parameters  is:
-       k=ceil(-log₂(f)), and logm=ceil(log₂(nk)).
+== examples
+Create a 128 bit-wide bloom filter  f  representing  all  the
+elements in the string array elems, with k=6.
+    A, B, None: import Sets;
+    for(i:=0; i<len elems; i++)
+        f = f.X(A|B, filter(array of byte elems[i], 7, 6));
+Test whether the string s is a member of f.  If there were 12
+elements in elems, the probability of a false positive  would
+be approximately 0.0063.
+    if(filter(array of byte s, 7, 6).X(A&~B, f).eq(None))
+        sys->print("'%s' might be a member of f\n", s);
 
-EXAMPLES
-       Create a 128 bit-wide bloom filter  f  representing  all  the
-       elements in the string array elems, with k=6.
-           A, B, None: import Sets;
-           for(i:=0; i<len elems; i++)
-               f = f.X(A|B, filter(array of byte elems[i], 7, 6));
-       Test whether the string s is a member of f.  If there were 12
-       elements in elems, the probability of a false positive  would
-       be approximately 0.0063.
-           if(filter(array of byte s, 7, 6).X(A&~B, f).eq(None))
-               sys->print("'%s' might be a member of f\n", s);
+== source
+/appl/lib/bloomfilter.b
 
-SOURCE
-       /appl/lib/bloomfilter.b
+== see ALSO
+sets(2)
 
-SEE ALSO
-       sets(2)
-
-                                                      BLOOMFILTER(2)

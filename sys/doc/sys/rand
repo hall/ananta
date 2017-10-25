@@ -1,30 +1,24 @@
-RAND(2)                  System Calls Manual                 RAND(2)
+= rand: pseudo random number generation
 
-NAME
-       rand - pseudo random number generation
+    include "rand.m";
+    rand = load Rand Rand->PATH;
 
-SYNOPSIS
-       include "rand.m";
-       rand = load Rand Rand->PATH;
+    init:    fn(seed: int);
+    rand:    fn(modulus: int): int;
+    bigrand: fn(modulus: big): big;
 
-       init:    fn(seed: int);
-       rand:    fn(modulus: int): int;
-       bigrand: fn(modulus: big): big;
+Init  initialises  the  pseudo-random  number  generator with
+seed; subsequent calls to rand and bigrand return  a  pseudo-
+random  sequence  of integers or bigs respectively, between 0
+and modulus-1.  Modulus should be a non-negative integer; for
+bigrand, it should be less than 2^53.
 
-DESCRIPTION
-       Init  initialises  the  pseudo-random  number  generator with
-       seed; subsequent calls to rand and bigrand return  a  pseudo-
-       random  sequence  of integers or bigs respectively, between 0
-       and modulus-1.  Modulus should be a non-negative integer; for
-       bigrand, it should be less than 2^53.
+== source
+/appl/lib/rand.b
 
-SOURCE
-       /appl/lib/rand.b
+== see ALSO
+security-random(2)
 
-SEE ALSO
-       security-random(2)
+== bugs
+The quality of the algorithm currently used is questionable.
 
-BUGS
-       The quality of the algorithm currently used is questionable.
-
-                                                             RAND(2)

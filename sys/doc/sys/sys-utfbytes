@@ -1,26 +1,19 @@
-SYS-UTFBYTES(2)          System Calls Manual         SYS-UTFBYTES(2)
+= utfbytes : compute UTF length of complete Unicode characters in a UTF byte sequence
 
-NAME
-       utfbytes  - compute UTF length of complete Unicode characters
-       in a UTF byte sequence
+    include "sys.m";
+    sys := load Sys Sys->PATH;
 
-SYNOPSIS
-       include "sys.m";
-       sys := load Sys Sys->PATH;
+    utfbytes: fn(buf: array of byte, n: int): int;
 
-       utfbytes: fn(buf: array of byte, n: int): int;
+Utfbytes examines the n-byte UTF sequence in buf and  returns
+the number of bytes representing complete Unicode characters.
+The value will be less than n when the region inspected  ends
+with an incomplete UTF sequence.
 
-DESCRIPTION
-       Utfbytes examines the n-byte UTF sequence in buf and  returns
-       the number of bytes representing complete Unicode characters.
-       The value will be less than n when the region inspected  ends
-       with an incomplete UTF sequence.
+== diagnostic
+A  bounds  check error results if n exceeds the length of the
+array.
 
-DIAGNOSTIC
-       A  bounds  check error results if n exceeds the length of the
-       array.
+== see ALSO
+sys-intro(2), sys-byte2char(2), utf(6)
 
-SEE ALSO
-       sys-intro(2), sys-byte2char(2), utf(6)
-
-                                                     SYS-UTFBYTES(2)

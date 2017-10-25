@@ -1,63 +1,54 @@
-MATH-ELEM(2)             System Calls Manual            MATH-ELEM(2)
+= Math:  cbrt, sqrt, pow, pow10, hypot, exp, expm1, log, log10, log1p, cos, cosh, sin, sinh, tan, tanh,  acos,  asin,  acosh, asinh, atan, atanh, atan2, lgamma, erf, erfc, j0, j1, y0, y1, jn, yn: elementary functions of applied mathematics
 
-NAME
-       Math:  cbrt, sqrt, pow, pow10, hypot, exp, expm1, log, log10,
-       log1p, cos, cosh, sin, sinh, tan, tanh,  acos,  asin,  acosh,
-       asinh, atan, atanh, atan2, lgamma, erf, erfc, j0, j1, y0, y1,
-       jn, yn - elementary functions of applied mathematics
+    include "math.m";
+    math := load Math Math->PATH;
+    
+    cbrt, sqrt: fn(x: real): real;
+    pow: fn(x, y: real): real;
+    pow10: fn(p: int): real;
+    hypot: fn(x, y: real): real;
+    exp, expm1, log, log10, log1p: fn(x: real): real;
+    
+    cos, cosh, sin, sinh, tan, tanh: fn(x: real): real;
+    acos, asin, acosh, asinh, atan, atanh: fn(x: real): real;
+    atan2: fn(y, x: real) of real;
+    
+    lgamma: fn(x: real): (int,real);
+    erf, erfc: fn(x: real): real;
+    j0, j1, y0, y1: fn(x: real): real;
+    jn, yn: fn(n: int, x: real): real;
 
-SYNOPSIS
-       include "math.m";
-       math := load Math Math->PATH;
+These routines implement the basic  elementary  functions  of
+applied mathematics.
 
-       cbrt, sqrt: fn(x: real): real;
-       pow: fn(x, y: real): real;
-       pow10: fn(p: int): real;
-       hypot: fn(x, y: real): real;
-       exp, expm1, log, log10, log1p: fn(x: real): real;
+Sqrt(x) computes the square root of x, cbrt(x) the cube root.
+Pow(x,y) computes x raised to the exponent y; pow10 raises 10
+to the integer power n.  Hypot(x,y) computes sqrt(x*x+y*y).
 
-       cos, cosh, sin, sinh, tan, tanh: fn(x: real): real;
-       acos, asin, acosh, asinh, atan, atanh: fn(x: real): real;
-       atan2: fn(y, x: real) of real;
+Exp(x) returns the exponential function of x, and expm1(x) is
+exp(x)-1.
 
-       lgamma: fn(x: real): (int,real);
-       erf, erfc: fn(x: real): real;
-       j0, j1, y0, y1: fn(x: real): real;
-       jn, yn: fn(n: int, x: real): real;
+Log(x) returns the natural logarithm  of  x,  while  log10(x)
+returns  the logarithm base 10 and log1p(x) returns the loga‐
+rithm of 1+x.
 
-DESCRIPTION
-       These routines implement the basic  elementary  functions  of
-       applied mathematics.
+The trigonometric functions use radians.  The ranges  of  the
+inverse  functions  are:  acos  in [0,π]; asin in [-π/2,π/2];
+atan in [-π/2,π/2]; and atan2(y,x) = arctan(y/x) in [-π,π];
 
-       Sqrt(x) computes the square root of x, cbrt(x) the cube root.
-       Pow(x,y) computes x raised to the exponent y; pow10 raises 10
-       to the integer power n.  Hypot(x,y) computes sqrt(x*x+y*y).
+The gamma function is implemented by lgamma(x); the tuple  it
+returns,  say  (s,lg),  encodes  the gamma function by Γ(x) =
+s*exp(lg).
 
-       Exp(x) returns the exponential function of x, and expm1(x) is
-       exp(x)-1.
+The hyperbolic trigonometric functions sinh  etc.  behave  as
+expected.  Erf is the error function and erfc(x) is 1-erf(x).
 
-       Log(x) returns the natural logarithm  of  x,  while  log10(x)
-       returns  the logarithm base 10 and log1p(x) returns the loga‐
-       rithm of 1+x.
+The  Bessel functions are computed by j0, j1, jn, y0, y1, and
+yn.
 
-       The trigonometric functions use radians.  The ranges  of  the
-       inverse  functions  are:  acos  in [0,π]; asin in [-π/2,π/2];
-       atan in [-π/2,π/2]; and atan2(y,x) = arctan(y/x) in [-π,π];
+== source
+/libinterp/math.c
 
-       The gamma function is implemented by lgamma(x); the tuple  it
-       returns,  say  (s,lg),  encodes  the gamma function by Γ(x) =
-       s*exp(lg).
+== see ALSO
+math-intro(2)
 
-       The hyperbolic trigonometric functions sinh  etc.  behave  as
-       expected.  Erf is the error function and erfc(x) is 1-erf(x).
-
-       The  Bessel functions are computed by j0, j1, jn, y0, y1, and
-       yn.
-
-SOURCE
-       /libinterp/math.c
-
-SEE ALSO
-       math-intro(2)
-
-                                                        MATH-ELEM(2)

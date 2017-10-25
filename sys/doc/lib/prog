@@ -1,219 +1,212 @@
-PROG(3)               Library Functions Manual               PROG(3)
+= prog: running programs
 
-NAME
-       prog - running programs
+    bind #p /prog
 
-SYNOPSIS
-       bind #p /prog
+    /prog/n/ctl
+    /prog/n/dbgctl
+    /prog/n/exception
+    /prog/n/fd
+    /prog/n/heap
+    /prog/n/ns
+    /prog/n/nsgrp
+    /prog/n/pgrp
+    /prog/n/stack
+    /prog/n/status
+    /prog/n/text
+    /prog/n/wait
+    ...
 
-       /prog/n/ctl
-       /prog/n/dbgctl
-       /prog/n/exception
-       /prog/n/fd
-       /prog/n/heap
-       /prog/n/ns
-       /prog/n/nsgrp
-       /prog/n/pgrp
-       /prog/n/stack
-       /prog/n/status
-       /prog/n/text
-       /prog/n/wait
-       ...
+The  prog device serves a two-level directory structure.  The
+first level contains numbered  directories  corresponding  to
+pids  of live Limbo processes; each such directory contains a
+set of files representing  the  corresponding  process.   All
+files operate on UTF (see utf(6)) strings.
 
-DESCRIPTION
-       The  prog device serves a two-level directory structure.  The
-       first level contains numbered  directories  corresponding  to
-       pids  of live Limbo processes; each such directory contains a
-       set of files representing  the  corresponding  process.   All
-       files operate on UTF (see utf(6)) strings.
+The  read-only  status  file  contains  seven space-separated
+fields.  The fields are: the process and process group  iden‐
+tifiers, each 8 characters right justified; the user name, at
+least 10 characters left justified; cpu time in minutes, sec‐
+onds  and tenths of seconds; the process state, 10 characters
+left justified; the amount of memory used by the  process  in
+units  of 1024 bytes, at least 5 characters, right justified,
+followed by a K; and the name of the current program  module,
+up to 28 characters, left justified.
 
-       The  read-only  status  file  contains  seven space-separated
-       fields.  The fields are: the process and process group  iden‐
-       tifiers, each 8 characters right justified; the user name, at
-       least 10 characters left justified; cpu time in minutes, sec‐
-       onds  and tenths of seconds; the process state, 10 characters
-       left justified; the amount of memory used by the  process  in
-       units  of 1024 bytes, at least 5 characters, right justified,
-       followed by a K; and the name of the current program  module,
-       up to 28 characters, left justified.
+The  read-only  pgrp  file contains the process group identi‐
+fier, in decimal.
 
-       The  read-only  pgrp  file contains the process group identi‐
-       fier, in decimal.
+The read-only nsgrp file contains the namespace group identi‐
+fier, in decimal.
 
-       The read-only nsgrp file contains the namespace group identi‐
-       fier, in decimal.
+The  read-only  ns file contains a set of mount and bind com‐
+mands which describe the  sys-bind(2)  and  mount  operations
+used  to  construct  the  name space, in the format of names‐
+pace(6).  The last line of the file is a cd command  indicat‐
+ing the working directory.
 
-       The  read-only  ns file contains a set of mount and bind com‐
-       mands which describe the  sys-bind(2)  and  mount  operations
-       used  to  construct  the  name space, in the format of names‐
-       pace(6).  The last line of the file is a cd command  indicat‐
-       ing the working directory.
+The  read-only  wait  file may be read to recover information
+about the exiting children of the process.  A  read  of  wait
+will  block  until a child of the process, created after wait
+was opened, exits.  When such a child exits,  it  produces  a
+string  with  three fields: the pid of the exiting process, a
+space, module name enclosed in  "'s, a colon, and a  possibly
+empty  error message.  The error message will contain at most
+64 characters.
 
-       The  read-only  wait  file may be read to recover information
-       about the exiting children of the process.  A  read  of  wait
-       will  block  until a child of the process, created after wait
-       was opened, exits.  When such a child exits,  it  produces  a
-       string  with  three fields: the pid of the exiting process, a
-       space, module name enclosed in  "'s, a colon, and a  possibly
-       empty  error message.  The error message will contain at most
-       64 characters.
+The read-only fd file describes the open file descriptors  in
+the   file  descriptor  group  of  the  process.   Each  line
+describes an open file.  The fields are: the file  descriptor
+index,  the  open mode (r, w, rw); the type and number of the
+device; the path, version and type of  the  file's  qid  (see
+intro(5));  the  file's  atomic  I/O unit, as defined in sys-
+iounit(2)); the file I/O offset in bytes; and the  name  with
+which it was opened.
 
-       The read-only fd file describes the open file descriptors  in
-       the   file  descriptor  group  of  the  process.   Each  line
-       describes an open file.  The fields are: the file  descriptor
-       index,  the  open mode (r, w, rw); the type and number of the
-       device; the path, version and type of  the  file's  qid  (see
-       intro(5));  the  file's  atomic  I/O unit, as defined in sys-
-       iounit(2)); the file I/O offset in bytes; and the  name  with
-       which it was opened.
+The read-only exception file gives details of the last excep‐
+tion to occur in the process, if any. The fields are the pro‐
+gram counter value when the exception occurred, the module it
+occurred in and the exception itself,  each  separated  by  a
+space. If none, the result is the empty string.
 
-       The read-only exception file gives details of the last excep‐
-       tion to occur in the process, if any. The fields are the pro‐
-       gram counter value when the exception occurred, the module it
-       occurred in and the exception itself,  each  separated  by  a
-       space. If none, the result is the empty string.
+Messages written to the ctl file control the execution of the
+process.
 
-       Messages written to the ctl file control the execution of the
-       process.
+kill   Kill the process.
 
-       kill   Kill the process.
+killgrp
+       Kill all processes in the same group as  the  process.
+       A  process  writing  to its own ctl file does not kill
+       itself.
 
-       killgrp
-              Kill all processes in the same group as  the  process.
-              A  process  writing  to its own ctl file does not kill
-              itself.
+exceptions propagate
+       Applies to process group leaders only (ie any  process
+       that  executes  a  system call sys->pctl(Sys->NEWPGRP,
+       ...  ).  If any process  in  the  same  group  as  the
+       leader  incurs  an exception which it does not handle,
+       atomically raise the exception in all processes in the
+       group.   In  this  case  exceptions  are generated for
+       killed processes as well. This  mechanism  allows  all
+       processes  in a process group to perfom error recovery
+       when one of them faults.
 
-       exceptions propagate
-              Applies to process group leaders only (ie any  process
-              that  executes  a  system call sys->pctl(Sys->NEWPGRP,
-              ...  ).  If any process  in  the  same  group  as  the
-              leader  incurs  an exception which it does not handle,
-              atomically raise the exception in all processes in the
-              group.   In  this  case  exceptions  are generated for
-              killed processes as well. This  mechanism  allows  all
-              processes  in a process group to perfom error recovery
-              when one of them faults.
+exceptions notifyleader
+       Applies to process group leaders only.  If any process
+       in  the  same  group as the leader incurs an exception
+       which it does not handle, atomically destroy all  pro‐
+       cesses  in  the  group except for the leader and raise
+       the exception in the leader. This error recovery mech‐
+       anism might be appropriate when a fault occurs amongst
+       a group of processes and the group leader  takes  sole
+       responsibilty for recovery.
 
-       exceptions notifyleader
-              Applies to process group leaders only.  If any process
-              in  the  same  group as the leader incurs an exception
-              which it does not handle, atomically destroy all  pro‐
-              cesses  in  the  group except for the leader and raise
-              the exception in the leader. This error recovery mech‐
-              anism might be appropriate when a fault occurs amongst
-              a group of processes and the group leader  takes  sole
-              responsibilty for recovery.
+restricted
+       Mark  all  processes that the process spawns in future
+       as restricted. A restricted process is one  which  can
+       run  out  of  memory  when a configured limit has been
+       reached and before total memory is exhausted. An unre‐
+       stricted  process  can allocate memory until memory is
+       truly exhausted. Typically a window manager or  server
+       might  be unrestricted as they are processes fundamen‐
+       tal to the running of a system.
 
-       restricted
-              Mark  all  processes that the process spawns in future
-              as restricted. A restricted process is one  which  can
-              run  out  of  memory  when a configured limit has been
-              reached and before total memory is exhausted. An unre‐
-              stricted  process  can allocate memory until memory is
-              truly exhausted. Typically a window manager or  server
-              might  be unrestricted as they are processes fundamen‐
-              tal to the running of a system.
+The dbgctl file provides facilities for debugging a  process.
+Messages  written  to  the  file control the execution of the
+process.
 
-       The dbgctl file provides facilities for debugging a  process.
-       Messages  written  to  the  file control the execution of the
-       process.
+step n    Step the interpreter for at most n instructions, or
+          until a breakpoint is reached.
 
-       step n    Step the interpreter for at most n instructions, or
-                 until a breakpoint is reached.
+toret     Step  the  interpreter until a return from the cur‐
+          rent activation frame or a breakpoint is reached.
 
-       toret     Step  the  interpreter until a return from the cur‐
-                 rent activation frame or a breakpoint is reached.
+cont      Step the interpreter until a breakpoint is reached.
 
-       cont      Step the interpreter until a breakpoint is reached.
+stop      Stop the process as soon as possible.  Do not allow
+          the  process  to execute again until an unstop mes‐
+          sage is received.
 
-       stop      Stop the process as soon as possible.  Do not allow
-                 the  process  to execute again until an unstop mes‐
-                 sage is received.
+unstop    Cancel the effect of any previous stop.
 
-       unstop    Cancel the effect of any previous stop.
+bpt set path pc
+          Set a breakpoint at pc  for  the  module  given  by
+          path.
 
-       bpt set path pc
-                 Set a breakpoint at pc  for  the  module  given  by
-                 path.
+bpt del path pc
+          Clear a breakpoint if one exists.
 
-       bpt del path pc
-                 Clear a breakpoint if one exists.
+Reading dbgctl gives updates for some state transitions while
+the process is being debugged.  Each update is terminated  by
+a newline.
 
-       Reading dbgctl gives updates for some state transitions while
-       the process is being debugged.  Each update is terminated  by
-       a newline.
+exited    The process exited without error.
 
-       exited    The process exited without error.
+broken: error
+          The  process died due to error, a string with up to
+          64 characters.
 
-       broken: error
-                 The  process died due to error, a string with up to
-                 64 characters.
+send      The process is blocked sending on a channel.
 
-       send      The process is blocked sending on a channel.
+recv      The process is blocked receiving on a channel.
 
-       recv      The process is blocked receiving on a channel.
+alt       The process is blocked in an alt statement.
 
-       alt       The process is blocked in an alt statement.
+run       The process is unblocked and now ready to run.
 
-       run       The process is unblocked and now ready to run.
+new pid   The process has spawned a new process identified by
+          pid.
 
-       new pid   The process has spawned a new process identified by
-                 pid.
+The  read-only  stack  file  contains  the dynamic call stack
+trace.  Each activation frame is described by one  line  with
+six  fields, separated by a space: the frame pointer, program
+counter, module data pointer, and module code pointer, each 8
+hexadecimal  digits;  the  execution method for the module (0
+means interpreted, 1 compiled); and the path name of the mod‐
+ule.  The top activation frame starts at offset 0.
 
-       The  read-only  stack  file  contains  the dynamic call stack
-       trace.  Each activation frame is described by one  line  with
-       six  fields, separated by a space: the frame pointer, program
-       counter, module data pointer, and module code pointer, each 8
-       hexadecimal  digits;  the  execution method for the module (0
-       means interpreted, 1 compiled); and the path name of the mod‐
-       ule.  The top activation frame starts at offset 0.
+The  heap  file  may  be  queried to examine the state of the
+process.  A data query contains an address, a period, a  for‐
+mat  character, and a count.  An instruction query contains a
+pc, a plus, a mode address, a period, the  format  I,  and  a
+count.   The addresses in the query may be decimal, hexadeci‐
+mal preceded by 0x or 0X, or  octal  preceded  by  0.   Count
+gives the number of consecutive data items retrieved by read‐
+ing heap starting at offset 0; the format varies according to
+the  format character.  All data items other than strings are
+terminated by a newline.
 
-       The  heap  file  may  be  queried to examine the state of the
-       process.  A data query contains an address, a period, a  for‐
-       mat  character, and a count.  An instruction query contains a
-       pc, a plus, a mode address, a period, the  format  I,  and  a
-       count.   The addresses in the query may be decimal, hexadeci‐
-       mal preceded by 0x or 0X, or  octal  preceded  by  0.   Count
-       gives the number of consecutive data items retrieved by read‐
-       ing heap starting at offset 0; the format varies according to
-       the  format character.  All data items other than strings are
-       terminated by a newline.
+W         32-bit decimal ints.
 
-       W         32-bit decimal ints.
+B         8-bit unsigned decimal bytes.
 
-       B         8-bit unsigned decimal bytes.
+V         64-bit decimal bytes.
 
-       V         64-bit decimal bytes.
+R         64-bit reals.
 
-       R         64-bit reals.
+I         Disassembled Dis instructions.
 
-       I         Disassembled Dis instructions.
+P         32-bit hexadecimal address, or nil.
 
-       P         32-bit hexadecimal address, or nil.
+The following formats examine properties of  specific  32-bit
+pointers.
 
-       The following formats examine properties of  specific  32-bit
-       pointers.
+L         Examine  a  list,  yielding  a  pair of hexadecimal
+          addresses separated by a period, giving the address
+          of  the head and tail of a list.  It is an error to
+          use L on nil.
 
-       L         Examine  a  list,  yielding  a  pair of hexadecimal
-                 addresses separated by a period, giving the address
-                 of  the head and tail of a list.  It is an error to
-                 use L on nil.
+A         Examine an array,  yielding  a  decimal  length,  a
+          period,  and  the  address of the 0th element of an
+          array, or nil.
 
-       A         Examine an array,  yielding  a  decimal  length,  a
-                 period,  and  the  address of the 0th element of an
-                 array, or nil.
+C         Examine a string, yielding the  decimal  length  in
+          characters, a period, and the utf(6) representation
+          of the string.
 
-       C         Examine a string, yielding the  decimal  length  in
-                 characters, a period, and the utf(6) representation
-                 of the string.
+M         Examine a module reference, yielding the address of
+          its global data or nil.
 
-       M         Examine a module reference, yielding the address of
-                 its global data or nil.
+The text file is currently unimplemented.
 
-       The text file is currently unimplemented.
-
-SOURCE
-       /emu/port/devprog.c
-       /os/port/devprog.c
-
-                                                             PROG(3)
+== source
+/emu/port/devprog.c
+/os/port/devprog.c

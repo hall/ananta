@@ -1,89 +1,81 @@
-RUNE(10.2)                                                RUNE(10.2)
+= runetochar, chartorune, runelen, runenlen, fullrune, utfecpy, utflen, utfnlen, utfrune, utfrrune, utfutf: rune/UTF conversion
 
-NAME
-       runetochar, chartorune, runelen, runenlen, fullrune, utfecpy,
-       utflen, utfnlen, utfrune, utfrrune, utfutf - rune/UTF conver‐
-       sion
+    int    runetochar(char *s, Rune *r)
 
-SYNOPSIS
-       int    runetochar(char *s, Rune *r)
+    int    chartorune(Rune *r, char *s)
 
-       int    chartorune(Rune *r, char *s)
+    int    runelen(long r)
 
-       int    runelen(long r)
+    int    runenlen(Rune *r, int n)
 
-       int    runenlen(Rune *r, int n)
+    int    fullrune(char *s, int n)
 
-       int    fullrune(char *s, int n)
+    char*  utfecpy(char *s1, char *es1, char *s2)
 
-       char*  utfecpy(char *s1, char *es1, char *s2)
+    int    utflen(char *s)
 
-       int    utflen(char *s)
+    int    utfnlen(char *s, long n)
 
-       int    utfnlen(char *s, long n)
+    char*  utfrune(char *s, long c)
 
-       char*  utfrune(char *s, long c)
+    char*  utfrrune(char *s, long c)
 
-       char*  utfrrune(char *s, long c)
+    char*  utfutf(char *s1, char *s2)
 
-       char*  utfutf(char *s1, char *s2)
+These  routines  convert  to  and  from a UTF byte stream and
+runes.
 
-DESCRIPTION
-       These  routines  convert  to  and  from a UTF byte stream and
-       runes.
+Runetochar copies one rune at  r  to  at  most  UTFmax  bytes
+starting  at  s and returns the number of bytes copied.  UTF‐
+max, defined as 4 in <libc.h>, is the maximum number of bytes
+required to represent a rune.
 
-       Runetochar copies one rune at  r  to  at  most  UTFmax  bytes
-       starting  at  s and returns the number of bytes copied.  UTF‐
-       max, defined as 4 in <libc.h>, is the maximum number of bytes
-       required to represent a rune.
+Chartorune  copies  at most UTFmax bytes starting at s to one
+rune at r and returns the number of  bytes  copied.   If  the
+input  is  not exactly in UTF format, chartorune will convert
+to Runeerror (0xFFFD) and return 1.
 
-       Chartorune  copies  at most UTFmax bytes starting at s to one
-       rune at r and returns the number of  bytes  copied.   If  the
-       input  is  not exactly in UTF format, chartorune will convert
-       to Runeerror (0xFFFD) and return 1.
+Runelen returns the number of bytes  required  to  convert  r
+into UTF.
 
-       Runelen returns the number of bytes  required  to  convert  r
-       into UTF.
+Runenlen  returns the number of bytes required to convert the
+n runes pointed to by r into UTF.
 
-       Runenlen  returns the number of bytes required to convert the
-       n runes pointed to by r into UTF.
+Fullrune returns 1 if the string s of length n is long enough
+to  be  decoded by chartorune and 0 otherwise.  This does not
+guarantee that the string  contains  a  legal  UTF  encoding.
+This  routine is used by programs that obtain input a byte at
+a time and need to know when a full rune has arrived.
 
-       Fullrune returns 1 if the string s of length n is long enough
-       to  be  decoded by chartorune and 0 otherwise.  This does not
-       guarantee that the string  contains  a  legal  UTF  encoding.
-       This  routine is used by programs that obtain input a byte at
-       a time and need to know when a full rune has arrived.
+The following routines are  analogous  to  the  corresponding
+string routines with utf substituted for str and rune substi‐
+tuted for chr.
 
-       The following routines are  analogous  to  the  corresponding
-       string routines with utf substituted for str and rune substi‐
-       tuted for chr.
+Utflen returns the number of runes that  are  represented  by
+the UTF string s.
 
-       Utflen returns the number of runes that  are  represented  by
-       the UTF string s.
+Utfnlen  returns the number of complete runes that are repre‐
+sented by the first n bytes of UTF string s.  If the last few
+bytes  of  the  string  contain  an  incompletely coded rune,
+utfnlen will not count them; in this  way,  it  differs  from
+utflen, which includes every byte of the string.
 
-       Utfnlen  returns the number of complete runes that are repre‐
-       sented by the first n bytes of UTF string s.  If the last few
-       bytes  of  the  string  contain  an  incompletely coded rune,
-       utfnlen will not count them; in this  way,  it  differs  from
-       utflen, which includes every byte of the string.
+Utfrune  (utfrrune)  returns  a  pointer  to the first (last)
+occurrence of rune c in the UTF string s, or 0 if c does  not
+occur  in  the  string.  The NUL byte terminating a string is
+considered to be part of the string s.
 
-       Utfrune  (utfrrune)  returns  a  pointer  to the first (last)
-       occurrence of rune c in the UTF string s, or 0 if c does  not
-       occur  in  the  string.  The NUL byte terminating a string is
-       considered to be part of the string s.
+Utfutf returns a pointer to the first occurrence of  the  UTF
+string  s2  as  a UTF substring of s1, or 0 if there is none.
+If s2 is the null string, utfutf returns s1.
 
-       Utfutf returns a pointer to the first occurrence of  the  UTF
-       string  s2  as  a UTF substring of s1, or 0 if there is none.
-       If s2 is the null string, utfutf returns s1.
+== source
+/libkern/rune.c
+/libkern/runestrlen.c
+/libkern/utflen.c
+/libkern/utfrrune.c
+/libkern/utfrune.c
 
-SOURCE
-       /libkern/rune.c
-       /libkern/runestrlen.c
-       /libkern/utflen.c
-       /libkern/utfrrune.c
-       /libkern/utfrune.c
+== see ALSO
+convcs(2), utf(6)
 
-SEE ALSO
-       convcs(2), utf(6)
-
-                                                          RUNE(10.2)

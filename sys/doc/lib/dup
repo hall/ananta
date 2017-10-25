@@ -1,43 +1,36 @@
-DUP(3)                Library Functions Manual                DUP(3)
+= dup: dups of open files
 
-NAME
-       dup - dups of open files
+    bind #d /fd
 
-SYNOPSIS
-       bind #d /fd
+    /fd/0
+    /fd/0ctl
+    /fd/1
+    /fd/1ctl
+    ...
 
-       /fd/0
-       /fd/0ctl
-       /fd/1
-       /fd/1ctl
-       ...
+The  dup device serves a one-level directory containing files
+whose names are decimal numbers.  Each such file also has  an
+associated  control  file.   A  file of name n corresponds to
+open file descriptor n in the current process.
 
-DESCRIPTION
-       The  dup device serves a one-level directory containing files
-       whose names are decimal numbers.  Each such file also has  an
-       associated  control  file.   A  file of name n corresponds to
-       open file descriptor n in the current process.
+A sys-open(2) of file n results in a file descriptor  identi‐
+cal  to what would be returned from a system call sys->dup(n,
+-1).  Note that the result is no longer a  file  in  the  dup
+device.
 
-       A sys-open(2) of file n results in a file descriptor  identi‐
-       cal  to what would be returned from a system call sys->dup(n,
-       -1).  Note that the result is no longer a  file  in  the  dup
-       device.
+The stat operation returns information about the device file,
+not the open file it points to.  A stat of #d/n will  contain
+n  for  the  name,  0  for  the  length, and 400, 200, or 600
+(octal) for the mode, depending on whether the dup target  is
+open for reading, writing, or both.
 
-       The stat operation returns information about the device file,
-       not the open file it points to.  A stat of #d/n will  contain
-       n  for  the  name,  0  for  the  length, and 400, 200, or 600
-       (octal) for the mode, depending on whether the dup target  is
-       open for reading, writing, or both.
+A file of name nctl may be read to discover the properties of
+the associated file descriptor, in format identical  to  that
+of the fd file in prog(3).
 
-       A file of name nctl may be read to discover the properties of
-       the associated file descriptor, in format identical  to  that
-       of the fd file in prog(3).
+== see ALSO
+sys-dup(2)
 
-SEE ALSO
-       sys-dup(2)
-
-SOURCE
-       /usr/inferno/emu/port/devdup.c
-       /usr/inferno/os/port/devdup.c
-
-                                                              DUP(3)
+== source
+/usr/inferno/emu/port/devdup.c
+/usr/inferno/os/port/devdup.c

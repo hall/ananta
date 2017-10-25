@@ -1,54 +1,47 @@
-KEYRING-GETSTRING(2)     System Calls Manual    KEYRING-GETSTRING(2)
+= keyring: getstring, putstring, getbytearray, putbytearray, puterror: exchange data on delimited streams
 
-NAME
-       keyring:  getstring,  putstring,  getbytearray, putbytearray,
-       puterror - exchange data on delimited streams
+    include "keyring.m"
+    keyring:= load Keyring Keyring->PATH;
 
-SYNOPSIS
-       include "keyring.m"
-       keyring:= load Keyring Keyring->PATH;
+    getstring:    fn(fd: ref Sys->FD): (string, string);
+    putstring:    fn(fd: ref Sys->FD, s: string): int;
+    getbytearray: fn(fd: ref Sys->FD): (array of byte, string);
+    putbytearray: fn(fd: ref Sys->FD, a: array of byte, n: int): int;
+    puterror:     fn(fd: ref Sys->FD, s: string): int;
 
-       getstring:    fn(fd: ref Sys->FD): (string, string);
-       putstring:    fn(fd: ref Sys->FD, s: string): int;
-       getbytearray: fn(fd: ref Sys->FD): (array of byte, string);
-       putbytearray: fn(fd: ref Sys->FD, a: array of byte, n: int): int;
-       puterror:     fn(fd: ref Sys->FD, s: string): int;
+These functions provide I/O  for  strings,  byte  arrays  and
+error  strings over network connections that provide a record
+structure for communication (as provided for  arbitrary  net‐
+works by ssl(3)).
 
-DESCRIPTION
-       These functions provide I/O  for  strings,  byte  arrays  and
-       error  strings over network connections that provide a record
-       structure for communication (as provided for  arbitrary  net‐
-       works by ssl(3)).
+Putstring  writes  string  s to fd.  It returns the number of
+bytes written, or -1 if an error occurred.  Messages  written
+by putstring are truncated to 4096 bytes.
 
-       Putstring  writes  string  s to fd.  It returns the number of
-       bytes written, or -1 if an error occurred.  Messages  written
-       by putstring are truncated to 4096 bytes.
+Getstring  reads a string as written by putstring from fd and
+returns a tuple (result,error).   If  successful,  the  error
+string is nil.
 
-       Getstring  reads a string as written by putstring from fd and
-       returns a tuple (result,error).   If  successful,  the  error
-       string is nil.
+Putbytearray  writes  the array of bytes a to fd.  It returns
+the number of bytes written, or  -1  if  an  error  occurred.
+Messages written by putbytearray are truncated to 4096 bytes.
 
-       Putbytearray  writes  the array of bytes a to fd.  It returns
-       the number of bytes written, or  -1  if  an  error  occurred.
-       Messages written by putbytearray are truncated to 4096 bytes.
+Getbytearray reads an array of bytes as written by putbytear‐
+ray from fd and returns a tuple of the  form  (result,error).
+If successful, the error string is nil.
 
-       Getbytearray reads an array of bytes as written by putbytear‐
-       ray from fd and returns a tuple of the  form  (result,error).
-       If successful, the error string is nil.
+Puterror  writes  an error string s to fd.  It can be used in
+place of putstring or putbytearray to cause  a  corresponding
+getstring or getbytearray to fail (in the receiving process),
+forcing them to return the error string s.   It  may  not  be
+longer than Sys->ERRMAX bytes.
 
-       Puterror  writes  an error string s to fd.  It can be used in
-       place of putstring or putbytearray to cause  a  corresponding
-       getstring or getbytearray to fail (in the receiving process),
-       forcing them to return the error string s.   It  may  not  be
-       longer than Sys->ERRMAX bytes.
+== source
+/libinterp/keyring.c
 
-SOURCE
-       /libinterp/keyring.c
+== diagnostics
+The  output  functions return an int which is -1 if there was
+an I/O error, and a non-negative value otherwise.  The  input
+functions  return  a  tuple that includes a string indicating
+the cause of the error, as the second element of the tuple.
 
-DIAGNOSTICS
-       The  output  functions return an int which is -1 if there was
-       an I/O error, and a non-negative value otherwise.  The  input
-       functions  return  a  tuple that includes a string indicating
-       the cause of the error, as the second element of the tuple.
-
-                                                KEYRING-GETSTRING(2)

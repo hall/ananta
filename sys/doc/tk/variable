@@ -1,26 +1,20 @@
-VARIABLE(9)           Kernel Developer's Manual          VARIABLE(9)
+= variable: interrogate a button variable
 
-NAME
-       variable - interrogate a button variable
+    variable var ?value?
 
-SYNOPSIS
-       variable var ?value?
+Variable  queries  or  sets  the  value  of a Tk radiobutton,
+checkbutton or choicebutton variable.   An  error  diagnostic
+will be returned if the variable is of the wrong type (if for
+instance it is the name of a named channel).
 
-DESCRIPTION
-       Variable  queries  or  sets  the  value  of a Tk radiobutton,
-       checkbutton or choicebutton variable.   An  error  diagnostic
-       will be returned if the variable is of the wrong type (if for
-       instance it is the name of a named channel).
+If value is given, the value of the variable is set  to  that
+value,  and  any associated buttons will subsequently reflect
+this  in  their  appearance.   Omitting  the  value  argument
+returns the current value of the variable.
 
-       If value is given, the value of the variable is set  to  that
-       value,  and  any associated buttons will subsequently reflect
-       this  in  their  appearance.   Omitting  the  value  argument
-       returns the current value of the variable.
+The  special variable lasterror holds the text of the last Tk
+error encountered.  It resets when queried.
 
-       The  special variable lasterror holds the text of the last Tk
-       error encountered.  It resets when queried.
+== see ALSO
+checkbutton(9), choicebutton(9), radiobutton(9)
 
-SEE ALSO
-       checkbutton(9), choicebutton(9), radiobutton(9)
-
-                                                         VARIABLE(9)

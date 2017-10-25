@@ -1,147 +1,139 @@
-TKCLIENT(2)              System Calls Manual             TKCLIENT(2)
+= tkclient: makedrawcontext, toplevel, onscreen, startinput, wmctl, settitle, handler, snarfput, snarfget: window manager interface for Tk applications.
 
-NAME
-       tkclient:  makedrawcontext,  toplevel,  onscreen, startinput,
-       wmctl, settitle, handler, snarfput, snarfget - window manager
-       interface for Tk applications.
+    include "tkclient.m";
+    tkclient := load Tkclient Tkclient->PATH;
 
-SYNOPSIS
-       include "tkclient.m";
-       tkclient := load Tkclient Tkclient->PATH;
+    Resize,
+    Hide,
+    Help,
+    OK,
+    Plain:     con 1 << iota;
+    
+    Appl:   con Resize | Hide;
+    
+    init:       fn();
+    makedrawcontext: fn():  ref Draw->Context;
+    toplevel:   fn(ctxt: ref Draw->Context, topconfig: string,
+                    title: string, buts: int): (ref Tk->Toplevel, chan of string);
+    onscreen:   fn(top: ref Tk->Toplevel, how: string);
+    startinput: fn(top: ref Tk->Toplevel, devs: list of string);
+    wmctl:      fn(top: ref Tk->Toplevel, request: string): string;
+    settitle:   fn(top: ref Tk->Toplevel, name: string): string;
+    handler:    fn(top: ref Tk->Toplevel, stop: chan of int);
+    
+    snarfput:   fn(buf: string);
+    snarfget:   fn(): string;
 
-       Resize,
-       Hide,
-       Help,
-       OK,
-       Plain:     con 1 << iota;
+The Tkclient module provides routines for making windows con‐
+trolled by wm(1) containing tk(2) widgets.
 
-       Appl:   con Resize | Hide;
+Init should be called once to initialise the  internal  state
+of tkclient.
 
-       init:       fn();
-       makedrawcontext: fn():  ref Draw->Context;
-       toplevel:   fn(ctxt: ref Draw->Context, topconfig: string,
-                       title: string, buts: int): (ref Tk->Toplevel, chan of string);
-       onscreen:   fn(top: ref Tk->Toplevel, how: string);
-       startinput: fn(top: ref Tk->Toplevel, devs: list of string);
-       wmctl:      fn(top: ref Tk->Toplevel, request: string): string;
-       settitle:   fn(top: ref Tk->Toplevel, name: string): string;
-       handler:    fn(top: ref Tk->Toplevel, stop: chan of int);
+Makedrawcontext  establishes  an  initial connection with the
+window manager, creating a new Draw context suitable for cre‐
+ating  new  windows. It is only necessary to call this if the
+application has not already been provided with a context.
 
-       snarfput:   fn(buf: string);
-       snarfget:   fn(): string;
+Toplevel creates a new window through ctxt.  Topconfig  gives
+a  list  of  frame(9)  options that are applied to the new tk
+window, as described in tk(2).  Title gives a label that will
+be  displayed in the title bar of the window; buts determines
+which buttons are created in the titlebar, a bitwise combina‐
+tion  of  the constants Resize, Help, OK, and Hide.  If Plain
+is given, the window is given no decoration at all.  Toplevel
+returns  a tuple, say (top, ctl), where top is the newly cre‐
+ated top level tk window, and ctl is  a  channel  down  which
+requests  from  the title bar are sent.  Messages received on
+ctl should be processed by the application or passed  to  the
+wmctl  function.  Requests  are  formatted  as with quoted in
+string(2).  The messages include:
 
-DESCRIPTION
-       The Tkclient module provides routines for making windows con‐
-       trolled by wm(1) containing tk(2) widgets.
+exit   The window should be closed.  Wmctl will kill all pro‐
+       cesses in the current process group.
 
-       Init should be called once to initialise the  internal  state
-       of tkclient.
+!move x y
+       The user has started to try to drag the window.  X and
+       y give the location of the initial pointer click.
 
-       Makedrawcontext  establishes  an  initial connection with the
-       window manager, creating a new Draw context suitable for cre‐
-       ating  new  windows. It is only necessary to call this if the
-       application has not already been provided with a context.
+!size  The user wishes to resize the window.
 
-       Toplevel creates a new window through ctxt.  Topconfig  gives
-       a  list  of  frame(9)  options that are applied to the new tk
-       window, as described in tk(2).  Title gives a label that will
-       be  displayed in the title bar of the window; buts determines
-       which buttons are created in the titlebar, a bitwise combina‐
-       tion  of  the constants Resize, Help, OK, and Hide.  If Plain
-       is given, the window is given no decoration at all.  Toplevel
-       returns  a tuple, say (top, ctl), where top is the newly cre‐
-       ated top level tk window, and ctl is  a  channel  down  which
-       requests  from  the title bar are sent.  Messages received on
-       ctl should be processed by the application or passed  to  the
-       wmctl  function.  Requests  are  formatted  as with quoted in
-       string(2).  The messages include:
+help   The help button has been clicked.
 
-       exit   The window should be closed.  Wmctl will kill all pro‐
-              cesses in the current process group.
+ok     The OK  button has been clicked.
 
-       !move x y
-              The user has started to try to drag the window.  X and
-              y give the location of the initial pointer click.
+hide   The Hide button has been clicked.  The window will  be
+       deleted, and an entry shown on the toolbar.
 
-       !size  The user wishes to resize the window.
+In order to function correctly, an application should process
+not only events from the title bar channel, but  also  events
+from  the  Tk  toplevel wreq channel, those received from the
+window manager itself (via  top.ctxt.ctl),  and  pointer  and
+keyboard   events  received  from  the  window  manager  (via
+top.ctxt.ptr and top.ctxt.kbd respectively).  Control  events
+can be passed to wmctl; pointer and keyboard events should be
+passed to their respective functions in tk(2).
 
-       help   The help button has been clicked.
+When created, the window is not visible and will not  receive
+pointer  or  keyboard events.  Onscreen makes it visible, and
+possibly chooses a position and a size for it.  How specifies
+what  sort of placement is required for the window; it can be
+one of
 
-       ok     The OK  button has been clicked.
+place  tries to choose a suitable place on  the  screen  with
+       respect to other windows; it may size the window as it
+       feels appropriate. This the default (if how is nil).
 
-       hide   The Hide button has been clicked.  The window will  be
-              deleted, and an entry shown on the toolbar.
+onscreen
+       tries to keep the position and size the same as speci‐
+       fied  on  the window, adjusting them only to bring the
+       window fully on screen, and making sure that the  win‐
+       dow is no bigger than the entire display.
 
-       In order to function correctly, an application should process
-       not only events from the title bar channel, but  also  events
-       from  the  Tk  toplevel wreq channel, those received from the
-       window manager itself (via  top.ctxt.ctl),  and  pointer  and
-       keyboard   events  received  from  the  window  manager  (via
-       top.ctxt.ptr and top.ctxt.kbd respectively).  Control  events
-       can be passed to wmctl; pointer and keyboard events should be
-       passed to their respective functions in tk(2).
+exact  does  not change the specified size or position of the
+       window unless absolutely necessary.
 
-       When created, the window is not visible and will not  receive
-       pointer  or  keyboard events.  Onscreen makes it visible, and
-       possibly chooses a position and a size for it.  How specifies
-       what  sort of placement is required for the window; it can be
-       one of
+Startinput informs the window  manager  that  the  window  is
+ready to the event types specified in devs.  Currently under‐
+stood are kbd  for  keyboard  events,  and  ptr  for  pointer
+events.
 
-       place  tries to choose a suitable place on  the  screen  with
-              respect to other windows; it may size the window as it
-              feels appropriate. This the default (if how is nil).
+The  simplest  well-behaved wm (1) client will therefore con‐
+tain:
 
-       onscreen
-              tries to keep the position and size the same as speci‐
-              fied  on  the window, adjusting them only to bring the
-              window fully on screen, and making sure that the  win‐
-              dow is no bigger than the entire display.
+     (top, ctl) := tkclient->toplevel(ctxt, nil, "My Program", Tkclient->Appl);
+     # ... populate the window with tk widgets
+     tkclient->startinput(top, "ptr" :: "kbd" :: nil);
+     tkclient->onscreen(top, nil);
+     for(;;){
+          alt{
+          s := <-ctl or
+          s = <-top.ctxt.ctl or
+          s = <-top.wreq =>
+               tkclient->wmctl(top, s);
+          p := <-top.ctxt.ptr =>
+               tk->pointer(top, *p);
+          c := <-top.ctxt.kbd =>
+               tk->keyboard(top, c);
+          }
+     }
 
-       exact  does  not change the specified size or position of the
-              window unless absolutely necessary.
+Settitle changes the name displayed in the title bar and  the
+window's name when it is in the task bar.
 
-       Startinput informs the window  manager  that  the  window  is
-       ready to the event types specified in devs.  Currently under‐
-       stood are kbd  for  keyboard  events,  and  ptr  for  pointer
-       events.
+Snarfget  and  snarfput  retrieve and replace the contents of
+the window manager's snarf buffer.
 
-       The  simplest  well-behaved wm (1) client will therefore con‐
-       tain:
+== files
+/chan/snarf
+       snarf buffer maintained by wm(1)
 
-            (top, ctl) := tkclient->toplevel(ctxt, nil, "My Program", Tkclient->Appl);
-            # ... populate the window with tk widgets
-            tkclient->startinput(top, "ptr" :: "kbd" :: nil);
-            tkclient->onscreen(top, nil);
-            for(;;){
-                 alt{
-                 s := <-ctl or
-                 s = <-top.ctxt.ctl or
-                 s = <-top.wreq =>
-                      tkclient->wmctl(top, s);
-                 p := <-top.ctxt.ptr =>
-                      tk->pointer(top, *p);
-                 c := <-top.ctxt.kbd =>
-                      tk->keyboard(top, c);
-                 }
-            }
+/chan/wm
+       channel for interaction with wm(1)
 
-       Settitle changes the name displayed in the title bar and  the
-       window's name when it is in the task bar.
+== source
+/appl/lib/tkclient.b
 
-       Snarfget  and  snarfput  retrieve and replace the contents of
-       the window manager's snarf buffer.
+== see ALSO
+wm(1), tk(2)
 
-FILES
-       /chan/snarf
-              snarf buffer maintained by wm(1)
-
-       /chan/wm
-              channel for interaction with wm(1)
-
-SOURCE
-       /appl/lib/tkclient.b
-
-SEE ALSO
-       wm(1), tk(2)
-
-                                                         TKCLIENT(2)

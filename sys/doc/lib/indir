@@ -1,54 +1,47 @@
-INDIR(3)              Library Functions Manual              INDIR(3)
+= indir: attach to device indirectly by name
 
-NAME
-       indir - attach to device indirectly by name
+    bind  #*name [!spec]  dir
 
-SYNOPSIS
-       bind  #*name [!spec]  dir
+Indir  allows  any other device to be referred to by its name
+instead of its perhaps arbitrary single character type; indir
+itself  has  the type character `*'.  It has no name space of
+its own.  On attach  (see  attach(5))  indir  interprets  its
+device  specifier  string as the name of a device to which it
+should attach, optionally followed by specifier spec for that
+device,  separated  from  the  name  by  an exclamation mark.
+Attaching to indir (eg, by sys-bind(2)), effectively attaches
+to  the  device  with the given name and spec, and all subse‐
+quent operations in the  resulting  name  space  access  that
+device, not indir itself.
 
-DESCRIPTION
-       Indir  allows  any other device to be referred to by its name
-       instead of its perhaps arbitrary single character type; indir
-       itself  has  the type character `*'.  It has no name space of
-       its own.  On attach  (see  attach(5))  indir  interprets  its
-       device  specifier  string as the name of a device to which it
-       should attach, optionally followed by specifier spec for that
-       device,  separated  from  the  name  by  an exclamation mark.
-       Attaching to indir (eg, by sys-bind(2)), effectively attaches
-       to  the  device  with the given name and spec, and all subse‐
-       quent operations in the  resulting  name  space  access  that
-       device, not indir itself.
+For example, to access cap(3), one could write:
 
-       For example, to access cap(3), one could write:
+       bind -a '#*cap' /dev
 
-              bind -a '#*cap' /dev
+The  following  commands  both  list  the  second instance of
+ether(3), first directly, then using indir:
 
-       The  following  commands  both  list  the  second instance of
-       ether(3), first directly, then using indir:
+       ls '#l1'
+       ls '#*ether!1'
 
-              ls '#l1'
-              ls '#*ether!1'
-
-       The file /dev/drivers (see cons(3)) lists the names  of  cur‐
-       rently configured devices.
+The file /dev/drivers (see cons(3)) lists the names  of  cur‐
+rently configured devices.
 
    Credit
-       Invented  by  Bruce  Ellis  for  Lucent's  internal  Research
-       Inferno to help name dynamically-loaded device drivers.  This
-       is a re-implementation.
+Invented  by  Bruce  Ellis  for  Lucent's  internal  Research
+Inferno to help name dynamically-loaded device drivers.  This
+is a re-implementation.
 
-SOURCE
-       /emu/port/devindir.c
-       /os/port/devindir.c
+== source
+/emu/port/devindir.c
+/os/port/devindir.c
 
-SEE ALSO
-       bind(1), sys-bind(2), cons(3)
+== see ALSO
+bind(1), sys-bind(2), cons(3)
 
-DIAGNOSTICS
-       If  name is not configured, indir returns a suitable diagnos‐
-       tic in the error string.
+== diagnostics
+If  name is not configured, indir returns a suitable diagnos‐
+tic in the error string.
 
-BUGS
-       Arguably the kernel could simply look up the name itself.
-
-                                                            INDIR(3)
+== bugs
+Arguably the kernel could simply look up the name itself.

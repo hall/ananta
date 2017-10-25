@@ -1,69 +1,62 @@
-ATOI(10.2)                                                ATOI(10.2)
+= atoi, atol, charstod, strtod, strtol, strtoul, strtoll: convert text to numbers
 
-NAME
-       atoi, atol, charstod, strtod, strtol, strtoul, strtoll - con‐
-       vert text to numbers
+    int    atoi(char *nptr)
 
-SYNOPSIS
-       int    atoi(char *nptr)
+    long   atol(char *nptr)
 
-       long   atol(char *nptr)
+    double charstod(int (*f)(void *), void *a)
 
-       double charstod(int (*f)(void *), void *a)
+    double strtod(char *nptr, char **rptr)
 
-       double strtod(char *nptr, char **rptr)
+    long   strtol(char *nptr, char **rptr, int base)
 
-       long   strtol(char *nptr, char **rptr, int base)
+    ulong  strtoul(char *nptr, char **rptr, int base)
 
-       ulong  strtoul(char *nptr, char **rptr, int base)
+    vlong  strtoll(char *nptr, char **rptr, int base)
 
-       vlong  strtoll(char *nptr, char **rptr, int base)
+Atoi and atol convert a string pointed to by nptr to integer,
+and  long  integer  representation  respectively.   The first
+unrecognized character ends the string.   Leading  C  escapes
+are understood, as in strtol with base zero.
 
-DESCRIPTION
-       Atoi and atol convert a string pointed to by nptr to integer,
-       and  long  integer  representation  respectively.   The first
-       unrecognized character ends the string.   Leading  C  escapes
-       are understood, as in strtol with base zero.
+Atoi  and  atol recognize an optional string of tabs and spa‐
+ces, then an optional sign, then a string of decimal digits.
 
-       Atoi  and  atol recognize an optional string of tabs and spa‐
-       ces, then an optional sign, then a string of decimal digits.
+Strtod, strtol, strtoul, and strtoll behave similarly to atol
+and,  if  rptr  is  not zero, set *rptr to point to the input
+character immediately after the string converted.
 
-       Strtod, strtol, strtoul, and strtoll behave similarly to atol
-       and,  if  rptr  is  not zero, set *rptr to point to the input
-       character immediately after the string converted.
+Strtod recognizes an optional string of tabs and spaces, then
+an optional sign, then a string of digits optionally contain‐
+ing a decimal point, then  an  optional  or  followed  by  an
+optionally signed integer.
 
-       Strtod recognizes an optional string of tabs and spaces, then
-       an optional sign, then a string of digits optionally contain‐
-       ing a decimal point, then  an  optional  or  followed  by  an
-       optionally signed integer.
+Strtol, strtoul and strtoll interpret the digit string in the
+specified base, from 2 to 36, each digit being less than  the
+base.   Digits  with value over 9 are represented by letters,
+a-z or A-Z.  If base is 0, the input  is  interpreted  as  an
+integral  constant  in  the style of C (with no suffixed type
+indicators): numbers are octal if they begin with hexadecimal
+if  they  begin  with or otherwise decimal.  Strtoul does not
+recognize signs.
 
-       Strtol, strtoul and strtoll interpret the digit string in the
-       specified base, from 2 to 36, each digit being less than  the
-       base.   Digits  with value over 9 are represented by letters,
-       a-z or A-Z.  If base is 0, the input  is  interpreted  as  an
-       integral  constant  in  the style of C (with no suffixed type
-       indicators): numbers are octal if they begin with hexadecimal
-       if  they  begin  with or otherwise decimal.  Strtoul does not
-       recognize signs.
+Charstod interprets floating point numbers in the same syntax
+as  strtod,  but  it  gets  successive  characters by calling
+(*f)(a).  The last call to f terminates the scan, so it  must
+have returned a character that is not a legal continuation of
+a number.  Therefore, it may be  necessary  to  back  up  the
+input stream one character after calling charstod.
 
-       Charstod interprets floating point numbers in the same syntax
-       as  strtod,  but  it  gets  successive  characters by calling
-       (*f)(a).  The last call to f terminates the scan, so it  must
-       have returned a character that is not a legal continuation of
-       a number.  Therefore, it may be  necessary  to  back  up  the
-       input stream one character after calling charstod.
+== source
+/libkern/atol.c
+/libkern/charstod.c
+/libkern/strtod.c
+/libkern/strtol.c
+/libkern/strtoul.c
+/libkern/utils.c
 
-SOURCE
-       /libkern/atol.c
-       /libkern/charstod.c
-       /libkern/strtod.c
-       /libkern/strtol.c
-       /libkern/strtoul.c
-       /libkern/utils.c
+== diagnostics
+Zero  is returned if the beginning of the input string is not
+interpretable as a number; even in this case,  rptr  will  be
+updated.
 
-DIAGNOSTICS
-       Zero  is returned if the beginning of the input string is not
-       interpretable as a number; even in this case,  rptr  will  be
-       updated.
-
-                                                          ATOI(10.2)

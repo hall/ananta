@@ -1,50 +1,43 @@
-SRV(3)                Library Functions Manual                SRV(3)
+= srv: server registry
 
-NAME
-       srv - server registry
+    bind #s [ spec ] /chan
 
-SYNOPSIS
-       bind #s [ spec ] /chan
+    sys->bind("#sspec", "/chan", Sys->MREPL);
 
-       sys->bind("#sspec", "/chan", Sys->MREPL);
+Srv  converts  between file system operations by applications
+and messages on channels, as described  in  sys-file2chan(2).
+Each  attach  that  does  not  include  a spec produces a new
+instance: an empty directory owned by  the  current  user  in
+which  only  files  may  be  created,  and  then only by sys-
+file2chan, using a special  internal  interface.   Each  such
+file  initially has the same owner as the directory, and per‐
+missions 8r600 (read-write for the owner only), but the  per‐
+missions  can  be changed by Sys->wstat (see sys-stat(2)) and
+thus chmod(1).  If mode Sys->DMEXCL is thereby set, the  file
+becomes  exclusive-use  and can be opened by only one process
+at a time.  The file length and mode  bit  Sys->DMAPPEND  may
+also be set by wstat but are not interpreted by the system.
 
-DESCRIPTION
-       Srv  converts  between file system operations by applications
-       and messages on channels, as described  in  sys-file2chan(2).
-       Each  attach  that  does  not  include  a spec produces a new
-       instance: an empty directory owned by  the  current  user  in
-       which  only  files  may  be  created,  and  then only by sys-
-       file2chan, using a special  internal  interface.   Each  such
-       file  initially has the same owner as the directory, and per‐
-       missions 8r600 (read-write for the owner only), but the  per‐
-       missions  can  be changed by Sys->wstat (see sys-stat(2)) and
-       thus chmod(1).  If mode Sys->DMEXCL is thereby set, the  file
-       becomes  exclusive-use  and can be opened by only one process
-       at a time.  The file length and mode  bit  Sys->DMAPPEND  may
-       also be set by wstat but are not interpreted by the system.
+Files  may be removed, directly using sys-remove(2) (and thus
+rm(1)), or indirectly by opening them with mode  Sys->ORCLOSE
+(see  sys-open(2)).  File2chan also removes the corresponding
+file when the last references to the server's read and  write
+channels have gone (eg, on server exit).
 
-       Files  may be removed, directly using sys-remove(2) (and thus
-       rm(1)), or indirectly by opening them with mode  Sys->ORCLOSE
-       (see  sys-open(2)).  File2chan also removes the corresponding
-       file when the last references to the server's read and  write
-       channels have gone (eg, on server exit).
+A  spec  may  be  given to name specific instances of srv, so
+that a new name space  can  bind  in  a  service  created  in
+another.   Only  the owner (original creator) of the instance
+may attach to it, unless the mode of the service directory is
+changed  using  Sys->wstat  (see sys-stat(2)) to have general
+access.
 
-       A  spec  may  be  given to name specific instances of srv, so
-       that a new name space  can  bind  in  a  service  created  in
-       another.   Only  the owner (original creator) of the instance
-       may attach to it, unless the mode of the service directory is
-       changed  using  Sys->wstat  (see sys-stat(2)) to have general
-       access.
+== files
+/chan  directory to which srv is conventionally bound by var‐
+       ious applications
 
-FILES
-       /chan  directory to which srv is conventionally bound by var‐
-              ious applications
+== source
+/emu/port/devsrv.c
+/os/port/devsrv.c
 
-SOURCE
-       /emu/port/devsrv.c
-       /os/port/devsrv.c
-
-SEE ALSO
-       plumb(1), wm(1), sys-file2chan(2)
-
-                                                              SRV(3)
+== see ALSO
+plumb(1), wm(1), sys-file2chan(2)

@@ -1,182 +1,175 @@
-PRINT(10.2)                                              PRINT(10.2)
+= print, fprint, sprint, snprint, seprint, smprint, vfprint, vsnprint, vseprint, vsmprint: print formatted output
 
-NAME
-       print,  fprint,  sprint,  snprint, seprint, smprint, vfprint,
-       vsnprint, vseprint, vsmprint - print formatted output
+    int   print(char *format, ...)
 
-SYNOPSIS
-       int   print(char *format, ...)
+    int   fprint(int fd, char *format, ...)
 
-       int   fprint(int fd, char *format, ...)
+    int   sprint(char *s, char *format, ...)
 
-       int   sprint(char *s, char *format, ...)
+    int   snprint(char *s, int len, char *format, ...)
 
-       int   snprint(char *s, int len, char *format, ...)
+    char* seprint(char *s, char *e, char *format, ...)
 
-       char* seprint(char *s, char *e, char *format, ...)
+    char* smprint(char *format, ...)
 
-       char* smprint(char *format, ...)
+    int   vfprint(int fd, char *format, va_list v)
 
-       int   vfprint(int fd, char *format, va_list v)
+    int   vsnprint(char *s, int len, char *format, va_list v)
 
-       int   vsnprint(char *s, int len, char *format, va_list v)
+    char* vseprint(char *s, char *e, char *format, va_list v)
 
-       char* vseprint(char *s, char *e, char *format, va_list v)
+    char* vsmprint(char *format, va_list v)
 
-       char* vsmprint(char *format, va_list v)
+Print writes text to the standard output.  Fprint  writes  to
+the   named  output  file  descriptor;  a  buffered  form  is
+described in bio(2).  Sprint places text followed by the  NUL
+character  (\0) in consecutive bytes starting at s; it is the
+user's responsibility to ensure that enough storage is avail‐
+able.   Each function returns the number of bytes transmitted
+(not including the NUL in the case of sprint), or a  negative
+value if an output error was encountered.
 
-DESCRIPTION
-       Print writes text to the standard output.  Fprint  writes  to
-       the   named  output  file  descriptor;  a  buffered  form  is
-       described in bio(2).  Sprint places text followed by the  NUL
-       character  (\0) in consecutive bytes starting at s; it is the
-       user's responsibility to ensure that enough storage is avail‐
-       able.   Each function returns the number of bytes transmitted
-       (not including the NUL in the case of sprint), or a  negative
-       value if an output error was encountered.
+Snprint  is  like  sprint,  but  will not place more than len
+bytes in s.  Its result is always  NUL-terminated  and  holds
+the maximal number of complete UTF-8 characters that can fit.
+Seprint is like snprint, except that the end is indicated  by
+a  pointer  e rather than a count and the return value points
+to the terminating NUL of the resulting string.   Smprint  is
+like  sprint, except that it prints into and returns a string
+of the required length, which is allocated by malloc(10.2).
 
-       Snprint  is  like  sprint,  but  will not place more than len
-       bytes in s.  Its result is always  NUL-terminated  and  holds
-       the maximal number of complete UTF-8 characters that can fit.
-       Seprint is like snprint, except that the end is indicated  by
-       a  pointer  e rather than a count and the return value points
-       to the terminating NUL of the resulting string.   Smprint  is
-       like  sprint, except that it prints into and returns a string
-       of the required length, which is allocated by malloc(10.2).
+Finally, the routines vfprint, vsnprint,  vseprint  and  vsm‐
+print  are  like  their  v-less relatives except they take as
+arguments a va_list parameter, so they can be called within a
+variadic  function.   The Example section shows a representa‐
+tive usage.
 
-       Finally, the routines vfprint, vsnprint,  vseprint  and  vsm‐
-       print  are  like  their  v-less relatives except they take as
-       arguments a va_list parameter, so they can be called within a
-       variadic  function.   The Example section shows a representa‐
-       tive usage.
+Each of these functions converts,  formats,  and  prints  its
+trailing  arguments  under  control  of a format string.  The
+format contains two types of objects: plain characters, which
+are simply copied to the output stream, and conversion speci‐
+fications, each of which results in fetching of zero or  more
+arguments.   The results are undefined if there are arguments
+of the wrong type or too few arguments for  the  format.   If
+the format is exhausted while arguments remain, the excess is
+ignored.
 
-       Each of these functions converts,  formats,  and  prints  its
-       trailing  arguments  under  control  of a format string.  The
-       format contains two types of objects: plain characters, which
-       are simply copied to the output stream, and conversion speci‐
-       fications, each of which results in fetching of zero or  more
-       arguments.   The results are undefined if there are arguments
-       of the wrong type or too few arguments for  the  format.   If
-       the format is exhausted while arguments remain, the excess is
-       ignored.
+Each conversion specification has the following format:
 
-       Each conversion specification has the following format:
+       % [flags] verb
 
-              % [flags] verb
+The verb is a single character and  each  flag  is  a  single
+character  or  a (decimal) numeric string.  Up to two numeric
+strings may be used; the first is called  width,  the  second
+precision.  A period can be used to separate them, and if the
+period is present then width and precision are  taken  to  be
+zero  if  missing,  otherwise  they are `omitted'.  Either or
+both of the numbers may be replaced  with  the  character  *,
+meaning  that  the  actual  number  will be obtained from the
+argument list as an integer.  The flags and numbers are argu‐
+ments to the verb described below.
 
-       The verb is a single character and  each  flag  is  a  single
-       character  or  a (decimal) numeric string.  Up to two numeric
-       strings may be used; the first is called  width,  the  second
-       precision.  A period can be used to separate them, and if the
-       period is present then width and precision are  taken  to  be
-       zero  if  missing,  otherwise  they are `omitted'.  Either or
-       both of the numbers may be replaced  with  the  character  *,
-       meaning  that  the  actual  number  will be obtained from the
-       argument list as an integer.  The flags and numbers are argu‐
-       ments to the verb described below.
+The numeric verbs d, o, b, x, and X format their arguments in
+decimal, octal, binary, hexadecimal, and upper case hexadeci‐
+mal.   Each interprets the flags 0, h, hh, l, u, +, -, ,, and
+# to mean pad with zeros, short, byte, long, unsigned, always
+print  a sign, left justified, commas every three digits, and
+alternate format.  Also, a space character in the flag  posi‐
+tion is like +, but prints a space instead of a plus sign for
+non-negative values.  If neither short nor long is specified,
+then  the argument is an int.  If unsigned is specified, then
+the argument is interpreted as a positive number and no  sign
+is  output.   If  two l flags are given, then the argument is
+interpreted as a vlong (usually an 8-byte, sometimes a 4-byte
+integer).   If precision is not omitted, the number is padded
+on the left  with  zeros  until  at  least  precision  digits
+appear.   Then,  if alternate format is specified, for o con‐
+version, the number is preceded by a 0 if it doesn't  already
+begin  with  one; for x conversion, the number is preceded by
+0x; for X conversion, the number is preceded by 0X.  Finally,
+if width is not omitted, the number is padded on the left (or
+right, if left justification is specified) with enough blanks
+to make the field at least width characters long.
 
-       The numeric verbs d, o, b, x, and X format their arguments in
-       decimal, octal, binary, hexadecimal, and upper case hexadeci‐
-       mal.   Each interprets the flags 0, h, hh, l, u, +, -, ,, and
-       # to mean pad with zeros, short, byte, long, unsigned, always
-       print  a sign, left justified, commas every three digits, and
-       alternate format.  Also, a space character in the flag  posi‐
-       tion is like +, but prints a space instead of a plus sign for
-       non-negative values.  If neither short nor long is specified,
-       then  the argument is an int.  If unsigned is specified, then
-       the argument is interpreted as a positive number and no  sign
-       is  output.   If  two l flags are given, then the argument is
-       interpreted as a vlong (usually an 8-byte, sometimes a 4-byte
-       integer).   If precision is not omitted, the number is padded
-       on the left  with  zeros  until  at  least  precision  digits
-       appear.   Then,  if alternate format is specified, for o con‐
-       version, the number is preceded by a 0 if it doesn't  already
-       begin  with  one; for x conversion, the number is preceded by
-       0x; for X conversion, the number is preceded by 0X.  Finally,
-       if width is not omitted, the number is padded on the left (or
-       right, if left justification is specified) with enough blanks
-       to make the field at least width characters long.
+The  floating  point  verbs  f,  e, E, g, and G take a double
+argument.  Each interprets the flags +,  -,  and  #  to  mean
+always  print  a  sign, left justified, and alternate format.
+Width is the minimum field width and, if the converted  value
+takes up less than width characters, it is padded on the left
+(or right, if `left justified') with  spaces.   Precision  is
+the  number  of  digits  that are converted after the decimal
+place for e, E, and f conversions, and precision is the maxi‐
+mum  number  of  significant  digits for g and G conversions.
+The f verb produces output of the form [-]digits[.digits].  E
+conversion  appends  an exponent E[-]digits, and e conversion
+appends an exponent e[-]digits.  The g verb will  output  the
+argument  in  either  e  or  f with the goal of producing the
+smallest output.  Also, trailing zeros are omitted  from  the
+fraction  part  of  the  output, and a trailing decimal point
+appears only if it is followed by a digit.   The  G  verb  is
+similar, but uses E format instead of e.  When alternate for‐
+mat is specified, the result will always  contain  a  decimal
+point,  and  for  g and G conversions, trailing zeros are not
+removed.
 
-       The  floating  point  verbs  f,  e, E, g, and G take a double
-       argument.  Each interprets the flags +,  -,  and  #  to  mean
-       always  print  a  sign, left justified, and alternate format.
-       Width is the minimum field width and, if the converted  value
-       takes up less than width characters, it is padded on the left
-       (or right, if `left justified') with  spaces.   Precision  is
-       the  number  of  digits  that are converted after the decimal
-       place for e, E, and f conversions, and precision is the maxi‐
-       mum  number  of  significant  digits for g and G conversions.
-       The f verb produces output of the form [-]digits[.digits].  E
-       conversion  appends  an exponent E[-]digits, and e conversion
-       appends an exponent e[-]digits.  The g verb will  output  the
-       argument  in  either  e  or  f with the goal of producing the
-       smallest output.  Also, trailing zeros are omitted  from  the
-       fraction  part  of  the  output, and a trailing decimal point
-       appears only if it is followed by a digit.   The  G  verb  is
-       similar, but uses E format instead of e.  When alternate for‐
-       mat is specified, the result will always  contain  a  decimal
-       point,  and  for  g and G conversions, trailing zeros are not
-       removed.
+The s verb copies a string (pointer to char) to  the  output.
+The  number  of  characters  copied (n) is the minimum of the
+size of the string and precision.   These  n  characters  are
+justified  within  a  field  of width characters as described
+above.  The S verb is similar, but it interprets its  pointer
+as an array of runes (see utf(6)); the runes are converted to
+UTF before output.
 
-       The s verb copies a string (pointer to char) to  the  output.
-       The  number  of  characters  copied (n) is the minimum of the
-       size of the string and precision.   These  n  characters  are
-       justified  within  a  field  of width characters as described
-       above.  The S verb is similar, but it interprets its  pointer
-       as an array of runes (see utf(6)); the runes are converted to
-       UTF before output.
+The c verb copies a single char (promoted to  int)  justified
+within a field of width characters as described above.  The C
+verb is similar, but works on runes.
 
-       The c verb copies a single char (promoted to  int)  justified
-       within a field of width characters as described above.  The C
-       verb is similar, but works on runes.
+The p verb formats a pointer value.  At the moment, it  is  a
+synonym  for ux, but that will change once pointers and inte‐
+gers are different sizes.
 
-       The p verb formats a pointer value.  At the moment, it  is  a
-       synonym  for ux, but that will change once pointers and inte‐
-       gers are different sizes.
+The r verb takes no arguments; it  copies  the  error  string
+returned  by  a  call  to  the emulated environment's `system
+calls'.  It must not be used within the kernels.
 
-       The r verb takes no arguments; it  copies  the  error  string
-       returned  by  a  call  to  the emulated environment's `system
-       calls'.  It must not be used within the kernels.
+== example
+This function prints an error message with a variable  number
+of arguments and then quits.
 
-EXAMPLE
-       This function prints an error message with a variable  number
-       of arguments and then quits.
+       void fatal(char *msg, ...)
+       {
+             char buf[1024], *out;
+             va_list arg;
 
-              void fatal(char *msg, ...)
-              {
-                    char buf[1024], *out;
-                    va_list arg;
+             out = vseprint(buf, buf+sizeof(buf), "Fatal error: ");
+             va_start(arg, msg);
+             out = vseprint(out, buf+sizeof(buf), msg, arg);
+             va_end(arg);
+             write(2, buf, out-buf);
+             exits("fatal error");
+       }
 
-                    out = vseprint(buf, buf+sizeof(buf), "Fatal error: ");
-                    va_start(arg, msg);
-                    out = vseprint(out, buf+sizeof(buf), msg, arg);
-                    va_end(arg);
-                    write(2, buf, out-buf);
-                    exits("fatal error");
-              }
+== source
+/lib9/fmt*
+/libkern/fmt*
 
-SOURCE
-       /lib9/fmt*
-       /libkern/fmt*
+== see ALSO
+utf(6)
 
-SEE ALSO
-       utf(6)
+== diagnostics
+Routines  that  write to a file descriptor or call malloc set
+errstr.
 
-DIAGNOSTICS
-       Routines  that  write to a file descriptor or call malloc set
-       errstr.
+== bugs
+The  formatting  is  close  to  that   specified   for   ANSI
+fprintf(2);  the main difference is that b is not in ANSI and
+u is a flag here instead of a verb.  Also, and distinctly not
+a bug, print and friends generate UTF rather than ASCII.
 
-BUGS
-       The  formatting  is  close  to  that   specified   for   ANSI
-       fprintf(2);  the main difference is that b is not in ANSI and
-       u is a flag here instead of a verb.  Also, and distinctly not
-       a bug, print and friends generate UTF rather than ASCII.
+There  is  no  runeprint,  runefprint, etc. because runes are
+byte-order dependent and should not be written directly to  a
+file;  use  the UTF output of print or fprint instead.  Also,
+sprint  is  deprecated  for  safety  reasons;  use   snprint,
+seprint, or smprint instead.  Safety also precludes the exis‐
+tence of runesprint.
 
-       There  is  no  runeprint,  runefprint, etc. because runes are
-       byte-order dependent and should not be written directly to  a
-       file;  use  the UTF output of print or fprint instead.  Also,
-       sprint  is  deprecated  for  safety  reasons;  use   snprint,
-       seprint, or smprint instead.  Safety also precludes the exis‐
-       tence of runesprint.
-
-                                                         PRINT(10.2)

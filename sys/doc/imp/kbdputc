@@ -1,60 +1,53 @@
-KBDPUTC(10.2)                                          KBDPUTC(10.2)
+= kbdputc,  kbdrepeat,  kbdclock,  kbdq: keyboard interface to cons(3)
 
-NAME
-       kbdputc,  kbdrepeat,  kbdclock,  kbdq - keyboard interface to
-       cons(3)
+    #include "keyboard.h"
 
-SYNOPSIS
-       #include "keyboard.h"
+    void    kbdputc(Queue *q, int c)
 
-       void    kbdputc(Queue *q, int c)
+    void    kbdrepeat(int on)
 
-       void    kbdrepeat(int on)
+    void    kbdclock(void)
 
-       void    kbdclock(void)
+    extern  Queue *kbdq;
 
-       extern  Queue *kbdq;
+This is  the  internal  interface  between  /dev/keyboard  of
+cons(3)   and  the  architecture-dependent  keyboard  driver.
+Before calling any of these functions,  the  global  variable
+kbdq  must  be  initialised;  cons(3) does not initialise it.
+This is usually done during system initialisation by the key‐
+board driver's kbdinit function , as follows:
 
-DESCRIPTION
-       This is  the  internal  interface  between  /dev/keyboard  of
-       cons(3)   and  the  architecture-dependent  keyboard  driver.
-       Before calling any of these functions,  the  global  variable
-       kbdq  must  be  initialised;  cons(3) does not initialise it.
-       This is usually done during system initialisation by the key‐
-       board driver's kbdinit function , as follows:
+       kbdq = qopen(4*1024, 0, 0, 0);
+       qnoblock(kbdq, 1);
 
-              kbdq = qopen(4*1024, 0, 0, 0);
-              qnoblock(kbdq, 1);
+Kbdputc  puts  a 16-bit Unicode character c (ie, a `rune') on
+the given q, as a sequence of bytes in  UTF-8  encoding  (see
+utf(6)).   If  c  is the special value Latin (defined by key‐
+board.h), kbdputc starts collecting characters,  looking  for
+the typeable representations of Unicode characters defined by
+keyboard(6); at the end of a complete such sequence,  kbdputc
+queues  the UTF-8 encoding of the corresponding Unicode char‐
+acter.  It is up to the keyboard driver  to  map  a  suitable
+physical keyboard character (or combination of characters) to
+the code Latin.
 
-       Kbdputc  puts  a 16-bit Unicode character c (ie, a `rune') on
-       the given q, as a sequence of bytes in  UTF-8  encoding  (see
-       utf(6)).   If  c  is the special value Latin (defined by key‐
-       board.h), kbdputc starts collecting characters,  looking  for
-       the typeable representations of Unicode characters defined by
-       keyboard(6); at the end of a complete such sequence,  kbdputc
-       queues  the UTF-8 encoding of the corresponding Unicode char‐
-       acter.  It is up to the keyboard driver  to  map  a  suitable
-       physical keyboard character (or combination of characters) to
-       the code Latin.
+Drivers that need to implement repeat of keypresses in  soft‐
+ware should call
 
-       Drivers that need to implement repeat of keypresses in  soft‐
-       ware should call
+       addclock0link(kbdclock);
 
-              addclock0link(kbdclock);
+at  the  end  of kbdinit, to cause kbdclock to be called each
+clock tick.  Kbdrepeat can then be called to  enable  (on  is
+non-zero)  or  disable  it  (on is zero).  When repeat is on,
+kbdclock (when called) will periodically call kbdputc(kbdq,c)
+where  c  is  the  last rune given to kbdputc.  The driver is
+responsible for enabling and disabling repeat  appropriately;
+for  instance, function keys and certainly Latin should typi‐
+cally not be repeated.
 
-       at  the  end  of kbdinit, to cause kbdclock to be called each
-       clock tick.  Kbdrepeat can then be called to  enable  (on  is
-       non-zero)  or  disable  it  (on is zero).  When repeat is on,
-       kbdclock (when called) will periodically call kbdputc(kbdq,c)
-       where  c  is  the  last rune given to kbdputc.  The driver is
-       responsible for enabling and disabling repeat  appropriately;
-       for  instance, function keys and certainly Latin should typi‐
-       cally not be repeated.
+== source
+/os/*/kbd*.c
 
-SOURCE
-       /os/*/kbd*.c
+== see ALSO
+cons(3), utf(6), qio(10.2)
 
-SEE ALSO
-       cons(3), utf(6), qio(10.2)
-
-                                                       KBDPUTC(10.2)

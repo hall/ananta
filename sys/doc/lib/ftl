@@ -1,119 +1,112 @@
-FTL(3)                Library Functions Manual                FTL(3)
+= ftl: flash translation layer
 
-NAME
-       ftl - flash translation layer
+    bind -a '#X' /dev
 
-SYNOPSIS
-       bind -a '#X' /dev
+    /dev/ftlctl
+    /dev/ftldata
 
-       /dev/ftlctl
-       /dev/ftldata
+The flash translation layer device provides the interface for
+management of rewritable blocks on  a  flash  memory  device.
+Flash memory differs from normal disc or memory in that it is
+organised in large blocks (erase units), typically 64k  bytes
+or more in size, and although writes can reset bits they can‐
+not set them; instead an entire erase unit must be erased  at
+once.   These properties make it unsuitable for direct use by
+a conventional block-oriented file system.  The flash  trans‐
+lation  layer compensates by implementing a logical to physi‐
+cal mapping that allows 512-byte blocks to be read or written
+in  the  same way as rewritable disc blocks.  The translation
+layer manages the details of block remapping,  copying  erase
+units to reclaim obsolete physical versions of rewritten log‐
+ical blocks, erase unit load wearing, etc.
 
-DESCRIPTION
-       The flash translation layer device provides the interface for
-       management of rewritable blocks on  a  flash  memory  device.
-       Flash memory differs from normal disc or memory in that it is
-       organised in large blocks (erase units), typically 64k  bytes
-       or more in size, and although writes can reset bits they can‐
-       not set them; instead an entire erase unit must be erased  at
-       once.   These properties make it unsuitable for direct use by
-       a conventional block-oriented file system.  The flash  trans‐
-       lation  layer compensates by implementing a logical to physi‐
-       cal mapping that allows 512-byte blocks to be read or written
-       in  the  same way as rewritable disc blocks.  The translation
-       layer manages the details of block remapping,  copying  erase
-       units to reclaim obsolete physical versions of rewritten log‐
-       ical blocks, erase unit load wearing, etc.
+The flash translation device serves  a  one-level  directory,
+giving access to two files.  The control file ftlctl receives
+commands to format a flash device or initialise access to  an
+already  formatted  device.  Ftldata is the data file, giving
+access to the logical blocks on  the  formatted  flash.   For
+example,  it can be given to kfs(3) for use as a file system.
+The length of the ftldata file as returned by Sys->stat shows
+the  total logical (formatted) space available for use by the
+driver's clients.
 
-       The flash translation device serves  a  one-level  directory,
-       giving access to two files.  The control file ftlctl receives
-       commands to format a flash device or initialise access to  an
-       already  formatted  device.  Ftldata is the data file, giving
-       access to the logical blocks on  the  formatted  flash.   For
-       example,  it can be given to kfs(3) for use as a file system.
-       The length of the ftldata file as returned by Sys->stat shows
-       the  total logical (formatted) space available for use by the
-       driver's clients.
+The target flash device is identified to this driver by  name
+(eg, #F/flash) in a control message defined below.  The flash
+device must have the following properties:
 
-       The target flash device is identified to this driver by  name
-       (eg, #F/flash) in a control message defined below.  The flash
-       device must have the following properties:
+1.     It must have a corresponding  control  file  devicectl
+       (eg, #F/flashctl), which must be writable.
 
-       1.     It must have a corresponding  control  file  devicectl
-              (eg, #F/flashctl), which must be writable.
+2.     The  flash  control  file must accept a command of the
+       form erase offset which must  cause  the  flash  erase
+       unit starting at the given byte offset to be erased.
 
-       2.     The  flash  control  file must accept a command of the
-              form erase offset which must  cause  the  flash  erase
-              unit starting at the given byte offset to be erased.
+3.     The  device  must allow reads and writes of any number
+       of bytes on arbitrary byte boundaries  (file  offset).
+       (In  other words, the flash driver must hide alignment
+       restrictions.)
 
-       3.     The  device  must allow reads and writes of any number
-              of bytes on arbitrary byte boundaries  (file  offset).
-              (In  other words, the flash driver must hide alignment
-              restrictions.)
+4.     A write request must allow previously-written  regions
+       to  be  updated  provided the new data does not change
+       any 0 bit to 1 (ie, writes can clear  bits  to  0  but
+       will not change any 0 bits to 1).
 
-       4.     A write request must allow previously-written  regions
-              to  be  updated  provided the new data does not change
-              any 0 bit to 1 (ie, writes can clear  bits  to  0  but
-              will not change any 0 bits to 1).
+The following control messages can be written to ftlctl:
 
-       The following control messages can be written to ftlctl:
+format device [ offset [ n [ erasesize ] ] ]
+       Erase  n  bytes  of the given flash device starting at
+       the given byte offset, and format  the  erased  region
+       for  use  by the flash translation layer. Omitting the
+       optional parameters is equivalent to setting  them  to
+       0xffffffff.   Erasesize  is the number of bytes in the
+       flash device's erase unit; setting to 0xffffffff takes
+       the  value  from  the underlying device.  If offset is
+       0xffffffff, then the  underlying  device  is  searched
+       from the start for an existing flash translation layer
+       header, and the remaining parameters  are  taken  from
+       there. If n is 0xffffffff, then everywhere from offset
+       to the end of the underlying device is erased.  Other‐
+       wise,  offset  and  n  must be multiples of erasesize.
+       Make the newly formatted device's  contents  available
+       on ftldata.
 
-       format device [ offset [ n [ erasesize ] ] ]
-              Erase  n  bytes  of the given flash device starting at
-              the given byte offset, and format  the  erased  region
-              for  use  by the flash translation layer. Omitting the
-              optional parameters is equivalent to setting  them  to
-              0xffffffff.   Erasesize  is the number of bytes in the
-              flash device's erase unit; setting to 0xffffffff takes
-              the  value  from  the underlying device.  If offset is
-              0xffffffff, then the  underlying  device  is  searched
-              from the start for an existing flash translation layer
-              header, and the remaining parameters  are  taken  from
-              there. If n is 0xffffffff, then everywhere from offset
-              to the end of the underlying device is erased.  Other‐
-              wise,  offset  and  n  must be multiples of erasesize.
-              Make the newly formatted device's  contents  available
-              on ftldata.
+init device [ offset [ n [ erasesize ] ] ]
+       Make  available  on  ftldata  the logical blocks (with
+       existing content) of  a  previously-formatted  device.
+       The  parameters are as defined for the format command,
+       above.
 
-       init device [ offset [ n [ erasesize ] ] ]
-              Make  available  on  ftldata  the logical blocks (with
-              existing content) of  a  previously-formatted  device.
-              The  parameters are as defined for the format command,
-              above.
+part name start [ limit ]
+       Add a partition. This creates a new data file  ftlname
+       with  similar  properties  to  ftldata, but which con‐
+       strains the range of the formatted  data  accessed  to
+       begin  at  start, and end at limit-1, or the last byte
+       of the formatted data if limit is omitted.
 
-       part name start [ limit ]
-              Add a partition. This creates a new data file  ftlname
-              with  similar  properties  to  ftldata, but which con‐
-              strains the range of the formatted  data  accessed  to
-              begin  at  start, and end at limit-1, or the last byte
-              of the formatted data if limit is omitted.
+delpart name
+       Removes a partition.
 
-       delpart name
-              Removes a partition.
+detach Stop flash  translation  on  the  corresponding  flash
+       device,  and  close  it.   An error results instead if
+       ftldata is open.
 
-       detach Stop flash  translation  on  the  corresponding  flash
-              device,  and  close  it.   An error results instead if
-              ftldata is open.
+scavenge
+       Force scavenging of reusable blocks  (mainly  intended
+       to  be  used  when  testing  flash  or  debugging  the
+       driver).
 
-       scavenge
-              Force scavenging of reusable blocks  (mainly  intended
-              to  be  used  when  testing  flash  or  debugging  the
-              driver).
+trace n
+       Trace the actions of the flash translation driver.  No
+       tracing  is  done  if  n  is zero.  Larger values of n
+       increase the level of detail.
 
-       trace n
-              Trace the actions of the flash translation driver.  No
-              tracing  is  done  if  n  is zero.  Larger values of n
-              increase the level of detail.
+== source
+/os/*/devftl.c
 
-SOURCE
-       /os/*/devftl.c
+== see ALSO
+flash(3)
 
-SEE ALSO
-       flash(3)
-
-BUGS
-       Reads and writes of ftldata must be multiples of 512 bytes in
-       length and start on a 512-byte block boundary.
-       Only one flash device can be active.
-
-                                                              FTL(3)
+== bugs
+Reads and writes of ftldata must be multiples of 512 bytes in
+length and start on a 512-byte block boundary.
+Only one flash device can be active.

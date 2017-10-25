@@ -1,300 +1,294 @@
-SECURITY-INTRO(2)        System Calls Manual       SECURITY-INTRO(2)
+= intro: introduction to security
 
-NAME
-       intro - introduction to security
+    include "keyring.m";
+    include "security.m";
 
-SYNOPSIS
-       include "keyring.m";
-       include "security.m";
+This is an introduction to some of the principals behind com‐
+puter security as well as a description of how these  princi‐
+pals  are  used in Inferno. More detailed descriptions of the
+methods and principals for ensuring secure communications  on
+computers  can be found in texts such as Applied Cryptography
+by Bruce Schneier (published 1996, J. Wiley & Sons, Inc.).
 
-DESCRIPTION
-       This is an introduction to some of the principals behind com‐
-       puter security as well as a description of how these  princi‐
-       pals  are  used in Inferno. More detailed descriptions of the
-       methods and principals for ensuring secure communications  on
-       computers  can be found in texts such as Applied Cryptography
-       by Bruce Schneier (published 1996, J. Wiley & Sons, Inc.).
+Inferno provides several levels of security:
 
-       Inferno provides several levels of security:
+·      Mutual authentication means that two users or applica‐
+       tions that want to communicate can establish that they
+       are who they say they are. It is the  basic  level  of
+       security  provided by Inferno. Thus, for example, when
+       a user connects to an Inferno service,  they  can  and
+       must establish that they are a legitimate user.
 
-       ·      Mutual authentication means that two users or applica‐
-              tions that want to communicate can establish that they
-              are who they say they are. It is the  basic  level  of
-              security  provided by Inferno. Thus, for example, when
-              a user connects to an Inferno service,  they  can  and
-              must establish that they are a legitimate user.
+·      Message  digesting  is  a  technique to ensure that an
+       interloper cannot modify messages sent between users.
 
-       ·      Message  digesting  is  a  technique to ensure that an
-              interloper cannot modify messages sent between users.
-
-       ·      Encryption protects the confidentiality of messages so
-              that  only  the party or parties for whom the messages
-              are intended can decrypt and read them.  Inferno makes
-              it  easy  to enforce any one or all of these levels of
-              security.
+·      Encryption protects the confidentiality of messages so
+       that  only  the party or parties for whom the messages
+       are intended can decrypt and read them.  Inferno makes
+       it  easy  to enforce any one or all of these levels of
+       security.
 
    Mutual Authentication
-       Authentication requires a combination of  elements:  a  third
-       party  that each user can trust, an algorithm or mathematical
-       method to secure messages between users, and a  protocol  for
-       exchanging  messages  that  ensures  that  a  third  party or
-       intruder cannot pretend to be one of the users, or  use  some
-       other method to undermine their communication.
+Authentication requires a combination of  elements:  a  third
+party  that each user can trust, an algorithm or mathematical
+method to secure messages between users, and a  protocol  for
+exchanging  messages  that  ensures  that  a  third  party or
+intruder cannot pretend to be one of the users, or  use  some
+other method to undermine their communication.
 
-       One  important  method for authenticating users in Inferno is
-       the use of digital signatures. Like signing a letter a  digi‐
-       tal signature testifies to the identity of the sender. Fortu‐
-       nately, it is much more difficult to forge a  digital  signa‐
-       ture.
+One  important  method for authenticating users in Inferno is
+the use of digital signatures. Like signing a letter a  digi‐
+tal signature testifies to the identity of the sender. Fortu‐
+nately, it is much more difficult to forge a  digital  signa‐
+ture.
 
-       Even  after users are authenticated to each other, it is pos‐
-       sible for someone `listening' to their communication to  read
-       and  possibly modify their messages without the users knowing
-       it. So authentication solves one  security  requirement,  but
-       not all of them.
+Even  after users are authenticated to each other, it is pos‐
+sible for someone `listening' to their communication to  read
+and  possibly modify their messages without the users knowing
+it. So authentication solves one  security  requirement,  but
+not all of them.
 
    Message Digesting
-       Message  digesting  uses  a mathematical hashing algorithm to
-       convert a message into  an  indecipherable  string  of  fixed
-       length (a digest).  By appending the hashed value to the mes‐
-       sage, the authenticity of the message can be  verified.   The
-       recipient  takes  the message, applies the same hashing algo‐
-       rithm used by the sender, and compares the value to  the  one
-       sent.   If the values are the same, then the message received
-       must be the same as the one that was sent.
+Message  digesting  uses  a mathematical hashing algorithm to
+convert a message into  an  indecipherable  string  of  fixed
+length (a digest).  By appending the hashed value to the mes‐
+sage, the authenticity of the message can be  verified.   The
+recipient  takes  the message, applies the same hashing algo‐
+rithm used by the sender, and compares the value to  the  one
+sent.   If the values are the same, then the message received
+must be the same as the one that was sent.
 
-       Inferno includes a counter in the digest to check  that  mes‐
-       sages were received in the correct order and that no messages
-       were inserted by a third party listening in on the  line.   A
-       secret key is also included in the digest to verify the iden‐
-       tity of the sender.
+Inferno includes a counter in the digest to check  that  mes‐
+sages were received in the correct order and that no messages
+were inserted by a third party listening in on the  line.   A
+secret key is also included in the digest to verify the iden‐
+tity of the sender.
 
-       A message digest ensures that no one has tampered with a mes‐
-       sage.  It does not prevent someone from reading it.
+A message digest ensures that no one has tampered with a mes‐
+sage.  It does not prevent someone from reading it.
 
    Message Encryption
-       The  traditional  notion  of encryption is translating a mes‐
-       sage, called a  plaintext  in  cryptography,  into  something
-       unreadable,  called  a ciphertext. Its most obvious use is to
-       provide confidentiality. Only someone  able  to  decrypt  the
-       message,  or  translate  it  back  to  its original form, can
-       interpret it.
+The  traditional  notion  of encryption is translating a mes‐
+sage, called a  plaintext  in  cryptography,  into  something
+unreadable,  called  a ciphertext. Its most obvious use is to
+provide confidentiality. Only someone  able  to  decrypt  the
+message,  or  translate  it  back  to  its original form, can
+interpret it.
 
-       A mathematical algorithm is used to both encrypt and  decrypt
-       a  message.  Encryption  algorithms  depend  on  keys  or bit
-       strings of a specified length for encryption and  decryption.
-       The  nature of an algorithm and the size of the key determine
-       the degree of security.
+A mathematical algorithm is used to both encrypt and  decrypt
+a  message.  Encryption  algorithms  depend  on  keys  or bit
+strings of a specified length for encryption and  decryption.
+The  nature of an algorithm and the size of the key determine
+the degree of security.
 
-       Two basic types of algorithms are used in cryptography:  pri‐
-       vate  key  (or symmetric key) and public key algorithms. With
-       symmetric algorithms the same key  is  used  to  encrypt  and
-       decrypt  a  message. This key must be a secret, known only to
-       the users who want to communicate. It is often called a  pri‐
-       vate or secret key.
+Two basic types of algorithms are used in cryptography:  pri‐
+vate  key  (or symmetric key) and public key algorithms. With
+symmetric algorithms the same key  is  used  to  encrypt  and
+decrypt  a  message. This key must be a secret, known only to
+the users who want to communicate. It is often called a  pri‐
+vate or secret key.
 
-       A  public  key  algorithm  may use a private or secret key to
-       encrypt a message and a public key to decrypt  it,  or  vice-
-       versa.  The  private or secret key is known only to one user.
-       The public key, however, does not have to be kept secret  and
-       may  be  distributed to anyone the user wishes to communicate
-       with.
+A  public  key  algorithm  may use a private or secret key to
+encrypt a message and a public key to decrypt  it,  or  vice-
+versa.  The  private or secret key is known only to one user.
+The public key, however, does not have to be kept secret  and
+may  be  distributed to anyone the user wishes to communicate
+with.
 
-       Inferno uses a public key algorithm  for  digital  signatures
-       and symmetric key algorithms for encryption.
+Inferno uses a public key algorithm  for  digital  signatures
+and symmetric key algorithms for encryption.
 
-       A user can encrypt a message with or without appending a mes‐
-       sage digest.
+A user can encrypt a message with or without appending a mes‐
+sage digest.
 
    Algorithms Supplied With Inferno
-       Some of  the  considerations  when  choosing  algorithms  are
-       speed,  degree  of  security,  and  political restrictions on
-       export.  The algorithms used in Inferno are  well  known  and
-       rigorously tested.
+Some of  the  considerations  when  choosing  algorithms  are
+speed,  degree  of  security,  and  political restrictions on
+export.  The algorithms used in Inferno are  well  known  and
+rigorously tested.
 
-       One-way hashing algorithms
-              SHA1 and MD5 are well known (in cryptographic circles)
-              one-way  hashing  algorithms.  MD5  is  a  high-speed,
-              128-bit  hash.  SHA1  is  a  somewhat  slower but more
-              secure 160-bit hash.
+One-way hashing algorithms
+       SHA1 and MD5 are well known (in cryptographic circles)
+       one-way  hashing  algorithms.  MD5  is  a  high-speed,
+       128-bit  hash.  SHA1  is  a  somewhat  slower but more
+       secure 160-bit hash.
 
-       Elgamal and RSA public key signature algorithms
-              Elgamal is a public key system widely used for  creat‐
-              ing  digital  signatures.  It  uses  a private key for
-              signing a message and a public key for  verifying  it.
-              Inferno  also  supports  the widely-used RSA and DSS-1
-              signature algorithms.  Because Inferno initially  used
-              Elgamal keys, it does not assume that either a private
-              or public key can be used for  encryption  or  decryp‐
-              tion.  With constant advances in the field of cryptog‐
-              raphy, one of the design goals of Inferno is to create
-              a  security  component that will be easy to enhance as
-              new algorithms are developed.
+Elgamal and RSA public key signature algorithms
+       Elgamal is a public key system widely used for  creat‐
+       ing  digital  signatures.  It  uses  a private key for
+       signing a message and a public key for  verifying  it.
+       Inferno  also  supports  the widely-used RSA and DSS-1
+       signature algorithms.  Because Inferno initially  used
+       Elgamal keys, it does not assume that either a private
+       or public key can be used for  encryption  or  decryp‐
+       tion.  With constant advances in the field of cryptog‐
+       raphy, one of the design goals of Inferno is to create
+       a  security  component that will be easy to enhance as
+       new algorithms are developed.
 
-       Encryption algorithms
-              DES (the Data Encryption Standard) was adopted by  the
-              US government in 1976 as a standard encryption/decryp‐
-              tion  system  for  unclassified  data  in  the  United
-              States. It is widely used, especially by the financial
-              services industry. Two types of DES are offered:  DES-
-              ECB  and  DES-CBC. ECB or Electronic Code Book and CBC
-              or Chain Block Coding are part  of  the  ANSI  Banking
-              Standard. CBC is more complex and less vulnerable than
-              ECB. Both versions of DES provide 56-bit keys.
+Encryption algorithms
+       DES (the Data Encryption Standard) was adopted by  the
+       US government in 1976 as a standard encryption/decryp‐
+       tion  system  for  unclassified  data  in  the  United
+       States. It is widely used, especially by the financial
+       services industry. Two types of DES are offered:  DES-
+       ECB  and  DES-CBC. ECB or Electronic Code Book and CBC
+       or Chain Block Coding are part  of  the  ANSI  Banking
+       Standard. CBC is more complex and less vulnerable than
+       ECB. Both versions of DES provide 56-bit keys.
 
-              RC4 is a symmetric or private key system that is about
-              10 times faster than DES.
+       RC4 is a symmetric or private key system that is about
+       10 times faster than DES.
 
-       Diffie-Hellman key exchange algorithm
-              Diffie-Hellman  is  an algorithm for creating a secret
-              key to be shared  by  users  for  encrypting  messages
-              (sometimes  called  a shared secret). It requires each
-              user to exchange certain information with  the  other.
-              This  information  can  be exchanged in the open, that
-              is, without encryption. Each user is  able  to  create
-              the  same,  secret key from this information. However,
-              no one else listening to their exchange would be  able
-              to create or determine the secret key.
+Diffie-Hellman key exchange algorithm
+       Diffie-Hellman  is  an algorithm for creating a secret
+       key to be shared  by  users  for  encrypting  messages
+       (sometimes  called  a shared secret). It requires each
+       user to exchange certain information with  the  other.
+       This  information  can  be exchanged in the open, that
+       is, without encryption. Each user is  able  to  create
+       the  same,  secret key from this information. However,
+       no one else listening to their exchange would be  able
+       to create or determine the secret key.
 
    Security Protocols
-       Cryptanalysis is the study of how to break cryptographic sys‐
-       tems. Attempts to disrupt or listen to confidential  communi‐
-       cations  are  called  attacks.  Usually  the  objective of an
-       attack is to figure out the secret key, decrypt a message, or
-       add or modify messages in some way.
+Cryptanalysis is the study of how to break cryptographic sys‐
+tems. Attempts to disrupt or listen to confidential  communi‐
+cations  are  called  attacks.  Usually  the  objective of an
+attack is to figure out the secret key, decrypt a message, or
+add or modify messages in some way.
 
-       There  are  many methods or strategies for attacking a confi‐
-       dential communication. One method is called a man-in-the-mid‐
-       dle  attack,  where someone listening to a communication pre‐
-       tends to be one of the parties; another is a  replay  attack,
-       where  an  interloper  reuses messages that have already been
-       exchanged in an attempt to discover a pattern.
+There  are  many methods or strategies for attacking a confi‐
+dential communication. One method is called a man-in-the-mid‐
+dle  attack,  where someone listening to a communication pre‐
+tends to be one of the parties; another is a  replay  attack,
+where  an  interloper  reuses messages that have already been
+exchanged in an attempt to discover a pattern.
 
-       In order to thwart such attacks and establish some  level  of
-       trust  between  communicating  parties,  it  is  necessary to
-       employ certain protocols.  Inferno uses two  well-established
-       protocols to permit keys to be exchanged and to permit mutual
-       authentication of the identities of  two  communicating  par‐
-       ties.
+In order to thwart such attacks and establish some  level  of
+trust  between  communicating  parties,  it  is  necessary to
+employ certain protocols.  Inferno uses two  well-established
+protocols to permit keys to be exchanged and to permit mutual
+authentication of the identities of  two  communicating  par‐
+ties.
 
-       A  digital  signature  is one way to guarantee that a message
-       sent by a user is indeed from that user and not someone else.
-       A  signature does not require that a message be encrypted. It
-       can be appended to a message in order to guarantee the  iden‐
-       tity  of  the  sender.  With  Elgamal,  creating  a signature
-       requires that the user have a secret or private key. Uniquely
-       associated  with  the  private key is another key that can be
-       distributed publicly. This public key is used along with  the
-       private  key  to create a signature, and is used by others to
-       verify the signature.
+A  digital  signature  is one way to guarantee that a message
+sent by a user is indeed from that user and not someone else.
+A  signature does not require that a message be encrypted. It
+can be appended to a message in order to guarantee the  iden‐
+tity  of  the  sender.  With  Elgamal,  creating  a signature
+requires that the user have a secret or private key. Uniquely
+associated  with  the  private key is another key that can be
+distributed publicly. This public key is used along with  the
+private  key  to create a signature, and is used by others to
+verify the signature.
 
-       To create a signature the Elgamal algorithm is applied  to  a
-       combination  of the private key, the public key, and the mes‐
-       sage to be signed. The output of the algorithm is the  signa‐
-       ture.
+To create a signature the Elgamal algorithm is applied  to  a
+combination  of the private key, the public key, and the mes‐
+sage to be signed. The output of the algorithm is the  signa‐
+ture.
 
-       To  verify  the  signature  the  receiver applies the Elgamal
-       algorithm to the public key and the signature. If the  output
-       is  the  same  message that was sent with the signature, then
-       the signature is valid. This method  ensures  that  the  user
-       receiving  a message is indeed communicating with someone who
-       owns the public key.
+To  verify  the  signature  the  receiver applies the Elgamal
+algorithm to the public key and the signature. If the  output
+is  the  same  message that was sent with the signature, then
+the signature is valid. This method  ensures  that  the  user
+receiving  a message is indeed communicating with someone who
+owns the public key.
 
-       The next step is to determine who the owner of the public key
-       is,  and  to  ensure  that  it  belongs  to the user that the
-       receiver wants to communicate with. This is  accomplished  by
-       having  a  third party create a certificate testifying to the
-       identity of the owner of the public key. This third party  is
-       called a certifying authority (CA). If a user trusts the cer‐
-       tifying authority, a copy of a certificate is  sufficient  to
-       determine  the  ownership of a public key, and therefore, the
-       signature and identity of the user sending a message.
+The next step is to determine who the owner of the public key
+is,  and  to  ensure  that  it  belongs  to the user that the
+receiver wants to communicate with. This is  accomplished  by
+having  a  third party create a certificate testifying to the
+identity of the owner of the public key. This third party  is
+called a certifying authority (CA). If a user trusts the cer‐
+tifying authority, a copy of a certificate is  sufficient  to
+determine  the  ownership of a public key, and therefore, the
+signature and identity of the user sending a message.
 
-       A certificate includes a variety  of  information:  a  user's
-       public  key, the identity of the user, Diffie-Hellman parame‐
-       ters, an expiration time for the certificate, and the  signa‐
-       ture of the CA. The CA's public key is sent to the user along
-       with the certificate to verify the CA's signature.
+A certificate includes a variety  of  information:  a  user's
+public  key, the identity of the user, Diffie-Hellman parame‐
+ters, an expiration time for the certificate, and the  signa‐
+ture of the CA. The CA's public key is sent to the user along
+with the certificate to verify the CA's signature.
 
-       Inferno provides two different methods for obtaining  a  cer‐
-       tificate depending on whether a user has access to a keyboard
-       or not. For users with a keyboard, Inferno offers a variation
-       of  the  Encrypted-Key-Exchange  (EKE) protocol, described in
-       login(6).  The protocol depends on establishing trust between
-       a user and a CA using a shared secret (password).  The secret
-       must initially be established at the CA by some secure means:
-       typing a password on a secure console at the CA, or transmit‐
-       ting the password securely off-line, perhaps by unintercepted
-       letter  or  untapped  phone call.  To obtain a certificate, a
-       user  can  subsequently  enter  the  secret  on  the   client
-       machine's  keyboard; the protocol obtains a certificate with‐
-       out revealing the secret.
+Inferno provides two different methods for obtaining  a  cer‐
+tificate depending on whether a user has access to a keyboard
+or not. For users with a keyboard, Inferno offers a variation
+of  the  Encrypted-Key-Exchange  (EKE) protocol, described in
+login(6).  The protocol depends on establishing trust between
+a user and a CA using a shared secret (password).  The secret
+must initially be established at the CA by some secure means:
+typing a password on a secure console at the CA, or transmit‐
+ting the password securely off-line, perhaps by unintercepted
+letter  or  untapped  phone call.  To obtain a certificate, a
+user  can  subsequently  enter  the  secret  on  the   client
+machine's  keyboard; the protocol obtains a certificate with‐
+out revealing the secret.
 
-       For an application or user on a set-top box,  which  normally
-       does not have a keyboard, entering a password would be diffi‐
-       cult. Therefore,  Inferno  provides  a  different  method  to
-       establish  trust.  When the set-top box is turned on, it cre‐
-       ates  a  private/public  key  pair  and  dials  the   service
-       provider's CA to get a certificate. The CA returns a certifi‐
-       cate blinded or scrambled with a random bit string known only
-       to the CA. A hashed version of the string is displayed on the
-       user's screen. The user telephones the CA and  compares  what
-       is  displayed  with  what the CA has sent. If they match, and
-       the user can prove his or her identity, the CA makes the ran‐
-       dom  bit  string known to the user, so the certificate can be
-       unscrambled.
+For an application or user on a set-top box,  which  normally
+does not have a keyboard, entering a password would be diffi‐
+cult. Therefore,  Inferno  provides  a  different  method  to
+establish  trust.  When the set-top box is turned on, it cre‐
+ates  a  private/public  key  pair  and  dials  the   service
+provider's CA to get a certificate. The CA returns a certifi‐
+cate blinded or scrambled with a random bit string known only
+to the CA. A hashed version of the string is displayed on the
+user's screen. The user telephones the CA and  compares  what
+is  displayed  with  what the CA has sent. If they match, and
+the user can prove his or her identity, the CA makes the ran‐
+dom  bit  string known to the user, so the certificate can be
+unscrambled.
 
    Authentication
-       Mutual authentication in Inferno requires  that  two  parties
-       who want to communicate must have a certificate from the same
-       CA. As described above, the public key of the CA is  used  to
-       check the certificate sent by the other user. The certificate
-       is used to verify that the public key belongs  to  the  party
-       that the user wants to communicate with.
+Mutual authentication in Inferno requires  that  two  parties
+who want to communicate must have a certificate from the same
+CA. As described above, the public key of the CA is  used  to
+check the certificate sent by the other user. The certificate
+is used to verify that the public key belongs  to  the  party
+that the user wants to communicate with.
 
-       If  a user can trust the public key, then the key can be used
-       to check the signature sent by the other party. If the public
-       key  unlocks  the  signature, then whoever sent the signature
-       must have the corresponding secret key, and  therefore,  must
-       be the owner of the public key.
+If  a user can trust the public key, then the key can be used
+to check the signature sent by the other party. If the public
+key  unlocks  the  signature, then whoever sent the signature
+must have the corresponding secret key, and  therefore,  must
+be the owner of the public key.
 
-       The default protocol provided by Inferno for mutual authenti‐
-       cation  is  the  station-to-station  protocol  described   in
-       auth(6).   It  has  the property that both parties can derive
-       the same key from exchanged and validated data but no  eaves‐
-       dropper can determine the key.
+The default protocol provided by Inferno for mutual authenti‐
+cation  is  the  station-to-station  protocol  described   in
+auth(6).   It  has  the property that both parties can derive
+the same key from exchanged and validated data but no  eaves‐
+dropper can determine the key.
 
    Security at the Application Layer
-       An  application  can make use of the algorithms and protocols
-       described previously by using only  a  few  library  routines
-       such as: security-login(2), security-auth(2) and connect (see
-       security-ssl(2)).  The Login module  enables  an  application
-       that  shares  a  password  with  a server acting as the CA to
-       obtain  a  certificate.  After  obtaining  certificates,  two
-       applications establish a mutually authenticated connection by
-       calling auth.  Auth performs the entire STS  protocol.   Con‐
-       nect  connects  an  application  to  an SSL (security sockets
-       layer) device. Each application can create message digests or
-       encrypt  messages  by  writing  to  this device. Messages are
-       received and decrypted by reading from the SSL device.
+An  application  can make use of the algorithms and protocols
+described previously by using only  a  few  library  routines
+such as: security-login(2), security-auth(2) and connect (see
+security-ssl(2)).  The Login module  enables  an  application
+that  shares  a  password  with  a server acting as the CA to
+obtain  a  certificate.  After  obtaining  certificates,  two
+applications establish a mutually authenticated connection by
+calling auth.  Auth performs the entire STS  protocol.   Con‐
+nect  connects  an  application  to  an SSL (security sockets
+layer) device. Each application can create message digests or
+encrypt  messages  by  writing  to  this device. Messages are
+received and decrypted by reading from the SSL device.
 
-       Although Inferno provides these routines to make it  easy  to
-       establish   secure  communications,  an  application  is  not
-       restricted to their use. Lower-level routines used  by  login
-       and auth are also available to an application. These routines
-       enable an application to create alternate methods for  estab‐
-       lishing  security,  or  to perform specialized functions like
-       signing files.
+Although Inferno provides these routines to make it  easy  to
+establish   secure  communications,  an  application  is  not
+restricted to their use. Lower-level routines used  by  login
+and auth are also available to an application. These routines
+enable an application to create alternate methods for  estab‐
+lishing  security,  or  to perform specialized functions like
+signing files.
 
-       Inferno also provides security routines tailored for  set-top
-       boxes. For example, a set-top-box can use register(8) instead
-       of login (see security-login(2)).  Register  obtains  a  cer‐
-       tificate without requiring a user to enter a password.
+Inferno also provides security routines tailored for  set-top
+boxes. For example, a set-top-box can use register(8) instead
+of login (see security-login(2)).  Register  obtains  a  cer‐
+tificate without requiring a user to enter a password.
 
-       There  are also commands in section 8 that establish a server
-       as a Certifying Authority or  `signer'.  For  example,  a  CA
-       needs  a  key and password to create a certificate. These can
-       be created on the server using  the  commands  changelogin(8)
-       and createsignerkey(8).
+There  are also commands in section 8 that establish a server
+as a Certifying Authority or  `signer'.  For  example,  a  CA
+needs  a  key and password to create a certificate. These can
+be created on the server using  the  commands  changelogin(8)
+and createsignerkey(8).
 
-                                                   SECURITY-INTRO(2)

@@ -1,145 +1,138 @@
-VGA(3)                Library Functions Manual                VGA(3)
+= vga: VGA controller device
 
-NAME
-       vga - VGA controller device
+    bind #v /dev
 
-SYNOPSIS
-       bind #v /dev
+    /dev/vgactl
+    /dev/vgaovlctl
+    /dev/vgaovl
 
-       /dev/vgactl
-       /dev/vgaovlctl
-       /dev/vgaovl
+The  VGA device allows configuration of a graphics controller
+on a PC (and any other platform with  VGA  devices).   Vgactl
+allows  control  over  higher-level  settings such as display
+height, width, depth, controller  and  hardware-cursor  type.
+Along  with the I/O-port registers provided by arch(3), it is
+used to implement configuration and setup of  VGA  controller
+cards.
 
-DESCRIPTION
-       The  VGA device allows configuration of a graphics controller
-       on a PC (and any other platform with  VGA  devices).   Vgactl
-       allows  control  over  higher-level  settings such as display
-       height, width, depth, controller  and  hardware-cursor  type.
-       Along  with the I/O-port registers provided by arch(3), it is
-       used to implement configuration and setup of  VGA  controller
-       cards.
+Writing  strings  to  vgactl  configures the VGA device.  The
+following are valid commands.
 
-       Writing  strings  to  vgactl  configures the VGA device.  The
-       following are valid commands.
+size XxYxZ chan
+       Set the size of the screen image to be X  pixels  wide
+       and  Y pixels high.  Each pixel is Z bits as specified
+       by chan, whose format is described in image(6).
 
-       size XxYxZ chan
-              Set the size of the screen image to be X  pixels  wide
-              and  Y pixels high.  Each pixel is Z bits as specified
-              by chan, whose format is described in image(6).
+actualsize XxY
+       Set the physical size of the display to  be  X  pixels
+       wide  by  Y pixels high.  This message is optional; it
+       is used to implement panning and to  accommodate  dis‐
+       plays  that require the in-memory screen image to have
+       certain  alignment   properties.    For   example,   a
+       1400x1050 screen with a 1408x1050 in-memory image will
+       use size 1408x1050 but actualsize 1400x1050.
 
-       actualsize XxY
-              Set the physical size of the display to  be  X  pixels
-              wide  by  Y pixels high.  This message is optional; it
-              is used to implement panning and to  accommodate  dis‐
-              plays  that require the in-memory screen image to have
-              certain  alignment   properties.    For   example,   a
-              1400x1050 screen with a 1408x1050 in-memory image will
-              use size 1408x1050 but actualsize 1400x1050.
+panning mode
+       Depending on whether mode is on or off, enable or dis‐
+       able  panning  in  a virtual screen.  If panning is on
+       and the screen's size is larger than  its  actualsize,
+       the displayed portion of the screen will pan to follow
+       the mouse.  Setting the panning mode after  the  first
+       attach of the #i driver has no effect.
 
-       panning mode
-              Depending on whether mode is on or off, enable or dis‐
-              able  panning  in  a virtual screen.  If panning is on
-              and the screen's size is larger than  its  actualsize,
-              the displayed portion of the screen will pan to follow
-              the mouse.  Setting the panning mode after  the  first
-              attach of the #i driver has no effect.
+type ctlr
+       Set  the  type  of VGA controller being used.  Ctlr is
+       one  of   ark200pv,   clgd542x,   clgd546x,   ct65545,
+       cyber938x, hiqvideo, mach64xx, mga2164w, neomagic, s3,
+       and t2r4.
 
-       type ctlr
-              Set  the  type  of VGA controller being used.  Ctlr is
-              one  of   ark200pv,   clgd542x,   clgd546x,   ct65545,
-              cyber938x, hiqvideo, mach64xx, mga2164w, neomagic, s3,
-              and t2r4.
+       Note that this list does not indicate the full set  of
+       VGA  chips  supported.  For  example,  s3 includes the
+       86C801/5, 86C928, Vision864, and Vision964.  It is the
+       job of a user-level program to recognise which partic‐
+       ular chip is being used and to initialize it appropri‐
+       ately.
 
-              Note that this list does not indicate the full set  of
-              VGA  chips  supported.  For  example,  s3 includes the
-              86C801/5, 86C928, Vision864, and Vision964.  It is the
-              job of a user-level program to recognise which partic‐
-              ular chip is being used and to initialize it appropri‐
-              ately.
+hwgc gc
+       Set  the  type of hardware graphics cursor being used.
+       Gc is one of  ark200pvhwgc,  bt485hwgc,  clgd542xhwgc,
+       clgd546xhwgc,  ct65545hwgc,  cyber938xhwgc,  hiqvideo‐
+       hwgc,   mach64xxhwgc,   mga2164whwgc,    neomagichwgc,
+       rgb524hwgc,   s3hwgc,   t2r4hwgc,   tvp3020hwgc,   and
+       tvp3026hwgc.  A value  of  off  disables  the  cursor.
+       There is no software cursor.
 
-       hwgc gc
-              Set  the  type of hardware graphics cursor being used.
-              Gc is one of  ark200pvhwgc,  bt485hwgc,  clgd542xhwgc,
-              clgd546xhwgc,  ct65545hwgc,  cyber938xhwgc,  hiqvideo‐
-              hwgc,   mach64xxhwgc,   mga2164whwgc,    neomagichwgc,
-              rgb524hwgc,   s3hwgc,   t2r4hwgc,   tvp3020hwgc,   and
-              tvp3026hwgc.  A value  of  off  disables  the  cursor.
-              There is no software cursor.
+palettedepth d
+       Set  the  number  of bits of precision used by the VGA
+       palette to d, which must be either 6 or 8.
 
-       palettedepth d
-              Set  the  number  of bits of precision used by the VGA
-              palette to d, which must be either 6 or 8.
+blank  Blank the screen.  This consists of setting the  hard‐
+       ware  color  map to all black as well as, on some con‐
+       trollers, setting the VGA hsync and vsync  signals  so
+       as  to  turn  off  VESA  DPMS-compliant monitors.  The
+       screen also blanks after  30  minutes  of  inactivity.
+       The screen can be unblanked by moving the mouse.
 
-       blank  Blank the screen.  This consists of setting the  hard‐
-              ware  color  map to all black as well as, on some con‐
-              trollers, setting the VGA hsync and vsync  signals  so
-              as  to  turn  off  VESA  DPMS-compliant monitors.  The
-              screen also blanks after  30  minutes  of  inactivity.
-              The screen can be unblanked by moving the mouse.
+blanktime minutes
+       Set  the timeout before the screen blanks; the default
+       is 30 minutes.  If minutes is zero, blanking  is  dis‐
+       abled.
 
-       blanktime minutes
-              Set  the timeout before the screen blanks; the default
-              is 30 minutes.  If minutes is zero, blanking  is  dis‐
-              abled.
+hwaccel mode
+       Depending on whether mode is on or off, enable or dis‐
+       able whether hardware acceleration (currently for rec‐
+       tangle  filling  and  moving)  used  by  the  graphics
+       engine.  The default setting is on.
 
-       hwaccel mode
-              Depending on whether mode is on or off, enable or dis‐
-              able whether hardware acceleration (currently for rec‐
-              tangle  filling  and  moving)  used  by  the  graphics
-              engine.  The default setting is on.
+hwblank mode
+       Depending on whether mode is on or off, enable or dis‐
+       able the use of DPMS blanking (see blank above).
 
-       hwblank mode
-              Depending on whether mode is on or off, enable or dis‐
-              able the use of DPMS blanking (see blank above).
+linear size align
+       Use  a  linear screen aperture of size size aligned on
+       an align-byte boundary.
 
-       linear size align
-              Use  a  linear screen aperture of size size aligned on
-              an align-byte boundary.
+drawinit
+       Initialize the graphics hardware.  This must  be  sent
+       after setting the type.
 
-       drawinit
-              Initialize the graphics hardware.  This must  be  sent
-              after setting the type.
+Reading vgactl returns the current settings, one per line.
 
-       Reading vgactl returns the current settings, one per line.
+Some  VGA cards support overlay graphics.  Writing strings to
+vgaovlctl configures such cards.   The  following  are  valid
+overlay control commands:
 
-       Some  VGA cards support overlay graphics.  Writing strings to
-       vgaovlctl configures such cards.   The  following  are  valid
-       overlay control commands:
+openctl
+       opens the overlay device.
 
-       openctl
-              opens the overlay device.
+configure w h format
+       allocates  resources  inside  the driver to support an
+       overlay area of width w and  height  h  pixels.   Cur‐
+       rently,  the only supported format is YUYV packed.  In
+       YUYV two pixels are encoded by their separate Y values
+       and  their  combined  U and V values.  The size of the
+       two pixels is 32 bits.
 
-       configure w h format
-              allocates  resources  inside  the driver to support an
-              overlay area of width w and  height  h  pixels.   Cur‐
-              rently,  the only supported format is YUYV packed.  In
-              YUYV two pixels are encoded by their separate Y values
-              and  their  combined  U and V values.  The size of the
-              two pixels is 32 bits.
+enable x y w h
+       enables drawing data on the display through the  over‐
+       lay mode.  The data is drawn at position x,y and has a
+       width and height of w,h respectively.
 
-       enable x y w h
-              enables drawing data on the display through the  over‐
-              lay mode.  The data is drawn at position x,y and has a
-              width and height of w,h respectively.
+closectl
+       terminates overlay control.
 
-       closectl
-              terminates overlay control.
+Overlay data can be written to vgaovl.
 
-       Overlay data can be written to vgaovl.
+== examples
+The following disables hardware acceleration.
 
-EXAMPLES
-       The following disables hardware acceleration.
+       echo hwaccel off > /dev/vgactl
 
-              echo hwaccel off > /dev/vgactl
+== source
+/os/pc/devvga.c
 
-SOURCE
-       /os/pc/devvga.c
+== see ALSO
+arch(3)
 
-SEE ALSO
-       arch(3)
-
-BUGS
-       The hardware graphics cursor on the et4000 does not  work  in
-       2x8-bit mode.
-
-                                                              VGA(3)
+== bugs
+The hardware graphics cursor on the et4000 does not  work  in
+2x8-bit mode.

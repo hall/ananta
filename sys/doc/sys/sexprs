@@ -1,238 +1,232 @@
-SEXPRS(2)                System Calls Manual               SEXPRS(2)
+= Sexprs: Sexp: S-expressions
 
-NAME
-       Sexprs: Sexp - S-expressions
+    include "bufio.m";
+    include "sexprs.m";
+    sexprs := load Sexprs Sexprs->PATH;
 
-SYNOPSIS
-       include "bufio.m";
-       include "sexprs.m";
-       sexprs := load Sexprs Sexprs->PATH;
+    Sexp: adt {
+        pick {
+        String =>
+            s:    string;
+            hint: string;
+        Binary =>
+            data: array of byte;
+            hint: string;
+        List =>
+            l:    cyclic list of ref Sexp;
+        }
+    
+        read:   fn(b: ref Bufio->Iobuf): (ref Sexp, string);
+        parse:  fn(s: string): (ref Sexp, string, string);
+        pack:   fn(e: self ref Sexp): array of byte;
+        packedsize: fn(e: self ref Sexp): int;
+        text:   fn(e: self ref Sexp): string;
+        b64text: fn(e: self ref Sexp): string;
+        unpack: fn(a: array of byte): (ref Sexp, array of byte, string);
+    
+        eq:     fn(e: self ref Sexp, t: ref Sexp): int;
+        copy:   fn(e: self ref Sexp): ref Sexp;
+    
+        astext: fn(e: self ref Sexp): string;
+        asdata: fn(e: self ref Sexp): array of byte;
+    
+        islist: fn(e: self ref Sexp): int;
+        els:    fn(e: self ref Sexp): list of ref Sexp;
+        op:     fn(e: self ref Sexp): string;
+        args:   fn(e: self ref Sexp): list of ref Sexp;
+    };
+    
+    init:   fn();
 
-       Sexp: adt {
-           pick {
-           String =>
-               s:    string;
-               hint: string;
-           Binary =>
-               data: array of byte;
-               hint: string;
-           List =>
-               l:    cyclic list of ref Sexp;
-           }
+Sexprs  provides  a  data  type and I/O for S-expressions, or
+`symbolic  expressions',  which  represent  complex  data  as
+trees.   This  implementation provides the variant defined by
+Rivest in Internet Draft (4 May 1997), as used  for  instance
+by  the Simple Public Key Infrastructure (SPKI).  It offers a
+basic set of operations on the internal  representation,  and
+input  and  output  in  both canonical and advanced transport
+encodings.  Canonical form conveys binary data  directly  and
+efficiently (unlike some other schemes such as XML).  Canoni‐
+cal encoding  must  be  used  when  exchanging  S-expressions
+between  computers, and when digitally signing an expression.
+Advanced encoding is a more elaborate form  similar  to  that
+used  by  Lisp  interpreters,  typically using only printable
+characters: representing any binary data  in  hexadecimal  or
+base  64  encodings,  and  quoting strings containing special
+characters, using escape  sequences  as  required.   Unquoted
+text  is called a token, restricted by the standard to a spe‐
+cific alphabet: it must start with a letter  or  a  character
+from  the set and contain only letters, digits and characters
+from that set.  Upper- and lower-case letters  are  distinct.
+See sexprs(6) for a precise description.
 
-           read:   fn(b: ref Bufio->Iobuf): (ref Sexp, string);
-           parse:  fn(s: string): (ref Sexp, string, string);
-           pack:   fn(e: self ref Sexp): array of byte;
-           packedsize: fn(e: self ref Sexp): int;
-           text:   fn(e: self ref Sexp): string;
-           b64text: fn(e: self ref Sexp): string;
-           unpack: fn(a: array of byte): (ref Sexp, array of byte, string);
+Init  must  be  called before invoking any other operation of
+the module.
 
-           eq:     fn(e: self ref Sexp, t: ref Sexp): int;
-           copy:   fn(e: self ref Sexp): ref Sexp;
+Sexp is the internal representation of S-expression data,  as
+lists  and non-list values (atoms) that in general can form a
+tree structure; that is, a list may contain  not  just  atoms
+but  other lists as its elements, and so on recursively.  The
+atoms are strings of text or binary.  A well-formed S-expres‐
+sion might be a tree, but cannot contain cycles.
 
-           astext: fn(e: self ref Sexp): string;
-           asdata: fn(e: self ref Sexp): array of byte;
+For convenience in processing, Sexp distinguishes three vari‐
+ants represented in a pick adt:
 
-           islist: fn(e: self ref Sexp): int;
-           els:    fn(e: self ref Sexp): list of ref Sexp;
-           op:     fn(e: self ref Sexp): string;
-           args:   fn(e: self ref Sexp): list of ref Sexp;
-       };
+Sexp.String
+       An atom that can be represented as a textual string s,
+       including all tokens but also any other data that con‐
+       tains no characters outside the 7-bit ASCII set and no
+       control-characters  other  than  space.   Hint  is the
+       `display hint', typically nil (see the Internet  Draft
+       for its intended use).
 
-       init:   fn();
+Sexp.Binary
+       An  atom that must be represented as an array of bytes
+       data (typically because it is purely  binary  data  or
+       contains non-space control-characters).  Hint again is
+       the display hint.
 
-DESCRIPTION
-       Sexprs  provides  a  data  type and I/O for S-expressions, or
-       `symbolic  expressions',  which  represent  complex  data  as
-       trees.   This  implementation provides the variant defined by
-       Rivest in Internet Draft (4 May 1997), as used  for  instance
-       by  the Simple Public Key Infrastructure (SPKI).  It offers a
-       basic set of operations on the internal  representation,  and
-       input  and  output  in  both canonical and advanced transport
-       encodings.  Canonical form conveys binary data  directly  and
-       efficiently (unlike some other schemes such as XML).  Canoni‐
-       cal encoding  must  be  used  when  exchanging  S-expressions
-       between  computers, and when digitally signing an expression.
-       Advanced encoding is a more elaborate form  similar  to  that
-       used  by  Lisp  interpreters,  typically using only printable
-       characters: representing any binary data  in  hexadecimal  or
-       base  64  encodings,  and  quoting strings containing special
-       characters, using escape  sequences  as  required.   Unquoted
-       text  is called a token, restricted by the standard to a spe‐
-       cific alphabet: it must start with a letter  or  a  character
-       from  the set and contain only letters, digits and characters
-       from that set.  Upper- and lower-case letters  are  distinct.
-       See sexprs(6) for a precise description.
+Sexp.List
+       A list of S-expression values, l.
 
-       Init  must  be  called before invoking any other operation of
-       the module.
+Sexp provides the following operations for input and  output,
+using bufio(2)'s buffered channels (directly or indirectly):
 
-       Sexp is the internal representation of S-expression data,  as
-       lists  and non-list values (atoms) that in general can form a
-       tree structure; that is, a list may contain  not  just  atoms
-       but  other lists as its elements, and so on recursively.  The
-       atoms are strings of text or binary.  A well-formed S-expres‐
-       sion might be a tree, but cannot contain cycles.
+read(b)
+       Read  one S-expression (a list or a single token) from
+       Iobuf b.  Return a tuple of the form (e,err), where  e
+       is  the  Sexp representing the data just read, and err
+       is nil on success; b is positioned at the first  char‐
+       acter after the end of the S-expression.  On an error,
+       e is nil, and err contains the diagnostic string.   On
+       end-of-file, both e and err are nil.
 
-       For convenience in processing, Sexp distinguishes three vari‐
-       ants represented in a pick adt:
+parse(s)
+       Parse the first S-expression in string s, and return a
+       tuple (e,t,err), where e is  the  Sexp  representating
+       that  expression,  t is the unparsed tail of string s,
+       and err is a diagnostic string that is nil on success.
+       On  an  error,  e is nil, t is as before, and err con‐
+       tains the diagnostic.
 
-       Sexp.String
-              An atom that can be represented as a textual string s,
-              including all tokens but also any other data that con‐
-              tains no characters outside the 7-bit ASCII set and no
-              control-characters  other  than  space.   Hint  is the
-              `display hint', typically nil (see the Internet  Draft
-              for its intended use).
+e.pack()
+       Return an array of byte that represents Sexp e  as  an
+       S-expression in canonical transport form.
 
-       Sexp.Binary
-              An  atom that must be represented as an array of bytes
-              data (typically because it is purely  binary  data  or
-              contains non-space control-characters).  Hint again is
-              the display hint.
+e.packedsize()
+       Return  the  size  in bytes of the canonical transport
+       representation of e.
 
-       Sexp.List
-              A list of S-expression values, l.
+e.b64text()
+       Return a string that contains the base-64  representa‐
+       tion  of the canonical representation of e, surrounded
+       by braces.
 
-       Sexp provides the following operations for input and  output,
-       using bufio(2)'s buffered channels (directly or indirectly):
+e.text()
+       Return a string that represents e as  an  S-expression
+       in advanced (`human-readable') transport form contain‐
+       ing no newlines.  The result of  text  can  always  be
+       interpreted  by Sexp.read and Sexp.parse, and further‐
+       more Sexp.parse(e.text()) yields the same  tree  value
+       as e (similarly for Sexp.read).
 
-       read(b)
-              Read  one S-expression (a list or a single token) from
-              Iobuf b.  Return a tuple of the form (e,err), where  e
-              is  the  Sexp representing the data just read, and err
-              is nil on success; b is positioned at the first  char‐
-              acter after the end of the S-expression.  On an error,
-              e is nil, and err contains the diagnostic string.   On
-              end-of-file, both e and err are nil.
+unpack(a)
+       Parse  the  first S-expression in array of byte a, and
+       return a tuple (e,r,err), where e is the  Sexp  repre‐
+       senting the S-expression, r is a slice of a giving the
+       portion of a after the S-expression, and err is nil on
+       success.   On error, e is nil, r is as before, and err
+       contains a diagnostic string.  The data in a is  typi‐
+       cally in canonical transport form, read from a file or
+       network connection.
 
-       parse(s)
-              Parse the first S-expression in string s, and return a
-              tuple (e,t,err), where e is  the  Sexp  representating
-              that  expression,  t is the unparsed tail of string s,
-              and err is a diagnostic string that is nil on success.
-              On  an  error,  e is nil, t is as before, and err con‐
-              tains the diagnostic.
+All input functions accept S-expression in  either  canonical
+or advanced form, or any legal mixture of forms.  Expressions
+can cross line boundaries.  For output in canonical form, use
+pack;  for  output  in  advanced  form  (similar to Lisp's S-
+expressions), use text.
 
-       e.pack()
-              Return an array of byte that represents Sexp e  as  an
-              S-expression in canonical transport form.
+Sexp provides a further small collection of operations:
 
-       e.packedsize()
-              Return  the  size  in bytes of the canonical transport
-              representation of e.
+e1.eq(e2)
+       Return non-zero if expression e1 and e2 are  identical
+       (isomorphic in tree structure and atoms in correspond‐
+       ing positions in e1 and e2 equal); return 0 otherwise.
 
-       e.b64text()
-              Return a string that contains the base-64  representa‐
-              tion  of the canonical representation of e, surrounded
-              by braces.
+e.copy()
+       Return a new Sexp value equal to  e,  but  sharing  no
+       storage  with  it.  (In other words, it returns a copy
+       of the whole tree e).
 
-       e.text()
-              Return a string that represents e as  an  S-expression
-              in advanced (`human-readable') transport form contain‐
-              ing no newlines.  The result of  text  can  always  be
-              interpreted  by Sexp.read and Sexp.parse, and further‐
-              more Sexp.parse(e.text()) yields the same  tree  value
-              as e (similarly for Sexp.read).
+e.islist()
+       Return true iff e is a  list  (ie,  a  value  of  type
+       Sexp.List).
 
-       unpack(a)
-              Parse  the  first S-expression in array of byte a, and
-              return a tuple (e,r,err), where e is the  Sexp  repre‐
-              senting the S-expression, r is a slice of a giving the
-              portion of a after the S-expression, and err is nil on
-              success.   On error, e is nil, r is as before, and err
-              contains a diagnostic string.  The data in a is  typi‐
-              cally in canonical transport form, read from a file or
-              network connection.
+Two  operations provide a shorthand for fetching the value of
+an atom, returning nil if applied to a list:
 
-       All input functions accept S-expression in  either  canonical
-       or advanced form, or any legal mixture of forms.  Expressions
-       can cross line boundaries.  For output in canonical form, use
-       pack;  for  output  in  advanced  form  (similar to Lisp's S-
-       expressions), use text.
+e.astext()
+       Return the value of e as  a  string;  binary  data  is
+       assumed to be a string in utf(6) representation.
 
-       Sexp provides a further small collection of operations:
+e.asdata()
+       Return  the value of e as an array of bytes.  A String
+       value will be converted to an array  of  bytes  giving
+       its utf(6).
 
-       e1.eq(e2)
-              Return non-zero if expression e1 and e2 are  identical
-              (isomorphic in tree structure and atoms in correspond‐
-              ing positions in e1 and e2 equal); return 0 otherwise.
+The  remaining  operations  extract  values  from  lists, and
+return nil if applied to an atom:
 
-       e.copy()
-              Return a new Sexp value equal to  e,  but  sharing  no
-              storage  with  it.  (In other words, it returns a copy
-              of the whole tree e).
+e.els()
+       Return the elements of list e; return nil if e is  not
+       a list.
 
-       e.islist()
-              Return true iff e is a  list  (ie,  a  value  of  type
-              Sexp.List).
+e.op() Return  the  first token of list e, if it is a string;
+       return nil if it is not a string or e is not  a  list.
+       The  first  token  of  a list often gives an operation
+       name.
 
-       Two  operations provide a shorthand for fetching the value of
-       an atom, returning nil if applied to a list:
+e.args()
+       Return a list containing  the  second  and  subsequent
+       values  in  list  e; useful when the first value is an
+       operation  name  and  the  rest  represent  parameters
+       (arguments) to that operation.
 
-       e.astext()
-              Return the value of e as  a  string;  binary  data  is
-              assumed to be a string in utf(6) representation.
+== examples
+The following S-expression is in advanced transport form:
 
-       e.asdata()
-              Return  the value of e as an array of bytes.  A String
-              value will be converted to an array  of  bytes  giving
-              its utf(6).
+       (snicker "abc" (#03# |YWJj|))
 
-       The  remaining  operations  extract  values  from  lists, and
-       return nil if applied to an atom:
+It  represents  a list of three elements: the token the token
+and a sub-list with two elements (a hexadecimal constant rep‐
+resenting the byte and a base-64 constant that represents the
+bytes
 
-       e.els()
-              Return the elements of list e; return nil if e is  not
-              a list.
+Here is another in advanced form with two sublists:
 
-       e.op() Return  the  first token of list e, if it is a string;
-              return nil if it is not a string or e is not  a  list.
-              The  first  token  of  a list often gives an operation
-              name.
+       (certificate
+            (issuer bob)
+            (subject "alice b"))
 
-       e.args()
-              Return a list containing  the  second  and  subsequent
-              values  in  list  e; useful when the first value is an
-              operation  name  and  the  rest  represent  parameters
-              (arguments) to that operation.
+Its equivalent in canonical form (as  produced  by  pack)  is
+shown below:
 
-EXAMPLES
-       The following S-expression is in advanced transport form:
+       (11:certificate(6:issuer3:bob)(7:subject7:alice b))
 
-              (snicker "abc" (#03# |YWJj|))
+Nesting  parentheses  still  mark the start and end of lists,
+but there is no other punctuation or  white  space,  and  the
+byte sequence representing each atom is preceded by a decimal
+count, so  that  binary  values  appear  unencoded,  and  for
+instance  the space in the last string is not a delimiter but
+part of the token.
 
-       It  represents  a list of three elements: the token the token
-       and a sub-list with two elements (a hexadecimal constant rep‐
-       resenting the byte and a base-64 constant that represents the
-       bytes
+== source
+/appl/lib/sexprs.b
 
-       Here is another in advanced form with two sublists:
+== see ALSO
+bufio(2), xml(2), sexprs(6)
 
-              (certificate
-                   (issuer bob)
-                   (subject "alice b"))
+R. Rivest, ``S-expressions'', Network Working Group  Internet
+Draft, (4 May 1997), reproduced in /lib/sexp.
 
-       Its equivalent in canonical form (as  produced  by  pack)  is
-       shown below:
-
-              (11:certificate(6:issuer3:bob)(7:subject7:alice b))
-
-       Nesting  parentheses  still  mark the start and end of lists,
-       but there is no other punctuation or  white  space,  and  the
-       byte sequence representing each atom is preceded by a decimal
-       count, so  that  binary  values  appear  unencoded,  and  for
-       instance  the space in the last string is not a delimiter but
-       part of the token.
-
-SOURCE
-       /appl/lib/sexprs.b
-
-SEE ALSO
-       bufio(2), xml(2), sexprs(6)
-
-       R. Rivest, ``S-expressions'', Network Working Group  Internet
-       Draft, (4 May 1997), reproduced in /lib/sexp.
-
-                                                           SEXPRS(2)

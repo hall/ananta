@@ -1,302 +1,292 @@
-DEVATTACH(10.2)                                      DEVATTACH(10.2)
+= devattach,  devclone,  devdir,  devgen,  devwalk, devdirread, devstat, devopen, devbread, devbwrite, devcreate,  devremove, devwstat,  devreset,  devinit, devshutdown, openmode: common device driver support
 
-NAME
-       devattach,  devclone,  devdir,  devgen,  devwalk, devdirread,
-       devstat, devopen, devbread, devbwrite, devcreate,  devremove,
-       devwstat,  devreset,  devinit, devshutdown, openmode - common
-       device driver support
+    typedef int Devgen(Chan *c,  char  *name,  Dirtab  *tab,  int ntab, int i, Dir *dp)
 
-SYNOPSIS
-       typedef int Devgen(Chan *c,  char  *name,  Dirtab  *tab,  int
-       ntab, int i, Dir *dp)
+    Chan*  devattach(int tc, char *spec)
 
-       Chan*  devattach(int tc, char *spec)
+    Chan*  devclone(Chan *c)
 
-       Chan*  devclone(Chan *c)
+    void   devdir(Chan   *c,  Qid  qid,  char  *n,  long  length,
+                 char *user, long perm, Dir *dp)
 
-       void   devdir(Chan   *c,  Qid  qid,  char  *n,  long  length,
-                        char *user, long perm, Dir *dp)
+    int    devgen(Chan *c, char *name,  Dirtab  *tab,  int  ntab,
+                 int i, Dir *dp)
 
-       int    devgen(Chan *c, char *name,  Dirtab  *tab,  int  ntab,
-                        int i, Dir *dp)
+    Walkqid*  devwalk(Chan  *c, Chan *nc, char **name, int nname,
+                 Dirtab *tab, int ntab, Devgen *gen)
 
-       Walkqid*  devwalk(Chan  *c, Chan *nc, char **name, int nname,
-                        Dirtab *tab, int ntab, Devgen *gen)
+    void   devstat(Chan  *c,  uchar  *db,  int  n,  Dirtab  *tab,
+                 int ntab, Devgen *gen)
 
-       void   devstat(Chan  *c,  uchar  *db,  int  n,  Dirtab  *tab,
-                        int ntab, Devgen *gen)
+    long   devdirread(Chan  *c,  char  *d,  long  n, Dirtab *tab,
+                 int ntab, Devgen *gen)
 
-       long   devdirread(Chan  *c,  char  *d,  long  n, Dirtab *tab,
-                        int ntab, Devgen *gen)
+    Chan*  devopen(Chan   *c,    int    omode,    Dirtab    *tab,
+                 int ntab, Devgen *gen)
 
-       Chan*  devopen(Chan   *c,    int    omode,    Dirtab    *tab,
-                        int ntab, Devgen *gen)
+    Block* devbread(Chan *c, long n, ulong offset)
 
-       Block* devbread(Chan *c, long n, ulong offset)
+    long   devbwrite(Chan *c, Block *bp, ulong offset)
 
-       long   devbwrite(Chan *c, Block *bp, ulong offset)
+    void   devcreate(Chan*, char*, int, ulong)
 
-       void   devcreate(Chan*, char*, int, ulong)
+    void   devremove(Chan*)
 
-       void   devremove(Chan*)
+    void   devwstat(Chan*, uchar*, int)
 
-       void   devwstat(Chan*, uchar*, int)
+    void   devreset(void)
 
-       void   devreset(void)
+    void   devinit(void)
 
-       void   devinit(void)
+    void   devshutdown(void)
 
-       void   devshutdown(void)
+    int    openmode(ulong mode)
 
-       int    openmode(ulong mode)
+Device  drivers  call  these functions to carry out essential
+tasks and default actions.  They do most of  the  name  space
+management  for a driver that serves a simple name space (eg,
+data and control files), leaving the driver to concentrate on
+the  device-specific  details of the I/O requests.  More com‐
+plex drivers also make good use of  them  at  the  leaves  of
+their name space, and to help manage the Chan structures cor‐
+rectly.
 
-DESCRIPTION
-       Device  drivers  call  these functions to carry out essential
-       tasks and default actions.  They do most of  the  name  space
-       management  for a driver that serves a simple name space (eg,
-       data and control files), leaving the driver to concentrate on
-       the  device-specific  details of the I/O requests.  More com‐
-       plex drivers also make good use of  them  at  the  leaves  of
-       their name space, and to help manage the Chan structures cor‐
-       rectly.
+A device has an associated type,  represented  as  a  Unicode
+character (`rune') that identifies the device inside and out‐
+side the kernel.  It appears as the value of the  type  field
+in  the Dir resulting from a sys-stat(2) of any file provided
+by the device.  A device is named outside the kernel using  a
+path  name  starting  with # followed by the device character
+(eg, c in #c for the  console).   Any  subsequent  characters
+before  the  next  '/' or end of string is the `device speci‐
+fier', interpreted solely by the device itself.
 
-       A device has an associated type,  represented  as  a  Unicode
-       character (`rune') that identifies the device inside and out‐
-       side the kernel.  It appears as the value of the  type  field
-       in  the Dir resulting from a sys-stat(2) of any file provided
-       by the device.  A device is named outside the kernel using  a
-       path  name  starting  with # followed by the device character
-       (eg, c in #c for the  console).   Any  subsequent  characters
-       before  the  next  '/' or end of string is the `device speci‐
-       fier', interpreted solely by the device itself.
+Devattach returns a new channel representing the root of  the
+file tree corresponding to device type tc, with device speci‐
+fier spec.  It is normally called by a driver's attach  func‐
+tion  (see  dev(10.2)).   The  qid  for  the  new  channel is
+(Qid){0,0,QTDIR}, suitable for  a  root  directory  for  many
+devices,  but  a device driver is free to change it (provided
+the QTDIR bit remains in the Qid.type).
 
-       Devattach returns a new channel representing the root of  the
-       file tree corresponding to device type tc, with device speci‐
-       fier spec.  It is normally called by a driver's attach  func‐
-       tion  (see  dev(10.2)).   The  qid  for  the  new  channel is
-       (Qid){0,0,QTDIR}, suitable for  a  root  directory  for  many
-       devices,  but  a device driver is free to change it (provided
-       the QTDIR bit remains in the Qid.type).
+Devclone returns a new channel that  is  a  copy  of  c.   An
+attempt to clone an open channel causes a panic(10.2).
 
-       Devclone returns a new channel that  is  a  copy  of  c.   An
-       attempt to clone an open channel causes a panic(10.2).
+The structure is shown below:
 
-       The structure is shown below:
+       typedef
+       struct Dir
+       {
+           /* system-modified data */
+           ushort  type;   /* server type */
+           uint    dev;    /* server subtype */
+           /* file data */
+           Qid     qid;    /* unique id from server */
+           ulong   mode;   /* permissions */
+           ulong   atime;  /* last read time */
+           ulong   mtime;  /* last write time */
+           vlong   length; /* file length */
+           char    *name;  /* last element of path */
+           char    *uid;   /* owner name */
+           char    *gid;   /* group name */
+           char    *muid;  /* last modifier name */
+       } Dir;
 
-              typedef
-              struct Dir
-              {
-                  /* system-modified data */
-                  ushort  type;   /* server type */
-                  uint    dev;    /* server subtype */
-                  /* file data */
-                  Qid     qid;    /* unique id from server */
-                  ulong   mode;   /* permissions */
-                  ulong   atime;  /* last read time */
-                  ulong   mtime;  /* last write time */
-                  vlong   length; /* file length */
-                  char    *name;  /* last element of path */
-                  char    *uid;   /* owner name */
-                  char    *gid;   /* group name */
-                  char    *muid;  /* last modifier name */
-              } Dir;
+This  Dir structure corresponds directly to the Limbo Dir adt
+described in sys-stat(2).
 
-       This  Dir structure corresponds directly to the Limbo Dir adt
-       described in sys-stat(2).
+Given a channel and assorted other information,  devdir  ini‐
+tialises  a Dir structure at dp.  Devdir supplies the follow‐
+ing data itself:
 
-       Given a channel and assorted other information,  devdir  ini‐
-       tialises  a Dir structure at dp.  Devdir supplies the follow‐
-       ing data itself:
+       atime  last access time (set to current time)
 
-              atime  last access time (set to current time)
+       mtime  last modification time (set to kernel  creation
+              date)
 
-              mtime  last modification time (set to kernel  creation
-                     date)
+       gid    group name (set to eve(10.2))
 
-              gid    group name (set to eve(10.2))
+       length length  in  bytes (set to zero, which is normal
+              for most devices)
 
-              length length  in  bytes (set to zero, which is normal
-                     for most devices)
+Note that devdir assigns the values of name and user directly
+to  fields  of *dp, and consequently those values must remain
+valid until the last use of *dp.   (Sometimes  that  requires
+the  use  of  an  auxiliary  buffer, such as up->genbuf.)  If
+channel c corresponds to a file descriptor  on  which  9P  is
+served, devdir sets both the flag bit QTMOUNT in dp->qid.type
+and the flag bit DMMOUNT in dp->mode (see  sys-export(2)  and
+mount in sys-bind(2)).
 
-       Note that devdir assigns the values of name and user directly
-       to  fields  of *dp, and consequently those values must remain
-       valid until the last use of *dp.   (Sometimes  that  requires
-       the  use  of  an  auxiliary  buffer, such as up->genbuf.)  If
-       channel c corresponds to a file descriptor  on  which  9P  is
-       served, devdir sets both the flag bit QTMOUNT in dp->qid.type
-       and the flag bit DMMOUNT in dp->mode (see  sys-export(2)  and
-       mount in sys-bind(2)).
+A  simple  name  space  can  be represented in a driver by an
+array of Dirtab structures.  The array  is  typically  static
+when the names and permissions are static, but can be dynami‐
+cally allocated and initialised if required.   The  structure
+of Dirtab is shown below:
 
-       A  simple  name  space  can  be represented in a driver by an
-       array of Dirtab structures.  The array  is  typically  static
-       when the names and permissions are static, but can be dynami‐
-       cally allocated and initialised if required.   The  structure
-       of Dirtab is shown below:
+       typedef
+       struct Dirtab
+       {
+               char    name[KNAMELEN];
+               Qid     qid;
+               vlong   length;
+               long    perm;
+       } Dirtab;
 
-              typedef
-              struct Dirtab
-              {
-                      char    name[KNAMELEN];
-                      Qid     qid;
-                      vlong   length;
-                      long    perm;
-              } Dirtab;
+The  name  `.'  must appear as the first entry in a Dirtab if
+the default devgen function is used.  On the other hand,  the
+name `..'  must never appear in a Dirtab table.  Drivers that
+support a directory hierarchy  must  walk  up  the  hierarchy
+towards the root when their walk function receives `..'  as a
+file name component.  The  name  `.'   is  never  seen  by  a
+driver.
 
-       The  name  `.'  must appear as the first entry in a Dirtab if
-       the default devgen function is used.  On the other hand,  the
-       name `..'  must never appear in a Dirtab table.  Drivers that
-       support a directory hierarchy  must  walk  up  the  hierarchy
-       towards the root when their walk function receives `..'  as a
-       file name component.  The  name  `.'   is  never  seen  by  a
-       driver.
+The  devdirread,  devopen, devstat, and devwalk functions all
+take a gen function argument,  of  type  Devgen,  which  they
+invoke  to  retrieve  the  items  in a Chan that represents a
+directory.  Gen takes a channel c (a directory), a file  name
+(which  is  nil  except  during  devwalk), an array of Dirtab
+structures tab of length ntab, and  a  table  index  i.   The
+functions  calling  gen  expect it to place the i'th entry in
+the directory into *dp.  It should return 1 if the  call  was
+successful, -1 if i is beyond the index of the last directory
+entry, or 0 if there is no entry at i, but there are  entries
+beyond  it.   When i has the special value DEVDOTDOT then gen
+should set *dp to reflect the parent of c; if  c  is  a  one-
+level device directory, then `..' is equivalent to `.'.  Cus‐
+tom implementations of gen often ignore devtab,  and  instead
+return  their  own  dynamically  generated  set  of directory
+entries  from  some  other  source.   Exceptionally,   during
+devwalk  a  non-nil  name  is  provided: it is the name being
+looked up, and a device-specific gen  can  short-circuit  the
+search by returning -1 if the name does not exist, or filling
+in *dp and returning 1 if it does exist.
 
-       The  devdirread,  devopen, devstat, and devwalk functions all
-       take a gen function argument,  of  type  Devgen,  which  they
-       invoke  to  retrieve  the  items  in a Chan that represents a
-       directory.  Gen takes a channel c (a directory), a file  name
-       (which  is  nil  except  during  devwalk), an array of Dirtab
-       structures tab of length ntab, and  a  table  index  i.   The
-       functions  calling  gen  expect it to place the i'th entry in
-       the directory into *dp.  It should return 1 if the  call  was
-       successful, -1 if i is beyond the index of the last directory
-       entry, or 0 if there is no entry at i, but there are  entries
-       beyond  it.   When i has the special value DEVDOTDOT then gen
-       should set *dp to reflect the parent of c; if  c  is  a  one-
-       level device directory, then `..' is equivalent to `.'.  Cus‐
-       tom implementations of gen often ignore devtab,  and  instead
-       return  their  own  dynamically  generated  set  of directory
-       entries  from  some  other  source.   Exceptionally,   during
-       devwalk  a  non-nil  name  is  provided: it is the name being
-       looked up, and a device-specific gen  can  short-circuit  the
-       search by returning -1 if the name does not exist, or filling
-       in *dp and returning 1 if it does exist.
+The function devgen is compatible with Devgen; it returns the
+i'th  entry  in  devtab, and can be used to provide a simple,
+static set of directory entries.
 
-       The function devgen is compatible with Devgen; it returns the
-       i'th  entry  in  devtab, and can be used to provide a simple,
-       static set of directory entries.
+Devwalk walks channel c to the file in the  device  named  by
+the  path  encoded  in  name, which is an array of strings of
+length nname.  It provides the interface  to  walk(5)  within
+the kernel, and that specification must be well understood to
+appreciate all the nuances of its interface.  Fortunately, in
+nearly all device drivers, a device's walk function typically
+passes its parameters on to devwalk (adding the device's  own
+Dirtab  array  as the the value of tab), and simply returning
+the result of devwalk.
 
-       Devwalk walks channel c to the file in the  device  named  by
-       the  path  encoded  in  name, which is an array of strings of
-       length nname.  It provides the interface  to  walk(5)  within
-       the kernel, and that specification must be well understood to
-       appreciate all the nuances of its interface.  Fortunately, in
-       nearly all device drivers, a device's walk function typically
-       passes its parameters on to devwalk (adding the device's  own
-       Dirtab  array  as the the value of tab), and simply returning
-       the result of devwalk.
+Devwalk walks c using the given set of names, and if the walk
+is successful, the channel nc will refer to the result of the
+walk (specifically, nc->qid is set to the Qid for the  file).
+If  nc  is  nil,  devwalk will allocate a new channel itself,
+that is initially a clone of c.  As in walk(5),  devwalk  can
+return  a  partial result, represented by a dynamically allo‐
+cated value of the following structure:
 
-       Devwalk walks c using the given set of names, and if the walk
-       is successful, the channel nc will refer to the result of the
-       walk (specifically, nc->qid is set to the Qid for the  file).
-       If  nc  is  nil,  devwalk will allocate a new channel itself,
-       that is initially a clone of c.  As in walk(5),  devwalk  can
-       return  a  partial result, represented by a dynamically allo‐
-       cated value of the following structure:
+       struct Walkqid
+       {
+           Chan  *clone;
+           int   nqid;
+           Qid   qid[1];/* actually nname in length */
+       };
 
-              struct Walkqid
-              {
-                  Chan  *clone;
-                  int   nqid;
-                  Qid   qid[1];/* actually nname in length */
-              };
+The value must be freed after use.  For each element of  name
+,  devwalk  passes the tab parameter to gen together with the
+currently-sought element of name.  If the  first  element  is
+not  found,  devwalk  returns  nil;  otherwise,  it returns a
+Walkqid value in which nqid elements of the array qid are set
+to the qids (see intro(5)) of each valid element of name.  If
+all nname elements were  successfully  traversed,  then  nqid
+will have the value nname, and clone will refer to the result
+of the walk, which is either nc if given, or the new  channel
+allocated  by  devwalk.  Otherwise, at least one element suc‐
+ceeded and nqid is less than nname and clone is nil.   On  an
+error  or  incomplete  walk,  the  error string is set to the
+error that stopped the walk (eg, Enonexist or Enotdir).
 
-       The value must be freed after use.  For each element of  name
-       ,  devwalk  passes the tab parameter to gen together with the
-       currently-sought element of name.  If the  first  element  is
-       not  found,  devwalk  returns  nil;  otherwise,  it returns a
-       Walkqid value in which nqid elements of the array qid are set
-       to the qids (see intro(5)) of each valid element of name.  If
-       all nname elements were  successfully  traversed,  then  nqid
-       will have the value nname, and clone will refer to the result
-       of the walk, which is either nc if given, or the new  channel
-       allocated  by  devwalk.  Otherwise, at least one element suc‐
-       ceeded and nqid is less than nname and clone is nil.   On  an
-       error  or  incomplete  walk,  the  error string is set to the
-       error that stopped the walk (eg, Enonexist or Enotdir).
+Devstat fills the array of bytes db with data in  the  format
+produced  by  stat(5)  that  describes the file referenced by
+channel c, which must have a corresponding entry returned  by
+gen  (ie, an entry with matching Qid.path).  If c is a commu‐
+nications channel connecting a 9P server to a  current  mount
+point,  the DMMOUNT bit is set in the resulting Dir.mode, and
+QTMOUNT is set in Dir.qid.type.  As in stat(5), the length of
+the  data  written  to  db  varies;  if more than n bytes are
+needed, devstat raises the error(10.2)  Ebadarg.   Otherwise,
+it returns the number of bytes in db actually used.
 
-       Devstat fills the array of bytes db with data in  the  format
-       produced  by  stat(5)  that  describes the file referenced by
-       channel c, which must have a corresponding entry returned  by
-       gen  (ie, an entry with matching Qid.path).  If c is a commu‐
-       nications channel connecting a 9P server to a  current  mount
-       point,  the DMMOUNT bit is set in the resulting Dir.mode, and
-       QTMOUNT is set in Dir.qid.type.  As in stat(5), the length of
-       the  data  written  to  db  varies;  if more than n bytes are
-       needed, devstat raises the error(10.2)  Ebadarg.   Otherwise,
-       it returns the number of bytes in db actually used.
+If  an  entry with the desired qid is not found in the table,
+but c corresponds  to  a  directory  (ie,  QTDIR  is  set  in
+c->qid.type),  it  is taken to be a stat of a notional direc‐
+tory containing the files listed in tab.  Dirstat then builds
+the  corresponding  Dir structure: its Dir.name is taken from
+c->path->elem; the length is DIRLEN*nelem(tab); and  Dir.perm
+is 0555 (read-execute for all).
 
-       If  an  entry with the desired qid is not found in the table,
-       but c corresponds  to  a  directory  (ie,  QTDIR  is  set  in
-       c->qid.type),  it  is taken to be a stat of a notional direc‐
-       tory containing the files listed in tab.  Dirstat then builds
-       the  corresponding  Dir structure: its Dir.name is taken from
-       c->path->elem; the length is DIRLEN*nelem(tab); and  Dir.perm
-       is 0555 (read-execute for all).
+Devdirread calls gen to obtain successive Dir structures rep‐
+resenting entries in the open directory c.   These  are  con‐
+verted  to  standard  format  (see convD2M in styx(10.2)) and
+placed in the buffer b.  It returns the number  of  bytes  in
+the  result.   At most n bytes will be returned, in multiples
+of DIRLEN.  Because the kernel maintains the  current  offset
+in c, successive calls to devdirread return successive direc‐
+tory components.
 
-       Devdirread calls gen to obtain successive Dir structures rep‐
-       resenting entries in the open directory c.   These  are  con‐
-       verted  to  standard  format  (see convD2M in styx(10.2)) and
-       placed in the buffer b.  It returns the number  of  bytes  in
-       the  result.   At most n bytes will be returned, in multiples
-       of DIRLEN.  Because the kernel maintains the  current  offset
-       in c, successive calls to devdirread return successive direc‐
-       tory components.
+Devopen is called to check and complete  a  request  to  open
+channel  c  for I/O according to omode (the open mode of sys-
+open(2)).   It  calls  gen  to  obtain  successive  directory
+entries  which  it searches for a Qid matching that of c, and
+ensures that the current user has permission to open  c  with
+the given mode, omode, and that the mode itself is valid (see
+openmode below).  Permission is checked against  the  permis‐
+sion  in the matching entry.  If no matching Qid is found, it
+is assumed that the notional parent directory  of  the  files
+represented  in  tab  is  to  be opened.  Such a directory is
+deemed to have mode 0555, allowing access  by  any  user.   A
+directory  can  only  be opened for reading (OREAD).  Devopen
+returns the channel c on success.   Last,  it  sets  the  bit
+COPEN  in  Chan.flag  to mark c as open.  This convention can
+always be relied upon by the driver's close function to  tell
+if  an open succeeded.  On the otherhand, if the open request
+was unsuccessful, devopen raises an  appropriate  error(10.2)
+and does not return.
 
-       Devopen is called to check and complete  a  request  to  open
-       channel  c  for I/O according to omode (the open mode of sys-
-       open(2)).   It  calls  gen  to  obtain  successive  directory
-       entries  which  it searches for a Qid matching that of c, and
-       ensures that the current user has permission to open  c  with
-       the given mode, omode, and that the mode itself is valid (see
-       openmode below).  Permission is checked against  the  permis‐
-       sion  in the matching entry.  If no matching Qid is found, it
-       is assumed that the notional parent directory  of  the  files
-       represented  in  tab  is  to  be opened.  Such a directory is
-       deemed to have mode 0555, allowing access  by  any  user.   A
-       directory  can  only  be opened for reading (OREAD).  Devopen
-       returns the channel c on success.   Last,  it  sets  the  bit
-       COPEN  in  Chan.flag  to mark c as open.  This convention can
-       always be relied upon by the driver's close function to  tell
-       if  an open succeeded.  On the otherhand, if the open request
-       was unsuccessful, devopen raises an  appropriate  error(10.2)
-       and does not return.
+Devbread  returns a Block (see allocb(10.2)) containing up to
+n bytes read, using devtab[c->type]->read, from c starting at
+the  given  offset.   The  read pointer in the returned Block
+points to the start of the data; the write pointer points  to
+the next available byte.
 
-       Devbread  returns a Block (see allocb(10.2)) containing up to
-       n bytes read, using devtab[c->type]->read, from c starting at
-       the  given  offset.   The  read pointer in the returned Block
-       points to the start of the data; the write pointer points  to
-       the next available byte.
+Devbwrite  writes  the  data in Block bp to the file c at the
+given     offset,     using      the      write      function
+devtab[c->type]->write.   It  then  frees  the  block list bp
+before returning the number of bytes written.
 
-       Devbwrite  writes  the  data in Block bp to the file c at the
-       given     offset,     using      the      write      function
-       devtab[c->type]->write.   It  then  frees  the  block list bp
-       before returning the number of bytes written.
+Most built-in devices do not allow create, remove or wstat on
+their  files.   Devcreate,  devremove  and devwstat are stubs
+that raise an error(10.2), Eperm.  They can be named directly
+in  a  device  driver's  device  switch (the Dev structure in
+/os/port/portdat.h: see dev(10.2)).
 
-       Most built-in devices do not allow create, remove or wstat on
-       their  files.   Devcreate,  devremove  and devwstat are stubs
-       that raise an error(10.2), Eperm.  They can be named directly
-       in  a  device  driver's  device  switch (the Dev structure in
-       /os/port/portdat.h: see dev(10.2)).
+Devreset, devinit and devshutdown are  also  stubs;  they  do
+nothing.  A device driver puts them in its Dev structure when
+it need take no action on device  reset,  initialisation,  or
+shut down.
 
-       Devreset, devinit and devshutdown are  also  stubs;  they  do
-       nothing.  A device driver puts them in its Dev structure when
-       it need take no action on device  reset,  initialisation,  or
-       shut down.
+Openmode  is  used  by a driver that does not use devopen, to
+check the open mode it receives in its open  routine.   Open‐
+mode  returns  mode  o,  the mode parameter to sys-open(2) or
+sys-create, shorn of OTRUNC and similar options, and  reduced
+to  one  of  OREAD,  OWRITE  or  ORDWR.  In particular, OEXEC
+becomes  OREAD  within  the  kernel.   Openmode   raises   an
+error(10.2)  Ebadarg instead of returning, if o is an invalid
+mode (eg, reserved bits set).
 
-       Openmode  is  used  by a driver that does not use devopen, to
-       check the open mode it receives in its open  routine.   Open‐
-       mode  returns  mode  o,  the mode parameter to sys-open(2) or
-       sys-create, shorn of OTRUNC and similar options, and  reduced
-       to  one  of  OREAD,  OWRITE  or  ORDWR.  In particular, OEXEC
-       becomes  OREAD  within  the  kernel.   Openmode   raises   an
-       error(10.2)  Ebadarg instead of returning, if o is an invalid
-       mode (eg, reserved bits set).
+== source
+/emu/port/dev.c
+/os/port/dev.c
 
-SOURCE
-       /emu/port/dev.c
-       /os/port/dev.c
+== see ALSO
+allocb(10.2), eve(10.2), qio(10.2)
 
-SEE ALSO
-       allocb(10.2), eve(10.2), qio(10.2)
-
-                                                     DEVATTACH(10.2)

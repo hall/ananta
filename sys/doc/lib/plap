@@ -1,94 +1,87 @@
-PLAP(3)               Library Functions Manual               PLAP(3)
+= plap: USR/3Com Edgeserver packet bus link access protocol
 
-NAME
-       plap - USR/3Com Edgeserver packet bus link access protocol
+    bind -a '#X' /net
 
-SYNOPSIS
-       bind -a '#X' /net
+    /net/plap/clone
+    /net/plap/n/ctl
+    /net/plap/n/data
+    /net/plap/n/local
+    /net/plap/n/remote
+    /net/plap/n/status
+    /net/plap/n/listen
 
-       /net/plap/clone
-       /net/plap/n/ctl
-       /net/plap/n/data
-       /net/plap/n/local
-       /net/plap/n/remote
-       /net/plap/n/status
-       /net/plap/n/listen
+The  plap driver serves a three-level directory giving access
+to the link level protocol used by an Edgeserver card to com‐
+municate  with  other  cards in a USR/3Com chassis.  On first
+attach (usually by a bind(1) to /net) the driver opens a con‐
+nection to the packet bus device #Y described in pbus(3).  It
+multiplexes that connection using a specialised member of the
+LAP family of protocols.
 
-DESCRIPTION
-       The  plap driver serves a three-level directory giving access
-       to the link level protocol used by an Edgeserver card to com‐
-       municate  with  other  cards in a USR/3Com chassis.  On first
-       attach (usually by a bind(1) to /net) the driver opens a con‐
-       nection to the packet bus device #Y described in pbus(3).  It
-       multiplexes that connection using a specialised member of the
-       LAP family of protocols.
+The  top  level  directory contains a single directory naming
+the protocol, plap.  It contains a clone file and  a  set  of
+conversation  directories numbered from 0 to 127; only active
+conversation directories are present.
 
-       The  top  level  directory contains a single directory naming
-       the protocol, plap.  It contains a clone file and  a  set  of
-       conversation  directories numbered from 0 to 127; only active
-       conversation directories are present.
+Opening the clone file allocates a new conversation directory
+n.   The file descriptor will point to the control file, ctl,
+of that directory.  Reading the file returns  a  text  string
+giving the conversation number.
 
-       Opening the clone file allocates a new conversation directory
-       n.   The file descriptor will point to the control file, ctl,
-       of that directory.  Reading the file returns  a  text  string
-       giving the conversation number.
+Each  conversation directory contains six files.  The connec‐
+tion is controlled by writing text strings to the  ctl  file.
+Once  a  connection  has  been established, data is exchanged
+with the remote peer by reading and writing the data file.
 
-       Each  conversation directory contains six files.  The connec‐
-       tion is controlled by writing text strings to the  ctl  file.
-       Once  a  connection  has  been established, data is exchanged
-       with the remote peer by reading and writing the data file.
+A plap address has the form:
 
-       A plap address has the form:
+       [ slot.  ] chan!sap
 
-              [ slot.  ] chan!sap
+where slot is a chassis slot number, chan is a logical  chan‐
+nel  (eg, a modem number), and sap is a number representing a
+`service access point'.
 
-       where slot is a chassis slot number, chan is a logical  chan‐
-       nel  (eg, a modem number), and sap is a number representing a
-       `service access point'.
+The following control messages are supported:
 
-       The following control messages are supported:
+connect remoteaddr [ localaddr ]
+       Make a connection to the given remote address (of  the
+       form  given  above).  If a local address is not speci‐
+       fied, the system will assign an unused address dynami‐
+       cally  (the  local  chassis  slot  number is of course
+       fixed).  Connect fails if the  connection  is  already
+       announced  or  connected,  or  localaddr is already in
+       use.
 
-       connect remoteaddr [ localaddr ]
-              Make a connection to the given remote address (of  the
-              form  given  above).  If a local address is not speci‐
-              fied, the system will assign an unused address dynami‐
-              cally  (the  local  chassis  slot  number is of course
-              fixed).  Connect fails if the  connection  is  already
-              announced  or  connected,  or  localaddr is already in
-              use.
+announceaddress
+       Set the local address to address and  accept  incoming
+       calls  to  that  address.  If no address is specified,
+       all  incoming  calls  to  addresses   not   explicitly
+       announced   will   be  accepted  by  this  connection.
+       Announce fails if the connection is already  announced
+       or  connected,  or  the  local  address  specified  is
+       already in use.
 
-       announceaddress
-              Set the local address to address and  accept  incoming
-              calls  to  that  address.  If no address is specified,
-              all  incoming  calls  to  addresses   not   explicitly
-              announced   will   be  accepted  by  this  connection.
-              Announce fails if the connection is already  announced
-              or  connected,  or  the  local  address  specified  is
-              already in use.
+The remote and local  files  contain  the  remote  and  local
+addresses  for  the  connection  in  the  full  address  form
+slot.chan!sap.  The status file returns  a  line  giving  the
+directory  name, number of active opens, and the state of the
+connection.
 
-       The remote and local  files  contain  the  remote  and  local
-       addresses  for  the  connection  in  the  full  address  form
-       slot.chan!sap.  The status file returns  a  line  giving  the
-       directory  name, number of active opens, and the state of the
-       connection.
+A process listens for incoming calls by  opening  the  listen
+file  using  sys-open(2).   The  open will block until a call
+arrives, when it will return a file descriptor  open  on  the
+ctl  file of the newly accepted connection, which can be read
+to find the directory number and thus the other files.
 
-       A process listens for incoming calls by  opening  the  listen
-       file  using  sys-open(2).   The  open will block until a call
-       arrives, when it will return a file descriptor  open  on  the
-       ctl  file of the newly accepted connection, which can be read
-       to find the directory number and thus the other files.
+The device follows the conventions that allow dial,  announce
+and  listen of dial(2) to do the work needed to establish and
+manipulate network connections.
 
-       The device follows the conventions that allow dial,  announce
-       and  listen of dial(2) to do the work needed to establish and
-       manipulate network connections.
+== source
+/os/pc/devplap.c
 
-SOURCE
-       /os/pc/devplap.c
+== see ALSO
+pbus(3)
 
-SEE ALSO
-       pbus(3)
-
-BUGS
-       The driver cannot be included in the public distribution.
-
-                                                             PLAP(3)
+== bugs
+The driver cannot be included in the public distribution.

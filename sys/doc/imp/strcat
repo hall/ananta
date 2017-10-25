@@ -1,85 +1,78 @@
-STRCAT(10.2)                                            STRCAT(10.2)
+= strcat,  strcmp,  strncmp,  strcpy,  strncpy, strlen, strchr, strrchr, strdup, strstr: string operations
 
-NAME
-       strcat,  strcmp,  strncmp,  strcpy,  strncpy, strlen, strchr,
-       strrchr, strdup, strstr - string operations
+    char* strcat(char *s1, char *s2)
 
-SYNOPSIS
-       char* strcat(char *s1, char *s2)
+    int   strcmp(char *s1, char *s2)
 
-       int   strcmp(char *s1, char *s2)
+    int   strncmp(char *s1, char *s2, long n)
 
-       int   strncmp(char *s1, char *s2, long n)
+    char* strcpy(char *s1, char *s2)
 
-       char* strcpy(char *s1, char *s2)
+    char* strncpy(char *s1, char *s2, long n)
 
-       char* strncpy(char *s1, char *s2, long n)
+    long  strlen(char *s)
 
-       long  strlen(char *s)
+    char* strchr(char *s, char c)
 
-       char* strchr(char *s, char c)
+    char* strrchr(char *s, char c)
 
-       char* strrchr(char *s, char c)
+    char* strdup(char *s)
 
-       char* strdup(char *s)
+    char* strstr(char *s1, char *s2)
 
-       char* strstr(char *s1, char *s2)
+The arguments s1, s2 and s point to null-terminated  strings.
+The  functions  strcat,  strcpy,  and  strncpy  all alter s1.
+These functions do  not  check  for  overflow  of  the  array
+pointed to by s1.
 
-DESCRIPTION
-       The arguments s1, s2 and s point to null-terminated  strings.
-       The  functions  strcat,  strcpy,  and  strncpy  all alter s1.
-       These functions do  not  check  for  overflow  of  the  array
-       pointed to by s1.
+Strcat  appends  a copy of string s2 to the end of string s1,
+and returns a pointer to the null-terminated result.
 
-       Strcat  appends  a copy of string s2 to the end of string s1,
-       and returns a pointer to the null-terminated result.
+Strcmp compares its arguments and  returns  an  integer  less
+than, equal to, or greater than 0, according as s1 is lexico‐
+graphically less than, equal to, or greater than s2.  Strncmp
+makes  the same comparison but examines at most n bytes.  The
+comparisons are made with unsigned bytes.
 
-       Strcmp compares its arguments and  returns  an  integer  less
-       than, equal to, or greater than 0, according as s1 is lexico‐
-       graphically less than, equal to, or greater than s2.  Strncmp
-       makes  the same comparison but examines at most n bytes.  The
-       comparisons are made with unsigned bytes.
+Strcpy copies string s2 to s1, stopping after the  null  byte
+has  been copied.  Strncpy copies exactly n bytes, truncating
+s2 or adding null bytes to s1 if necessary.  The result  will
+not  be  null-terminated  if  the  length of s2 is n or more.
+Each function returns s1.
 
-       Strcpy copies string s2 to s1, stopping after the  null  byte
-       has  been copied.  Strncpy copies exactly n bytes, truncating
-       s2 or adding null bytes to s1 if necessary.  The result  will
-       not  be  null-terminated  if  the  length of s2 is n or more.
-       Each function returns s1.
+Strlen returns the number of bytes in s,  not  including  the
+terminating null byte.
 
-       Strlen returns the number of bytes in s,  not  including  the
-       terminating null byte.
+Strchr (strrchr) returns a pointer to the first (last) occur‐
+rence of byte c in string s, or if c does not  occur  in  the
+string.   The null byte terminating a string is considered to
+be part of the string.
 
-       Strchr (strrchr) returns a pointer to the first (last) occur‐
-       rence of byte c in string s, or if c does not  occur  in  the
-       string.   The null byte terminating a string is considered to
-       be part of the string.
+Strdup returns a pointer to a distinct copy of the  null-ter‐
+minated string s in space obtained from malloc(10.2) or if no
+space can be obtained.
 
-       Strdup returns a pointer to a distinct copy of the  null-ter‐
-       minated string s in space obtained from malloc(10.2) or if no
-       space can be obtained.
+Strstr returns a pointer to the first occurrence of s2  as  a
+substring  of  s1,  or 0 if there is none.  If s2 is the null
+string, strstr returns s1.
 
-       Strstr returns a pointer to the first occurrence of s2  as  a
-       substring  of  s1,  or 0 if there is none.  If s2 is the null
-       string, strstr returns s1.
+== source
+/libkern/str*.c
+/libkern/str*-objtype.c
+/lib9/strdup.c
 
-SOURCE
-       /libkern/str*.c
-       /libkern/str*-objtype.c
-       /lib9/strdup.c
+== see ALSO
+memory(10.2), rune(10.2)
 
-SEE ALSO
-       memory(10.2), rune(10.2)
+== bugs
+These routines know nothing about UTF.  Use the  routines  in
+rune(10.2)  as  appropriate.  Note, however, that the defini‐
+tion of UTF guarantees that strcmp compares UTF strings  cor‐
+rectly.
 
-BUGS
-       These routines know nothing about UTF.  Use the  routines  in
-       rune(10.2)  as  appropriate.  Note, however, that the defini‐
-       tion of UTF guarantees that strcmp compares UTF strings  cor‐
-       rectly.
+The  outcome  of  overlapping  moves varies among implementa‐
+tions.
 
-       The  outcome  of  overlapping  moves varies among implementa‐
-       tions.
+Note the absence of ANSI C's strncat, strpbrk, strspn,  strc‐
+spn and strtok, but the presence of strdup.
 
-       Note the absence of ANSI C's strncat, strpbrk, strspn,  strc‐
-       spn and strtok, but the presence of strdup.
-
-                                                        STRCAT(10.2)

@@ -1,71 +1,64 @@
-MATH-LINALG(2)           System Calls Manual          MATH-LINALG(2)
+= Math: dot, norm1, norm2, iamax, gemm, sort: linear algebra primitives
 
-NAME
-       Math:  dot,  norm1, norm2, iamax, gemm, sort - linear algebra
-       primitives
+    include   "math.m";
+    math := load Math Math->PATH;
 
-SYNOPSIS
-       include   "math.m";
-       math := load Math Math->PATH;
+    dot: fn(x, y: array of real): real;
+    norm1, norm2: fn(x: array of real): real;
+    iamax: fn(x: array of real): int;
+    gemm: fn(transa, transb: int,  # upper case N or T
+              m, n, k: int, alpha: real,
+              a: array of real, lda: int,
+              b: array of real, ldb: int, beta: real,
+              c: array of real, ldc: int);
+    
+    sort: fn(x: array of real, p: array of int);
 
-       dot: fn(x, y: array of real): real;
-       norm1, norm2: fn(x: array of real): real;
-       iamax: fn(x: array of real): int;
-       gemm: fn(transa, transb: int,  # upper case N or T
-                 m, n, k: int, alpha: real,
-                 a: array of real, lda: int,
-                 b: array of real, ldb: int, beta: real,
-                 c: array of real, ldc: int);
+These routines implement the basic functions of linear  alge‐
+bra.  The standard vector inner product and norms are defined
+as follows:
 
-       sort: fn(x: array of real, p: array of int);
+       dot(x , y) = sum(x[i]*y[i])
 
-DESCRIPTION
-       These routines implement the basic functions of linear  alge‐
-       bra.  The standard vector inner product and norms are defined
-       as follows:
+       norm1(x) = sum(fabs(x[i ]))
 
-              dot(x , y) = sum(x[i]*y[i])
+       norm2(x) = sqrt(dot(x , x))
 
-              norm1(x) = sum(fabs(x[i ]))
+For the infinity norm,  the  function  iamax(x)  computes  an
+integer  i  such  that  fabs(x[i]) is maximal.  These are all
+standard BLAS (basic linear algebra subroutines) except  that
+in  Inferno  they apply only to contiguous (unit stride) vec‐
+tors.
 
-              norm2(x) = sqrt(dot(x , x))
+We assume the convention that  matrices  are  represented  as
+singly-subscripted arrays with Fortran storage order.  So for
+an m by n matrix A we use loops  with  0≤i<m  and  0≤j<n  and
+access A[i+m*j].
 
-       For the infinity norm,  the  function  iamax(x)  computes  an
-       integer  i  such  that  fabs(x[i]) is maximal.  These are all
-       standard BLAS (basic linear algebra subroutines) except  that
-       in  Inferno  they apply only to contiguous (unit stride) vec‐
-       tors.
+Rather  than provide the huge number of entry points in BLAS2
+and BLAS3, Inferno provides the  matrix  multiply  primitive,
+gemm, defined by
 
-       We assume the convention that  matrices  are  represented  as
-       singly-subscripted arrays with Fortran storage order.  So for
-       an m by n matrix A we use loops  with  0≤i<m  and  0≤j<n  and
-       access A[i+m*j].
+    A = α*A'*B' + β*C
 
-       Rather  than provide the huge number of entry points in BLAS2
-       and BLAS3, Inferno provides the  matrix  multiply  primitive,
-       gemm, defined by
+where the apostrophes indicate an optional transposition.  As
+shown by the work of Kagstrom, Ling, and Van Loan, the  other
+BLAS functionality can be built efficiently on top of gemm.
 
-           A = α*A'*B' + β*C
+Matrix  a'  is m by k, matrix b' is k by n, and matrix c is m
+by n.  Here a' means a (a') if transa  is  the  constant  'N'
+('T'),  and  similarly  for b'.  The sizes m, n, and k denote
+the `active' part of the matrix.  The  parameters  lda,  ldb,
+and  ldc  denote the `leading dimension' or size for purposes
+of indexing.  So to loop over c  use  loops  with  0≤i<m  and
+0≤j<n and access a[i+ldc*j].
 
-       where the apostrophes indicate an optional transposition.  As
-       shown by the work of Kagstrom, Ling, and Van Loan, the  other
-       BLAS functionality can be built efficiently on top of gemm.
+The sorting function sort(x,p) updates a 0-origin permutation
+p so that x[p[i]] ≤ x[p[i+1]], leaving x unchanged.
 
-       Matrix  a'  is m by k, matrix b' is k by n, and matrix c is m
-       by n.  Here a' means a (a') if transa  is  the  constant  'N'
-       ('T'),  and  similarly  for b'.  The sizes m, n, and k denote
-       the `active' part of the matrix.  The  parameters  lda,  ldb,
-       and  ldc  denote the `leading dimension' or size for purposes
-       of indexing.  So to loop over c  use  loops  with  0≤i<m  and
-       0≤j<n and access a[i+ldc*j].
+== source
+/libinterp/math.c
 
-       The sorting function sort(x,p) updates a 0-origin permutation
-       p so that x[p[i]] ≤ x[p[i+1]], leaving x unchanged.
+== see ALSO
+math-intro(2)
 
-SOURCE
-       /libinterp/math.c
-
-SEE ALSO
-       math-intro(2)
-
-                                                      MATH-LINALG(2)

@@ -1,53 +1,46 @@
-POINTER(3)            Library Functions Manual            POINTER(3)
+= pointer: mouse and stylus interface
 
-NAME
-       pointer - mouse and stylus interface
+    bind -a #m /dev
 
-SYNOPSIS
-       bind -a #m /dev
+    /dev/cursor
+    /dev/pointer
 
-       /dev/cursor
-       /dev/pointer
+The  pointer  device  is the interface to input from a mouse,
+stylus, or some other device for pointing at positions  on  a
+display.  On some platforms, the pointer is associated with a
+cursor on the display,  that  is  displayed  at  the  current
+pointer  position.   There  often are buttons associated with
+the pointer, whether on the  pointing  device  or  elsewhere.
+For  instance,  some of the buttons on a PDA might be associ‐
+ated with the stylus not a keypad, to allow  modification  of
+stylus  actions  when  there are are no buttons on the stylus
+itself.  In the hosted environment of emu(1), the pointer  is
+associated with the host system's own pointing device.
 
-DESCRIPTION
-       The  pointer  device  is the interface to input from a mouse,
-       stylus, or some other device for pointing at positions  on  a
-       display.  On some platforms, the pointer is associated with a
-       cursor on the display,  that  is  displayed  at  the  current
-       pointer  position.   There  often are buttons associated with
-       the pointer, whether on the  pointing  device  or  elsewhere.
-       For  instance,  some of the buttons on a PDA might be associ‐
-       ated with the stylus not a keypad, to allow  modification  of
-       stylus  actions  when  there are are no buttons on the stylus
-       itself.  In the hosted environment of emu(1), the pointer  is
-       associated with the host system's own pointing device.
+Reading the pointer file returns the current pointer position
+and the state of any buttons  associated  with  the  pointer.
+The  read  blocks  until the state has changed since the last
+read.  Each read returns a 49 byte record:
 
-       Reading the pointer file returns the current pointer position
-       and the state of any buttons  associated  with  the  pointer.
-       The  read  blocks  until the state has changed since the last
-       read.  Each read returns a 49 byte record:
+       mx y buttons msec
 
-              mx y buttons msec
+Each record has the letter m  immedlately  followed  by  four
+11-character  decimal  numbers, each number ended by a blank.
+X and y give the coordinates of the pointer in display  coor‐
+dinates;  the  value buttons has bit (1<<b) set when button b
+is down; and msec is a time stamp in milliseconds.
 
-       Each record has the letter m  immedlately  followed  by  four
-       11-character  decimal  numbers, each number ended by a blank.
-       X and y give the coordinates of the pointer in display  coor‐
-       dinates;  the  value buttons has bit (1<<b) set when button b
-       is down; and msec is a time stamp in milliseconds.
+Writing a record of the above form to pointer moves the  dis‐
+played cursor to the given x and y position; buttons and msec
+are ignored.
 
-       Writing a record of the above form to pointer moves the  dis‐
-       played cursor to the given x and y position; buttons and msec
-       are ignored.
+Writing an image(6) file to the cursor file sets the image of
+the  cursor  on the display.  Reading cursor returns the cur‐
+rent cursor image, again in image(6) format.
 
-       Writing an image(6) file to the cursor file sets the image of
-       the  cursor  on the display.  Reading cursor returns the cur‐
-       rent cursor image, again in image(6) format.
+== source
+/emu/port/devpointer.c
+/os/port/devpointer.c
 
-SOURCE
-       /emu/port/devpointer.c
-       /os/port/devpointer.c
-
-SEE ALSO
-       wm(1), draw-intro(2), image(6)
-
-                                                          POINTER(3)
+== see ALSO
+wm(1), draw-intro(2), image(6)

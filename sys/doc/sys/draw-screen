@@ -1,86 +1,80 @@
-DRAW-SCREEN(2)           System Calls Manual          DRAW-SCREEN(2)
+= Screen: windows and subwindows on a display
 
-NAME
-       Screen - windows and subwindows on a display
+    include   "draw.m";
+    draw := load Draw Draw->PATH;
 
-SYNOPSIS
-       include   "draw.m";
-       draw := load Draw Draw->PATH;
+    Screen: adt
+    {
+      id:        int;
+      image:     ref Image;
+      fill:      ref Image;
+      display:   ref Display;
+    
+      allocate:  fn(image, fill: ref Image, public: int): ref Screen;
+      newwindow: fn(screen: self ref Screen, r: Rect,
+                    backing:int, rgba: int): ref Image;
+      top:       fn(screen: self ref Screen, wins: array of ref Image);
+    };
 
-       Screen: adt
-       {
-         id:        int;
-         image:     ref Image;
-         fill:      ref Image;
-         display:   ref Display;
+A  Screen is the data structure representing a set of windows
+visible on a particular Image such as the display or a parent
+window.
 
-         allocate:  fn(image, fill: ref Image, public: int): ref Screen;
-         newwindow: fn(screen: self ref Screen, r: Rect,
-                       backing:int, rgba: int): ref Image;
-         top:       fn(screen: self ref Screen, wins: array of ref Image);
-       };
+id        When  a  Screen  object  is allocated (see allocate
+          below), the system assigns it a unique integer, id.
+          It  may  be  declared  ``public'' and accessible to
+          arbitrary processes and machines with access to the
+          screen's  Display.   The id value may be used as an
+          argument  to  Display.publicscreen;  see  draw-dis‐
+          play(2).
 
-DESCRIPTION
-       A  Screen is the data structure representing a set of windows
-       visible on a particular Image such as the display or a parent
-       window.
+fill      When  windows are deleted from a screen, the system
+          uses the fill image to repaint  the  screen's  base
+          image.
 
-       id        When  a  Screen  object  is allocated (see allocate
-                 below), the system assigns it a unique integer, id.
-                 It  may  be  declared  ``public'' and accessible to
-                 arbitrary processes and machines with access to the
-                 screen's  Display.   The id value may be used as an
-                 argument  to  Display.publicscreen;  see  draw-dis‐
-                 play(2).
+image     The image upon which the windows appear.
 
-       fill      When  windows are deleted from a screen, the system
-                 uses the fill image to repaint  the  screen's  base
-                 image.
+display   The display upon which the screen resides.
 
-       image     The image upon which the windows appear.
+allocate(image, fill, public)
+          Allocate  makes  a  new  Screen  object.  The image
+          argument provides the base image on which the  win‐
+          dows  will be made.  The fill argument provides the
+          Screen.fill image.  Allocate does  not  affect  the
+          contents  of image; it may be necessary after allo‐
+          cation to paint the base image with fill.
 
-       display   The display upon which the screen resides.
+          Using a non-zero public argument allocates a public
+          screen;  zero  requests  a  private screen.  Public
+          screens may be  attached  by  any  process  on  any
+          machine  with  access to the Display upon which the
+          screen is allocated, enabling remote  processes  to
+          create  windows on the screen.  Knowing only the id
+          field of the original Screen,  the  remote  process
+          can   call  the  Display.publicscreen  function  to
+          acquire a handle to the screen.  The image and fill
+          fields  of  a Screen obtained this way are nil, but
+          they are not needed for ordinary window management.
 
-       allocate(image, fill, public)
-                 Allocate  makes  a  new  Screen  object.  The image
-                 argument provides the base image on which the  win‐
-                 dows  will be made.  The fill argument provides the
-                 Screen.fill image.  Allocate does  not  affect  the
-                 contents  of image; it may be necessary after allo‐
-                 cation to paint the base image with fill.
+screen.newwindow(r, backing, rgba)
+          Allocates a window on the display at the  specified
+          rectangle   with   the   background   colour  rgba,
+          expressed in 32-bit RGBA format; the  return  value
+          is  an  Image that may be used like any other.  The
+          backing parameter  can  be  Draw->Refbackup,  which
+          provides  backing  store to store obscured parts of
+          the window when necessary, and is used by the  win‐
+          dow  manager  and  its  clients;  or Draw->Refnone,
+          which provides no refresh, and is used for  windows
+          that  are  transient,  or  are already protected by
+          backing store.
 
-                 Using a non-zero public argument allocates a public
-                 screen;  zero  requests  a  private screen.  Public
-                 screens may be  attached  by  any  process  on  any
-                 machine  with  access to the Display upon which the
-                 screen is allocated, enabling remote  processes  to
-                 create  windows on the screen.  Knowing only the id
-                 field of the original Screen,  the  remote  process
-                 can   call  the  Display.publicscreen  function  to
-                 acquire a handle to the screen.  The image and fill
-                 fields  of  a Screen obtained this way are nil, but
-                 they are not needed for ordinary window management.
+screen.top(wins)
+          Top organizes a  group  of  windows  on  a  screen.
+          Given  wins,  an  array of window images, it places
+          the wins[0] element  at  the  top,  wins[1]  behind
+          that,  and  so on, with the last element of wins in
+          front of the all the windows on the screen  not  in
+          wins.  Images in the array must be on the specified
+          screen (nil elements are ignored).
 
-       screen.newwindow(r, backing, rgba)
-                 Allocates a window on the display at the  specified
-                 rectangle   with   the   background   colour  rgba,
-                 expressed in 32-bit RGBA format; the  return  value
-                 is  an  Image that may be used like any other.  The
-                 backing parameter  can  be  Draw->Refbackup,  which
-                 provides  backing  store to store obscured parts of
-                 the window when necessary, and is used by the  win‐
-                 dow  manager  and  its  clients;  or Draw->Refnone,
-                 which provides no refresh, and is used for  windows
-                 that  are  transient,  or  are already protected by
-                 backing store.
-
-       screen.top(wins)
-                 Top organizes a  group  of  windows  on  a  screen.
-                 Given  wins,  an  array of window images, it places
-                 the wins[0] element  at  the  top,  wins[1]  behind
-                 that,  and  so on, with the last element of wins in
-                 front of the all the windows on the screen  not  in
-                 wins.  Images in the array must be on the specified
-                 screen (nil elements are ignored).
-
-                                                      DRAW-SCREEN(2)

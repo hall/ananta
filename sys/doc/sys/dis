@@ -1,336 +1,330 @@
-DIS(2)                   System Calls Manual                  DIS(2)
-
-NAME
-       dis - read Dis object files
-
-SYNOPSIS
-       include "dis.m";
-       dis := load Dis Dis->PATH;
-
-       Inst: adt
-       {
-            op:       int;
-            addr:     int;
-            mid:      int;
-            src:      int;
-            dst:      int;
-       };
-
-       Type: adt
-       {
-            size:     int;
-            map:      array of byte;
-       };
-
-       Data: adt
-       {
-            op:  int;      # encoded op
-            n:   int;      # number of elements
-            off: int;      # byte offset in data space
-            pick {
-            Zero =>        # DEFZ
-            Bytes =>       # DEFB
-                 bytes:    array of byte;
-            Words =>       # DEFW
-                 words:    array of int;
-            String =>      # DEFS
-                 str: string;
-            Reals =>       # DEFF
-                 reals:    array of real;
-            Array =>       # DEFA
-                 typex:    int;
-                 length:   int;
-            Aindex =>      # DIND
-                 index:    int;
-            Arestore =>    # DAPOP
-            Bigs =>        # DEFL
-                 bigs:          array of big;
-            }
-       };
-
-       Link: adt
-       {
-            pc:       int;
-            desc:     int;
-            sig:      int;
-            name:     string;
-       };
-
-       Import: adt
-       {
-            sig: int;
-            name:     string;
-       };
-
-       Except: adt
-       {
-            s:   string;
-            pc:  int;
-       };
-
-       Handler: adt
-       {
-            pc1: int;
-            pc2: int;
-            eoff:     int;
-            ne:  int;
-            t:   ref Type;
-            etab:     array of ref Except;
-       };
-
-       Mod: adt
-       {
-            name:     string;
-            srcpath:  string;
-
-            magic:    int;
-            rt:       int;
-            ssize:    int;
-            isize:    int;
-            dsize:    int;
-            tsize:    int;
-            lsize:    int;
-            entry:    int;
-            entryt:   int;
-
-            inst:     array of ref Inst;
-            types:    array of ref Type;
-            data:     list of ref Data;
-            links:    array of ref Link;
-            imports:  array of array of ref Import;
-            handlers: array of ref Handler;
+= dis: read Dis object files
+
+    include "dis.m";
+    dis := load Dis Dis->PATH;
+
+    Inst: adt
+    {
+         op:       int;
+         addr:     int;
+         mid:      int;
+         src:      int;
+         dst:      int;
+    };
+
+    Type: adt
+    {
+         size:     int;
+         map:      array of byte;
+    };
+
+    Data: adt
+    {
+         op:  int;      # encoded op
+         n:   int;      # number of elements
+         off: int;      # byte offset in data space
+         pick {
+         Zero =>        # DEFZ
+         Bytes =>       # DEFB
+              bytes:    array of byte;
+         Words =>       # DEFW
+              words:    array of int;
+         String =>      # DEFS
+              str: string;
+         Reals =>       # DEFF
+              reals:    array of real;
+         Array =>       # DEFA
+              typex:    int;
+              length:   int;
+         Aindex =>      # DIND
+              index:    int;
+         Arestore =>    # DAPOP
+         Bigs =>        # DEFL
+              bigs:          array of big;
+         }
+    };
+    
+    Link: adt
+    {
+         pc:       int;
+         desc:     int;
+         sig:      int;
+         name:     string;
+    };
+    
+    Import: adt
+    {
+         sig: int;
+         name:     string;
+    };
+    
+    Except: adt
+    {
+         s:   string;
+         pc:  int;
+    };
+    
+    Handler: adt
+    {
+         pc1: int;
+         pc2: int;
+         eoff:     int;
+         ne:  int;
+         t:   ref Type;
+         etab:     array of ref Except;
+    };
+    
+    Mod: adt
+    {
+         name:     string;
+         srcpath:  string;
+    
+         magic:    int;
+         rt:       int;
+         ssize:    int;
+         isize:    int;
+         dsize:    int;
+         tsize:    int;
+         lsize:    int;
+         entry:    int;
+         entryt:   int;
+
+         inst:     array of ref Inst;
+         types:    array of ref Type;
+         data:     list of ref Data;
+         links:    array of ref Link;
+         imports:  array of array of ref Import;
+         handlers: array of ref Handler;
+    
+         sign:     array of byte;
+    };
+    
+    init:     fn();
+    loadobj:  fn(file: string): (ref Mod, string);
+    op2s:     fn(op: int): string;
+    inst2s:   fn(i: ref Inst): string;
+    
+The Dis module decodes the contents of a Dis object file con‐
+taining a single module, of the  format  defined  by  dis(6).
+The  module  defines many constants, giving symbolic names to
+Dis instruction codes, addressing mode masks, magic  numbers,
+and other bits of the object code.
 
-            sign:     array of byte;
-       };
+Init  must be called before any other function, to initialise
+the module.
 
-       init:     fn();
-       loadobj:  fn(file: string): (ref Mod, string);
-       op2s:     fn(op: int): string;
-       inst2s:   fn(i: ref Inst): string;
+Loadobj reads a Dis object file from file, and returns a ref‐
+erence to a Mod adt that represents the module's contents, as
+the first element of the tuple; the  string  element  of  the
+tuple  is nil.  On error, the string element contains a diag‐
+nostic, and the reference is nil.
 
-DESCRIPTION
-       The Dis module decodes the contents of a Dis object file con‐
-       taining a single module, of the  format  defined  by  dis(6).
-       The  module  defines many constants, giving symbolic names to
-       Dis instruction codes, addressing mode masks, magic  numbers,
-       and other bits of the object code.
+Op2s returns the assembly-language representation, as used by
+asm(1),  of the Dis operation code op.  It returns the string
+`OPop' if op does not correspond to a known operation code.
 
-       Init  must be called before any other function, to initialise
-       the module.
+Inst2s returns a string corresponding to a disassembly of Dis
+instruction i, including addressing modes.
 
-       Loadobj reads a Dis object file from file, and returns a ref‐
-       erence to a Mod adt that represents the module's contents, as
-       the first element of the tuple; the  string  element  of  the
-       tuple  is nil.  On error, the string element contains a diag‐
-       nostic, and the reference is nil.
+The module defines integer constants giving symbolic names to
+the Dis instruction codes, all of the form Iname  where  name
+is the name of the instruction, all in upper case:
 
-       Op2s returns the assembly-language representation, as used by
-       asm(1),  of the Dis operation code op.  It returns the string
-       `OPop' if op does not correspond to a known operation code.
+       INOP, IALT, INBALT, ...  INEWZ, INEWAZ, IRAISE
 
-       Inst2s returns a string corresponding to a disassembly of Dis
-       instruction i, including addressing modes.
+The  name  MAXDIS  is  also  defined; it has the value of the
+first unassigned Dis operation code.
 
-       The module defines integer constants giving symbolic names to
-       the Dis instruction codes, all of the form Iname  where  name
-       is the name of the instruction, all in upper case:
+Most of the members of the adt types have an  obvious  inter‐
+pretation on reference to dis(6).
 
-              INOP, IALT, INBALT, ...  INEWZ, INEWAZ, IRAISE
+The  adt  Mod represents a single module.  It contains values
+extracted from the module's header, and references to  struc‐
+tures representing the contents of the Dis file's code, data,
+type and external linkage sections:
 
-       The  name  MAXDIS  is  also  defined; it has the value of the
-       first unassigned Dis operation code.
+magic  The constant XMAGIC (unsigned Dis module) or the  con‐
+       stant SMAGIC (signed Dis module).
 
-       Most of the members of the adt types have an  obvious  inter‐
-       pretation on reference to dis(6).
+sign   If  magic is SMAGIC, the sign field contains the bytes
+       in the signature section of the module header.  Other‐
+       wise, there is no signature and sign is nil.
 
-       The  adt  Mod represents a single module.  It contains values
-       extracted from the module's header, and references to  struc‐
-       tures representing the contents of the Dis file's code, data,
-       type and external linkage sections:
+name   The name of the implementation module.
 
-       magic  The constant XMAGIC (unsigned Dis module) or the  con‐
-              stant SMAGIC (signed Dis module).
+srcpath
+       The  source  of  the  dis file relative to the inferno
+       root.
 
-       sign   If  magic is SMAGIC, the sign field contains the bytes
-              in the signature section of the module header.  Other‐
-              wise, there is no signature and sign is nil.
+rt     Run-time options: a bit mask of the constants MUSTCOM‐
+       PILE, DONTCOMPILE and SHAREMP.
 
-       name   The name of the implementation module.
+ssize  Stack extent
 
-       srcpath
-              The  source  of  the  dis file relative to the inferno
-              root.
+isize  Number of instructions
 
-       rt     Run-time options: a bit mask of the constants MUSTCOM‐
-              PILE, DONTCOMPILE and SHAREMP.
+dsize  Size in bytes of the module's global data area
 
-       ssize  Stack extent
+tsize  Number of type descriptors
 
-       isize  Number of instructions
+lsize  Number of external linkage descriptors
 
-       dsize  Size in bytes of the module's global data area
+entry  PC (instruction offset) of the default entry point for
+       the module
 
-       tsize  Number of type descriptors
+entryt Index of the type descriptor for  the  module's  entry
+       point
 
-       lsize  Number of external linkage descriptors
+inst   Array  representing  the contents of the code segment;
+       length m.isize
 
-       entry  PC (instruction offset) of the default entry point for
-              the module
+types  Array of the module's type descriptors; length m.tsize
 
-       entryt Index of the type descriptor for  the  module's  entry
-              point
+data   list of data descriptors representing instructions for
+       creating the module's data segment
 
-       inst   Array  representing  the contents of the code segment;
-              length m.isize
+links  array  of  the  module's  external linkage descriptors
+       (for exported functions); length m.lsize
 
-       types  Array of the module's type descriptors; length m.tsize
+imports
+       an array of import descriptor tables,  one  table  for
+       each  module imported by this module. Each table is an
+       array of pairs giving the signature and name  of  each
+       function imported.
 
-       data   list of data descriptors representing instructions for
-              creating the module's data segment
+handlers
+       an  array  of  exception handlers used in this module.
+       Each handler consists of the range of pc's it  covers,
+       the  exception  structure offset within the frame, the
+       number of declared exceptions (as opposed to  strings)
+       in  the  handler,  the  type (if any) of any memory to
+       clear when the exception occurs and a table of  excep‐
+       tions.  The  latter  is  an  array containing pairs of
+       exceptions and pc values. The final entry gives the pc
+       to jump to in the '*' case or -1 if not applicable.
 
-       links  array  of  the  module's  external linkage descriptors
-              (for exported functions); length m.lsize
+The Type adt represents the value of a type descriptor:
 
-       imports
-              an array of import descriptor tables,  one  table  for
-              each  module imported by this module. Each table is an
-              array of pairs giving the signature and name  of  each
-              function imported.
+size   Size  in  bytes  of  the  object  represented  by this
+       descriptor
 
-       handlers
-              an  array  of  exception handlers used in this module.
-              Each handler consists of the range of pc's it  covers,
-              the  exception  structure offset within the frame, the
-              number of declared exceptions (as opposed to  strings)
-              in  the  handler,  the  type (if any) of any memory to
-              clear when the exception occurs and a table of  excep‐
-              tions.  The  latter  is  an  array containing pairs of
-              exceptions and pc values. The final entry gives the pc
-              to jump to in the '*' case or -1 if not applicable.
+map    Bitmap describing the  location  of  pointers  in  the
+       object (see dis(6))
 
-       The Type adt represents the value of a type descriptor:
+The Link adt represents the value of a link descriptor:
 
-       size   Size  in  bytes  of  the  object  represented  by this
-              descriptor
+name   Name of the exported function
 
-       map    Bitmap describing the  location  of  pointers  in  the
-              object (see dis(6))
+pc     Instruction  index in Mod.code of the function's entry
+       point
 
-       The Link adt represents the value of a link descriptor:
+desc   Index in Mod.types of the type  describing  the  func‐
+       tion's stack frame
 
-       name   Name of the exported function
+sig    Integer hash of the function's type signature
 
-       pc     Instruction  index in Mod.code of the function's entry
-              point
+The  Inst  adt  represents  a  single  Dis instruction in the
+instruction stream.  The member op  is  the  Dis  instruction
+code.  The member addr contains the addressing mode flags for
+middle,  source  and  destination  operands.   Constants  are
+defined to help unpack it.
 
-       desc   Index in Mod.types of the type  describing  the  func‐
-              tion's stack frame
+The  middle  operand  description is selected by the constant
+mask ARM:
 
-       sig    Integer hash of the function's type signature
+       i.addr & ARM
 
-       The  Inst  adt  represents  a  single  Dis instruction in the
-       instruction stream.  The member op  is  the  Dis  instruction
-       code.  The member addr contains the addressing mode flags for
-       middle,  source  and  destination  operands.   Constants  are
-       defined to help unpack it.
+The valid results and interpretation are as follows:
 
-       The  middle  operand  description is selected by the constant
-       mask ARM:
+       AXNON  No middle operand.
 
-              i.addr & ARM
+       AXIMM  $n
 
-       The valid results and interpretation are as follows:
+       AXINF  n(fp)
 
-              AXNON  No middle operand.
+       AXINM  n(mp)
 
-              AXIMM  $n
+The source operand's addressing mode is extracted as follows:
 
-              AXINF  n(fp)
+       (i.addr>>3)&AMASK
 
-              AXINM  n(mp)
+The following combinations are valid, where n is the value in
+i.src:
 
-       The source operand's addressing mode is extracted as follows:
+       AXXX   No operand
 
-              (i.addr>>3)&AMASK
+       AFP    The operand is n(fp)
 
-       The following combinations are valid, where n is the value in
-       i.src:
+       AMP    The operand is n(mp)
 
-              AXXX   No operand
+       AIMM   The operand is $n (ie, immediate literal n)
 
-              AFP    The operand is n(fp)
+       AIND|AFP
+              The operand is si(fi(fp))
 
-              AMP    The operand is n(mp)
+       AIND|AMP
+              The operand is si(fi(mp))
 
-              AIMM   The operand is $n (ie, immediate literal n)
+where  fi  is the offset for the first indirection, extracted
+from n:
 
-              AIND|AFP
-                     The operand is si(fi(fp))
+       (n>>16)&16rFFFF),
 
-              AIND|AMP
-                     The operand is si(fi(mp))
+and si  is  the  offset  for  the  second  indirection,  also
+extracted from n:
 
-       where  fi  is the offset for the first indirection, extracted
-       from n:
+       (n&16rFFFF).
 
-              (n>>16)&16rFFFF),
+The  destination  addressing mode is interpreted in a similar
+way, except that the addressing mode is extracted as follows:
 
-       and si  is  the  offset  for  the  second  indirection,  also
-       extracted from n:
+       (i.addr&AMASK)
 
-              (n&16rFFFF).
+and the value of the offset n is found in i.dst.  Fi  and  si
+are extracted from n as before.
 
-       The  destination  addressing mode is interpreted in a similar
-       way, except that the addressing mode is extracted as follows:
+Finally,  Data  adt  represents  a data item, which tells the
+system's module loader how to initialise part of the module's
+global data segment.  It has the following members:
 
-              (i.addr&AMASK)
+op     the encoded type and length; usually ignored: the pick
+       tag and n, below, usually suffice
 
-       and the value of the offset n is found in i.dst.  Fi  and  si
-       are extracted from n as before.
+n      the number of data values
 
-       Finally,  Data  adt  represents  a data item, which tells the
-       system's module loader how to initialise part of the module's
-       global data segment.  It has the following members:
+off    the byte offset of the first data value to initialise,
+       relative to the current loading base
 
-       op     the encoded type and length; usually ignored: the pick
-              tag and n, below, usually suffice
+The  alternatives  of  the pick select the correct variant to
+see the data values encoded in the object file as Limbo  val‐
+ues  of the correct type.  The interpretation is straightfor‐
+ward for the tags Bytes, Words, Bigs and  Reals:  the  corre‐
+sponding array members are arrays of n elements of the appro‐
+priate type.  The remaining cases are as follows:
 
-       n      the number of data values
+String The member str has the decoded representation  of  the
+       corresponding n data bytes from the object file.
 
-       off    the byte offset of the first data value to initialise,
-              relative to the current loading base
+Array  The  member  typex  is  the  index in Mod.types of the
+       array's type, and member length is its length.
 
-       The  alternatives  of  the pick select the correct variant to
-       see the data values encoded in the object file as Limbo  val‐
-       ues  of the correct type.  The interpretation is straightfor‐
-       ward for the tags Bytes, Words, Bigs and  Reals:  the  corre‐
-       sponding array members are arrays of n elements of the appro‐
-       priate type.  The remaining cases are as follows:
+Aindex This alternative can appear only following a value  of
+       Data.Array.   The  member  index  is an index into the
+       corresponding array as represented in the global  data
+       space, which determines a new loading base address for
+       subsequent Data items.  The previous base  address  is
+       stacked on an internal stack.
 
-       String The member str has the decoded representation  of  the
-              corresponding n data bytes from the object file.
+Arestore
+       Pop  the  address  from the internal address stack and
+       make that the current loading  address.   The  request
+       marks the end of a sequence of Data items initialising
+       an array.
 
-       Array  The  member  typex  is  the  index in Mod.types of the
-              array's type, and member length is its length.
+== source
+/appl/lib/dis.b
 
-       Aindex This alternative can appear only following a value  of
-              Data.Array.   The  member  index  is an index into the
-              corresponding array as represented in the global  data
-              space, which determines a new loading base address for
-              subsequent Data items.  The previous base  address  is
-              stacked on an internal stack.
+== see ALSO
+disdep(1), wm/rt in wm-misc(1), dis(6)
+"The Dis Virtual Machine", in Volume 2.
 
-       Arestore
-              Pop  the  address  from the internal address stack and
-              make that the current loading  address.   The  request
-              marks the end of a sequence of Data items initialising
-              an array.
-
-SOURCE
-       /appl/lib/dis.b
-
-SEE ALSO
-       disdep(1), wm/rt in wm-misc(1), dis(6)
-       "The Dis Virtual Machine", in Volume 2.
-
-                                                              DIS(2)

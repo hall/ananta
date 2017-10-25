@@ -1,153 +1,147 @@
-SYS-STAT(2)              System Calls Manual             SYS-STAT(2)
+= fstat, fwstat, stat, wstat: get and put file status
 
-NAME
-       fstat, fwstat, stat, wstat - get and put file status
+    include "sys.m";
+    sys := load Sys Sys->PATH;
 
-SYNOPSIS
-       include "sys.m";
-       sys := load Sys Sys->PATH;
+    fstat:  fn(fd: ref FD): (int, Dir);
+    fwstat: fn(fd: ref FD; d: Dir): int;
+    stat:   fn(name: string): (int, Dir);
+    wstat:  fn(name: string, d: Dir): int;
 
-       fstat:  fn(fd: ref FD): (int, Dir);
-       fwstat: fn(fd: ref FD; d: Dir): int;
-       stat:   fn(name: string): (int, Dir);
-       wstat:  fn(name: string, d: Dir): int;
+    nulldir: con Dir(special don't care values);
+    zerodir: con Dir(all elements set to zero);
 
-       nulldir: con Dir(special don't care values);
-       zerodir: con Dir(all elements set to zero);
+Given  a  file's  name,  or an open file descriptor fd, these
+routines retrieve or modify file  status  information.   Stat
+and  fstat retrieve information about name or fd into the Dir
+member of the return tuple.  The int member will be zero  for
+success  and -1 for failure.  wstat and fwstat write informa‐
+tion back, thus changing  file  attributes  according  to  d.
+Both functions return zero for success and -1 for failure.
 
-DESCRIPTION
-       Given  a  file's  name,  or an open file descriptor fd, these
-       routines retrieve or modify file  status  information.   Stat
-       and  fstat retrieve information about name or fd into the Dir
-       member of the return tuple.  The int member will be zero  for
-       success  and -1 for failure.  wstat and fwstat write informa‐
-       tion back, thus changing  file  attributes  according  to  d.
-       Both functions return zero for success and -1 for failure.
+File status is recorded as a Dir type:
 
-       File status is recorded as a Dir type:
+Qid: adt
+{
+    path:   big;     # unique id for file on server
+    vers:   int;     # write version number
+    qtype:  int;     # file type (see below)
+};
 
-       Qid: adt
-       {
-           path:   big;     # unique id for file on server
-           vers:   int;     # write version number
-           qtype:  int;     # file type (see below)
-       };
+Dir: adt
+{
+    name:   string;  # last element of path
+    uid:    string;  # owner name
+    gid:    string;  # group name
+    muid:   string;  # last modifier name
+    qid:    Qid;     # unique id from server
+    mode:   int;     # permissions
+    atime:  int;     # last read time
+    mtime:  int;     # last write time
+    length: big;     # file length
+    dtype:  int;     # server type
+    dev:    int;     # server subtype
+};
 
-       Dir: adt
-       {
-           name:   string;  # last element of path
-           uid:    string;  # owner name
-           gid:    string;  # group name
-           muid:   string;  # last modifier name
-           qid:    Qid;     # unique id from server
-           mode:   int;     # permissions
-           atime:  int;     # last read time
-           mtime:  int;     # last write time
-           length: big;     # file length
-           dtype:  int;     # server type
-           dev:    int;     # server subtype
-       };
+If  the file resides on permanent storage and is not a direc‐
+tory, the length field returned in Dir by stat is the  number
+of  bytes  in the file.  For directories, the length returned
+is zero.  Some devices, in particular files that are  streams
+such  as  pipes and network connections, report a length that
+is the number of bytes that may be read from the device with‐
+out blocking.
 
-       If  the file resides on permanent storage and is not a direc‐
-       tory, the length field returned in Dir by stat is the  number
-       of  bytes  in the file.  For directories, the length returned
-       is zero.  Some devices, in particular files that are  streams
-       such  as  pipes and network connections, report a length that
-       is the number of bytes that may be read from the device with‐
-       out blocking.
+Each file is the responsibility of some server: it could be a
+file server, a kernel device, or a user process.  Dtype iden‐
+tifies  the  server  type,  and  dev says which of a group of
+servers of the same type is  the  one  responsible  for  this
+file.  Qid is a type containing path, vers and qtype members,
+each an integer: path is guaranteed to be  unique  among  all
+path  names  currently  on the file server; vers changes each
+time the file is modified; and qtype gives the file's charac‐
+teristics  (eg,  directory  or  file).   The  path is 64 bits
+(big), and the vers is 32 bits (int).   Thus,  if  two  files
+have  the  same  dtype, dev, and qid, they are the same file.
+(Except when checking that the contents are the same, as in a
+file  cache,  the  version  is often considered irrelevant in
+that comparison.)  The bits in qtype are defined by
 
-       Each file is the responsibility of some server: it could be a
-       file server, a kernel device, or a user process.  Dtype iden‐
-       tifies  the  server  type,  and  dev says which of a group of
-       servers of the same type is  the  one  responsible  for  this
-       file.  Qid is a type containing path, vers and qtype members,
-       each an integer: path is guaranteed to be  unique  among  all
-       path  names  currently  on the file server; vers changes each
-       time the file is modified; and qtype gives the file's charac‐
-       teristics  (eg,  directory  or  file).   The  path is 64 bits
-       (big), and the vers is 32 bits (int).   Thus,  if  two  files
-       have  the  same  dtype, dev, and qid, they are the same file.
-       (Except when checking that the contents are the same, as in a
-       file  cache,  the  version  is often considered irrelevant in
-       that comparison.)  The bits in qtype are defined by
+       16r80 # directory (Sys->QTDIR)
+       16r40 # append-only (Sys->QTAPPEND)
+       16r20 # exclusive-use (Sys->QTEXCL)
+       16r08 # authentication file (Sys->QTAUTH)
+       16r00 # any other file (Sys->QTFILE)
 
-              16r80 # directory (Sys->QTDIR)
-              16r40 # append-only (Sys->QTAPPEND)
-              16r20 # exclusive-use (Sys->QTEXCL)
-              16r08 # authentication file (Sys->QTAUTH)
-              16r00 # any other file (Sys->QTFILE)
+(They are the top 8 bits of Dir.mode for the  file,  as  dis‐
+cussed   below.)    Sys   defines  constants  for  the  bits:
+Sys->QTDIR, Sys->QTAPPEND, and so on, as  shown  above.   The
+value  Sys->QTFILE  is not a particular bit; it is defined to
+be zero, to allow a symbolic name to be  used  when  creating
+Qid values for ordinary files.
 
-       (They are the top 8 bits of Dir.mode for the  file,  as  dis‐
-       cussed   below.)    Sys   defines  constants  for  the  bits:
-       Sys->QTDIR, Sys->QTAPPEND, and so on, as  shown  above.   The
-       value  Sys->QTFILE  is not a particular bit; it is defined to
-       be zero, to allow a symbolic name to be  used  when  creating
-       Qid values for ordinary files.
+The bits in mode are defined by
 
-       The bits in mode are defined by
+       16r80000000 #directory (Sys->DMDIR)
+       16r40000000 #append-only (Sys->DMAPPEND)
+       16r20000000 #exclusive-use (Sys->DMEXCL)
+       16r08000000 #authentication file (Sys->DMAUTH)
+             8r400 #read    permission by owner
+             8r200 #write   permission by owner
+             8r100 #execute permission (search on directory) by owner
+             8r070 #read, write, execute (search) by group
+             8r007 #read, write, execute (search) by others
 
-              16r80000000 #directory (Sys->DMDIR)
-              16r40000000 #append-only (Sys->DMAPPEND)
-              16r20000000 #exclusive-use (Sys->DMEXCL)
-              16r08000000 #authentication file (Sys->DMAUTH)
-                    8r400 #read    permission by owner
-                    8r200 #write   permission by owner
-                    8r100 #execute permission (search on directory) by owner
-                    8r070 #read, write, execute (search) by group
-                    8r007 #read, write, execute (search) by others
+There  are  constants defined in Sys for the first four bits:
+Sys->DMDIR, Sys->DMAPPEND and Sys->DMEXCL for  normal  files,
+and  Sys->DMAUTH  only  for  the  special authentication file
+opened by sys-fauth(2).
 
-       There  are  constants defined in Sys for the first four bits:
-       Sys->DMDIR, Sys->DMAPPEND and Sys->DMEXCL for  normal  files,
-       and  Sys->DMAUTH  only  for  the  special authentication file
-       opened by sys-fauth(2).
+The two time fields are measured in seconds since  the  epoch
+(Jan 1 00:00 1970 GMT).  Mtime is the time of the last change
+of content.  Similarly, atime is set  whenever  the  contents
+are accessed; also, it is set whenever mtime is set.
 
-       The two time fields are measured in seconds since  the  epoch
-       (Jan 1 00:00 1970 GMT).  Mtime is the time of the last change
-       of content.  Similarly, atime is set  whenever  the  contents
-       are accessed; also, it is set whenever mtime is set.
+Uid  and gid are the names of the owner and group (of owners)
+of the file; muid is the name of the user that last  modified
+the  file  (setting  mtime).  Groups are also users, but each
+server is free to associate a list of  users  with  any  user
+name  g,  and  that  list is the set of users in the group g.
+When an initial attachment is made  to  a  server,  the  user
+string  in  the  process group is communicated to the server.
+Thus, the server knows, for any given  file  access,  whether
+the  accessing  process  is the owner of, or in the group of,
+the file.  This selects which sets of three bits in  mode  is
+used to check permissions.
 
-       Uid  and gid are the names of the owner and group (of owners)
-       of the file; muid is the name of the user that last  modified
-       the  file  (setting  mtime).  Groups are also users, but each
-       server is free to associate a list of  users  with  any  user
-       name  g,  and  that  list is the set of users in the group g.
-       When an initial attachment is made  to  a  server,  the  user
-       string  in  the  process group is communicated to the server.
-       Thus, the server knows, for any given  file  access,  whether
-       the  accessing  process  is the owner of, or in the group of,
-       the file.  This selects which sets of three bits in  mode  is
-       used to check permissions.
+Only  some  of the fields may be changed by wstat calls.  The
+name can be changed by anyone with write  permission  in  the
+parent  directory.   The mode and mtime can be changed by the
+owner or the group leader of the file's current  group.   The
+gid  can  be changed by the owner if he or she is a member of
+the new group.  The gid can be changed by the group leader of
+the  file's  current  group if he or she is the leader of the
+new group.  The length can be changed by  anyone  with  write
+permission,  provided  the  operation  is  implemented by the
+server.  (See intro(5) and stat(5) for more information about
+permissions,  and  users(6)  for  how  to configure users and
+groups when using kfs(4)).
 
-       Only  some  of the fields may be changed by wstat calls.  The
-       name can be changed by anyone with write  permission  in  the
-       parent  directory.   The mode and mtime can be changed by the
-       owner or the group leader of the file's current  group.   The
-       gid  can  be changed by the owner if he or she is a member of
-       the new group.  The gid can be changed by the group leader of
-       the  file's  current  group if he or she is the leader of the
-       new group.  The length can be changed by  anyone  with  write
-       permission,  provided  the  operation  is  implemented by the
-       server.  (See intro(5) and stat(5) for more information about
-       permissions,  and  users(6)  for  how  to configure users and
-       groups when using kfs(4)).
+Special values in the fields of the Dir passed to wstat indi‐
+cate  that  the  field  is  not intended to be changed by the
+call.  The values are the maximum unsigned integer of  appro‐
+priate  size  for  integral values (usually ~0, but beware of
+conversions and size mismatches when  comparing  values)  and
+the  empty  or  nil  string  for string values.  The constant
+nulldir in Sys has all  its  elements  initialised  to  these
+``don't  care''  values.   Thus  one may change the mode, for
+example, by assigning sys->nulldir to initialize a Dir,  then
+setting  the  mode, and then doing wstat; it is not necessary
+to use stat to retrieve the initial values first.
 
-       Special values in the fields of the Dir passed to wstat indi‐
-       cate  that  the  field  is  not intended to be changed by the
-       call.  The values are the maximum unsigned integer of  appro‐
-       priate  size  for  integral values (usually ~0, but beware of
-       conversions and size mismatches when  comparing  values)  and
-       the  empty  or  nil  string  for string values.  The constant
-       nulldir in Sys has all  its  elements  initialised  to  these
-       ``don't  care''  values.   Thus  one may change the mode, for
-       example, by assigning sys->nulldir to initialize a Dir,  then
-       setting  the  mode, and then doing wstat; it is not necessary
-       to use stat to retrieve the initial values first.
+The constant zerodir has  all  its  elements  initialised  to
+zero.   It can be used to initialise a Dir structure, for use
+with styx(2) or styxservers-nametree(2), for instance.
 
-       The constant zerodir has  all  its  elements  initialised  to
-       zero.   It can be used to initialise a Dir structure, for use
-       with styx(2) or styxservers-nametree(2), for instance.
+== see ALSO
+sys-intro(2), sys-dirread(2), sys-open(2)
 
-SEE ALSO
-       sys-intro(2), sys-dirread(2), sys-open(2)
-
-                                                         SYS-STAT(2)

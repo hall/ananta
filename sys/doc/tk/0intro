@@ -1,104 +1,99 @@
-INTRO(9)              Kernel Developer's Manual             INTRO(9)
+= intro: introduction to Inferno Tk
 
-NAME
-       intro - introduction to Inferno Tk
+This  section  of  the  manual  provides  a reference for the
+Inferno Tk implementation, which is accessed  by  Limbo  pro‐
+grams via tk(2), and from sh(1) via sh-tk(1).
 
-DESCRIPTION
-       This  section  of  the  manual  provides  a reference for the
-       Inferno Tk implementation, which is accessed  by  Limbo  pro‐
-       grams via tk(2), and from sh(1) via sh-tk(1).
+The  following pages were derived by Vita Nuova from documen‐
+tation that is
 
-       The  following pages were derived by Vita Nuova from documen‐
-       tation that is
+       Copyright © 1990 The Regents of the University of Cal‐
+       ifornia
+       Copyright © 1994-1996 Sun Microsystems, Inc.
+       See copyright(9) for the full copyright notice.
 
-              Copyright © 1990 The Regents of the University of Cal‐
-              ifornia
-              Copyright © 1994-1996 Sun Microsystems, Inc.
-              See copyright(9) for the full copyright notice.
-
-       The  format  of the pages has changed to follow the format of
-       the rest of this manual, but more important, the content  has
-       been changed (typically in small ways) to reflect the variant
-       of Tk implemented by Inferno.
+The  format  of the pages has changed to follow the format of
+the rest of this manual, but more important, the content  has
+been changed (typically in small ways) to reflect the variant
+of Tk implemented by Inferno.
 
    Programming Interface
-       The interface to Inferno Tk is exclusively through the  tk(2)
-       module;  all the Tk commands described in this section of the
-       manual are excecuted by passing them as strings  to  the  cmd
-       function  in  that  module.  The Inferno Tk implementation is
-       based on the Tk 4.0 documentation, but there are many differ‐
-       ences,  probably  the  greatest  of which is that there is no
-       associated Tcl implementation, so almost every Inferno appli‐
-       cation  using Tk will need to have some Limbo code associated
-       with it (the sh-tk(1)  shell  module  can  also  fulful  this
-       rôle).  See  ``An  Overview  of  Limbo/Tk'' in Volume 2 for a
-       tutorial-style introduction to the use of  Inferno  Tk  which
-       summarises the differences from Tk 4.0.
+The interface to Inferno Tk is exclusively through the  tk(2)
+module;  all the Tk commands described in this section of the
+manual are excecuted by passing them as strings  to  the  cmd
+function  in  that  module.  The Inferno Tk implementation is
+based on the Tk 4.0 documentation, but there are many differ‐
+ences,  probably  the  greatest  of which is that there is no
+associated Tcl implementation, so almost every Inferno appli‐
+cation  using Tk will need to have some Limbo code associated
+with it (the sh-tk(1)  shell  module  can  also  fulful  this
+rôle).  See  ``An  Overview  of  Limbo/Tk'' in Volume 2 for a
+tutorial-style introduction to the use of  Inferno  Tk  which
+summarises the differences from Tk 4.0.
 
    Tk Commands
-       The  command string passed to tk->cmd may contain one or more
-       Tk commands, separated by semicolons.  A semicolon is  not  a
-       command  separator when it is nested in braces ({}) or brack‐
-       ets ([]) or it is escaped by a backslash (\).   Each  command
-       is  divided  into words: sequences of characters separated by
-       one or more blanks and tabs.
+The  command string passed to tk->cmd may contain one or more
+Tk commands, separated by semicolons.  A semicolon is  not  a
+command  separator when it is nested in braces ({}) or brack‐
+ets ([]) or it is escaped by a backslash (\).   Each  command
+is  divided  into words: sequences of characters separated by
+one or more blanks and tabs.
 
-       There is also a `super quote' convention: at any point in the
-       command  string a single quote mark (') means that the entire
-       rest of the string should be treated as one word.
+There is also a `super quote' convention: at any point in the
+command  string a single quote mark (') means that the entire
+rest of the string should be treated as one word.
 
-       A word beginning with an opening brace  ({)  continues  until
-       the  balancing  closing brace (}) is reached. The outer brace
-       characters are stripped. A backslash can be used to escape  a
-       brace  in  this  context.  Backslash  characters  not used to
-       escape braces are left unchanged.
+A word beginning with an opening brace  ({)  continues  until
+the  balancing  closing brace (}) is reached. The outer brace
+characters are stripped. A backslash can be used to escape  a
+brace  in  this  context.  Backslash  characters  not used to
+escape braces are left unchanged.
 
-       A word beginning with an opening bracket ([) continues  until
-       the  balancing  closing  bracket (]) is reached. The enclosed
-       string is then evaluated as if it were a command string,  and
-       the resulting value is used as the contents of the word.
+A word beginning with an opening bracket ([) continues  until
+the  balancing  closing  bracket (]) is reached. The enclosed
+string is then evaluated as if it were a command string,  and
+the resulting value is used as the contents of the word.
 
-       Single commands are executed in order until they are all done
-       or an error is encountered. By convention, an error  is  sig‐
-       naled  by  a  return  value starting with an exclamation mark
-       (!).  The return value from tk->cmd is the  return  value  of
-       the first error-producing command or else the return value of
-       the final single command.
+Single commands are executed in order until they are all done
+or an error is encountered. By convention, an error  is  sig‐
+naled  by  a  return  value starting with an exclamation mark
+(!).  The return value from tk->cmd is the  return  value  of
+the first error-producing command or else the return value of
+the final single command.
 
-       To execute a single command, the first word is  examined.  It
-       must either begin with dot (.)  in which case it must name an
-       existing widget, which will interpret the rest of the command
-       according to its type, or one of the following words, each of
-       which is documented in a manual page of  that  name  in  this
-       section:
+To execute a single command, the first word is  examined.  It
+must either begin with dot (.)  in which case it must name an
+existing widget, which will interpret the rest of the command
+according to its type, or one of the following words, each of
+which is documented in a manual page of  that  name  in  this
+section:
 
-       bind         focus        lower        scrollbar
-       button       frame        menu         see
-       canvas       grab         menubutton   send
-       checkbutton  grid         pack         text
-       cursor       image        radiobutton  update
-       destroy      label        raise        variable
-       entry        listbox      scale
+bind         focus        lower        scrollbar
+button       frame        menu         see
+canvas       grab         menubutton   send
+checkbutton  grid         pack         text
+cursor       image        radiobutton  update
+destroy      label        raise        variable
+entry        listbox      scale
 
    Widget Options
-       Each manual page in this section documents the options that a
-       particular command will accept. A number of options are  com‐
-       mon  to  several  of  the widgets and are named as ``standard
-       options'' near the beginning of the manual page for each wid‐
-       get.  These  options are documented in options(9).  The types
-       of value required as arguments to options within  Inferno  Tk
-       are documented under types(9).
+Each manual page in this section documents the options that a
+particular command will accept. A number of options are  com‐
+mon  to  several  of  the widgets and are named as ``standard
+options'' near the beginning of the manual page for each wid‐
+get.  These  options are documented in options(9).  The types
+of value required as arguments to options within  Inferno  Tk
+are documented under types(9).
 
-SEE ALSO
-       options(9),  types(9),  tk(2),  sh-tk(1), tkcmd(1), wmlib(2),
-       draw-intro(2), ``An Overview of Limbo/Tk'' in Volume 2.
+== see ALSO
+options(9),  types(9),  tk(2),  sh-tk(1), tkcmd(1), wmlib(2),
+draw-intro(2), ``An Overview of Limbo/Tk'' in Volume 2.
 
-BUGS
-       The bracket ([]) command interpretation is not  applied  con‐
-       sistently  throughout  the  Inferno Tk commands (notably, the
-       argument to the send(9) command will not interpret this  cor‐
-       rectly).   Moreover,  if the string to be substituted is sig‐
-       nificantly bigger than the command it was substituting,  then
-       it will be truncated.
+== bugs
+The bracket ([]) command interpretation is not  applied  con‐
+sistently  throughout  the  Inferno Tk commands (notably, the
+argument to the send(9) command will not interpret this  cor‐
+rectly).   Moreover,  if the string to be substituted is sig‐
+nificantly bigger than the command it was substituting,  then
+it will be truncated.
 
-                                                            INTRO(9)

@@ -1,21 +1,15 @@
-FOCUS(9)              Kernel Developer's Manual             FOCUS(9)
+= focus: change or query keyboard focus
 
-NAME
-       focus - change or query keyboard focus
+    focus ?what?
 
-SYNOPSIS
-       focus ?what?
+With  no  arguments,  focus returns the name of the widget to
+which keyboard events are currently delivered, known  as  the
+keyboard  focus.   When  given an argument, focus changes the
+keyboard focus.  If what is the name of a widget, that widget
+will  be  made the keyboard focus.  If what is next, the key‐
+board focus will be changed to the next  item  in  the  focus
+order  for  that  window.  If  what is previous, the keyboard
+focus will be changed to the previous item in the focus order
+for  that window. The focus order is determined automatically
+by Tk.
 
-DESCRIPTION
-       With  no  arguments,  focus returns the name of the widget to
-       which keyboard events are currently delivered, known  as  the
-       keyboard  focus.   When  given an argument, focus changes the
-       keyboard focus.  If what is the name of a widget, that widget
-       will  be  made the keyboard focus.  If what is next, the key‐
-       board focus will be changed to the next  item  in  the  focus
-       order  for  that  window.  If  what is previous, the keyboard
-       focus will be changed to the previous item in the focus order
-       for  that window. The focus order is determined automatically
-       by Tk.
-
-                                                            FOCUS(9)

@@ -1,57 +1,50 @@
-ARCH(3)               Library Functions Manual               ARCH(3)
+= arch: x86 architecture-specific information and control
 
-NAME
-       arch - x86 architecture-specific information and control
+    bind -a #P /dev
 
-SYNOPSIS
-       bind -a #P /dev
+    /dev/cputype
+    /dev/ioalloc
+    /dev/iob
+    /dev/iol
+    /dev/iow
+    /dev/irqalloc
 
-       /dev/cputype
-       /dev/ioalloc
-       /dev/iob
-       /dev/iol
-       /dev/iow
-       /dev/irqalloc
+This  device  presents  textual information about PC hardware
+and allows user-level control of the I/O ports  on  x86-class
+machines.
 
-DESCRIPTION
-       This  device  presents  textual information about PC hardware
-       and allows user-level control of the I/O ports  on  x86-class
-       machines.
+Reads from cputype recover the processor type and clock rate.
 
-       Reads from cputype recover the processor type and clock rate.
+Reads from ioalloc return I/O ranges used by each device, one
+line per range.  Each line contains three fields separated by
+white space: first address in hexadecimal, last address, name
+of device.
 
-       Reads from ioalloc return I/O ranges used by each device, one
-       line per range.  Each line contains three fields separated by
-       white space: first address in hexadecimal, last address, name
-       of device.
+Reads from irqalloc return the enabled interrupts,  one  line
+per  interrupt.  Each line contains three fields separated by
+white space: the trap number, the IRQ it is assigned to,  and
+the name of the device using it.
 
-       Reads from irqalloc return the enabled interrupts,  one  line
-       per  interrupt.  Each line contains three fields separated by
-       white space: the trap number, the IRQ it is assigned to,  and
-       the name of the device using it.
+Reads  and  writes  to  iob,  iow,  and iol cause 8-bit wide,
+16-bit wide, and 32-bit wide requests to I/O ports.  The port
+accessed  is  determined  by  the  byte  offset  of  the file
+descriptor.
 
-       Reads  and  writes  to  iob,  iow,  and iol cause 8-bit wide,
-       16-bit wide, and 32-bit wide requests to I/O ports.  The port
-       accessed  is  determined  by  the  byte  offset  of  the file
-       descriptor.
+== example
+The following Limbo code reads from an x86 byte I/O port.
 
-EXAMPLE
-       The following Limbo code reads from an x86 byte I/O port.
+       inportb(port: int): byte
+       {
+           data := array[1] of byte;
 
-              inportb(port: int): byte
-              {
-                  data := array[1] of byte;
+           if(iobfd == nil)
+               iobfd = sys->open("#P/iob", Sys->ORDWR);
 
-                  if(iobfd == nil)
-                      iobfd = sys->open("#P/iob", Sys->ORDWR);
+           sys->seek(iobfd, port, 0);
+           if(sys->read(iobfd, data, len data) != len data)
+               fatal(sys->sprint("inportb(16r%4.4x): %r\n", port));
+           return data[0];
+       }
 
-                  sys->seek(iobfd, port, 0);
-                  if(sys->read(iobfd, data, len data) != len data)
-                      fatal(sys->sprint("inportb(16r%4.4x): %r\n", port));
-                  return data[0];
-              }
-
-SOURCE
-       /os/pc/devarch.c
-
-                                 x86                         ARCH(3)
+== source
+/os/pc/devarch.c

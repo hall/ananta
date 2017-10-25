@@ -1,260 +1,253 @@
-ACID(10.1)                                                ACID(10.1)
+= acid: debugger
 
-NAME
-       acid - debugger
+    acid [ -l libfile ] [ -wq ] [ -m machine ] [ pid ] [ textfile ]
 
-SYNOPSIS
-       acid [ -l libfile ] [ -wq ] [ -m machine ] [ pid ] [ textfile
-       ]
+Acid is a programmable symbolic debugger.  It can inspect one
+or  more processes that share an address space.  A program to
+be debugged may be specified by the process id of  a  running
+or defunct process, or by the name of the program's text file
+(v.out by default).  At the prompt, acid will store  function
+definitions or print the value of expressions.  Options are
 
-DESCRIPTION
-       Acid is a programmable symbolic debugger.  It can inspect one
-       or  more processes that share an address space.  A program to
-       be debugged may be specified by the process id of  a  running
-       or defunct process, or by the name of the program's text file
-       (v.out by default).  At the prompt, acid will store  function
-       definitions or print the value of expressions.  Options are
+-w       Allow the textfile to be modified.
 
-       -w       Allow the textfile to be modified.
+-q       Don't print variable renamings at startup.
 
-       -q       Don't print variable renamings at startup.
+-l library
+         Load from library at startup; see below.
 
-       -l library
-                Load from library at startup; see below.
+-m machine
+         Assume  instructions are for the given CPU type (one
+         of 386, 86, 68020, 960, power,  arm,  mips,  mipsco,
+         sparc,  or sunsparc) instead of using the magic num‐
+         ber to select the CPU type.
 
-       -m machine
-                Assume  instructions are for the given CPU type (one
-                of 386, 86, 68020, 960, power,  arm,  mips,  mipsco,
-                sparc,  or sunsparc) instead of using the magic num‐
-                ber to select the CPU type.
-
-       At startup, acid obtains standard function  definitions  from
-       the library file /lib/acid/port, architecture-dependent func‐
-       tions from /lib/acid/$objtype, user-specified functions  from
-       $home/lib/acid, and further functions from -l files.  Defini‐
-       tions in any file may override previously defined  functions.
-       If  the  function  acidinit()  is defined, it will be invoked
-       after all modules have been loaded.  See 2c(10.1) for  infor‐
-       mation  about  creating  acid  functions  for  examining data
-       structures.
+At startup, acid obtains standard function  definitions  from
+the library file /lib/acid/port, architecture-dependent func‐
+tions from /lib/acid/$objtype, user-specified functions  from
+$home/lib/acid, and further functions from -l files.  Defini‐
+tions in any file may override previously defined  functions.
+If  the  function  acidinit()  is defined, it will be invoked
+after all modules have been loaded.  See 2c(10.1) for  infor‐
+mation  about  creating  acid  functions  for  examining data
+structures.
 
    Language
-       Symbols of the program being debugged  become  integer  vari‐
-       ables  whose values are addresses.  Contents of addresses are
-       obtained by indirection.  Local variables  are  qualified  by
-       function  name,  for example main:argv.  When program symbols
-       conflict with acid words, distinguishing  $  signs  are  pre‐
-       fixed.   Such  renamings  are  reported at startup; option -q
-       suppresses them.
+Symbols of the program being debugged  become  integer  vari‐
+ables  whose values are addresses.  Contents of addresses are
+obtained by indirection.  Local variables  are  qualified  by
+function  name,  for example main:argv.  When program symbols
+conflict with acid words, distinguishing  $  signs  are  pre‐
+fixed.   Such  renamings  are  reported at startup; option -q
+suppresses them.
 
-       Variable types (integer, float, list, string) and formats are
-       inferred  from  assignments.  Truth values false/true are at‐
-       tributed  to  zero/nonzero  integers   or   floats   and   to
-       empty/nonempty  lists  or  strings.   Lists  are sequences of
-       expressions surrounded by {} and separated by commas.
+Variable types (integer, float, list, string) and formats are
+inferred  from  assignments.  Truth values false/true are at‐
+tributed  to  zero/nonzero  integers   or   floats   and   to
+empty/nonempty  lists  or  strings.   Lists  are sequences of
+expressions surrounded by {} and separated by commas.
 
-       Expressions are much as in C, but yield both a  value  and  a
-       format.  Casts to complex types are allowed.  Lists admit the
-       following operators, with subscripts counted from 0.
+Expressions are much as in C, but yield both a  value  and  a
+format.  Casts to complex types are allowed.  Lists admit the
+following operators, with subscripts counted from 0.
 
-              head list
-              tail list
-              append list, element
-              delete list, subscript
+       head list
+       tail list
+       append list, element
+       delete list, subscript
 
-       Format codes are the same as in  db(10.1).   Formats  may  be
-       attached  to  (unary)  expressions  with  \,  e.g.  (32*7)\D.
-       There are two indirection operators,  *  to  address  a  core
-       image,  @ to address a text file.  The type and format of the
-       result are determined by the format  of  the  operand,  whose
-       type must be integer.
+Format codes are the same as in  db(10.1).   Formats  may  be
+attached  to  (unary)  expressions  with  \,  e.g.  (32*7)\D.
+There are two indirection operators,  *  to  address  a  core
+image,  @ to address a text file.  The type and format of the
+result are determined by the format  of  the  operand,  whose
+type must be integer.
 
-       Statements are
+Statements are
 
-              if expr then statement [ else statement ]
-              while expr do statement
-              loop expr, expr do statement
-              defn name(args) { statement }
-              local name
-              return expr
-              whatis [  name ]
+       if expr then statement [ else statement ]
+       while expr do statement
+       loop expr, expr do statement
+       defn name(args) { statement }
+       local name
+       return expr
+       whatis [  name ]
 
-       Here  is  a  partial  list of functions; see the manual for a
-       complete list.
+Here  is  a  partial  list of functions; see the manual for a
+complete list.
 
-       stk()  Print a stack trace for current process.
+stk()  Print a stack trace for current process.
 
-       lstk() Print a stack trace with values of local variables.
+lstk() Print a stack trace with values of local variables.
 
-       gpr()  Print  general  registers.   Registers  can  also   be
-              accessed by name, for example *R0.
+gpr()  Print  general  registers.   Registers  can  also   be
+       accessed by name, for example *R0.
 
-       spr()  Print  special  registers  such as program counter and
-              stack pointer.
+spr()  Print  special  registers  such as program counter and
+       stack pointer.
 
-       fpr()  Print floating-point registers.
+fpr()  Print floating-point registers.
 
-       regs() Same as spr();gpr().
+regs() Same as spr();gpr().
 
-       fmt(expr,format)
-              Expression expr with format  given  by  the  character
-              value of expression format.
+fmt(expr,format)
+       Expression expr with format  given  by  the  character
+       value of expression format.
 
-       src(address)
-              Print 10 lines of source around the program address.
+src(address)
+       Print 10 lines of source around the program address.
 
-       Bsrc(address)
-              Get  the  source  line  for the program address into a
-              window of a running editor and select it.  (This works
-              only  on Plan 9, or a Unix-like system running `Plan 9
-              Ports'.)
+Bsrc(address)
+       Get  the  source  line  for the program address into a
+       window of a running editor and select it.  (This works
+       only  on Plan 9, or a Unix-like system running `Plan 9
+       Ports'.)
 
-       line(address)
-              Print source line nearest to the program address.
+line(address)
+       Print source line nearest to the program address.
 
-       source()
-              List current source directories.
+source()
+       List current source directories.
 
-       addsrcdir(string)
-              Add a source directory to the list.
+addsrcdir(string)
+       Add a source directory to the list.
 
-       filepc(where)
-              Convert a string of the form sourcefile:linenumber  to
-              a machine address.
+filepc(where)
+       Convert a string of the form sourcefile:linenumber  to
+       a machine address.
 
-       pcfile(address)
-              Convert a machine address to a source file name.
+pcfile(address)
+       Convert a machine address to a source file name.
 
-       pcline(address)
-              Convert a machine address to a source line number.
+pcline(address)
+       Convert a machine address to a source line number.
 
-       bptab()
-              List breakpoints set in the current process.
+bptab()
+       List breakpoints set in the current process.
 
-       bpset(address)
-              Set  a  breakpoint in the current process at the given
-              address.
+bpset(address)
+       Set  a  breakpoint in the current process at the given
+       address.
 
-       bpdel(address)
-              Delete a breakpoint from the current process.
+bpdel(address)
+       Delete a breakpoint from the current process.
 
-       cont() Continue execution of current process and wait for  it
-              to stop.
+cont() Continue execution of current process and wait for  it
+       to stop.
 
-       step() Execute  a  single  machine instruction in the current
-              process.
+step() Execute  a  single  machine instruction in the current
+       process.
 
-       func() Step repeatedly until after a function return.
+func() Step repeatedly until after a function return.
 
-       stopped(pid)
-              This replaceable function is called automatically when
-              the  given process stops.  It normally prints the pro‐
-              gram counter and returns to the prompt.
+stopped(pid)
+       This replaceable function is called automatically when
+       the  given process stops.  It normally prints the pro‐
+       gram counter and returns to the prompt.
 
-       asm(address)
-              Disassemble 30 machine instructions beginning  at  the
-              given address.
+asm(address)
+       Disassemble 30 machine instructions beginning  at  the
+       given address.
 
-       mem(address,string)
-              Print  a  block  of  memory interpreted according to a
-              string of format codes.
+mem(address,string)
+       Print  a  block  of  memory interpreted according to a
+       string of format codes.
 
-       dump(address,n,string)
-              Like mem(), repeated for n consecutive blocks.
+dump(address,n,string)
+       Like mem(), repeated for n consecutive blocks.
 
-       print(expr,...)
-              Print the values of the expressions.
+print(expr,...)
+       Print the values of the expressions.
 
-       newproc(arguments)
-              Start a new process with arguments given as  a  string
-              and halt at the first instruction.
+newproc(arguments)
+       Start a new process with arguments given as  a  string
+       and halt at the first instruction.
 
-       new()  Like  newproc(),  but  take arguments (except argv[0])
-              from string variable progargs.
+new()  Like  newproc(),  but  take arguments (except argv[0])
+       from string variable progargs.
 
-       win()  Like new(), but run the process in a separate window.
+win()  Like new(), but run the process in a separate window.
 
-       start(pid)
-              Start a stopped process.
+start(pid)
+       Start a stopped process.
 
-       kill(pid)
-              Kill the given process.
+kill(pid)
+       Kill the given process.
 
-       setproc(pid)
-              Make the given process current.
+setproc(pid)
+       Make the given process current.
 
-       rc(string)
-              Escape to the shell, to execute the command string.
+rc(string)
+       Escape to the shell, to execute the command string.
 
-EXAMPLES
-       Start to debug /bin/ls; set some breakpoints; run up  to  the
-       first one:
+== examples
+Start to debug /bin/ls; set some breakpoints; run up  to  the
+first one:
 
-              % acid /bin/ls
-              /bin/ls: mips plan 9 executable
-              /lib/acid/port
-              /lib/acid/mips
-              acid: new()
-              70094: system call  _main       ADD     $-0x14,R29
-              70094: breakpoint   main+0x4    MOVW    R31,0x0(R29)
-              acid: pid
-              70094
-              acid: argv0 = **main:argv\s
-              acid: whatis argv0
-              integer variable format s
-              acid: *argv0
-              /bin/ls
-              acid: bpset(ls)
-              acid: cont()
-              70094: breakpoint  ls   ADD $-0x16c8,R29
-              acid:
-
-       Display elements of a linked list of structures:
-
-              complex Str { 'D' 0 val; 'X' 4 next; };
-              complex Str s;
-              s = *headstr;
-              while s != 0 do{
-                   print(s.val, "\n");
-                   s = s.next;
-              }
-
-       Note the use of the .  operator instead of ->.
-
-       Display an array of bytes declared in C as char array[].
-
-              *(array\s)
-
-       This  example  gives  array  string  format,  then prints the
-       string beginning at the address (in acid notation) *array.
-
-FILES
-       /proc/*/text
-       /proc/*/mem
-       /proc/*/ctl
-       /proc/*/note
-       /lib/acid/$objtype
+       % acid /bin/ls
+       /bin/ls: mips plan 9 executable
        /lib/acid/port
-       $home/lib/acid
+       /lib/acid/mips
+       acid: new()
+       70094: system call  _main       ADD     $-0x14,R29
+       70094: breakpoint   main+0x4    MOVW    R31,0x0(R29)
+       acid: pid
+       70094
+       acid: argv0 = **main:argv\s
+       acid: whatis argv0
+       integer variable format s
+       acid: *argv0
+       /bin/ls
+       acid: bpset(ls)
+       acid: cont()
+       70094: breakpoint  ls   ADD $-0x16c8,R29
+       acid:
 
-SOURCE
-       /utils/acid
+Display elements of a linked list of structures:
 
-SEE ALSO
-       2a(10.1), 2c(10.1), 2l(10.1), mk(10.1), db(10.1)
-       Phil Winterbottom, ``Acid Manual''.
+       complex Str { 'D' 0 val; 'X' 4 next; };
+       complex Str s;
+       s = *headstr;
+       while s != 0 do{
+            print(s.val, "\n");
+            s = s.next;
+       }
 
-DIAGNOSTICS
-       At termination, kill commands are proposed for processes that
-       are still active.
+Note the use of the .  operator instead of ->.
 
-BUGS
-       There  is  no way to redirect the standard input and standard
-       output of a new process.
-       Source line selection near the beginning of a file  may  pick
-       an adjacent file.
-       With  the  extant  stepping commands, one cannot step through
-       instructions outside the text segment and it is hard to debug
-       across process forks.
+Display an array of bytes declared in C as char array[].
 
-                                                          ACID(10.1)
+       *(array\s)
+
+This  example  gives  array  string  format,  then prints the
+string beginning at the address (in acid notation) *array.
+
+== files
+/proc/*/text
+/proc/*/mem
+/proc/*/ctl
+/proc/*/note
+/lib/acid/$objtype
+/lib/acid/port
+$home/lib/acid
+
+== source
+/utils/acid
+
+== see ALSO
+2a(10.1), 2c(10.1), 2l(10.1), mk(10.1), db(10.1)
+Phil Winterbottom, ``Acid Manual''.
+
+== diagnostics
+At termination, kill commands are proposed for processes that
+are still active.
+
+== bugs
+There  is  no way to redirect the standard input and standard
+output of a new process.
+Source line selection near the beginning of a file  may  pick
+an adjacent file.
+With  the  extant  stepping commands, one cannot step through
+instructions outside the text segment and it is hard to debug
+across process forks.
+

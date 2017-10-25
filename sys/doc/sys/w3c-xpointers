@@ -1,228 +1,221 @@
-W3C-XPOINTERS(2)         System Calls Manual        W3C-XPOINTERS(2)
+= w3c-xpointers: parser for XPointers framework including XPath
 
-NAME
-       w3c-xpointers  -  parser  for  XPointers  framework including
-       XPath
+    include "xpointers.m";
 
-SYNOPSIS
-       include "xpointers.m";
-
-       xpointers := load Xpointers Xpointers->PATH;
-       Xpath, Xstep: import xpointers;
-
-       # special operators ('+', '-', etc represent themselves)
-       One, Ole, Oge, Omul, Odiv, Omod, Oand, Oor, Oneg,
-       Onodetype, Onametest, Ofilter, Opath: con ...;
-
-       # axis types
-       Aancestor,
-       Aancestor_or_self,
-       Aattribute,
-       Achild,
-       Adescendant,
-       Adescendant_or_self,
-       Afollowing,
-       Afollowing_sibling,
-       Anamespace,
-       Aparent,
-       Apreceding,
-       Apreceding_sibling,
-       Aself: con iota;
-
-       Xstep: adt {
-          axis:  int;  # Aancestor, ... (above)
-          op:    int;  # Onametest or Onodetype
+    xpointers := load Xpointers Xpointers->PATH;
+    Xpath, Xstep: import xpointers;
+    
+    # special operators ('+', '-', etc represent themselves)
+    One, Ole, Oge, Omul, Odiv, Omod, Oand, Oor, Oneg,
+    Onodetype, Onametest, Ofilter, Opath: con ...;
+    
+    # axis types
+    Aancestor,
+    Aancestor_or_self,
+    Aattribute,
+    Achild,
+    Adescendant,
+    Adescendant_or_self,
+    Afollowing,
+    Afollowing_sibling,
+    Anamespace,
+    Aparent,
+    Apreceding,
+    Apreceding_sibling,
+    Aself: con iota;
+    
+    Xstep: adt {
+       axis:  int;  # Aancestor, ... (above)
+       op:    int;  # Onametest or Onodetype
+       ns:    string;
+       name:  string;
+       arg:   string;  # optional parameter to processing-instruction
+       preds: cyclic list of ref Xpath;
+    
+       text:  fn(nil: self ref Xstep): string;
+       axisname:  fn(i: int): string;
+    };
+    
+    Xpath: adt {
+       pick{
+       E =>
+          op:    int;
+          l, r:  cyclic ref Xpath;
+       Fn =>
           ns:    string;
           name:  string;
-          arg:   string;  # optional parameter to processing-instruction
-          preds: cyclic list of ref Xpath;
+          args:  cyclic list of ref Xpath;
+       Var =>
+          ns:    string;
+          name:  string;
+       Path =>
+          abs:   int;
+          steps: list of ref Xstep;
+       Int =>
+          val:   big;
+       Real =>
+          val:   real;
+       Str =>
+          s:     string;
+       }
+       text: fn(nil: self ref Xpath): string;
+    };
+    
+    framework:  fn(s: string):
+                   (string, list of (string, string, string), string);
+    
+    # predefined schemes
+    element:    fn(s: string): (string, list of int, string);
+    xmlns:      fn(s: string): (string, string, string);
+    xpointer:   fn(s: string): (ref Xpath, string);
+    
+Xpointers implements a parser for the World-Wide Web  Consor‐
+tium's  XPointers  framework,  including  a  parser for XPath
+expressions.
 
-          text:  fn(nil: self ref Xstep): string;
-          axisname:  fn(i: int): string;
-       };
+Init must be called before any other operation in the module.
 
-       Xpath: adt {
-          pick{
-          E =>
-             op:    int;
-             l, r:  cyclic ref Xpath;
-          Fn =>
-             ns:    string;
-             name:  string;
-             args:  cyclic list of ref Xpath;
-          Var =>
-             ns:    string;
-             name:  string;
-          Path =>
-             abs:   int;
-             steps: list of ref Xstep;
-          Int =>
-             val:   big;
-          Real =>
-             val:   real;
-          Str =>
-             s:     string;
-          }
-          text: fn(nil: self ref Xpath): string;
-       };
+Framework parses a string s according to the grammar for  the
+XPointers  framework,  and  returns  a  tuple  (short, point‐
+ers, err).  On an error, the string err  gives  a  diagnostic
+and  the  other  two  values are nil.  Otherwise, if short is
+non-nil, the XPointer was a  `shorthand  pointer',  with  the
+given value; pointers will be nil.  If a scheme-based pointer
+is used, short is nil and  pointers  has  a  list  of  tuples
+(ns, scheme, data),  each representing one pointer value.  Ns
+is the XML name space for the given scheme; the default  name
+space  is  represented by nil.  Scheme is the XPointer scheme
+name within that name space; and data is the  actual  pointer
+value  following  the  rules  of that scheme.  (They all have
+completely different syntax.)
 
-       framework:  fn(s: string):
-                      (string, list of (string, string, string), string);
+Three common schemes are directly supported by the module, by
+functions  named  after  the  scheme.  All of them follow the
+convention of returning a tuple in which the last element  is
+a  diagnostic string.  On an error, all but that last element
+of the tuple will be nil, and the last element will be a non-
+nil string with a diagnostic.
 
-       # predefined schemes
-       element:    fn(s: string): (string, list of int, string);
-       xmlns:      fn(s: string): (string, string, string);
-       xpointer:   fn(s: string): (ref Xpath, string);
+Xmlns parses an XML name space definition of the form ns=uri,
+and returns its components.
 
-DESCRIPTION
-       Xpointers implements a parser for the World-Wide Web  Consor‐
-       tium's  XPointers  framework,  including  a  parser for XPath
-       expressions.
+Element parses a value of the XPointer element scheme,  given
+by the grammar:
 
-       Init must be called before any other operation in the module.
+       selector ::= name child*  |  child+
+       child ::= '/' [1-9][0-9]*
 
-       Framework parses a string s according to the grammar for  the
-       XPointers  framework,  and  returns  a  tuple  (short, point‐
-       ers, err).  On an error, the string err  gives  a  diagnostic
-       and  the  other  two  values are nil.  Otherwise, if short is
-       non-nil, the XPointer was a  `shorthand  pointer',  with  the
-       given value; pointers will be nil.  If a scheme-based pointer
-       is used, short is nil and  pointers  has  a  list  of  tuples
-       (ns, scheme, data),  each representing one pointer value.  Ns
-       is the XML name space for the given scheme; the default  name
-       space  is  represented by nil.  Scheme is the XPointer scheme
-       name within that name space; and data is the  actual  pointer
-       value  following  the  rules  of that scheme.  (They all have
-       completely different syntax.)
+The  optional  name is an XPointer `shorthand pointer'.  Each
+child number selects the child with that index (origin 1)  at
+the  corresponding  level  of  the  XML tree beneath the node
+selected by the name, or starting at  the  root  of  the  XML
+tree.  Element returns a tuple ((name, path), err) where name
+is the top element name or nil if  none  was  specified,  and
+path is a list of int giving the path of child indices.
 
-       Three common schemes are directly supported by the module, by
-       functions  named  after  the  scheme.  All of them follow the
-       convention of returning a tuple in which the last element  is
-       a  diagnostic string.  On an error, all but that last element
-       of the tuple will be nil, and the last element will be a non-
-       nil string with a diagnostic.
+The  most  complex  scheme is xpointer, because its syntax is
+that of XML's elaborate XPath  expression.   Xpointer  parses
+such  an  expression  and  returns  a  tuple (e, err) where e
+refers to an Xpath value that represents the abstract  syntax
+of the XPath Expr.  Xpointer checks only the syntax of s, and
+does not check that functions are limited to those  specified
+by  the  xpointer  scheme (that is consistent with it being a
+parse of s, rather than an XPointer or XPath evaluator).
 
-       Xmlns parses an XML name space definition of the form ns=uri,
-       and returns its components.
+Xpath and Xstep together represent an abstract syntax of  the
+XPath grammar.
 
-       Element parses a value of the XPointer element scheme,  given
-       by the grammar:
+Xstep represents the XPath Step grammar rule, with all abbre‐
+viations expanded to their full form:
 
-              selector ::= name child*  |  child+
-              child ::= '/' [1-9][0-9]*
+       Step ::= AxisName '::' NodeTest Predicate*
+       NodeTest ::= NameTest | NodeType '(' ')'
+       NameTest ::= '*' | NCName ':' '*' | (NCName ':')? NCName
+       Predicate ::= '[' Expr ']'
 
-       The  optional  name is an XPointer `shorthand pointer'.  Each
-       child number selects the child with that index (origin 1)  at
-       the  corresponding  level  of  the  XML tree beneath the node
-       selected by the name, or starting at  the  root  of  the  XML
-       tree.  Element returns a tuple ((name, path), err) where name
-       is the top element name or nil if  none  was  specified,  and
-       path is a list of int giving the path of child indices.
+The correspondence is as follows:
 
-       The  most  complex  scheme is xpointer, because its syntax is
-       that of XML's elaborate XPath  expression.   Xpointer  parses
-       such  an  expression  and  returns  a  tuple (e, err) where e
-       refers to an Xpath value that represents the abstract  syntax
-       of the XPath Expr.  Xpointer checks only the syntax of s, and
-       does not check that functions are limited to those  specified
-       by  the  xpointer  scheme (that is consistent with it being a
-       parse of s, rather than an XPointer or XPath evaluator).
+s.axis Represents  the  AxisName  by  one  of  the  constants
+       Aancestor to Aself.
 
-       Xpath and Xstep together represent an abstract syntax of  the
-       XPath grammar.
+s.op   Onametest  or  Onodetype  to  say which rule is repre‐
+       sented
 
-       Xstep represents the XPath Step grammar rule, with all abbre‐
-       viations expanded to their full form:
+s.ns   For a NameTest, gives the XML name space; can  be  for
+       `any  name  space'  or nil for the default name space.
+       For a NodeType, gives the type:  comment,  node,  pro‐
+       cessing-instruction, or text.
 
-              Step ::= AxisName '::' NodeTest Predicate*
-              NodeTest ::= NameTest | NodeType '(' ')'
-              NameTest ::= '*' | NCName ':' '*' | (NCName ':')? NCName
-              Predicate ::= '[' Expr ']'
+s.name Gives the name for a NameTest; can be for `any name'.
 
-       The correspondence is as follows:
+s.arg  The optional literal parameter to a NodeType that is a
+       processing-instruction.
 
-       s.axis Represents  the  AxisName  by  one  of  the  constants
-              Aancestor to Aself.
+s.preds
+       A list  of  Xpath  values  representing  the  optional
+       sequence of Predicate expressions
 
-       s.op   Onametest  or  Onodetype  to  say which rule is repre‐
-              sented
+s.text()
+       Returns  a  string  representing  the Xstep in textual
+       form.
 
-       s.ns   For a NameTest, gives the XML name space; can  be  for
-              `any  name  space'  or nil for the default name space.
-              For a NodeType, gives the type:  comment,  node,  pro‐
-              cessing-instruction, or text.
+s.axisname(a)
+       Returns the printable text for axis code a (ie, one of
+       Aancestor to Aself)
 
-       s.name Gives the name for a NameTest; can be for `any name'.
+Xpath  values  represent  an  abstract  syntax  for  an XPath
+expression.  Briefly, an expression follows the grammar below
+(see the XPath specification for the full concrete syntax).
 
-       s.arg  The optional literal parameter to a NodeType that is a
-              processing-instruction.
+       e ::=  e 'or' e
+          |   e 'and' e
+          |   e ('=' | '!=') e
+          |   e ('<' | '<=' | '>=' | '>') e
+          |   e ('+' | '-') e
+          |   e ('*' | 'div' | 'mod') e
+          |   '-' e
+          |   e '|' e
+          |   filter
+          |   path
+       filter ::= primary predicate* (('/' | '//') relpath)?
+       primary ::= '$' QName | '(' e ')' | Literal | Number | FunctionName '(' (e (',' e)*) ')'
+       path ::= '/' relpath | relpath
+       relpath ::= relpath '/' relpath | relpath '//' relpath | Step
 
-       s.preds
-              A list  of  Xpath  values  representing  the  optional
-              sequence of Predicate expressions
+Most  of  e  is  represented  by a binary tree using the pick
+Xpath.E(op, l, r) where op is an operator symbol (either  the
+character  itself or one of the constants One, Odiv, etc. for
+compound symbols), and l and r represent the  operands.   The
+only unary operator Oneg has its operand in l.  A filter uses
+the binary operator Xpath.E(Ofilter, e, pred) to  apply  each
+predicate  to  the  preceding primary or predicate.  A filter
+also uses Xpath.E(Opath, e, relpath) to  apply  the  optional
+relpath (represented by a value of Xpath.Path) to the preced‐
+ing part of the filter expression.
 
-       s.text()
-              Returns  a  string  representing  the Xstep in textual
-              form.
+The other cases in the pick adt  correspond  to  the  various
+choices  of  path  and primary.  Integer and real numbers are
+distinguished.  Literal is represented by Xpath.Str; variable
+references  (ie,  $QName) are represented by XPath.Var, where
+ns gives the optional XML name space of the  name.   Path  is
+represented  by  Xpath.Path(abs, steps) where abs is non-zero
+if and only if the path  is  absolute  (starts  with  `/'  or
+`//'),  and steps lists the Xstep values corresponding to the
+slash-separated Steps in the grammar.  Abbreviated forms such
+as `//' are converted by xpointer to their full internal form
+in terms of `/', as defined by the specification, so there is
+no need to distinguish the delimiters in this representation.
 
-       s.axisname(a)
-              Returns the printable text for axis code a (ie, one of
-              Aancestor to Aself)
+== source
+/appl/lib/w3c/xpointers.b
 
-       Xpath  values  represent  an  abstract  syntax  for  an XPath
-       expression.  Briefly, an expression follows the grammar below
-       (see the XPath specification for the full concrete syntax).
+== see ALSO
+``XML     Path     Language     (XPath)     Version    1.0'',
+http://www.w3.org/TR/xpath
+``XPointer framework'', http://www.w3.org/TR/xptr-framework/
+``XPointer element() scheme'', http://www.w3.org/TR/xptr-ele‐
+ment/
+``XPointer xmlns() scheme'', http://www.w3.org/TR/xptr-xmlns/
+``XPointer  xpointer()  scheme'',  http://www.w3.org/TR/xptr-
+xpointer/
 
-              e ::=  e 'or' e
-                 |   e 'and' e
-                 |   e ('=' | '!=') e
-                 |   e ('<' | '<=' | '>=' | '>') e
-                 |   e ('+' | '-') e
-                 |   e ('*' | 'div' | 'mod') e
-                 |   '-' e
-                 |   e '|' e
-                 |   filter
-                 |   path
-              filter ::= primary predicate* (('/' | '//') relpath)?
-              primary ::= '$' QName | '(' e ')' | Literal | Number | FunctionName '(' (e (',' e)*) ')'
-              path ::= '/' relpath | relpath
-              relpath ::= relpath '/' relpath | relpath '//' relpath | Step
-
-       Most  of  e  is  represented  by a binary tree using the pick
-       Xpath.E(op, l, r) where op is an operator symbol (either  the
-       character  itself or one of the constants One, Odiv, etc. for
-       compound symbols), and l and r represent the  operands.   The
-       only unary operator Oneg has its operand in l.  A filter uses
-       the binary operator Xpath.E(Ofilter, e, pred) to  apply  each
-       predicate  to  the  preceding primary or predicate.  A filter
-       also uses Xpath.E(Opath, e, relpath) to  apply  the  optional
-       relpath (represented by a value of Xpath.Path) to the preced‐
-       ing part of the filter expression.
-
-       The other cases in the pick adt  correspond  to  the  various
-       choices  of  path  and primary.  Integer and real numbers are
-       distinguished.  Literal is represented by Xpath.Str; variable
-       references  (ie,  $QName) are represented by XPath.Var, where
-       ns gives the optional XML name space of the  name.   Path  is
-       represented  by  Xpath.Path(abs, steps) where abs is non-zero
-       if and only if the path  is  absolute  (starts  with  `/'  or
-       `//'),  and steps lists the Xstep values corresponding to the
-       slash-separated Steps in the grammar.  Abbreviated forms such
-       as `//' are converted by xpointer to their full internal form
-       in terms of `/', as defined by the specification, so there is
-       no need to distinguish the delimiters in this representation.
-
-SOURCE
-       /appl/lib/w3c/xpointers.b
-
-SEE ALSO
-       ``XML     Path     Language     (XPath)     Version    1.0'',
-       http://www.w3.org/TR/xpath
-       ``XPointer framework'', http://www.w3.org/TR/xptr-framework/
-       ``XPointer element() scheme'', http://www.w3.org/TR/xptr-ele‐
-       ment/
-       ``XPointer xmlns() scheme'', http://www.w3.org/TR/xptr-xmlns/
-       ``XPointer  xpointer()  scheme'',  http://www.w3.org/TR/xptr-
-       xpointer/
-
-                                                    W3C-XPOINTERS(2)

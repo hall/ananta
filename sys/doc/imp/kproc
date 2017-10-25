@@ -1,103 +1,95 @@
-KPROC(10.2)                                              KPROC(10.2)
+= kproc, setpri, swiproc, pexit: kernel process creation, priority change, interrupt and termination
 
-NAME
-       kproc, setpri, swiproc, pexit - kernel process creation, pri‐
-       ority change, interrupt and termination
+    void  kproc(char *name, void (*func)(void*), void  *arg,  int flags);
 
-SYNOPSIS
-       void  kproc(char *name, void (*func)(void*), void  *arg,  int
-       flags);
+    int   setpri(int pri);
 
-       int   setpri(int pri);
+    void  swiproc(Proc *p, int interp);
 
-       void  swiproc(Proc *p, int interp);
+    void  pexit(char*, int);
 
-       void  pexit(char*, int);
+Kproc  creates  a new Inferno kernel process to run the func‐
+tion func, which is invoked as (*func)(arg).  The string name
+is  copied  into  the text field of the Proc structure of the
+new process; although the  value  is  not  visible  to  Limbo
+applications, it can appear in system messages written to the
+console.  The process is made  runnable;  it  will  run  when
+selected by the scheduler.
 
-DESCRIPTION
-       Kproc  creates  a new Inferno kernel process to run the func‐
-       tion func, which is invoked as (*func)(arg).  The string name
-       is  copied  into  the text field of the Proc structure of the
-       new process; although the  value  is  not  visible  to  Limbo
-       applications, it can appear in system messages written to the
-       console.  The process is made  runnable;  it  will  run  when
-       selected by the scheduler.
+The new process always acquires the following attributes from
+the creating process:
 
-       The new process always acquires the following attributes from
-       the creating process:
+       owner (Inferno user name)
+       host user and group IDs (in emu only)
+       floating-point attributes
 
-              owner (Inferno user name)
-              host user and group IDs (in emu only)
-              floating-point attributes
+Several resources can be shared with the creating process  on
+request, as determined by flags, which is the logical OR of a
+subset of the following:
 
-       Several resources can be shared with the creating process  on
-       request, as determined by flags, which is the logical OR of a
-       subset of the following:
+KPDUPPG
+       If set, the new process shares  the  caller's  process
+       group,  which includes its process group ID (for kill‐
+       grp), name space (mounts, root and current directory),
+       and PIN for /dev/pin (see cons(3)).
 
-       KPDUPPG
-              If set, the new process shares  the  caller's  process
-              group,  which includes its process group ID (for kill‐
-              grp), name space (mounts, root and current directory),
-              and PIN for /dev/pin (see cons(3)).
+KPDUPFDG
+       If  set,  the  new  process  shares  the caller's file
+       descriptor group; otherwise, it has no file descriptor
+       group,  and  (if  it  intends to open files) must call
+       newfgrp(10.2)  to  obtain  an  empty  file  descriptor
+       group.
 
-       KPDUPFDG
-              If  set,  the  new  process  shares  the caller's file
-              descriptor group; otherwise, it has no file descriptor
-              group,  and  (if  it  intends to open files) must call
-              newfgrp(10.2)  to  obtain  an  empty  file  descriptor
-              group.
+KPDUPENVG
+       If  set,  the new process shares the caller's environ‐
+       ment group (currently applies in emu only).
 
-       KPDUPENVG
-              If  set,  the new process shares the caller's environ‐
-              ment group (currently applies in emu only).
+KPDUP  Equivalent to all of the above.
 
-       KPDUP  Equivalent to all of the above.
+If a particular option is not set, the new process will  have
+a nil reference for the corresponding resource.
 
-       If a particular option is not set, the new process will  have
-       a nil reference for the corresponding resource.
+Setpri  sets  the  priority of the calling process to pri and
+returns its previous priority level.  If a (now) higher  pri‐
+ority  process  is  ready to run, the system will reschedule.
+The available priority levels are shown below, arranged  from
+highest to lowest priority, with examples of the type of pro‐
+cesses intended to use them:
 
-       Setpri  sets  the  priority of the calling process to pri and
-       returns its previous priority level.  If a (now) higher  pri‐
-       ority  process  is  ready to run, the system will reschedule.
-       The available priority levels are shown below, arranged  from
-       highest to lowest priority, with examples of the type of pro‐
-       cesses intended to use them:
+PriLock
+       The highest priority, used by lock(10.2) for a process
+       entering a critical section
 
-       PriLock
-              The highest priority, used by lock(10.2) for a process
-              entering a critical section
+PriRealtime
+       Intended  for  processes  supporting applications with
+       real-time constraints, such as video telephony.
 
-       PriRealtime
-              Intended  for  processes  supporting applications with
-              real-time constraints, such as video telephony.
+PriHicodec
+       MPEG codec
 
-       PriHicodec
-              MPEG codec
+PriLocodec
+       Audio codec
 
-       PriLocodec
-              Audio codec
+PriHi  Any task with keen time constraints.
 
-       PriHi  Any task with keen time constraints.
+PriNormal
+       The priority of most processes in the system.
 
-       PriNormal
-              The priority of most processes in the system.
+PriLo
 
-       PriLo
+PriBackground
 
-       PriBackground
+Swiproc sends a software interrupt to process p,  causing  it
+to  wake  from sleep(10.2) with an error(10.2) `interrupted'.
+Unless interp is non-zero (ie, the  Dis  interpreter  is  the
+caller), the process is also marked `killed'.
 
-       Swiproc sends a software interrupt to process p,  causing  it
-       to  wake  from sleep(10.2) with an error(10.2) `interrupted'.
-       Unless interp is non-zero (ie, the  Dis  interpreter  is  the
-       caller), the process is also marked `killed'.
+An  Inferno  process  terminates  only  when  it calls pexit,
+thereby terminating itself.  There is no  mechanism  for  one
+process  to force the termination of another, although it can
+send a software interrupt using swiproc.   The  arguments  to
+pexit  are  ignored in Inferno, but are included for compati‐
+bility with kernel components of Plan 9; use
 
-       An  Inferno  process  terminates  only  when  it calls pexit,
-       thereby terminating itself.  There is no  mechanism  for  one
-       process  to force the termination of another, although it can
-       send a software interrupt using swiproc.   The  arguments  to
-       pexit  are  ignored in Inferno, but are included for compati‐
-       bility with kernel components of Plan 9; use
+       pexit("", 0);
 
-              pexit("", 0);
-
-                                                         KPROC(10.2)

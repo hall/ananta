@@ -1,33 +1,27 @@
-SYS-CHDIR(2)             System Calls Manual            SYS-CHDIR(2)
+= chdir: change working directory
 
-NAME
-       chdir - change working directory
+    include "sys.m";
+    sys := load Sys Sys->PATH;
 
-SYNOPSIS
-       include "sys.m";
-       sys := load Sys Sys->PATH;
+    chdir:  fn(path: string): int;
 
-       chdir:  fn(path: string): int;
+Chdir  changes  the working directory of the invoking process
+and its file name space group to path.
 
-DESCRIPTION
-       Chdir  changes  the working directory of the invoking process
-       and its file name space group to path.
+The working directory is the starting  point  for  evaluating
+file  names  that  do  not begin with / or #, as explained in
+sys-intro(2).
 
-       The working directory is the starting  point  for  evaluating
-       file  names  that  do  not begin with / or #, as explained in
-       sys-intro(2).
+When Inferno boots, the initial process has / for its working
+directory.
 
-       When Inferno boots, the initial process has / for its working
-       directory.
+Applications that invoke chdir normally use the FORKNS option
+of sys-pctl(2) to prevent the change from affecting the  sur‐
+rounding environment.
 
-       Applications that invoke chdir normally use the FORKNS option
-       of sys-pctl(2) to prevent the change from affecting the  sur‐
-       rounding environment.
+== diagnostics
+Returns 0 on success; -1 on failure.
 
-DIAGNOSTICS
-       Returns 0 on success; -1 on failure.
+== see ALSO
+sys-intro(2)
 
-SEE ALSO
-       sys-intro(2)
-
-                                                        SYS-CHDIR(2)

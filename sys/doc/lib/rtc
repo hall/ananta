@@ -1,49 +1,42 @@
-RTC(3)                Library Functions Manual                RTC(3)
+= rtc: real-time clock and non-volatile memory
 
-NAME
-       rtc - real-time clock and non-volatile memory
+    bind -b '#r' /dev
 
-SYNOPSIS
-       bind -b '#r' /dev
+    /dev/rtc
+    /dev/rtcid
+    /dev/nvram
 
-       /dev/rtc
-       /dev/rtcid
-       /dev/nvram
+The rtc device provides access to the real-time clock and any
+associated non-volatile memory.  Physical  devices  supported
+include  the Mostek MK48T12-15 Zeropower/Timekeeper, the Dal‐
+las Semiconductor DS1687 real-time  clock,  and  the  IBM  PC
+real-time clock on various platforms.
 
-DESCRIPTION
-       The rtc device provides access to the real-time clock and any
-       associated non-volatile memory.  Physical  devices  supported
-       include  the Mostek MK48T12-15 Zeropower/Timekeeper, the Dal‐
-       las Semiconductor DS1687 real-time  clock,  and  the  IBM  PC
-       real-time clock on various platforms.
+The  rtc file when read returns the time as a decimal number,
+expressed as the number of seconds since the epoch, 1 January
+1970 00:00 GMT.  The clock is set by writing the desired num‐
+ber of seconds since the epoch to the file.  Setting the time
+in  this  device  has  no  effect  on system time returned by
+/dev/time (see cons(3)), which  must  be  set  separately  if
+desired.   For  example,  when  rtc  is available osinit (see
+init(8)) uses it to set /dev/time.
 
-       The  rtc file when read returns the time as a decimal number,
-       expressed as the number of seconds since the epoch, 1 January
-       1970 00:00 GMT.  The clock is set by writing the desired num‐
-       ber of seconds since the epoch to the file.  Setting the time
-       in  this  device  has  no  effect  on system time returned by
-       /dev/time (see cons(3)), which  must  be  set  separately  if
-       desired.   For  example,  when  rtc  is available osinit (see
-       init(8)) uses it to set /dev/time.
+The nvram file provides access  to  the  non-volatile  memory
+commonly  implemented  by  these  clock  chips.  There are no
+cross-platform standards for the range of addresses that  can
+be  safely  used by Inferno, or for the content and format of
+the data.
 
-       The nvram file provides access  to  the  non-volatile  memory
-       commonly  implemented  by  these  clock  chips.  There are no
-       cross-platform standards for the range of addresses that  can
-       be  safely  used by Inferno, or for the content and format of
-       the data.
+The rtcid file holds a decimal number giving the serial  num‐
+ber of the device, set during manufacturing.  The file exists
+only if a particular device provides such a number.
 
-       The rtcid file holds a decimal number giving the serial  num‐
-       ber of the device, set during manufacturing.  The file exists
-       only if a particular device provides such a number.
+== source
+/os/*/devrtc.c
 
-SOURCE
-       /os/*/devrtc.c
+== see ALSO
+cons(3)
 
-SEE ALSO
-       cons(3)
-
-BUGS
-       The rtc file returns seconds but /dev/time returns  microsec‐
-       onds: it's history.
-
-                                                              RTC(3)
+== bugs
+The rtc file returns seconds but /dev/time returns  microsec‐
+onds: it's history.

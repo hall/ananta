@@ -1,71 +1,64 @@
-MPEG(3)               Library Functions Manual               MPEG(3)
+= mpeg: Boffin mpeg decoder
 
-NAME
-       mpeg - Boffin mpeg decoder
+    bind -b #E /dev
 
-SYNOPSIS
-       bind -b #E /dev
+    /dev/mpeg
+    /dev/mpegctl
 
-       /dev/mpeg
-       /dev/mpegctl
+The  mpeg  device  serves two files giving access to a Boffin
+MPEG-1 decoder.
 
-DESCRIPTION
-       The  mpeg  device  serves two files giving access to a Boffin
-       MPEG-1 decoder.
+The control file mpegctl when read returns lines of text giv‐
+ing the device's properties.  Each line starts video or audio
+followed by a  list  of  capabilities.   The  current  device
+returns a fixed set:
 
-       The control file mpegctl when read returns lines of text giv‐
-       ing the device's properties.  Each line starts video or audio
-       followed by a  list  of  capabilities.   The  current  device
-       returns a fixed set:
+       video mpeg1,sif
+       audio musicam,I musicam,II
 
-              video mpeg1,sif
-              audio musicam,I musicam,II
+The control file accepts the following commands:
 
-       The control file accepts the following commands:
+init   Reinitialise  the device's video and audio subsystems;
+       cancel the effect of stop or pause
 
-       init   Reinitialise  the device's video and audio subsystems;
-              cancel the effect of stop or pause
+stop   Stop the display immediately.
 
-       stop   Stop the display immediately.
+pause  Suspend display.
 
-       pause  Suspend display.
+video iso11172 mpeg1,sif
+       Set the output video mode and formats; only this  pre‐
+       cise setting is valid.
 
-       video iso11172 mpeg1,sif
-              Set the output video mode and formats; only this  pre‐
-              cise setting is valid.
+audio format rate
+       There  are  two  choices  for  format: musicam,I (MPEG
+       audio layer 1), with rate from 64000 to 448000 Hz, and
+       musicam,II  (MPEG  audio layer 2) with rate from 48000
+       to 384000.
 
-       audio format rate
-              There  are  two  choices  for  format: musicam,I (MPEG
-              audio layer 1), with rate from 64000 to 448000 Hz, and
-              musicam,II  (MPEG  audio layer 2) with rate from 48000
-              to 384000.
+window minx miny maxx maxy
+       Sets the overlay window on the screen, in screen coor‐
+       dinates.   If  the  window  size  exceeds 320x240, the
+       image is scaled accordingly, separately in each dimen‐
+       sion.
 
-       window minx miny maxx maxy
-              Sets the overlay window on the screen, in screen coor‐
-              dinates.   If  the  window  size  exceeds 320x240, the
-              image is scaled accordingly, separately in each dimen‐
-              sion.
+The  data  file  mpeg  is  an exclusive-use device.  Once the
+device has been initialised and an output  window  set  using
+the  init  and  window  commands  to the control file, and an
+audio format selected by the audio command, MPEG data can  be
+written in the agreed format to the mpeg file, for display in
+the output window.  The driver buffers the data  written  and
+implements flow control between application and the hardware.
+When closed, the device waits for the last block of  data  to
+display before returning to the application.
 
-       The  data  file  mpeg  is  an exclusive-use device.  Once the
-       device has been initialised and an output  window  set  using
-       the  init  and  window  commands  to the control file, and an
-       audio format selected by the audio command, MPEG data can  be
-       written in the agreed format to the mpeg file, for display in
-       the output window.  The driver buffers the data  written  and
-       implements flow control between application and the hardware.
-       When closed, the device waits for the last block of  data  to
-       display before returning to the application.
+== source
+/os/pc/devmpeg.c
 
-SOURCE
-       /os/pc/devmpeg.c
+== configuration
+mpeg0=port=0x1e0 irq=15 dma=6
 
-CONFIGURATION
-       mpeg0=port=0x1e0 irq=15 dma=6
+== see ALSO
+mpeg(2), stream in sys-read(2)
 
-SEE ALSO
-       mpeg(2), stream in sys-read(2)
-
-DIAGNOSTICS
-       An error results on a write to the device once stopped.
-
-                                                             MPEG(3)
+== diagnostics
+An error results on a write to the device once stopped.

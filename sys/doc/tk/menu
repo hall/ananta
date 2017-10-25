@@ -1,463 +1,458 @@
-MENU(9)               Kernel Developer's Manual              MENU(9)
+= menu: Create and manipulate menu widgets
 
-NAME
-       menu - Create and manipulate menu widgets
+    menu pathName ?options?
 
-SYNOPSIS
-       menu pathName ?options?
+== standard OPTIONS
+-activebackground -borderwidth   -foreground
+-activeforeground -disabledcolor -relief
+-background       -font
 
-STANDARD OPTIONS
-       -activebackground -borderwidth   -foreground
-       -activeforeground -disabledcolor -relief
-       -background       -font
+== widget-SPECIFIC OPTIONS
+-postcommand command
+       If this option is specified then it provides a Tk com‐
+       mand to execute each time the  menu  is  posted.   The
+       command  is  invoked by the post widget command before
+       posting the menu.
 
-WIDGET-SPECIFIC OPTIONS
-       -postcommand command
-              If this option is specified then it provides a Tk com‐
-              mand to execute each time the  menu  is  posted.   The
-              command  is  invoked by the post widget command before
-              posting the menu.
+-selectcolor colour
+       For menu entries that are check buttons or radio  but‐
+       tons,  this  option specifies the colour to display in
+       the indicator when the check button or radio button is
+       selected.
 
-       -selectcolor colour
-              For menu entries that are check buttons or radio  but‐
-              tons,  this  option specifies the colour to display in
-              the indicator when the check button or radio button is
-              selected.
+== introduction
+The menu command creates a new top-level window (given by the
+pathName argument) and makes it into a  menu  widget.   Addi‐
+tional options, described above, may be specified on the com‐
+mand line to configure  aspects  of  the  menu  such  as  its
+colours  and  font.   The  menu  command returns its pathName
+argument.  At the time this command is  invoked,  there  must
+not exist a window named pathName.
 
-INTRODUCTION
-       The menu command creates a new top-level window (given by the
-       pathName argument) and makes it into a  menu  widget.   Addi‐
-       tional options, described above, may be specified on the com‐
-       mand line to configure  aspects  of  the  menu  such  as  its
-       colours  and  font.   The  menu  command returns its pathName
-       argument.  At the time this command is  invoked,  there  must
-       not exist a window named pathName.
+A  menu  is  a  widget that displays a collection of one-line
+entries arranged in a column.  There exist several  different
+types of entries, each with different properties.  Entries of
+different types may be  combined  in  a  single  menu.   Menu
+entries  are  not  the  same as entry widgets.  In fact, menu
+entries are not even distinct widgets; the entire menu is one
+widget.
 
-       A  menu  is  a  widget that displays a collection of one-line
-       entries arranged in a column.  There exist several  different
-       types of entries, each with different properties.  Entries of
-       different types may be  combined  in  a  single  menu.   Menu
-       entries  are  not  the  same as entry widgets.  In fact, menu
-       entries are not even distinct widgets; the entire menu is one
-       widget.
+Menu  entries are displayed with up to three separate fields.
+The main field is a label in the form of  a  text  string,  a
+bitmap,  or  an image, controlled by the -label, -bitmap, and
+-image options for the entry.  The second field is  a  marker
+for  cascade entries, showing that the entry will post a cas‐
+cade menu.  It is displayed at the  right-hand  edge  of  the
+entry.   The  third  field is an indicator.  The indicator is
+present only for  checkbutton  or  radiobutton  entries.   It
+indicates  whether  the entry is selected or not, and is dis‐
+played to the left of the entry's string.
 
-       Menu  entries are displayed with up to three separate fields.
-       The main field is a label in the form of  a  text  string,  a
-       bitmap,  or  an image, controlled by the -label, -bitmap, and
-       -image options for the entry.  The second field is  a  marker
-       for  cascade entries, showing that the entry will post a cas‐
-       cade menu.  It is displayed at the  right-hand  edge  of  the
-       entry.   The  third  field is an indicator.  The indicator is
-       present only for  checkbutton  or  radiobutton  entries.   It
-       indicates  whether  the entry is selected or not, and is dis‐
-       played to the left of the entry's string.
+In normal use, an entry becomes active (displays itself  dif‐
+ferently) whenever the mouse pointer is over the entry.  If a
+mouse button is released over the entry  then  the  entry  is
+invoked.  The effect of invocation is different for each type
+of entry; these effects are described below in  the  sections
+on individual entries.
 
-       In normal use, an entry becomes active (displays itself  dif‐
-       ferently) whenever the mouse pointer is over the entry.  If a
-       mouse button is released over the entry  then  the  entry  is
-       invoked.  The effect of invocation is different for each type
-       of entry; these effects are described below in  the  sections
-       on individual entries.
+Entries may be disabled, which causes their labels and accel‐
+erators to be displayed with  dimmer  colours.   The  default
+menu bindings will not allow a disabled entry to be activated
+or invoked.  Disabled entries may  be  re-enabled,  at  which
+point it becomes possible to activate and invoke them again.
 
-       Entries may be disabled, which causes their labels and accel‐
-       erators to be displayed with  dimmer  colours.   The  default
-       menu bindings will not allow a disabled entry to be activated
-       or invoked.  Disabled entries may  be  re-enabled,  at  which
-       point it becomes possible to activate and invoke them again.
+== command ENTRIES
+The  most common kind of menu entry is a command entry, which
+behaves much like a button widget.  When a command  entry  is
+invoked,  a Tk command is executed.  The Tk command is speci‐
+fied with the -command option.
 
-COMMAND ENTRIES
-       The  most common kind of menu entry is a command entry, which
-       behaves much like a button widget.  When a command  entry  is
-       invoked,  a Tk command is executed.  The Tk command is speci‐
-       fied with the -command option.
+== separator ENTRIES
+A separator is an entry that is  displayed  as  a  horizontal
+dividing  line.  A separator may not be activated or invoked,
+and it has no behaviour other than its display appearance.
 
-SEPARATOR ENTRIES
-       A separator is an entry that is  displayed  as  a  horizontal
-       dividing  line.  A separator may not be activated or invoked,
-       and it has no behaviour other than its display appearance.
+== checkbutton ENTRIES
+A checkbutton menu entry behaves much like a checkbutton wid‐
+get.   When  it  is invoked it toggles back and forth between
+the selected  and  deselected  states.   When  the  entry  is
+selected,  the  value  ``1'' is stored in a particular global
+variable (as determined by -variable option for  the  entry);
+when the entry is deselected the value ``0'' is stored in the
+global variable.  An indicator box is displayed to  the  left
+of  the  label  in  a  checkbutton  entry.   If  the entry is
+selected then the indicator's  center  is  displayed  in  the
+colour given by the -selectcolor option for the entry; other‐
+wise the indicator's center is displayed  in  the  background
+colour for the menu.  If a -command option is specified for a
+checkbutton entry, then its value is evaluated as a  Tk  com‐
+mand each time the entry is invoked;  this happens after tog‐
+gling the entry's selected state.
 
-CHECKBUTTON ENTRIES
-       A checkbutton menu entry behaves much like a checkbutton wid‐
-       get.   When  it  is invoked it toggles back and forth between
-       the selected  and  deselected  states.   When  the  entry  is
-       selected,  the  value  ``1'' is stored in a particular global
-       variable (as determined by -variable option for  the  entry);
-       when the entry is deselected the value ``0'' is stored in the
-       global variable.  An indicator box is displayed to  the  left
-       of  the  label  in  a  checkbutton  entry.   If  the entry is
-       selected then the indicator's  center  is  displayed  in  the
-       colour given by the -selectcolor option for the entry; other‐
-       wise the indicator's center is displayed  in  the  background
-       colour for the menu.  If a -command option is specified for a
-       checkbutton entry, then its value is evaluated as a  Tk  com‐
-       mand each time the entry is invoked;  this happens after tog‐
-       gling the entry's selected state.
+== radiobutton ENTRIES
+A radiobutton menu entry behaves much like a radiobutton wid‐
+get.   Radiobutton  entries  are organized in groups of which
+only one entry may be selected at a time.  Whenever a partic‐
+ular entry becomes selected it stores a particular value into
+a particular global variable (as determined by the -value and
+-variable  options  for  the  entry).  This action causes any
+previously-selected entry  in  the  same  group  to  deselect
+itself.  Once an entry has become selected, any change to the
+entry's associated variable will cause the entry to  deselect
+itself.   Grouping  of  radiobutton  entries is determined by
+their associated variables:  if two  entries  have  the  same
+associated  variable  then  they  are  in the same group.  An
+indicator diamond is displayed to the left of  the  label  in
+each  radiobutton  entry.   If the entry is selected then the
+indicator's center is displayed in the colour  given  by  the
+-selectcolor  option for the entry; otherwise the indicator's
+center is displayed in the background colour  for  the  menu.
+If  a  -command  option is specified for a radiobutton entry,
+then its value is evaluated as a Tk  command  each  time  the
+entry is invoked;  this happens after selecting the entry.
 
-RADIOBUTTON ENTRIES
-       A radiobutton menu entry behaves much like a radiobutton wid‐
-       get.   Radiobutton  entries  are organized in groups of which
-       only one entry may be selected at a time.  Whenever a partic‐
-       ular entry becomes selected it stores a particular value into
-       a particular global variable (as determined by the -value and
-       -variable  options  for  the  entry).  This action causes any
-       previously-selected entry  in  the  same  group  to  deselect
-       itself.  Once an entry has become selected, any change to the
-       entry's associated variable will cause the entry to  deselect
-       itself.   Grouping  of  radiobutton  entries is determined by
-       their associated variables:  if two  entries  have  the  same
-       associated  variable  then  they  are  in the same group.  An
-       indicator diamond is displayed to the left of  the  label  in
-       each  radiobutton  entry.   If the entry is selected then the
-       indicator's center is displayed in the colour  given  by  the
-       -selectcolor  option for the entry; otherwise the indicator's
-       center is displayed in the background colour  for  the  menu.
-       If  a  -command  option is specified for a radiobutton entry,
-       then its value is evaluated as a Tk  command  each  time  the
-       entry is invoked;  this happens after selecting the entry.
+== cascade ENTRIES
+A cascade entry is one with an associated menu (determined by
+the -menu option).  Cascade entries allow the construction of
+cascading  menus.  The postcascade widget command can be used
+to post and unpost the associated menu just to the  right  of
+the  cascade  entry.   The associated menu must be a child of
+the menu containing the cascade  entry  (this  is  needed  in
+order for menu traversal to work correctly).
 
-CASCADE ENTRIES
-       A cascade entry is one with an associated menu (determined by
-       the -menu option).  Cascade entries allow the construction of
-       cascading  menus.  The postcascade widget command can be used
-       to post and unpost the associated menu just to the  right  of
-       the  cascade  entry.   The associated menu must be a child of
-       the menu containing the cascade  entry  (this  is  needed  in
-       order for menu traversal to work correctly).
+A  cascade  entry  posts its associated menu by invoking a Tk
+command of the form
+       menu post x y
+where menu is the path name of the associated menu, and x and
+y are the screen coordinates of the upper-right corner of the
+cascade entry.  The lower-level menu is unposted by executing
+a Tk command with the form
+       menu unpost
+where menu is the name of the associated menu.
 
-       A  cascade  entry  posts its associated menu by invoking a Tk
-       command of the form
-              menu post x y
-       where menu is the path name of the associated menu, and x and
-       y are the screen coordinates of the upper-right corner of the
-       cascade entry.  The lower-level menu is unposted by executing
-       a Tk command with the form
-              menu unpost
-       where menu is the name of the associated menu.
+If a -command option is specified for a cascade entry then it
+is evaluated as a Tk command whenever the entry is invoked.
 
-       If a -command option is specified for a cascade entry then it
-       is evaluated as a Tk command whenever the entry is invoked.
+== widget COMMAND
+The menu command creates a new Tk command whose name is path‐
+Name.   This command may be used to invoke various operations
+on the widget.  It has the following general form:
+       pathName option ?arg arg ...?
+Option and the args determine the exact behaviour of the com‐
+mand.
 
-WIDGET COMMAND
-       The menu command creates a new Tk command whose name is path‐
-       Name.   This command may be used to invoke various operations
-       on the widget.  It has the following general form:
-              pathName option ?arg arg ...?
-       Option and the args determine the exact behaviour of the com‐
-       mand.
+Many  of  the widget commands for a menu take as one argument
+an indicator of which entry of the menu to operate on.  These
+indicators  are called indexes and may be specified in any of
+the following forms:
 
-       Many  of  the widget commands for a menu take as one argument
-       an indicator of which entry of the menu to operate on.  These
-       indicators  are called indexes and may be specified in any of
-       the following forms:
+number      Specifies the entry numerically, where  0  corre‐
+            sponds  to  the  top-most entry of the menu, 1 to
+            the entry below it, and so on.
 
-       number      Specifies the entry numerically, where  0  corre‐
-                   sponds  to  the  top-most entry of the menu, 1 to
-                   the entry below it, and so on.
+active      Indicates the entry that is currently active.  If
+            no  entry  is active then this form is equivalent
+            to none.  This form may not be abbreviated.
 
-       active      Indicates the entry that is currently active.  If
-                   no  entry  is active then this form is equivalent
-                   to none.  This form may not be abbreviated.
+end         Indicates the bottommost entry in the  menu.   If
+            there  are  no entries in the menu then this form
+            is equivalent to none.   This  form  may  not  be
+            abbreviated.
 
-       end         Indicates the bottommost entry in the  menu.   If
-                   there  are  no entries in the menu then this form
-                   is equivalent to none.   This  form  may  not  be
-                   abbreviated.
+none        Indicates ``no entry at all'';  this is used most
+            commonly with the activate option  to  deactivate
+            all  the  entries in the menu.  In most cases the
+            specification of none causes nothing to happen in
+            the  widget command.  This form may not be abbre‐
+            viated.
 
-       none        Indicates ``no entry at all'';  this is used most
-                   commonly with the activate option  to  deactivate
-                   all  the  entries in the menu.  In most cases the
-                   specification of none causes nothing to happen in
-                   the  widget command.  This form may not be abbre‐
-                   viated.
+@number     In this form, number is treated as a y-coordinate
+            in  the menu's window;  the entry closest to that
+            y-coordinate is used.  For example, ``@0''  indi‐
+            cates the top-most entry in the window.
 
-       @number     In this form, number is treated as a y-coordinate
-                   in  the menu's window;  the entry closest to that
-                   y-coordinate is used.  For example, ``@0''  indi‐
-                   cates the top-most entry in the window.
+The following widget commands are possible for menu widgets:
 
-       The following widget commands are possible for menu widgets:
+pathName activate index
+       Change  the  state  of the entry indicated by index to
+       active and redisplay it using its active colours.  Any
+       previously-active  entry  is deactivated.  If index is
+       specified as none, or if the specified entry  is  dis‐
+       abled,  then  the  menu  ends up with no active entry.
+       Returns an empty string.
 
-       pathName activate index
-              Change  the  state  of the entry indicated by index to
-              active and redisplay it using its active colours.  Any
-              previously-active  entry  is deactivated.  If index is
-              specified as none, or if the specified entry  is  dis‐
-              abled,  then  the  menu  ends up with no active entry.
-              Returns an empty string.
+pathName add type ?option value option value ...?
+       Add a new entry to the bottom of the  menu.   The  new
+       entry's  type is given by type and must be one of cas‐
+       cade, checkbutton, command, radiobutton, or separator.
+       If  additional arguments are present, they specify any
+       of the following options:
 
-       pathName add type ?option value option value ...?
-              Add a new entry to the bottom of the  menu.   The  new
-              entry's  type is given by type and must be one of cas‐
-              cade, checkbutton, command, radiobutton, or separator.
-              If  additional arguments are present, they specify any
-              of the following options:
+       -activebackground value
+              Specifies a background colour to use  for  dis‐
+              playing  this entry when it is active.  If this
+              option is not specified  then  the  activeback‐
+              ground  option  for  the  overall menu is used.
+              This option  is  not  available  for  separator
+              entries.
 
-              -activebackground value
-                     Specifies a background colour to use  for  dis‐
-                     playing  this entry when it is active.  If this
-                     option is not specified  then  the  activeback‐
-                     ground  option  for  the  overall menu is used.
-                     This option  is  not  available  for  separator
-                     entries.
+       -activeforeground value
+              Specifies  a  foreground colour to use for dis‐
+              playing this entry when it is active.  If  this
+              option  is  not  specified then the activefore‐
+              ground option for the  overall  menu  is  used.
+              This  option  is  not  available  for separator
+              entries.
 
-              -activeforeground value
-                     Specifies  a  foreground colour to use for dis‐
-                     playing this entry when it is active.  If  this
-                     option  is  not  specified then the activefore‐
-                     ground option for the  overall  menu  is  used.
-                     This  option  is  not  available  for separator
-                     entries.
+       -background value
+              Specifies a background colour to use  for  dis‐
+              playing  this  entry  when  it is in the normal
+              state (neither active nor disabled).   If  this
+              option  is  not  specified  then the background
+              option for the  overall  menu  is  used.   This
+              option is not available for separator entries.
 
-              -background value
-                     Specifies a background colour to use  for  dis‐
-                     playing  this  entry  when  it is in the normal
-                     state (neither active nor disabled).   If  this
-                     option  is  not  specified  then the background
-                     option for the  overall  menu  is  used.   This
-                     option is not available for separator entries.
+       -bitmap bitmap
+              Specifies  a  bitmap  to  display  in  the menu
+              instead of a textual label.  This option  over‐
+              rides  the -label option but may be reset to an
+              empty string to enable a textual  label  to  be
+              displayed.   If a -image option has been speci‐
+              fied, it overrides -bitmap.  This option is not
+              available for separator entries.
 
-              -bitmap bitmap
-                     Specifies  a  bitmap  to  display  in  the menu
-                     instead of a textual label.  This option  over‐
-                     rides  the -label option but may be reset to an
-                     empty string to enable a textual  label  to  be
-                     displayed.   If a -image option has been speci‐
-                     fied, it overrides -bitmap.  This option is not
-                     available for separator entries.
+       -command value
+              Specifies a Tk command to execute when the menu
+              entry is invoked.  Not available for  separator
+              entries.
 
-              -command value
-                     Specifies a Tk command to execute when the menu
-                     entry is invoked.  Not available for  separator
-                     entries.
+       -font value
+              Specifies  the  font  to  use  when drawing the
+              label or accelerator string in this entry.   If
+              this  option  is  not  specified  then the font
+              option for the  overall  menu  is  used.   This
+              option is not available for separator entries.
 
-              -font value
-                     Specifies  the  font  to  use  when drawing the
-                     label or accelerator string in this entry.   If
-                     this  option  is  not  specified  then the font
-                     option for the  overall  menu  is  used.   This
-                     option is not available for separator entries.
+       -foreground value
+              Specifies  a  foreground colour to use for dis‐
+              playing this entry when it  is  in  the  normal
+              state  (neither  active nor disabled).  If this
+              option is not  specified  then  the  foreground
+              option  for  the  overall  menu  is used.  This
+              option is not available for separator entries.
 
-              -foreground value
-                     Specifies  a  foreground colour to use for dis‐
-                     playing this entry when it  is  in  the  normal
-                     state  (neither  active nor disabled).  If this
-                     option is not  specified  then  the  foreground
-                     option  for  the  overall  menu  is used.  This
-                     option is not available for separator entries.
+       -image value
+              Specifies an  image  to  display  in  the  menu
+              instead  of  a  text string or bitmap The image
+              must have been created by some previous invoca‐
+              tion  of  image  create.  This option overrides
+              the -label and -bitmap options but may be reset
+              to  an empty string to enable a textual or bit‐
+              map label to be displayed.  This option is  not
+              available for separator entries.
 
-              -image value
-                     Specifies an  image  to  display  in  the  menu
-                     instead  of  a  text string or bitmap The image
-                     must have been created by some previous invoca‐
-                     tion  of  image  create.  This option overrides
-                     the -label and -bitmap options but may be reset
-                     to  an empty string to enable a textual or bit‐
-                     map label to be displayed.  This option is  not
-                     available for separator entries.
+       -label value
+              Specifies a string to display as an identifying
+              label in the menu  entry.   Not  available  for
+              separator entries.
 
-              -label value
-                     Specifies a string to display as an identifying
-                     label in the menu  entry.   Not  available  for
-                     separator entries.
-
-              -menu value
-                     Available  only for cascade entries.  Specifies
-                     the path name of the  submenu  associated  with
-                     this entry.  The submenu must be a child of the
-                     menu.
-
-              -selectcolor value
-                     Available only for checkbutton and  radiobutton
-                     entries.   Specifies  the  colour to display in
-                     the indicator when the entry is  selected.   If
-                     this  option  is not specified then the select‐
-                     color option for the menu determines the  indi‐
-                     cator colour.
-
-              -selectimage value
-                     Available  only for checkbutton and radiobutton
-                     entries.  Specifies an image to display in  the
-                     entry  (in  place of the -image option) when it
-                     is selected.  Value is the name  of  an  image,
-                     which  must  have been created by some previous
-                     invocation of image  create.   This  option  is
-                     ignored unless the -image option has been spec‐
-                     ified.
-
-              -state value
-                     Specifies one of three states  for  the  entry:
-                     normal,  active,  or disabled.  In normal state
-                     the entry is displayed using the foreground and
-                     background  colours.  The active state is typi‐
-                     cally used when the pointer is over the  entry.
-                     In  active  state  the entry is displayed using
-                     the   activeforeground   and   activebackground
-                     colours.   Disabled  state means that the entry
-                     should be insensitive:   the  default  bindings
-                     will  refuse  to  activate or invoke the entry.
-                     In this state the entry is displayed  according
-                     to  the  disabledcolor  and background colours.
-                     This option  is  not  available  for  separator
-                     entries.
-
-              -underline value
-                     Specifies  the  integer index of a character to
-                     underline in the entry.  This  option  is  also
-                     queried  by  the  default  bindings and used to
-                     implement keyboard traversal.  0 corresponds to
-                     the  first  character  of the text displayed in
-                     the entry, 1 to the next character, and so  on.
-                     If  a bitmap or image is displayed in the entry
-                     then this option is ignored.   This  option  is
-                     not available for separator entries.
-
-              -value value
-                     Available only for radiobutton entries.  Speci‐
-                     fies the value to store in the entry's  associ‐
-                     ated  variable  when the entry is selected.  If
-                     an empty string is specified, then  the  -label
-                     option  for  the entry as the value to store in
-                     the variable.
-
-              -variable value
-                     Available only for checkbutton and  radiobutton
-                     entries.   Specifies the name of a global value
-                     to set when the entry is selected.  For  check‐
-                     button  entries  the  variable is also set when
-                     the  entry  is  deselected.   For   radiobutton
-                     entries,  changing the variable causes the cur‐
-                     rently-selected entry to deselect itself.
-
-              The add widget command returns an empty string.
-
-       pathName cget option
-              Returns the current value of the configuration  option
-              given  by  option.   Option may have any of the values
-              accepted by the menu command.
-
-       pathName configure ?option? ?value option value ...?
-              Query or modify the configuration options of the  wid‐
-              get.  If no option is specified, returns a list of all
-              of the available options for pathName.  If one or more
-              option-value  pairs  are  specified,  then the command
-              modifies the given widget option(s) to have the  given
-              value(s);   in  this case the command returns an empty
-              string.  Option may have any of the values accepted by
-              the menu command.
-
-       pathName delete index1 ?index2?
-              Delete  all  of  the  menu  entries between index1 and
-              index2  inclusive.   If  index2  is  omitted  then  it
-              defaults to index1.
-
-       pathName entrycget index option
-              Returns  the  current  value of a configuration option
-              for the entry given by index.  Option may have any  of
-              the values accepted by the add widget command.
-
-       pathName entryconfigure index ?options?
-              This  command  is  similar  to  the configure command,
-              except that it applies to the options for an  individ‐
-              ual  entry,  whereas  configure applies to the options
-              for the menu as a whole.  Options may have any of  the
-              values accepted by the add widget command.  If options
-              are specified, options are modified  as  indicated  in
-              the command and the command returns an empty string.
-
-       pathName index index
-              Returns the numerical index corresponding to index, or
-              none if index was specified as none.
-
-       pathName insert index type ?option value option value ...?
-              Same as the add widget command except that it  inserts
-              the  new  entry  just before the entry given by index,
-              instead of appending to the  end  of  the  menu.   The
-              type, option, and value arguments have the same inter‐
-              pretation as for the add widget command.
-
-       pathName invoke index
-              Invoke the action of the menu entry.  See the sections
-              on  the  individual  entries above for details on what
-              happens.  If the menu entry is disabled  then  nothing
-              happens.   If  the entry has a command associated with
-              it then the result of that command is returned as  the
-              result  of  the  invoke widget command.  Otherwise the
-              result is an empty string.   Note:   invoking  a  menu
-              entry  does  not  automatically  unpost the menu;  the
-              default bindings normally take  care  of  this  before
-              invoking the invoke widget command.
-
-       pathName post x y
-              Arrange  for the menu to be displayed on the screen at
-              the screen coordinates given by x and y.  These  coor‐
-              dinates  are  adjusted  if necessary to guarantee that
-              the entire menu is visible on the screen.   This  com‐
-              mand  normally  returns an empty string.  If the post‐
-              command option has been specified, then its  value  is
-              executed  as  a  Tk script before posting the menu and
-              the result of that script is returned as the result of
-              the  post  widget  command.  If an error returns while
-              executing the command,  then  the  error  is  returned
-              without posting the menu.
-
-       pathName postcascade index
-              Posts  the  submenu  associated with the cascade entry
-              given by index, and unposts any previously posted sub‐
-              menu.  If index doesn't correspond to a cascade entry,
-              or if pathName isn't posted, the command has no effect
-              except to unpost any currently posted submenu.
-
-       pathName type index
-              Returns  the  type  of  the menu entry given by index.
-              This is the type argument passed  to  the  add  widget
-              command when the entry was created, such as command or
-              separator.
-
-       pathName unpost
-              Unmap the window so that it is  no  longer  displayed.
-              If  a lower-level cascaded menu is posted, unpost that
-              menu.  Returns an empty string.
-
-       pathName yposition index
-              Returns  a  decimal  string  giving  the  y-coordinate
-              within  the  menu  window  of the topmost pixel in the
-              entry specified by index.
-
-DEFAULT BINDINGS
-       Tk automatically creates bindings for menus  that  give  them
-       the following default behaviour:
-
-       [1]    When the mouse enters a menu, the entry underneath the
-              mouse cursor activates;  as the mouse moves around the
-              menu, the active entry changes to track the mouse.
-
-       [2]    When the mouse leaves a menu all of the entries in the
-              menu deactivate, except in the special case where  the
-              mouse moves from a menu to a cascaded submenu.
-
-       [3]    When  a  button  is  released  over a menu, the active
-              entry (if any) is  invoked.   The  menu  also  unposts
-              unless it is a torn-off menu.
-
-       [4]    If  any  of  the entries in a menu have letters under‐
-              lined with with -underline option, then  pressing  one
-              of the underlined letters (or its upper-case or lower-
-              case equivalent) invokes that entry  and  unposts  the
+       -menu value
+              Available  only for cascade entries.  Specifies
+              the path name of the  submenu  associated  with
+              this entry.  The submenu must be a child of the
               menu.
 
-       Disabled  menu  entries are non-responsive:  they don't acti‐
-       vate and they ignore mouse button presses and releases.
+       -selectcolor value
+              Available only for checkbutton and  radiobutton
+              entries.   Specifies  the  colour to display in
+              the indicator when the entry is  selected.   If
+              this  option  is not specified then the select‐
+              color option for the menu determines the  indi‐
+              cator colour.
 
-       The behaviour of menus can be changed by defining  new  bind‐
-       ings for individual widgets.
+       -selectimage value
+              Available  only for checkbutton and radiobutton
+              entries.  Specifies an image to display in  the
+              entry  (in  place of the -image option) when it
+              is selected.  Value is the name  of  an  image,
+              which  must  have been created by some previous
+              invocation of image  create.   This  option  is
+              ignored unless the -image option has been spec‐
+              ified.
 
-BUGS
-       The  first  time any colour option of an entry is configured,
-       all of the menu colour option values are captured and set  in
-       the  entry.   Any  subsequent  changes  to  the menu's colour
-       options will not be reflected in the entry.
+       -state value
+              Specifies one of three states  for  the  entry:
+              normal,  active,  or disabled.  In normal state
+              the entry is displayed using the foreground and
+              background  colours.  The active state is typi‐
+              cally used when the pointer is over the  entry.
+              In  active  state  the entry is displayed using
+              the   activeforeground   and   activebackground
+              colours.   Disabled  state means that the entry
+              should be insensitive:   the  default  bindings
+              will  refuse  to  activate or invoke the entry.
+              In this state the entry is displayed  according
+              to  the  disabledcolor  and background colours.
+              This option  is  not  available  for  separator
+              entries.
 
-SEE ALSO
-       options(9), types(9)
+       -underline value
+              Specifies  the  integer index of a character to
+              underline in the entry.  This  option  is  also
+              queried  by  the  default  bindings and used to
+              implement keyboard traversal.  0 corresponds to
+              the  first  character  of the text displayed in
+              the entry, 1 to the next character, and so  on.
+              If  a bitmap or image is displayed in the entry
+              then this option is ignored.   This  option  is
+              not available for separator entries.
 
-                                                             MENU(9)
+       -value value
+              Available only for radiobutton entries.  Speci‐
+              fies the value to store in the entry's  associ‐
+              ated  variable  when the entry is selected.  If
+              an empty string is specified, then  the  -label
+              option  for  the entry as the value to store in
+              the variable.
+
+       -variable value
+              Available only for checkbutton and  radiobutton
+              entries.   Specifies the name of a global value
+              to set when the entry is selected.  For  check‐
+              button  entries  the  variable is also set when
+              the  entry  is  deselected.   For   radiobutton
+              entries,  changing the variable causes the cur‐
+              rently-selected entry to deselect itself.
+
+       The add widget command returns an empty string.
+
+pathName cget option
+       Returns the current value of the configuration  option
+       given  by  option.   Option may have any of the values
+       accepted by the menu command.
+
+pathName configure ?option? ?value option value ...?
+       Query or modify the configuration options of the  wid‐
+       get.  If no option is specified, returns a list of all
+       of the available options for pathName.  If one or more
+       option-value  pairs  are  specified,  then the command
+       modifies the given widget option(s) to have the  given
+       value(s);   in  this case the command returns an empty
+       string.  Option may have any of the values accepted by
+       the menu command.
+
+pathName delete index1 ?index2?
+       Delete  all  of  the  menu  entries between index1 and
+       index2  inclusive.   If  index2  is  omitted  then  it
+       defaults to index1.
+
+pathName entrycget index option
+       Returns  the  current  value of a configuration option
+       for the entry given by index.  Option may have any  of
+       the values accepted by the add widget command.
+
+pathName entryconfigure index ?options?
+       This  command  is  similar  to  the configure command,
+       except that it applies to the options for an  individ‐
+       ual  entry,  whereas  configure applies to the options
+       for the menu as a whole.  Options may have any of  the
+       values accepted by the add widget command.  If options
+       are specified, options are modified  as  indicated  in
+       the command and the command returns an empty string.
+
+pathName index index
+       Returns the numerical index corresponding to index, or
+       none if index was specified as none.
+
+pathName insert index type ?option value option value ...?
+       Same as the add widget command except that it  inserts
+       the  new  entry  just before the entry given by index,
+       instead of appending to the  end  of  the  menu.   The
+       type, option, and value arguments have the same inter‐
+       pretation as for the add widget command.
+
+pathName invoke index
+       Invoke the action of the menu entry.  See the sections
+       on  the  individual  entries above for details on what
+       happens.  If the menu entry is disabled  then  nothing
+       happens.   If  the entry has a command associated with
+       it then the result of that command is returned as  the
+       result  of  the  invoke widget command.  Otherwise the
+       result is an empty string.   Note:   invoking  a  menu
+       entry  does  not  automatically  unpost the menu;  the
+       default bindings normally take  care  of  this  before
+       invoking the invoke widget command.
+
+pathName post x y
+       Arrange  for the menu to be displayed on the screen at
+       the screen coordinates given by x and y.  These  coor‐
+       dinates  are  adjusted  if necessary to guarantee that
+       the entire menu is visible on the screen.   This  com‐
+       mand  normally  returns an empty string.  If the post‐
+       command option has been specified, then its  value  is
+       executed  as  a  Tk script before posting the menu and
+       the result of that script is returned as the result of
+       the  post  widget  command.  If an error returns while
+       executing the command,  then  the  error  is  returned
+       without posting the menu.
+
+pathName postcascade index
+       Posts  the  submenu  associated with the cascade entry
+       given by index, and unposts any previously posted sub‐
+       menu.  If index doesn't correspond to a cascade entry,
+       or if pathName isn't posted, the command has no effect
+       except to unpost any currently posted submenu.
+
+pathName type index
+       Returns  the  type  of  the menu entry given by index.
+       This is the type argument passed  to  the  add  widget
+       command when the entry was created, such as command or
+       separator.
+
+pathName unpost
+       Unmap the window so that it is  no  longer  displayed.
+       If  a lower-level cascaded menu is posted, unpost that
+       menu.  Returns an empty string.
+
+pathName yposition index
+       Returns  a  decimal  string  giving  the  y-coordinate
+       within  the  menu  window  of the topmost pixel in the
+       entry specified by index.
+
+== default BINDINGS
+Tk automatically creates bindings for menus  that  give  them
+the following default behaviour:
+
+[1]    When the mouse enters a menu, the entry underneath the
+       mouse cursor activates;  as the mouse moves around the
+       menu, the active entry changes to track the mouse.
+
+[2]    When the mouse leaves a menu all of the entries in the
+       menu deactivate, except in the special case where  the
+       mouse moves from a menu to a cascaded submenu.
+
+[3]    When  a  button  is  released  over a menu, the active
+       entry (if any) is  invoked.   The  menu  also  unposts
+       unless it is a torn-off menu.
+
+[4]    If  any  of  the entries in a menu have letters under‐
+       lined with with -underline option, then  pressing  one
+       of the underlined letters (or its upper-case or lower-
+       case equivalent) invokes that entry  and  unposts  the
+       menu.
+
+Disabled  menu  entries are non-responsive:  they don't acti‐
+vate and they ignore mouse button presses and releases.
+
+The behaviour of menus can be changed by defining  new  bind‐
+ings for individual widgets.
+
+== bugs
+The  first  time any colour option of an entry is configured,
+all of the menu colour option values are captured and set  in
+the  entry.   Any  subsequent  changes  to  the menu's colour
+options will not be reflected in the entry.
+
+== see ALSO
+options(9), types(9)
+

@@ -1,53 +1,47 @@
-RABIN(2)                 System Calls Manual                RABIN(2)
+= rabin: rabin fingerprinting
 
-NAME
-       rabin - rabin fingerprinting
+    include "rabin.m";
+    rabin := load Rabin Rabin->PATH;
+    Rcfg, Rfile: import rabin;
 
-SYNOPSIS
-       include "rabin.m";
-       rabin := load Rabin Rabin->PATH;
-       Rcfg, Rfile: import rabin;
+    init:     fn(bufio: Bufio);
+    open:     fn(rcfg: ref Rcfg, b: ref Iobuf, min, max: int): (ref Rfile, string);
 
-       init:     fn(bufio: Bufio);
-       open:     fn(rcfg: ref Rcfg, b: ref Iobuf, min, max: int): (ref Rfile, string);
+    Rcfg: adt {
+         mk:  fn(prime, width, mod: int): (ref Rcfg, string);
+    };
 
-       Rcfg: adt {
-            mk:  fn(prime, width, mod: int): (ref Rcfg, string);
-       };
+    Rfile: adt {
+         read:     fn(r: self ref Rfile): (array of byte, big, string);
+    };
 
-       Rfile: adt {
-            read:     fn(r: self ref Rfile): (array of byte, big, string);
-       };
+Rabin  implements a data fingerprinting algorithm.  A rolling
+checksum is calculated while reading data.  Certain  checksum
+values  are taken to be data boundaries and used to split the
+data into chunks.
 
-DESCRIPTION
-       Rabin  implements a data fingerprinting algorithm.  A rolling
-       checksum is calculated while reading data.  Certain  checksum
-       values  are taken to be data boundaries and used to split the
-       data into chunks.
+Rcfg represents the parameters to the algorithm; Rcfg.mk cre‐
+ates  a new instance.  Prime should be a prime number.  Width
+is the width of the rolling  checksum  window  in  bytes.   A
+wider  window  results  in more diverse boundary patterns.  A
+window of 30 bytes should be reasonable for most  uses.   Mod
+effectively  sets  the  mean desired chunk size.  The rolling
+checksum is calculated  modulo  mod.   All  three  parameters
+influence where chunk boundaries will be found.
 
-       Rcfg represents the parameters to the algorithm; Rcfg.mk cre‐
-       ates  a new instance.  Prime should be a prime number.  Width
-       is the width of the rolling  checksum  window  in  bytes.   A
-       wider  window  results  in more diverse boundary patterns.  A
-       window of 30 bytes should be reasonable for most  uses.   Mod
-       effectively  sets  the  mean desired chunk size.  The rolling
-       checksum is calculated  modulo  mod.   All  three  parameters
-       influence where chunk boundaries will be found.
+Rfile represents a file to read chunks from.  Open returns an
+initialised Rfile or an error string.  Min and  max  are  the
+minimum  and  maximum  size  in  bytes of chunks that will be
+returned.  Only the last chunk in a file can be smaller  than
+the minimum chunk size.  Note that the mean chunk size may be
+off due to these parameters.  Data  is  read  from  Iobuf  b.
+Rfile.read  returns  subsequent  chunks  of data and the file
+offset at which they were found, or an error message.   After
+end of file, the returned chunks are zero bytes long.
 
-       Rfile represents a file to read chunks from.  Open returns an
-       initialised Rfile or an error string.  Min and  max  are  the
-       minimum  and  maximum  size  in  bytes of chunks that will be
-       returned.  Only the last chunk in a file can be smaller  than
-       the minimum chunk size.  Note that the mean chunk size may be
-       off due to these parameters.  Data  is  read  from  Iobuf  b.
-       Rfile.read  returns  subsequent  chunks  of data and the file
-       offset at which they were found, or an error message.   After
-       end of file, the returned chunks are zero bytes long.
+== source
+/appl/lib/rabin.b
 
-SOURCE
-       /appl/lib/rabin.b
+== author
+Mechiel Lukkien, during GSoC 2007
 
-AUTHOR
-       Mechiel Lukkien, during GSoC 2007
-
-                                                            RABIN(2)

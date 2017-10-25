@@ -1,79 +1,73 @@
-SPREE-ALLOW(2)           System Calls Manual          SPREE-ALLOW(2)
+= Allow: filter client actions
 
-NAME
-       Allow - filter client actions
+    include "spree.m";
+    include "spree/allow.m";
+    Clique, Member, Object: import Spree;
+    allow := load Allow Allow->PATH;
 
-SYNOPSIS
-       include "spree.m";
-       include "spree/allow.m";
-       Clique, Member, Object: import Spree;
-       allow := load Allow Allow->PATH;
+    init:          fn(m: Spree, c: ref Clique);
+    add:      fn(tag: int, member: ref Member, pattern: string);
+    del:      fn(tag: int, member: ref Member);
+    action:   fn(member: ref Member, cmd: string): (string, int, list of string);
+    archive:  fn(archiveobj: ref Object);
+    unarchive: fn(archiveobj: ref Object);
 
-       init:          fn(m: Spree, c: ref Clique);
-       add:      fn(tag: int, member: ref Member, pattern: string);
-       del:      fn(tag: int, member: ref Member);
-       action:   fn(member: ref Member, cmd: string): (string, int, list of string);
-       archive:  fn(archiveobj: ref Object);
-       unarchive: fn(archiveobj: ref Object);
+A  spree(2)  client  can  send arbitrary actions to a running
+engine.   The  Allow  module  enables  an  engine  to  filter
+clients'  actions,  permitting  only actions matching certain
+provided patterns to get through.
 
-DESCRIPTION
-       A  spree(2)  client  can  send arbitrary actions to a running
-       engine.   The  Allow  module  enables  an  engine  to  filter
-       clients'  actions,  permitting  only actions matching certain
-       provided patterns to get through.
+An action is conventionally formatted as a sequence of space-
+separated  words.   A  pattern  is  a  string consisting of a
+sequence of such words.  For a pattern to  match  a  client's
+action,  each word in the pattern must match each word in the
+action.  Most pattern words are not special: they must  match
+literally. The exceptions are:
 
-       An action is conventionally formatted as a sequence of space-
-       separated  words.   A  pattern  is  a  string consisting of a
-       sequence of such words.  For a pattern to  match  a  client's
-       action,  each word in the pattern must match each word in the
-       action.  Most pattern words are not special: they must  match
-       literally. The exceptions are:
+*      An asterisk matches any single word.
 
-       *      An asterisk matches any single word.
+&      An  ampersand  matches any set of words.  Any words in
+       the pattern after this are ignored.
 
-       &      An  ampersand  matches any set of words.  Any words in
-              the pattern after this are ignored.
+%d     Matches a decimal integer.
 
-       %d     Matches a decimal integer.
+%p     Matches a valid player id (decimal integer).
 
-       %p     Matches a valid player id (decimal integer).
+%o     Matches any valid object id  (decimal  integer).   The
+       corresponding word in the list returned by action will
+       be changed to the local object id  from  the  member's
+       external representation.
 
-       %o     Matches any valid object id  (decimal  integer).   The
-              corresponding word in the list returned by action will
-              be changed to the local object id  from  the  member's
-              external representation.
+Init  must  be called first with the spree module, m, and the
+current clique, c, to initialise the module.
 
-       Init  must  be called first with the spree module, m, and the
-       current clique, c, to initialise the module.
+Add adds the new pattern to the list of allowed actions;  tag
+is  an  integer tag that the caller can later use to identify
+the action, and I member is the clique member that is allowed
+to  perform  the  action  (if  nil,  then  any member will be
+allowed to perform the action).  Del deletes patterns  tagged
+with tag from the list of allowed actions.  If member is non-
+nil, then only patterns  specific  to  that  member  will  be
+deleted.
 
-       Add adds the new pattern to the list of allowed actions;  tag
-       is  an  integer tag that the caller can later use to identify
-       the action, and I member is the clique member that is allowed
-       to  perform  the  action  (if  nil,  then  any member will be
-       allowed to perform the action).  Del deletes patterns  tagged
-       with tag from the list of allowed actions.  If member is non-
-       nil, then only patterns  specific  to  that  member  will  be
-       deleted.
+Action  matches  cmd,  an action performed by member, against
+the list of all the allowed patterns.  It  returns  a  tuple,
+say  (err, tag, toks).   If  cmd  does not match any pattern,
+then err will be non-nil and holds a  string  describing  the
+nature  of  the  failure.  If a match is made, then tag holds
+the matched pattern's tag, as passed to add, and  toks  holds
+the  list  of words in the action, with object ids matched by
+%o changed to their local representation using member.obj.
 
-       Action  matches  cmd,  an action performed by member, against
-       the list of all the allowed patterns.  It  returns  a  tuple,
-       say  (err, tag, toks).   If  cmd  does not match any pattern,
-       then err will be non-nil and holds a  string  describing  the
-       nature  of  the  failure.  If a match is made, then tag holds
-       the matched pattern's tag, as passed to add, and  toks  holds
-       the  list  of words in the action, with object ids matched by
-       %o changed to their local representation using member.obj.
+Archive stores all  the  allow  module's  internal  state  as
+attributes on archiveobj (for card game engines, this is usu‐
+ally  the  object   returned   from   cardlib->archive   (see
+cardlib(2))).   Unarchive  reverses  this, restoring the mod‐
+ule's internal state from archiveobj.
 
-       Archive stores all  the  allow  module's  internal  state  as
-       attributes on archiveobj (for card game engines, this is usu‐
-       ally  the  object   returned   from   cardlib->archive   (see
-       cardlib(2))).   Unarchive  reverses  this, restoring the mod‐
-       ule's internal state from archiveobj.
+== source
+/appl/spree/lib/allow.b
 
-SOURCE
-       /appl/spree/lib/allow.b
+== see ALSO
+spree(2), spree-cardlib(2), spree-objstore(2)
 
-SEE ALSO
-       spree(2), spree-cardlib(2), spree-objstore(2)
-
-                                                      SPREE-ALLOW(2)

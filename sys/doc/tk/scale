@@ -1,204 +1,198 @@
-SCALE(9)              Kernel Developer's Manual             SCALE(9)
+= scale: Create and manipulate scale widgets
 
-NAME
-       scale - Create and manipulate scale widgets
+    scale pathName ?options?
 
-SYNOPSIS
-       scale pathName ?options?
+== standard OPTIONS
+-activebackground -font               -orient
+-background       -foreground         -relief
+-borderwidth      -highlightcolor     -takefocus
+-disabledcolor    -highlightthickness
 
-STANDARD OPTIONS
-       -activebackground -font               -orient
-       -background       -foreground         -relief
-       -borderwidth      -highlightcolor     -takefocus
-       -disabledcolor    -highlightthickness
+== widget-SPECIFIC OPTIONS
+-bigincrement dist
+       Some  interactions  with  the scale cause its value to
+       change by ``large'' increments;  this option specifies
+       the  size of the large increments.  If specified as 0,
+       the large increments default to 1/10 the range of  the
+       scale.
 
-WIDGET-SPECIFIC OPTIONS
-       -bigincrement dist
-              Some  interactions  with  the scale cause its value to
-              change by ``large'' increments;  this option specifies
-              the  size of the large increments.  If specified as 0,
-              the large increments default to 1/10 the range of  the
-              scale.
+-command command
+       Specifies  the  prefix of a Tk command to invoke when‐
+       ever the scale's value is changed via  a  widget  com‐
+       mand.  The actual command consists of this option fol‐
+       lowed by a space and a real number indicating the  new
+       value of the scale.
 
-       -command command
-              Specifies  the  prefix of a Tk command to invoke when‐
-              ever the scale's value is changed via  a  widget  com‐
-              mand.  The actual command consists of this option fol‐
-              lowed by a space and a real number indicating the  new
-              value of the scale.
+-from frac
+       A  real  value corresponding to the left or top end of
+       the scale.
 
-       -from frac
-              A  real  value corresponding to the left or top end of
-              the scale.
+-height dist
+       Specifies a desired height for  the  scale.   If  this
+       option  isn't  specified, the scale is given a default
+       height.
 
-       -height dist
-              Specifies a desired height for  the  scale.   If  this
-              option  isn't  specified, the scale is given a default
-              height.
+-label string
+       A string to display as a label for the scale.  If  the
+       option  is  specified  as an empty string, no label is
+       displayed.
 
-       -label string
-              A string to display as a label for the scale.  If  the
-              option  is  specified  as an empty string, no label is
-              displayed.
+-resolution frac
+       A real value specifying the resolution for the  scale.
+       If  this  value  is greater than zero then the scale's
+       value will always be rounded to an  even  multiple  of
+       this  value,  as  will tick marks and the endpoints of
+       the scale.  If the value is less  than  zero  then  no
+       rounding  occurs.  Defaults to 1 (i.e., the value will
+       be integral).
 
-       -resolution frac
-              A real value specifying the resolution for the  scale.
-              If  this  value  is greater than zero then the scale's
-              value will always be rounded to an  even  multiple  of
-              this  value,  as  will tick marks and the endpoints of
-              the scale.  If the value is less  than  zero  then  no
-              rounding  occurs.  Defaults to 1 (i.e., the value will
-              be integral).
+-showvalue boolean
+       Specifies a boolean value indicating  whether  or  not
+       the current value of the scale is to be displayed.
 
-       -showvalue boolean
-              Specifies a boolean value indicating  whether  or  not
-              the current value of the scale is to be displayed.
+-sliderlength dist
+       Specfies  the  size  of  the slider along the slider's
+       long dimension..
 
-       -sliderlength dist
-              Specfies  the  size  of  the slider along the slider's
-              long dimension..
+-sliderrelief relief
+       Specifies the relief to use when drawing the slider.
 
-       -sliderrelief relief
-              Specifies the relief to use when drawing the slider.
+-state state
+       Specifies one of three states for the scale:   normal,
+       active,  or  disabled.   If the scale is disabled then
+       the value may not be changed and the scale won't acti‐
+       vate.  If the scale is active, the slider is displayed
+       using the colour  specified  by  the  activebackground
+       option.
 
-       -state state
-              Specifies one of three states for the scale:   normal,
-              active,  or  disabled.   If the scale is disabled then
-              the value may not be changed and the scale won't acti‐
-              vate.  If the scale is active, the slider is displayed
-              using the colour  specified  by  the  activebackground
-              option.
+-tickinterval frac
+       Must  be a real value.  Determines the spacing between
+       numerical tick marks displayed below or to the left of
+       the slider.  If 0, no tick marks will be displayed.
 
-       -tickinterval frac
-              Must  be a real value.  Determines the spacing between
-              numerical tick marks displayed below or to the left of
-              the slider.  If 0, no tick marks will be displayed.
+-to frac
+       Specifies  a  real value corresponding to the right or
+       bottom end of the scale.  This  value  may  be  either
+       less than or greater than the from option.
 
-       -to frac
-              Specifies  a  real value corresponding to the right or
-              bottom end of the scale.  This  value  may  be  either
-              less than or greater than the from option.
+-width dist
+       Specifies  a  desired  width  for  the scale.  If this
+       option isn't specified, the scale is given  a  default
+       width.
 
-       -width dist
-              Specifies  a  desired  width  for  the scale.  If this
-              option isn't specified, the scale is given  a  default
-              width.
+The scale command creates a new window (given by the pathName
+argument) and makes  it  into  a  scale  widget.   Additional
+options,  described  above,  may  be specified on the command
+line to configure aspects of the scale such as  its  colours,
+orientation, and relief.  The scale command returns its path‐
+Name argument.  At the time this command  is  invoked,  there
+must not exist a window named pathName.
 
-DESCRIPTION
-       The scale command creates a new window (given by the pathName
-       argument) and makes  it  into  a  scale  widget.   Additional
-       options,  described  above,  may  be specified on the command
-       line to configure aspects of the scale such as  its  colours,
-       orientation, and relief.  The scale command returns its path‐
-       Name argument.  At the time this command  is  invoked,  there
-       must not exist a window named pathName.
+A  scale is a widget that displays a rectangular trough and a
+small slider.  The trough corresponds to a range of real val‐
+ues (determined by the from, to, and resolution options), and
+the position of the slider selects a particular  real  value.
+The  slider's  position  (and hence the scale's value) may be
+adjusted with the mouse or keyboard as described in the BIND‐
+INGS section below.  Whenever the scale's value is changed, a
+Tk command is invoked (using the command  option)  to  notify
+other interested widgets of the change.
 
-       A  scale is a widget that displays a rectangular trough and a
-       small slider.  The trough corresponds to a range of real val‐
-       ues (determined by the from, to, and resolution options), and
-       the position of the slider selects a particular  real  value.
-       The  slider's  position  (and hence the scale's value) may be
-       adjusted with the mouse or keyboard as described in the BIND‐
-       INGS section below.  Whenever the scale's value is changed, a
-       Tk command is invoked (using the command  option)  to  notify
-       other interested widgets of the change.
+Three  annotations  may  be  displayed  in a scale widget:  a
+label appearing at the top right of the widget (top left  for
+horizontal  scales),  a  number displayed just to the left of
+the slider (just above the slider for horizontal scales), and
+a collection of numerical tick marks just to the right of the
+trough (just below the trough for horizontal  scales).   Each
+of  these  three annotations may be enabled or disabled using
+the configuration options.
 
-       Three  annotations  may  be  displayed  in a scale widget:  a
-       label appearing at the top right of the widget (top left  for
-       horizontal  scales),  a  number displayed just to the left of
-       the slider (just above the slider for horizontal scales), and
-       a collection of numerical tick marks just to the right of the
-       trough (just below the trough for horizontal  scales).   Each
-       of  these  three annotations may be enabled or disabled using
-       the configuration options.
+== widget COMMAND
+The scale command creates a new  Tk  command  whose  name  is
+pathName.   This command may be used to invoke various opera‐
+tions on the widget.  It has the following general form:
+       pathName option ?arg arg ...?
+Option and the args determine the exact behaviour of the com‐
+mand.  The following commands are possible for scale widgets:
 
-WIDGET COMMAND
-       The scale command creates a new  Tk  command  whose  name  is
-       pathName.   This command may be used to invoke various opera‐
-       tions on the widget.  It has the following general form:
-              pathName option ?arg arg ...?
-       Option and the args determine the exact behaviour of the com‐
-       mand.  The following commands are possible for scale widgets:
+pathName cget option
+       Returns  the current value of the configuration option
+       given by option.  Option may have any  of  the  values
+       accepted by the scale command.
 
-       pathName cget option
-              Returns  the current value of the configuration option
-              given by option.  Option may have any  of  the  values
-              accepted by the scale command.
+pathName configure ?option? ?value option value ...?
+       Query  or modify the configuration options of the wid‐
+       get.  If no option is specified, returns a list of all
+       of the available options for pathName.  If one or more
+       option-value pairs are  specified,  then  the  command
+       modifies  the given widget option(s) to have the given
+       value(s);  in this case the command returns  an  empty
+       string.  Option may have any of the values accepted by
+       the scale command.
 
-       pathName configure ?option? ?value option value ...?
-              Query  or modify the configuration options of the wid‐
-              get.  If no option is specified, returns a list of all
-              of the available options for pathName.  If one or more
-              option-value pairs are  specified,  then  the  command
-              modifies  the given widget option(s) to have the given
-              value(s);  in this case the command returns  an  empty
-              string.  Option may have any of the values accepted by
-              the scale command.
+pathName coords ?value?
+       Returns a list whose elements are the x and y  coordi‐
+       nates  of the point along the centreline of the trough
+       that corresponds to value.  If value is  omitted  then
+       the scale's current value is used.
 
-       pathName coords ?value?
-              Returns a list whose elements are the x and y  coordi‐
-              nates  of the point along the centreline of the trough
-              that corresponds to value.  If value is  omitted  then
-              the scale's current value is used.
+pathName get ?x y?
+       If  x  and y are omitted, returns the current value of
+       the scale.  If x and y are specified, they give  pixel
+       coordinates  within  the  widget;  the command returns
+       the scale value  corresponding  to  the  given  pixel.
+       Only  one  of x or y is used:  for horizontal scales y
+       is ignored, and for vertical scales x is ignored.
 
-       pathName get ?x y?
-              If  x  and y are omitted, returns the current value of
-              the scale.  If x and y are specified, they give  pixel
-              coordinates  within  the  widget;  the command returns
-              the scale value  corresponding  to  the  given  pixel.
-              Only  one  of x or y is used:  for horizontal scales y
-              is ignored, and for vertical scales x is ignored.
+pathName identify x y
+       Returns a string indicating what  part  of  the  scale
+       lies under the coordinates given by x and y.  A return
+       value of slider means  that  the  point  is  over  the
+       slider;  trough1 means that the point is over the por‐
+       tion of the slider  above   or  to  the  left  of  the
+       slider;  and  trough2 means that the point is over the
+       portion of the slider below or to  the  right  of  the
+       slider.   If  the  point  isn't over one of these ele‐
+       ments, an empty string is returned.
 
-       pathName identify x y
-              Returns a string indicating what  part  of  the  scale
-              lies under the coordinates given by x and y.  A return
-              value of slider means  that  the  point  is  over  the
-              slider;  trough1 means that the point is over the por‐
-              tion of the slider  above   or  to  the  left  of  the
-              slider;  and  trough2 means that the point is over the
-              portion of the slider below or to  the  right  of  the
-              slider.   If  the  point  isn't over one of these ele‐
-              ments, an empty string is returned.
+pathName set value
+       This command is invoked to change the current value of
+       the  scale, and hence the position at which the slider
+       is displayed.  Value  gives  the  new  value  for  the
+       scale.  The command has no effect if the scale is dis‐
+       abled.
 
-       pathName set value
-              This command is invoked to change the current value of
-              the  scale, and hence the position at which the slider
-              is displayed.  Value  gives  the  new  value  for  the
-              scale.  The command has no effect if the scale is dis‐
-              abled.
+== bindings
+Tk automatically creates bindings for scales that  give  them
+the following default behaviour.  Where the behaviour is dif‐
+ferent for vertical and horizontal scales, the horizontal be‐
+haviour is described in parentheses.
 
-BINDINGS
-       Tk automatically creates bindings for scales that  give  them
-       the following default behaviour.  Where the behaviour is dif‐
-       ferent for vertical and horizontal scales, the horizontal be‐
-       haviour is described in parentheses.
+[1]    If  button  1  is  pressed  in the trough, the scale's
+       value will be incremented or decremented by the  value
+       of the bigincrement option so that the slider moves in
+       the direction of the cursor.  If the  button  is  held
+       down, the action auto-repeats.
 
-       [1]    If  button  1  is  pressed  in the trough, the scale's
-              value will be incremented or decremented by the  value
-              of the bigincrement option so that the slider moves in
-              the direction of the cursor.  If the  button  is  held
-              down, the action auto-repeats.
+[2]    If button 1 is pressed over the slider, the slider can
+       be dragged with the mouse.
 
-       [2]    If button 1 is pressed over the slider, the slider can
-              be dragged with the mouse.
+[3]    If the widget  receives  Up-arrow  or  Left-arrow  key
+       events,  the  scale's  value  will  be  incremented or
+       decremented so as to  adjust  the  value  towards  the
+       fromvalue.
 
-       [3]    If the widget  receives  Up-arrow  or  Left-arrow  key
-              events,  the  scale's  value  will  be  incremented or
-              decremented so as to  adjust  the  value  towards  the
-              fromvalue.
+[4]    If  the  widget receives Down-arrow or Right-arrow key
+       events, the  scale's  value  will  be  incremented  or
+       decremented  so  as  to  adjust  the value towards the
+       tovalue.
 
-       [4]    If  the  widget receives Down-arrow or Right-arrow key
-              events, the  scale's  value  will  be  incremented  or
-              decremented  so  as  to  adjust  the value towards the
-              tovalue.
+If the scale is disabled using the state option then none  of
+the above bindings have any effect.
 
-       If the scale is disabled using the state option then none  of
-       the above bindings have any effect.
+The  behaviour of scales can be changed by defining new bind‐
+ings for individual widgets.
 
-       The  behaviour of scales can be changed by defining new bind‐
-       ings for individual widgets.
+== see ALSO
+options(9), types(9)
 
-SEE ALSO
-       options(9), types(9)
-
-                                                            SCALE(9)

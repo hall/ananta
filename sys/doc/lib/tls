@@ -1,165 +1,158 @@
-TLS(3)                Library Functions Manual                TLS(3)
+= tls: TLS1 and SSL3 record layer
 
-NAME
-       tls - TLS1 and SSL3 record layer
+    bind -a #a /net
 
-SYNOPSIS
-       bind -a #a /net
+    /net/tls/clone
+    /net/tls/encalgs
+    /net/tls/hashalgs
+    /net/tls/n
+    /net/tls/n/ctl
+    /net/tls/n/data
+    /net/tls/n/hand
+    /net/tls/n/stats
+    /net/tls/n/status
 
-       /net/tls/clone
-       /net/tls/encalgs
-       /net/tls/hashalgs
-       /net/tls/n
-       /net/tls/n/ctl
-       /net/tls/n/data
-       /net/tls/n/hand
-       /net/tls/n/stats
-       /net/tls/n/status
+The  TLS  device  implements  the  record  layer protocols of
+Transport Layer Security version 1.0 and Secure Sockets Layer
+version  3.0.  It does not implement the handshake protocols,
+which are  responsible  for  mutual  authentication  and  key
+exchange.   The  tls device can be thought of as filters pro‐
+viding optional encryption and anti-tampering.
 
-DESCRIPTION
-       The  TLS  device  implements  the  record  layer protocols of
-       Transport Layer Security version 1.0 and Secure Sockets Layer
-       version  3.0.  It does not implement the handshake protocols,
-       which are  responsible  for  mutual  authentication  and  key
-       exchange.   The  tls device can be thought of as filters pro‐
-       viding optional encryption and anti-tampering.
+The top level directory contains a clone file and subdirecto‐
+ries numbered from zero through at least the last active fil‐
+ter.  Opening the clone file reserves  a  filter.   The  file
+descriptor  returned  from  the sys-open(2) will point to the
+control file, ctl, of the newly  allocated  filter.   Reading
+the  ctl  file returns a text string containing the number of
+the filter directory.
 
-       The top level directory contains a clone file and subdirecto‐
-       ries numbered from zero through at least the last active fil‐
-       ter.  Opening the clone file reserves  a  filter.   The  file
-       descriptor  returned  from  the sys-open(2) will point to the
-       control file, ctl, of the newly  allocated  filter.   Reading
-       the  ctl  file returns a text string containing the number of
-       the filter directory.
+The filter initially cannot be used to pass messages and will
+not  encrypt  or  digest messages.  It is configured and con‐
+trolled by writing commands to ctl.
 
-       The filter initially cannot be used to pass messages and will
-       not  encrypt  or  digest messages.  It is configured and con‐
-       trolled by writing commands to ctl.
+The following commands are supported:
 
-       The following commands are supported:
+fd open-fd vers
+       Pass record messages over the  communications  channel
+       open-fd.   Initially,  outgoing  messages  use version
+       vers format records, but incoming messages  of  either
+       version  are  accepted.   Valid versions are 0x300 for
+       SSLv3.0 and 0x301 for TLSv1.0 (which could be known as
+       SSLv3.01.)   This  command  must  be issued before any
+       other command and before reading or writing  any  mes‐
+       sages; it may only be executed once.
 
-       fd open-fd vers
-              Pass record messages over the  communications  channel
-              open-fd.   Initially,  outgoing  messages  use version
-              vers format records, but incoming messages  of  either
-              version  are  accepted.   Valid versions are 0x300 for
-              SSLv3.0 and 0x301 for TLSv1.0 (which could be known as
-              SSLv3.01.)   This  command  must  be issued before any
-              other command and before reading or writing  any  mes‐
-              sages; it may only be executed once.
+version vers
+       Use  vers  format records for all future records, both
+       outgoing and incoming.  This command may only be  exe‐
+       cuted once.
 
-       version vers
-              Use  vers  format records for all future records, both
-              outgoing and incoming.  This command may only be  exe‐
-              cuted once.
+secret hashalg encalg isclient secretdata
+       Set  up  the  digesting  and encryption algorithms and
+       secrets.  Hashalg and encalg must be  algorithm  names
+       returned  by  the  corresponding files.  Secretdata is
+       the base-64 encoded (see encode(2)) secret  data  used
+       for  the  algorithms.  It must contain at least enough
+       data  to  populate  the  secrets  for  digesting   and
+       encrypting.  These secrets are divided into three cat‐
+       egories: digest secrets, keys, and initialization vec‐
+       tors.   The  secrets are packed in this order, with no
+       extra padding.  Within each category, the  secret  for
+       data  traveling  from  the  client to the server comes
+       first.  The incoming and outgoing secrets are automat‐
+       ically  selected by devtls based on the isclient argu‐
+       ment, which must be non-zero for the client of the TLS
+       handshake, and zero for the server.
+       This  command must be issued after version, and may be
+       issued more than once.  At least one new  secret  com‐
+       mand  must be issued before each changecipher command;
+       similarly, at least one new secret command  must  pre‐
+       cede each incoming changecipher message.
 
-       secret hashalg encalg isclient secretdata
-              Set  up  the  digesting  and encryption algorithms and
-              secrets.  Hashalg and encalg must be  algorithm  names
-              returned  by  the  corresponding files.  Secretdata is
-              the base-64 encoded (see encode(2)) secret  data  used
-              for  the  algorithms.  It must contain at least enough
-              data  to  populate  the  secrets  for  digesting   and
-              encrypting.  These secrets are divided into three cat‐
-              egories: digest secrets, keys, and initialization vec‐
-              tors.   The  secrets are packed in this order, with no
-              extra padding.  Within each category, the  secret  for
-              data  traveling  from  the  client to the server comes
-              first.  The incoming and outgoing secrets are automat‐
-              ically  selected by devtls based on the isclient argu‐
-              ment, which must be non-zero for the client of the TLS
-              handshake, and zero for the server.
-              This  command must be issued after version, and may be
-              issued more than once.  At least one new  secret  com‐
-              mand  must be issued before each changecipher command;
-              similarly, at least one new secret command  must  pre‐
-              cede each incoming changecipher message.
+changecipher
+       Enable outgoing encryption and digesting as configured
+       by the previous secret command.  This command sends  a
+       changecipher message.
 
-       changecipher
-              Enable outgoing encryption and digesting as configured
-              by the previous secret command.  This command sends  a
-              changecipher message.
+opened Enable  data messages.  This command may be issued any
+       number of times, although only the first  is  signifi‐
+       cant.   It must follow at least one successful change‐
+       cipher command.
 
-       opened Enable  data messages.  This command may be issued any
-              number of times, although only the first  is  signifi‐
-              cant.   It must follow at least one successful change‐
-              cipher command.
+alert alertno
+       Send an alert message.  Alertno may be a  valid  alert
+       code  for  either SSLv3.0 or TLSv1.0, and is mapped to
+       an appropriate code for the protocol in use.  If it is
+       a fatal alert, the filter is set into an error state.
 
-       alert alertno
-              Send an alert message.  Alertno may be a  valid  alert
-              code  for  either SSLv3.0 or TLSv1.0, and is mapped to
-              an appropriate code for the protocol in use.  If it is
-              a fatal alert, the filter is set into an error state.
+Application  messages and handshake messages are communicated
+using data and hand, respectively.  Only one  sys-open(2)  of
+hand is allowed at a time.
 
-       Application  messages and handshake messages are communicated
-       using data and hand, respectively.  Only one  sys-open(2)  of
-       hand is allowed at a time.
+Any  record  layer  headers  and  trailers  are  inserted and
+stripped automatically, and are not visible from the outside.
+The  device tries to synchronize record boundaries with reads
+and writes.  Each read will  return  data  from  exactly  one
+record,  and  will  return all of the data from the record as
+long as the buffer is big enough.  Each write  will  be  con‐
+verted  into  an  integral  number  of  records, with all but
+potentially the last being maximal size.  The maximum  record
+length supported is 16384 bytes.  This behavior is not speci‐
+fied in the protocols, and  may  not  be  followed  by  other
+implementations.
 
-       Any  record  layer  headers  and  trailers  are  inserted and
-       stripped automatically, and are not visible from the outside.
-       The  device tries to synchronize record boundaries with reads
-       and writes.  Each read will  return  data  from  exactly  one
-       record,  and  will  return all of the data from the record as
-       long as the buffer is big enough.  Each write  will  be  con‐
-       verted  into  an  integral  number  of  records, with all but
-       potentially the last being maximal size.  The maximum  record
-       length supported is 16384 bytes.  This behavior is not speci‐
-       fied in the protocols, and  may  not  be  followed  by  other
-       implementations.
+If  a  fatal alert message is received, or a fatal alert com‐
+mand issued, the filter is set into an error state.  All fur‐
+ther  correspondence  is halted, although some pending opera‐
+tions may not be terminated.  Operations on  data  will  fail
+with  a  'tls error', and operations on hand will fail with a
+textual decoding of the alert.  The current  non-fatal  alert
+messages  are  'close notify', 'no renegotiation', and 'hand‐
+shake canceled by user'.  Receipt  of  one  of  these  alerts
+cause  the  next read on hand to terminate with an error.  If
+the alert is 'close notify', all future reads will  terminate
+with a tls hungup error.  A 'close notify' alert command will
+terminate all future writes or reads from data  with  a  'tls
+hungup' error.
 
-       If  a  fatal alert message is received, or a fatal alert com‐
-       mand issued, the filter is set into an error state.  All fur‐
-       ther  correspondence  is halted, although some pending opera‐
-       tions may not be terminated.  Operations on  data  will  fail
-       with  a  'tls error', and operations on hand will fail with a
-       textual decoding of the alert.  The current  non-fatal  alert
-       messages  are  'close notify', 'no renegotiation', and 'hand‐
-       shake canceled by user'.  Receipt  of  one  of  these  alerts
-       cause  the  next read on hand to terminate with an error.  If
-       the alert is 'close notify', all future reads will  terminate
-       with a tls hungup error.  A 'close notify' alert command will
-       terminate all future writes or reads from data  with  a  'tls
-       hungup' error.
+If  an  error  is  encountered  while  reading or writing the
+underlying communications channel, the error is  returned  to
+the  offending operation.  If the error is not 'interrupted',
+the filter is set into the error state.  In  this  case,  all
+future operations on hand will fail with a 'channel error'.
 
-       If  an  error  is  encountered  while  reading or writing the
-       underlying communications channel, the error is  returned  to
-       the  offending operation.  If the error is not 'interrupted',
-       the filter is set into the error state.  In  this  case,  all
-       future operations on hand will fail with a 'channel error'.
+When  all file descriptors for a filter have been closed, the
+session is terminated and the  filter  reclaimed  for  future
+use.   A  'close notify' alert will be sent on the underlying
+communications channel unless one has already  been  sent  or
+the filter is in the error state.
 
-       When  all file descriptors for a filter have been closed, the
-       session is terminated and the  filter  reclaimed  for  future
-       use.   A  'close notify' alert will be sent on the underlying
-       communications channel unless one has already  been  sent  or
-       the filter is in the error state.
+Reading stats or status returns information about the filter.
+Each datum is returned on a single  line  of  the  form  tag:
+data.   Stats returns the number of bytes communicated by the
+data and hand channels.  The four lines returned  are  tagged
+by,  in  order, DataIn, DataOut, HandIn, and HandOut.  Status
+returns lines following tags: State, Version, EncIn,  HashIn,
+NewEncIn,   NewHashIn,   EncOut,   HashOut,   NewEncOut,  and
+NewHashOut.  State's value is a string describing the  status
+of  the  connection,  and is one of the following: 'Handshak‐
+ing', 'Established', 'RemoteClosed',  'LocalClosed',  'Alert‐
+ing', 'Errored', or 'Closed'.  Version's give the hexadecimal
+record layer version in use.  The Enc and Hash fields  return
+name of the current algorithms in use or ready to be used, if
+any.
 
-       Reading stats or status returns information about the filter.
-       Each datum is returned on a single  line  of  the  form  tag:
-       data.   Stats returns the number of bytes communicated by the
-       data and hand channels.  The four lines returned  are  tagged
-       by,  in  order, DataIn, DataOut, HandIn, and HandOut.  Status
-       returns lines following tags: State, Version, EncIn,  HashIn,
-       NewEncIn,   NewHashIn,   EncOut,   HashOut,   NewEncOut,  and
-       NewHashOut.  State's value is a string describing the  status
-       of  the  connection,  and is one of the following: 'Handshak‐
-       ing', 'Established', 'RemoteClosed',  'LocalClosed',  'Alert‐
-       ing', 'Errored', or 'Closed'.  Version's give the hexadecimal
-       record layer version in use.  The Enc and Hash fields  return
-       name of the current algorithms in use or ready to be used, if
-       any.
+Reading encalgs and hashalgs will  give  the  space-separated
+list  of  algorithms  implemented.   This will always include
+clear, meaning no encryption or digesting.  Currently  imple‐
+mented    encryption    algorithms    are    'rc4_128'    and
+'3des_ede_cbc'.  Currently implemented hashing algorithms are
+'md5' and 'sha1'.
 
-       Reading encalgs and hashalgs will  give  the  space-separated
-       list  of  algorithms  implemented.   This will always include
-       clear, meaning no encryption or digesting.  Currently  imple‐
-       mented    encryption    algorithms    are    'rc4_128'    and
-       '3des_ede_cbc'.  Currently implemented hashing algorithms are
-       'md5' and 'sha1'.
+== see ALSO
+listen(1), dial(2), ssl(3)
 
-SEE ALSO
-       listen(1), dial(2), ssl(3)
-
-SOURCE
-       /emu/port/devtls.c
-       /os/port/devtls.c
-
-                                                              TLS(3)
+== source
+/emu/port/devtls.c
+/os/port/devtls.c

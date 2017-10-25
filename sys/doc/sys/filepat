@@ -1,42 +1,36 @@
-FILEPAT(2)               System Calls Manual              FILEPAT(2)
+= filepat: expand, match: file pattern matching
 
-NAME
-       filepat: expand, match - file pattern matching
+    include "filepat.m";
+    filepat := load Filepat Filepat->PATH;
 
-SYNOPSIS
-       include "filepat.m";
-       filepat := load Filepat Filepat->PATH;
+    expand:  fn(pat: string): list of string;
+    match:   fn(pat, name: string): int;
 
-       expand:  fn(pat: string): list of string;
-       match:   fn(pat, name: string): int;
+Expand builds a list of file names in alphabetical order that
+match the pattern pat.  The pattern is tokenised using / as a
+delimiter.
 
-DESCRIPTION
-       Expand builds a list of file names in alphabetical order that
-       match the pattern pat.  The pattern is tokenised using / as a
-       delimiter.
+Match returns 1 if name matches the pattern pat, and 0 other‐
+wise.
 
-       Match returns 1 if name matches the pattern pat, and 0 other‐
-       wise.
+The pat passed to match and expand may  include  combinations
+of the special characters *, ?, [, and ].
 
-       The pat passed to match and expand may  include  combinations
-       of the special characters *, ?, [, and ].
+The asterisk * matches a string of zero or more characters.
 
-       The asterisk * matches a string of zero or more characters.
+The query ?  matches any single character.
 
-       The query ?  matches any single character.
+The  notation  [s], where s is a nonempty string, matches any
+single character in s.  The  notation  [^s],  where  s  is  a
+nonempty  string, matches any single character not in s.  The
+characters *, ?, and [ have no special meaning within s.
 
-       The  notation  [s], where s is a nonempty string, matches any
-       single character in s.  The  notation  [^s],  where  s  is  a
-       nonempty  string, matches any single character not in s.  The
-       characters *, ?, and [ have no special meaning within s.
+If any character is preceded by the character \, that charac‐
+ter loses any special meaning and is interpreted literally.
 
-       If any character is preceded by the character \, that charac‐
-       ter loses any special meaning and is interpreted literally.
+== source
+/appl/lib/filepat.b
 
-SOURCE
-       /appl/lib/filepat.b
+== see ALSO
+sys-tokenize(2), readdir(2) regex(2)
 
-SEE ALSO
-       sys-tokenize(2), readdir(2) regex(2)
-
-                                                          FILEPAT(2)

@@ -1,167 +1,160 @@
-LOGFS(3)              Library Functions Manual              LOGFS(3)
+= logfs: log-structured file system for flash devices
 
-NAME
-       logfs - log-structured file system for flash devices
+    bind -b '#ʟ' /dev
 
-SYNOPSIS
-       bind -b '#ʟ' /dev
+    /dev/logfsctl
+    /dev/logfsusers
+    /dev/logfsname
+    /dev/logfsnameboot
 
-       /dev/logfsctl
-       /dev/logfsusers
-       /dev/logfsname
-       /dev/logfsnameboot
+    echo fsys name config flash-device > /dev/logfsctl
+    echo fsys name format boot-area-size > /dev/logfsctl
+    echo fsys name open > /dev/logfsctl
+    mount -Ac /dev/logfsname dir
 
-       echo fsys name config flash-device > /dev/logfsctl
-       echo fsys name format boot-area-size > /dev/logfsctl
-       echo fsys name open > /dev/logfsctl
-       mount -Ac /dev/logfsname dir
+Logfs  is  a  driver  level implementation of the Inferno log
+structured filesystem, a file  system  designed  with  modern
+flash  devices (such as NAND flash) in mind.  Logfs is itself
+hardware independent, requiring other devices to provide  the
+physical  medium.  Currently  only  flash(3) devices are sup‐
+ported.
 
-DESCRIPTION
-       Logfs  is  a  driver  level implementation of the Inferno log
-       structured filesystem, a file  system  designed  with  modern
-       flash  devices (such as NAND flash) in mind.  Logfs is itself
-       hardware independent, requiring other devices to provide  the
-       physical  medium.  Currently  only  flash(3) devices are sup‐
-       ported.
+The file system maintains two storage  regions  on  the  same
+medium: a log-structured hierarchical file system that imple‐
+ments all the functionality communicable by the  9P  protocol
+(see  intro(5)),  and  a  boot  partition that offers a fixed
+amount of flat storage suitable for holding such things as  a
+kernel  boot  image, boot parameters etc.  The boot partition
+can be accessed and updated without understanding all but the
+simplest  facts about the hierarchical file system, making it
+easy to implement boot loaders with small footprints.
 
-       The file system maintains two storage  regions  on  the  same
-       medium: a log-structured hierarchical file system that imple‐
-       ments all the functionality communicable by the  9P  protocol
-       (see  intro(5)),  and  a  boot  partition that offers a fixed
-       amount of flat storage suitable for holding such things as  a
-       kernel  boot  image, boot parameters etc.  The boot partition
-       can be accessed and updated without understanding all but the
-       simplest  facts about the hierarchical file system, making it
-       easy to implement boot loaders with small footprints.
+The physical layout of the file system varies from medium  to
+medium, so that the specialised features of the medium can be
+accounted for.
 
-       The physical layout of the file system varies from medium  to
-       medium, so that the specialised features of the medium can be
-       accounted for.
+The user table is maintained in memory; there is  one  table,
+shared  between  all  file  systems supported by this driver.
+There is no distinction between users and groups: a user is a
+group  with  one  member.   The  user table records a mapping
+between uids and unames, as well as recording the leader  and
+members  of  each  group.  A uid is a string naming a user or
+group that is stored in the  file  system.  A  uname  is  the
+string  naming  a  user  or group that is used in file system
+protocol messages (see intro(5)).  There is a distinction  so
+that unames can be safely reused, even though uids cannot.
 
-       The user table is maintained in memory; there is  one  table,
-       shared  between  all  file  systems supported by this driver.
-       There is no distinction between users and groups: a user is a
-       group  with  one  member.   The  user table records a mapping
-       between uids and unames, as well as recording the leader  and
-       members  of  each  group.  A uid is a string naming a user or
-       group that is stored in the  file  system.  A  uname  is  the
-       string  naming  a  user  or group that is used in file system
-       protocol messages (see intro(5)).  There is a distinction  so
-       that unames can be safely reused, even though uids cannot.
+Configuration  and  control of the file systems is by writing
+commands to /dev/logfsctl:
 
-       Configuration  and  control of the file systems is by writing
-       commands to /dev/logfsctl:
+fsys name
+       Sets the current file system to name,  which  must  be
+       configured.  Subsequent  commands,  not  prefixed with
+       fsysname, will by applied to the name file system.
 
-       fsys name
-              Sets the current file system to name,  which  must  be
-              configured.  Subsequent  commands,  not  prefixed with
-              fsysname, will by applied to the name file system.
+[fsys name] config flash-device
+       Configures file system name to be written to  flash(3)
+       device flash-device.  This does not initialise or for‐
+       mat the filesystem, but simply  bind  name  to  flash-
+       device.  For each configured name, two files appear in
+       the device name space, /dev/logfsname and  /dev/logfs‐
+       nameboot.   The  former  serves the 9P protocol giving
+       access to the hierarchical file system; the latter  is
+       a fixed size file that represents the boot partition.
 
-       [fsys name] config flash-device
-              Configures file system name to be written to  flash(3)
-              device flash-device.  This does not initialise or for‐
-              mat the filesystem, but simply  bind  name  to  flash-
-              device.  For each configured name, two files appear in
-              the device name space, /dev/logfsname and  /dev/logfs‐
-              nameboot.   The  former  serves the 9P protocol giving
-              access to the hierarchical file system; the latter  is
-              a fixed size file that represents the boot partition.
+[fsys name] format bootsize
+       Formats  the  underlying medium as a logfs format file
+       system. Sufficent storage is set  aside  to  create  a
+       boot partition of at least bootsize bytes. Some medium
+       implementations (eg, for NAND flash) store file system
+       parameters  (eg,  location,  size  and  boot partition
+       size) to enable automatic location of file systems and
+       improve bad block detection. These must be part of the
+       boot partition so that they are easily  accessible  to
+       boot  loaders, so such medium implementations may also
+       enforce a minimum size for the boot partition.
 
-       [fsys name] format bootsize
-              Formats  the  underlying medium as a logfs format file
-              system. Sufficent storage is set  aside  to  create  a
-              boot partition of at least bootsize bytes. Some medium
-              implementations (eg, for NAND flash) store file system
-              parameters  (eg,  location,  size  and  boot partition
-              size) to enable automatic location of file systems and
-              improve bad block detection. These must be part of the
-              boot partition so that they are easily  accessible  to
-              boot  loaders, so such medium implementations may also
-              enforce a minimum size for the boot partition.
+[fsys name] open [-P] [-W]
+       Initialises the specified file system,  and  makes  it
+       available  for use. The file system structure is veri‐
+       fied, bad blocks are repaired and, in the case of  the
+       log  structured  file  system, and the log replayed to
+       regenerate the directory  structure.   The  -W  option
+       reduces  the  permission control on wstat(5) requests.
+       Specifically it allows the uid, gid, mtime,  and  perm
+       to  be  changed  by anyone.  The -P option removes all
+       file access controls, allowing anyone to open any file
+       in any mode.
 
-       [fsys name] open [-P] [-W]
-              Initialises the specified file system,  and  makes  it
-              available  for use. The file system structure is veri‐
-              fied, bad blocks are repaired and, in the case of  the
-              log  structured  file  system, and the log replayed to
-              regenerate the directory  structure.   The  -W  option
-              reduces  the  permission control on wstat(5) requests.
-              Specifically it allows the uid, gid, mtime,  and  perm
-              to  be  changed  by anyone.  The -P option removes all
-              file access controls, allowing anyone to open any file
-              in any mode.
+[fsys name] sweep
+       Forces  the log to be swept, if it has been written to
+       since last being swept.  The  log  is  normally  swept
+       automatically when space is low.
 
-       [fsys name] sweep
-              Forces  the log to be swept, if it has been written to
-              since last being swept.  The  log  is  normally  swept
-              automatically when space is low.
+[fsys name] sync
+       Flush  any  buffered  log  or  data  to the underlying
+       device.  Use before shutting down the  system  if  the
+       device is not unmounted.  (See notes below.)
 
-       [fsys name] sync
-              Flush  any  buffered  log  or  data  to the underlying
-              device.  Use before shutting down the  system  if  the
-              device is not unmounted.  (See notes below.)
+[fsys name] trace [level]
+       If level is non-zero, internal diagnostics for the log
+       file system are enabled at the given level.  If  level
+       is zero, or missing, tracing is disabled.
 
-       [fsys name] trace [level]
-              If level is non-zero, internal diagnostics for the log
-              file system are enabled at the given level.  If  level
-              is zero, or missing, tracing is disabled.
+[fsys name] unconfig
+       removes the configuration. The file system must not be
+       mounted, or the  boot  partition  open,  before  doing
+       this.
 
-       [fsys name] unconfig
-              removes the configuration. The file system must not be
-              mounted, or the  boot  partition  open,  before  doing
-              this.
+uname uname uid
 
-       uname uname uid
+uname uname :uid
+       adds  the user with uname uname and uid uid to the in-
+       memory table
 
-       uname uname :uid
-              adds  the user with uname uname and uid uid to the in-
-              memory table
+uname uname %newname
+       renames uname to newname, throughout the user table
 
-       uname uname %newname
-              renames uname to newname, throughout the user table
+uname uname =leader
+       sets the group leader to the uname leader
 
-       uname uname =leader
-              sets the group leader to the uname leader
+uname uname =
+       removes the group leader; then all members are leaders
 
-       uname uname =
-              removes the group leader; then all members are leaders
+uname uname +member
+       add the uname member to the group
 
-       uname uname +member
-              add the uname member to the group
-
-       uname uname -member
-              removes the uname member from the group
+uname uname -member
+       removes the uname member from the group
 
    Notes
-       The file system log may be  subject  to  a  small  amount  of
-       buffering for efficiency purposes; therefore, it is necessary
-       to unmount the file system before disconnecting the power  to
-       avoid  losing  recent  updates.  Failure  to do this does not
-       result in inconsistencies in the file system, but some recent
-       changes  will  be lost.  Equivalently, a wstat(5) of any file
-       or directory, with all fields set to no change (also known as
-       a wstat flush) will cause the log to be written to disk. Note
-       that during a dismount, and also a wstat flush, a wstat flush
-       is  also  applied to the underlying flash(3) device. Further‐
-       more, since some buffering is used on the log,  needless  use
-       of  wstat flush will consume log space more rapidly than nor‐
-       mal, although it will be recovered during the next sweep.
+The file system log may be  subject  to  a  small  amount  of
+buffering for efficiency purposes; therefore, it is necessary
+to unmount the file system before disconnecting the power  to
+avoid  losing  recent  updates.  Failure  to do this does not
+result in inconsistencies in the file system, but some recent
+changes  will  be lost.  Equivalently, a wstat(5) of any file
+or directory, with all fields set to no change (also known as
+a wstat flush) will cause the log to be written to disk. Note
+that during a dismount, and also a wstat flush, a wstat flush
+is  also  applied to the underlying flash(3) device. Further‐
+more, since some buffering is used on the log,  needless  use
+of  wstat flush will consume log space more rapidly than nor‐
+mal, although it will be recovered during the next sweep.
 
-       The log is automatically swept when space is low, so there is
-       not normally any need to use the sweep command.
+The log is automatically swept when space is low, so there is
+not normally any need to use the sweep command.
 
-SOURCE
-       /liblogfs
-       /libnandfs
-       /emu/port/devlogfs.c
-       /os/port/devlogfs.c
+== source
+/liblogfs
+/libnandfs
+/emu/port/devlogfs.c
+/os/port/devlogfs.c
 
-SEE ALSO
-       flash(3), ftl(3), kfs(4)
+== see ALSO
+flash(3), ftl(3), kfs(4)
 
-BUGS
-       The  only  medium  currently supported is NAND flash. This is
-       detected by recognising the manufacturer and device ids  sup‐
-       plied by the status file of the flash(3) device.
-
-                                                            LOGFS(3)
+== bugs
+The  only  medium  currently supported is NAND flash. This is
+detected by recognising the manufacturer and device ids  sup‐
+plied by the status file of the flash(3) device.

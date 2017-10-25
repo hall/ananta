@@ -1,36 +1,29 @@
-LPT(3)                Library Functions Manual                LPT(3)
+= lpt: parallel port interface
 
-NAME
-       lpt - parallel port interface
+    bind -a #L[123] /dev
 
-SYNOPSIS
-       bind -a #L[123] /dev
+    /dev/lpt[123]data
+    /dev/lpt[123]dlr
+    /dev/lpt[123]pcr
+    /dev/lpt[123]psr
 
-       /dev/lpt[123]data
-       /dev/lpt[123]dlr
-       /dev/lpt[123]pcr
-       /dev/lpt[123]psr
+The  lpt  driver provides an interface to the parallel inter‐
+face normally used for printers.  The specifiers 1, 2, and  3
+correspond  to  the  parallel  interfaces  at PC ports 0x378,
+0x3bc, and 0x278 respectively.
 
-DESCRIPTION
-       The  lpt  driver provides an interface to the parallel inter‐
-       face normally used for printers.  The specifiers 1, 2, and  3
-       correspond  to  the  parallel  interfaces  at PC ports 0x378,
-       0x3bc, and 0x278 respectively.
+Lpt?data is write only.  Writing to  it  sends  data  to  the
+interface.   This  file  is sufficient for communicating with
+most printers.
 
-       Lpt?data is write only.  Writing to  it  sends  data  to  the
-       interface.   This  file  is sufficient for communicating with
-       most printers.
+Lpt?dlr, lpt?pcr, and lpt?psr are used for  fine  control  of
+the  parallel  port.   Reading  or writing these files corre‐
+sponds to  reading  and  writing  the  data  latch  register,
+printer control register, and printer status register.  These
+are used by programs to drive special devices.  The  data  is
+written  as  a hexadecimal (leading 0x), octal (leading 0) or
+decimal number.  Reads return a hexadecimal number represent‐
+ing the value of the register.
 
-       Lpt?dlr, lpt?pcr, and lpt?psr are used for  fine  control  of
-       the  parallel  port.   Reading  or writing these files corre‐
-       sponds to  reading  and  writing  the  data  latch  register,
-       printer control register, and printer status register.  These
-       are used by programs to drive special devices.  The  data  is
-       written  as  a hexadecimal (leading 0x), octal (leading 0) or
-       decimal number.  Reads return a hexadecimal number represent‐
-       ing the value of the register.
-
-SOURCE
-       /os/*/devlpt.c
-
-                                                              LPT(3)
+== source
+/os/*/devlpt.c

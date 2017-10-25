@@ -1,113 +1,106 @@
-DAYTIME(2)               System Calls Manual              DAYTIME(2)
+daytime: text, filet, gmt, local, now, string2tm, time, tm2epoch: time conversions
 
-NAME
-       daytime:  text,  filet,  gmt,  local,  now,  string2tm, time,
-       tm2epoch - time conversions
+    include "daytime.m";
+    daytime := load Daytime Daytime->PATH;
 
-SYNOPSIS
-       include "daytime.m";
-       daytime := load Daytime Daytime->PATH;
+    Tm: adt
+    {
+        sec:    int;    # seconds (0 to 59)
+        min:    int;    # minutes (0 to 59)
+        hour:   int;    # hours (0 to 23)
+        mday:   int;    # day of the month (1 to 31)
+        mon:    int;    # month (0 to 11)
+        year:   int;    # year-1900; 2000AD is 100
+        wday:   int;    # day of week (0 to 6, Sunday is 0)
+        yday:   int;    # day of year (0 to 365)
+        zone:   string; # time zone name
+        tzoff:  int;    # time zone offset (seconds from GMT)
+    };
 
-       Tm: adt
-       {
-           sec:    int;    # seconds (0 to 59)
-           min:    int;    # minutes (0 to 59)
-           hour:   int;    # hours (0 to 23)
-           mday:   int;    # day of the month (1 to 31)
-           mon:    int;    # month (0 to 11)
-           year:   int;    # year-1900; 2000AD is 100
-           wday:   int;    # day of week (0 to 6, Sunday is 0)
-           yday:   int;    # day of year (0 to 365)
-           zone:   string; # time zone name
-           tzoff:  int;    # time zone offset (seconds from GMT)
-       };
+    text:      fn(tm: ref Tm): string;
+    filet:     fn(now, t: int): string;
+    gmt:       fn(tim: int): ref Tm;
+    local:     fn(tim: int): ref Tm;
+    now:       fn(): int;
+    time:      fn(): string;
+    tm2epoch:  fn(tm: ref Tm): int;
+    string2tm: fn(date: string): ref Tm;
 
-       text:      fn(tm: ref Tm): string;
-       filet:     fn(now, t: int): string;
-       gmt:       fn(tim: int): ref Tm;
-       local:     fn(tim: int): ref Tm;
-       now:       fn(): int;
-       time:      fn(): string;
-       tm2epoch:  fn(tm: ref Tm): int;
-       string2tm: fn(date: string): ref Tm;
+These routines perform time conversions relative to the epoch
+00:00:00  GMT,  Jan.  1,  1970.  Note the range of values for
+each member of the Tm adt.  The conventions are the  same  as
+those of C's ctime.
 
-DESCRIPTION
-       These routines perform time conversions relative to the epoch
-       00:00:00  GMT,  Jan.  1,  1970.  Note the range of values for
-       each member of the Tm adt.  The conventions are the  same  as
-       those of C's ctime.
+Text converts a time structure referenced by tm from local or
+GMT time to a string in the format:
 
-       Text converts a time structure referenced by tm from local or
-       GMT time to a string in the format:
+       Sat Jan  1 13:00:00 GMT 2000
 
-              Sat Jan  1 13:00:00 GMT 2000
+Filet converts the file access or modification  time  t  from
+seconds since the epoch to local time as a string in the for‐
+mat:
 
-       Filet converts the file access or modification  time  t  from
-       seconds since the epoch to local time as a string in the for‐
-       mat:
+       Jan  1 13:00
 
-              Jan  1 13:00
+if the file is less than 6 months old or
 
-       if the file is less than 6 months old or
+       Jan  1 2000
 
-              Jan  1 2000
+if the file is older than 6 months, compared to the time now.
 
-       if the file is older than 6 months, compared to the time now.
+Gmt converts seconds since the epoch, received in tim,  to  a
+time structure in Greenwich Mean Time (GMT).
 
-       Gmt converts seconds since the epoch, received in tim,  to  a
-       time structure in Greenwich Mean Time (GMT).
+Local converts seconds since the epoch, received in tim, to a
+time structure in local time.
 
-       Local converts seconds since the epoch, received in tim, to a
-       time structure in local time.
+Now returns the time in seconds since the epoch, obtained  by
+reading /dev/time (see cons(3)).
 
-       Now returns the time in seconds since the epoch, obtained  by
-       reading /dev/time (see cons(3)).
+Time  converts seconds since the epoch to the local time as a
+string in the format Fri May 19 17:01:36 BST 2000.
 
-       Time  converts seconds since the epoch to the local time as a
-       string in the format Fri May 19 17:01:36 BST 2000.
+Tm2epoch converts a time  structure  referenced  by  tm  from
+local or GMT time to seconds since the epoch.
 
-       Tm2epoch converts a time  structure  referenced  by  tm  from
-       local or GMT time to seconds since the epoch.
+String2tm  returns a reference to a Tm value corresponding to
+the date and time in textual form in  string  s,  which  must
+have one of the forms below:
 
-       String2tm  returns a reference to a Tm value corresponding to
-       the date and time in textual form in  string  s,  which  must
-       have one of the forms below:
+       Sun, 06 Nov 1994 08:49:37 GMT    (RFC822, RFC1123)
+       Sunday, 06-Nov-94 08:49:37 GMT   (RFC850)
+       Sun Nov  6 08:49:37 GMT 1994     (output of text, above)
 
-              Sun, 06 Nov 1994 08:49:37 GMT    (RFC822, RFC1123)
-              Sunday, 06-Nov-94 08:49:37 GMT   (RFC850)
-              Sun Nov  6 08:49:37 GMT 1994     (output of text, above)
+A  missing  time  zone  in  any  format is assumed to be GMT.
+String2tm returns nil if s is not correctly formed.
 
-       A  missing  time  zone  in  any  format is assumed to be GMT.
-       String2tm returns nil if s is not correctly formed.
+When local time is first requested, daytime reads a table for
+time  zone conversion from the timezone environment variable,
+if that is set, and otherwise from the file /locale/timezone,
+which  is  copied from one of the other files in /locale when
+the system is installed.  The timezone table is a  text  file
+containing  lines  of space-separated fields.  The first line
+gives the normal time zone name and its difference  from  GMT
+in seconds followed by an alternative time zone name (eg, for
+`daylight savings' or `summer' time) and its difference  from
+GMT  followed by a newline.  The remainder is a list of pairs
+of times (seconds past the start of 1970, in the  first  time
+zone) when the alternative time zone applies.  For example:
 
-       When local time is first requested, daytime reads a table for
-       time  zone conversion from the timezone environment variable,
-       if that is set, and otherwise from the file /locale/timezone,
-       which  is  copied from one of the other files in /locale when
-       the system is installed.  The timezone table is a  text  file
-       containing  lines  of space-separated fields.  The first line
-       gives the normal time zone name and its difference  from  GMT
-       in seconds followed by an alternative time zone name (eg, for
-       `daylight savings' or `summer' time) and its difference  from
-       GMT  followed by a newline.  The remainder is a list of pairs
-       of times (seconds past the start of 1970, in the  first  time
-       zone) when the alternative time zone applies.  For example:
+       EST -18000 EDT -14400
+        9943200 25664400 41392800 57718800 ...
 
-              EST -18000 EDT -14400
-               9943200 25664400 41392800 57718800 ...
+Greenwich Mean Time is represented by
 
-       Greenwich Mean Time is represented by
+       GMT 0
 
-              GMT 0
+== source
+/appl/lib/daytime.b
 
-SOURCE
-       /appl/lib/daytime.b
+== see ALSO
+cons(3), sys-millisec(2)
 
-SEE ALSO
-       cons(3), sys-millisec(2)
+== bugs
+The  sign  bit of a Limbo integer holding a time will turn on
+68 years from the epoch.
 
-BUGS
-       The  sign  bit of a Limbo integer holding a time will turn on
-       68 years from the epoch.
-
-                                                          DAYTIME(2)

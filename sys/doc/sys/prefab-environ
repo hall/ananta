@@ -1,39 +1,32 @@
-PREFAB-ENVIRON(2)        System Calls Manual       PREFAB-ENVIRON(2)
+= prefab: Environ: environment for ITV toolkit to provide a graphics framework for a collection of items
 
-NAME
-       prefab:  Environ  -  environment for ITV toolkit to provide a
-       graphics framework for a collection of items
+    include "draw.m";
+    include "prefab.m";
+    prefab := load Prefab Prefab->PATH;
 
-SYNOPSIS
-       include "draw.m";
-       include "prefab.m";
-       prefab := load Prefab Prefab->PATH;
+    Environ: adt
+    {
+        screen: ref Draw->Screen;
+        style:  ref Style;
+    
+    };
 
-       Environ: adt
-       {
-           screen: ref Draw->Screen;
-           style:  ref Style;
+The Environ type collects the Style and Screen  types  neces‐
+sary to specify how and where to draw Prefab items.
 
-       };
+screen    Specifies  the Screen upon which items will be dis‐
+          played.
 
-DESCRIPTION
-       The Environ type collects the Style and Screen  types  neces‐
-       sary to specify how and where to draw Prefab items.
+style     Specifies the Style for items  in  an  environment.
+          To draw various items in different fonts or colors,
+          the application should associate different  Environ
+          objects with the various.  (But see also the layout
+          functions  in  prefab-element(2)  and   prefab-com‐
+          pound(2)).
 
-       screen    Specifies  the Screen upon which items will be dis‐
-                 played.
+== source
+/libinterp/prefab.c /libprefab/*.c
 
-       style     Specifies the Style for items  in  an  environment.
-                 To draw various items in different fonts or colors,
-                 the application should associate different  Environ
-                 objects with the various.  (But see also the layout
-                 functions  in  prefab-element(2)  and   prefab-com‐
-                 pound(2)).
+== see ALSO
+prefab-intro(2), draw-screen(2), prefab-style(2)
 
-SOURCE
-       /libinterp/prefab.c /libprefab/*.c
-
-SEE ALSO
-       prefab-intro(2), draw-screen(2), prefab-style(2)
-
-                                                   PREFAB-ENVIRON(2)

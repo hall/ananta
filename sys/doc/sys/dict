@@ -1,48 +1,42 @@
-DICT(2)                  System Calls Manual                 DICT(2)
+= dict: list of string pairs
 
-NAME
-       dict - list of string pairs
+    include "dict.m";
+    dict := load Dictionary Dictionary->PATH;
 
-SYNOPSIS
-       include "dict.m";
-       dict := load Dictionary Dictionary->PATH;
+    Dict: adt {
+         add: fn(d: self ref Dict, e: (string, string));
+         delete: fn(d: self ref Dict, k: string);
+         lookup: fn(d: self ref Dict, k: string): string;
+         keys: fn(d: self ref Dict): list of string;
+    };
 
-       Dict: adt {
-            add: fn(d: self ref Dict, e: (string, string));
-            delete: fn(d: self ref Dict, k: string);
-            lookup: fn(d: self ref Dict, k: string): string;
-            keys: fn(d: self ref Dict): list of string;
-       };
+Dict provides a simple string to string association list:
 
-DESCRIPTION
-       Dict provides a simple string to string association list:
+d.add(e)
+       Adds  a  new  tuple  e to the list, representing a new
+       (key , value) pair.
 
-       d.add(e)
-              Adds  a  new  tuple  e to the list, representing a new
-              (key , value) pair.
+d.delete(k)
+       Deletes all pairs with key k from the list.
 
-       d.delete(k)
-              Deletes all pairs with key k from the list.
+d.lookup(k)
+       Tries to find a pair with key k and returns its  asso‐
+       ciated value, or nil if the key was not found.
 
-       d.lookup(k)
-              Tries to find a pair with key k and returns its  asso‐
-              ciated value, or nil if the key was not found.
+d.keys()
+       Returns a list of all keys in the list.
 
-       d.keys()
-              Returns a list of all keys in the list.
+== source
+/appl/lib/dict.b
 
-SOURCE
-       /appl/lib/dict.b
+== see ALSO
+hash(2)
 
-SEE ALSO
-       hash(2)
+== bugs
+No  attempt  is made to keep keys unique in the list; if more
+than one pair exists with the  same  key,  then  lookup  will
+select one of them arbitrarily.
 
-BUGS
-       No  attempt  is made to keep keys unique in the list; if more
-       than one pair exists with the  same  key,  then  lookup  will
-       select one of them arbitrarily.
+Computational overhead of lookup and deletion of keys is pro‐
+portional to the number of pairs in the list.
 
-       Computational overhead of lookup and deletion of keys is pro‐
-       portional to the number of pairs in the list.
-
-                                                             DICT(2)

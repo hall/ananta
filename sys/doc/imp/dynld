@@ -1,160 +1,153 @@
-DYNLD(10.2)                                              DYNLD(10.2)
+= dynfindsym, dynfreeimport, dynloadfd, dynloadgen, dynobjfree, dyntabsize: load object file dynamically
 
-NAME
-       dynfindsym, dynfreeimport, dynloadfd, dynloadgen, dynobjfree,
-       dyntabsize - load object file dynamically
+    #include <lib9.h>
+    #include <a.out.h>
+    #include <dynld.h>
 
-SYNOPSIS
-       #include <lib9.h>
-       #include <a.out.h>
-       #include <dynld.h>
+    Dynsym*   dynfindsym(char *name, Dynsym *syms, int nsym)
 
-       Dynsym*   dynfindsym(char *name, Dynsym *syms, int nsym)
+    Dynobj*   dynloadfd(int fd, Dynsym *exports, int nexport,
+            ulong maxsize)
 
-       Dynobj*   dynloadfd(int fd, Dynsym *exports, int nexport,
-                   ulong maxsize)
+    Dynobj*   dynloadgen(void             *file,             long
+    (*read)(void*,void*,long),
+                 vlong     (*seek)(void*,vlong,int),     void
+    (*err)(char*),
+            Dynsym *exports, int nexport, ulong maxsize)
 
-       Dynobj*   dynloadgen(void             *file,             long
-       (*read)(void*,void*,long),
-                        vlong     (*seek)(void*,vlong,int),     void
-       (*err)(char*),
-                   Dynsym *exports, int nexport, ulong maxsize)
+    void*     dynimport(Dynobj *o, char *name, ulong sig)
 
-       void*     dynimport(Dynobj *o, char *name, ulong sig)
+    void      dynfreeimport(Dynobj *o)
 
-       void      dynfreeimport(Dynobj *o)
+    void      dynobjfree(Dynobj *o)
 
-       void      dynobjfree(Dynobj *o)
+    int       dyntabsize(Dynsym *t)
 
-       int       dyntabsize(Dynsym *t)
+    extern Dynsym  _exporttab[];
 
-       extern Dynsym  _exporttab[];
+These functions allow a process to load further code and data
+into  the  currently executing image.  A dynamically-loadable
+file, called a module here, is a variant of  the  a.out(10.6)
+executable format with some extra components.  The loader for
+the architecture (see 2l(1)) creates a module file from  com‐
+ponent  object  file(s)  when  given the -u option.  A module
+contains text and data sections, an import table,  an  export
+table,  and relocation data.  The import table lists the sym‐
+bols the module needs from the loading  program;  the  export
+table  lists symbols the module provides when loaded.  A pro‐
+gram that loads a module provides a table of its own  symbols
+to match the symbols in the module's import table.
 
-DESCRIPTION
-       These functions allow a process to load further code and data
-       into  the  currently executing image.  A dynamically-loadable
-       file, called a module here, is a variant of  the  a.out(10.6)
-       executable format with some extra components.  The loader for
-       the architecture (see 2l(1)) creates a module file from  com‐
-       ponent  object  file(s)  when  given the -u option.  A module
-       contains text and data sections, an import table,  an  export
-       table,  and relocation data.  The import table lists the sym‐
-       bols the module needs from the loading  program;  the  export
-       table  lists symbols the module provides when loaded.  A pro‐
-       gram that loads a module provides a table of its own  symbols
-       to match the symbols in the module's import table.
+A  symbol  entry in a symbol table names a global function or
+data item, and has an associated signature value representing
+the  type of the corresponding function or data in the source
+code.  The Dynsym structure defines a symbol:
 
-       A  symbol  entry in a symbol table names a global function or
-       data item, and has an associated signature value representing
-       the  type of the corresponding function or data in the source
-       code.  The Dynsym structure defines a symbol:
+       typedef struct {
+            ulong     sig;
+            ulong     addr;
+            char*     name;
+       } Dynsym;
 
-              typedef struct {
-                   ulong     sig;
-                   ulong     addr;
-                   char*     name;
-              } Dynsym;
+The structure is known to the loaders  2l(1).   Name  is  the
+linkage  name  of the function or data.  Addr is its address,
+which is relative to the start of the module before  loading,
+and  an  address  in the current address space after loading.
+The signature sig is the value produced by the  C  compiler's
+signof  operator  applied to the type.  Symbol tables must be
+sorted by name.
 
-       The structure is known to the loaders  2l(1).   Name  is  the
-       linkage  name  of the function or data.  Addr is its address,
-       which is relative to the start of the module before  loading,
-       and  an  address  in the current address space after loading.
-       The signature sig is the value produced by the  C  compiler's
-       signof  operator  applied to the type.  Symbol tables must be
-       sorted by name.
+An executable that wishes to load modules  will  normally  be
+linked  using  the -x option to the appropriate loader 2l(1).
+The resulting executable contains an export table  _exporttab
+that  lists  all  the  exported  symbols  of  the program (by
+default, all external symbols).  A nil name marks the end  of
+the table.  See 2l(1) for details.  The table can be given to
+the functions below to allow a loaded module to access  those
+symbols.
 
-       An executable that wishes to load modules  will  normally  be
-       linked  using  the -x option to the appropriate loader 2l(1).
-       The resulting executable contains an export table  _exporttab
-       that  lists  all  the  exported  symbols  of  the program (by
-       default, all external symbols).  A nil name marks the end  of
-       the table.  See 2l(1) for details.  The table can be given to
-       the functions below to allow a loaded module to access  those
-       symbols.
+A loaded module is described by a Dynobj structure:
 
-       A loaded module is described by a Dynobj structure:
+       typedef struct {
+            ulong     size;     /* total size in bytes */
+            ulong     text;     /* bytes of text */
+            ulong     data;     /* bytes of data */
+            ulong     bss;      /* bytes of bss */
+            uchar*    base;     /* start of text, data, bss */
+            int       nexport;
+            Dynsym*   export;   /* export table */
+            int       nimport;
+            Dynsym**  import;   /* import table */
+       } Dynobj;
 
-              typedef struct {
-                   ulong     size;     /* total size in bytes */
-                   ulong     text;     /* bytes of text */
-                   ulong     data;     /* bytes of data */
-                   ulong     bss;      /* bytes of bss */
-                   uchar*    base;     /* start of text, data, bss */
-                   int       nexport;
-                   Dynsym*   export;   /* export table */
-                   int       nimport;
-                   Dynsym**  import;   /* import table */
-              } Dynobj;
+Several  fields  give  sizes  of  the module's components, as
+noted in comments above.  Base gives the address at which the
+module  has  been  loaded.   All its internal references have
+been adjusted where needed to reflect  its  current  address.
+Export  points to a symbol table listing the symbols exported
+by the module; nexport  gives  the  table's  length.   Import
+points to a list of symbols imported by the module; note that
+each entry actually points to an entry in a symbol table pro‐
+vided  by  the  program  that  loaded the module (see below).
+Nimport gives the import table's length.  If the import table
+is  not required, call dynfreeimport on the module pointer to
+free it.
 
-       Several  fields  give  sizes  of  the module's components, as
-       noted in comments above.  Base gives the address at which the
-       module  has  been  loaded.   All its internal references have
-       been adjusted where needed to reflect  its  current  address.
-       Export  points to a symbol table listing the symbols exported
-       by the module; nexport  gives  the  table's  length.   Import
-       points to a list of symbols imported by the module; note that
-       each entry actually points to an entry in a symbol table pro‐
-       vided  by  the  program  that  loaded the module (see below).
-       Nimport gives the import table's length.  If the import table
-       is  not required, call dynfreeimport on the module pointer to
-       free it.
+Dynfindysm looks up the entry for the given  name  in  symbol
+table  syms  (of  length  nsym).  It returns a pointer to the
+entry if found; nil otherwise.   The  symbol  table  must  be
+sorted by name in ascending order.
 
-       Dynfindysm looks up the entry for the given  name  in  symbol
-       table  syms  (of  length  nsym).  It returns a pointer to the
-       entry if found; nil otherwise.   The  symbol  table  must  be
-       sorted by name in ascending order.
+Dyntabsize  returns  the length of symbol table t, defined to
+be the number of Dynsym values starting at t that  have  non-
+nil  name  fields.  It is used to find the length of _export‐
+tab.
 
-       Dyntabsize  returns  the length of symbol table t, defined to
-       be the number of Dynsym values starting at t that  have  non-
-       nil  name  fields.  It is used to find the length of _export‐
-       tab.
+Dynloadfd loads a module from the file open  for  reading  on
+fd,  and  returns the resulting module pointer on success, or
+nil on error.  If maxsize is non-zero the size of the dynami‐
+cally-loaded  module's  code  and  data is limited to maxsize
+bytes.  Exports is an array of nexport symbols in the current
+program  that can be imported by the current module.  It uses
+read(2) and seek(2) to access  fd,  and  calls  werrstr  (see
+errstr(2)) to set the error string if necessary.
 
-       Dynloadfd loads a module from the file open  for  reading  on
-       fd,  and  returns the resulting module pointer on success, or
-       nil on error.  If maxsize is non-zero the size of the dynami‐
-       cally-loaded  module's  code  and  data is limited to maxsize
-       bytes.  Exports is an array of nexport symbols in the current
-       program  that can be imported by the current module.  It uses
-       read(2) and seek(2) to access  fd,  and  calls  werrstr  (see
-       errstr(2)) to set the error string if necessary.
+Dynloadgen  is a more general function that can load a module
+from an arbitrary source, not just an open  file  descriptor.
+(In  particular,  it  can be called by the kernel using func‐
+tions internal to the kernel instead of making system calls.)
+Exports, nexport and maxsize are just as for dynloadfd.  File
+is a pointer to a structure defined by the caller that repre‐
+sents  the  file containing the module.  It is passed to read
+and seek.   Read  is  invoked  as  (*read)(file,buf, nbytes).
+Read should read nbytes of data from file into buf and return
+the number of bytes transferred.   It  should  return  -1  on
+error.   Seek is invoked as (*seek)(file,n, type) where n and
+type are just as for seek(2); it should seek to the requested
+offset  in file, or return -1 on error.  Dynloadgen returns a
+pointer to the  loaded  module  on  success.   On  error,  it
+returns  nil after calling its err parameter to set the error
+string.
 
-       Dynloadgen  is a more general function that can load a module
-       from an arbitrary source, not just an open  file  descriptor.
-       (In  particular,  it  can be called by the kernel using func‐
-       tions internal to the kernel instead of making system calls.)
-       Exports, nexport and maxsize are just as for dynloadfd.  File
-       is a pointer to a structure defined by the caller that repre‐
-       sents  the  file containing the module.  It is passed to read
-       and seek.   Read  is  invoked  as  (*read)(file,buf, nbytes).
-       Read should read nbytes of data from file into buf and return
-       the number of bytes transferred.   It  should  return  -1  on
-       error.   Seek is invoked as (*seek)(file,n, type) where n and
-       type are just as for seek(2); it should seek to the requested
-       offset  in file, or return -1 on error.  Dynloadgen returns a
-       pointer to the  loaded  module  on  success.   On  error,  it
-       returns  nil after calling its err parameter to set the error
-       string.
+Dynimport returns a pointer to the value of the  symbol  name
+in loaded module o, or nil if o does not export a symbol with
+the given name.  If sig is non-zero,  the  exported  symbol's
+signature  must  equal  sig,  or dynimport again returns nil.
+For example:
 
-       Dynimport returns a pointer to the value of the  symbol  name
-       in loaded module o, or nil if o does not export a symbol with
-       the given name.  If sig is non-zero,  the  exported  symbol's
-       signature  must  equal  sig,  or dynimport again returns nil.
-       For example:
+       Dev *d;
+       d = dynimport(obj, "XXXdevtab", signof(*d));
+       if(d == nil)
+            error("not a dynamically-loadable driver");
 
-              Dev *d;
-              d = dynimport(obj, "XXXdevtab", signof(*d));
-              if(d == nil)
-                   error("not a dynamically-loadable driver");
+Dynobjfree frees the module o.  There is no reference  count‐
+ing:  it  is  the caller's responsibility to decide whether a
+module is no longer needed.
 
-       Dynobjfree frees the module o.  There is no reference  count‐
-       ing:  it  is  the caller's responsibility to decide whether a
-       module is no longer needed.
+== see ALSO
+2l(10.1), a.out(10.6)
 
-SEE ALSO
-       2l(10.1), a.out(10.6)
+== diagnostics
+Functions that return pointers return  nil  on  error.   Dyn‐
+loadfd sets the error string and returns nil.
 
-DIAGNOSTICS
-       Functions that return pointers return  nil  on  error.   Dyn‐
-       loadfd sets the error string and returns nil.
-
-                                                         DYNLD(10.2)

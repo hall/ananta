@@ -1,53 +1,46 @@
-SECONDS(10.2)                                          SECONDS(10.2)
+= seconds,  ticks,  HZ,  MS2HZ,  MS2TK,  TK2MS, TK2SEC: kernel times and time conversions
 
-NAME
-       seconds,  ticks,  HZ,  MS2HZ,  MS2TK,  TK2MS, TK2SEC - kernel
-       times and time conversions
+    long    seconds(void)
 
-SYNOPSIS
-       long    seconds(void)
+    ulong   ticks(void)
+    
+    #define HZ          ...
+    #define MS2HZ(t)    ...
+    #define TK2SEC(t)   ...
+    #define TK2MS(t)    ...
+    #define MS2TK(m)    ...
 
-       ulong   ticks(void)
+Seconds returns the system's idea of the current time as  the
+number of seconds since the start of the epoch (00:00:00 GMT,
+January 1, 1970).
 
-       #define HZ          ...
-       #define MS2HZ(t)    ...
-       #define TK2SEC(t)   ...
-       #define TK2MS(t)    ...
-       #define MS2TK(m)    ...
+Ticks returns the  number  of  system-dependent  clock  ticks
+since system boot.
 
-DESCRIPTION
-       Seconds returns the system's idea of the current time as  the
-       number of seconds since the start of the epoch (00:00:00 GMT,
-       January 1, 1970).
+The  system  clock  frequency is platform-dependent.  Several
+symbolic constants and macro functions  are  defined  by  the
+file mem.h to convert between different time units:
 
-       Ticks returns the  number  of  system-dependent  clock  ticks
-       since system boot.
+HZ     The number of clock ticks per second.
 
-       The  system  clock  frequency is platform-dependent.  Several
-       symbolic constants and macro functions  are  defined  by  the
-       file mem.h to convert between different time units:
+MS2HZ  Milliseconds per clock tick.
 
-       HZ     The number of clock ticks per second.
+TK2SEC(t)
+       Convert t clock ticks to seconds and return the result
+       (truncating not rounding).
 
-       MS2HZ  Milliseconds per clock tick.
+TK2MS(t)
+       Convert t clock ticks to milliseconds and  return  the
+       result.
 
-       TK2SEC(t)
-              Convert t clock ticks to seconds and return the result
-              (truncating not rounding).
+MS2TK(m)
+       Convert  m  milliseconds to clock ticks and return the
+       result (truncating).
 
-       TK2MS(t)
-              Convert t clock ticks to milliseconds and  return  the
-              result.
+The functions are often used to calculate delays  for  timing
+functions, for instance:
 
-       MS2TK(m)
-              Convert  m  milliseconds to clock ticks and return the
-              result (truncating).
+       if(atactlrwait(dp->cp, DHmagic, 0, MS2TK(100))){
+               ...
+       }
 
-       The functions are often used to calculate delays  for  timing
-       functions, for instance:
-
-              if(atactlrwait(dp->cp, DHmagic, 0, MS2TK(100))){
-                      ...
-              }
-
-                                                       SECONDS(10.2)

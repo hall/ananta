@@ -1,70 +1,63 @@
-NAMES(2)                 System Calls Manual                NAMES(2)
+= names: basename, cleanname, dirname, elements, isprefix, pathname, relative, rooted: file name manipulation
 
-NAME
-       Names:  basename,  cleanname,  dirname,  elements,  isprefix,
-       pathname, relative, rooted - file name manipulation
+    include "names.m";
+    names := load Names Names->PATH;
 
-SYNOPSIS
-       include "names.m";
-       names := load Names Names->PATH;
+    basename:  fn(name: string, suffix: string): string;
+    cleanname: fn(name: string): string;
+    dirname:   fn(name: string): string;
+    elements:  fn(name: string): list of string;
+    isprefix:  fn(a: string, b: string): int;
+    pathname:  fn(els: list of string): string;
+    relative:  fn(name: string, root: string): string;
+    rooted:    fn(root: string, name: string): string;
 
-       basename:  fn(name: string, suffix: string): string;
-       cleanname: fn(name: string): string;
-       dirname:   fn(name: string): string;
-       elements:  fn(name: string): list of string;
-       isprefix:  fn(a: string, b: string): int;
-       pathname:  fn(els: list of string): string;
-       relative:  fn(name: string, root: string): string;
-       rooted:    fn(root: string, name: string): string;
+Names provides operations on file names (path names):
 
-DESCRIPTION
-       Names provides operations on file names (path names):
+basename
+       Return the trailing component of name (the text  after
+       the final shorn of suffix (which may be null).
 
-       basename
-              Return the trailing component of name (the text  after
-              the final shorn of suffix (which may be null).
+cleanname
+       Return  a  `cleaner'  version  of  name:  there are no
+       redundant and trailing slashes,  and  directory  names
+       and  have  been  interpreted lexically.  If the result
+       would otherwise be  the  empty  string,  the  name  is
+       returned instead.
 
-       cleanname
-              Return  a  `cleaner'  version  of  name:  there are no
-              redundant and trailing slashes,  and  directory  names
-              and  have  been  interpreted lexically.  If the result
-              would otherwise be  the  empty  string,  the  name  is
-              returned instead.
+dirname
+       Return  the directory component of name: the string up
+       to but not including the final slash(es).
 
-       dirname
-              Return  the directory component of name: the string up
-              to but not including the final slash(es).
+elements
+       Return a list of the path elements of name: the  words
+       between  slashes.   If  name starts with a the head of
+       the list will be the string "/" but otherwise  slashes
+       do not appear.
 
-       elements
-              Return a list of the path elements of name: the  words
-              between  slashes.   If  name starts with a the head of
-              the list will be the string "/" but otherwise  slashes
-              do not appear.
+pathname
+       Return  a  path name formed from a list of elements as
+       produced by elements.
 
-       pathname
-              Return  a  path name formed from a list of elements as
-              produced by elements.
+isprefix
+       Return true iff path name a is a prefix of  path  name
+       b.
 
-       isprefix
-              Return true iff path name a is a prefix of  path  name
-              b.
+relative
+       If  name  is  root/X  for  some X, return X; otherwise
+       return name unchanged.
 
-       relative
-              If  name  is  root/X  for  some X, return X; otherwise
-              return name unchanged.
+rooted Return the path name for name relative to a given root
+       directory  (either  name  may be nil).  If name itself
+       starts with or the result is  name;  otherwise  it  is
+       root/name.
 
-       rooted Return the path name for name relative to a given root
-              directory  (either  name  may be nil).  If name itself
-              starts with or the result is  name;  otherwise  it  is
-              root/name.
+See  sys-intro(2)  for  details  of  file name syntax and its
+interpretation.
 
-       See  sys-intro(2)  for  details  of  file name syntax and its
-       interpretation.
+== source
+/appl/lib/names.b
 
-SOURCE
-       /appl/lib/names.b
+== see ALSO
+sys-intro(2), sys-fd2path(2), workdir(2)
 
-SEE ALSO
-       sys-intro(2), sys-fd2path(2), workdir(2)
-
-                                                            NAMES(2)

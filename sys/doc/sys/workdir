@@ -1,25 +1,19 @@
-WORKDIR(2)               System Calls Manual              WORKDIR(2)
+= workdir: get the current working directory
 
-NAME
-       workdir - get the current working directory
+    include "workdir.m";
+    workdir := load Workdir Workdir->PATH;
 
-SYNOPSIS
-       include "workdir.m";
-       workdir := load Workdir Workdir->PATH;
+    init:  fn(): string;
 
-       init:  fn(): string;
+Workdir returns a string representation of the working direc‐
+tory of the invoking process.
 
-DESCRIPTION
-       Workdir returns a string representation of the working direc‐
-       tory of the invoking process.
+When Inferno boots, the initial process has / for its working
+directory.
 
-       When Inferno boots, the initial process has / for its working
-       directory.
+== source
+/appl/lib/workdir.b
 
-SOURCE
-       /appl/lib/workdir.b
+== see ALSO
+sys-chdir(2), sys-fd2path(2), sys-stat(2)
 
-SEE ALSO
-       sys-chdir(2), sys-fd2path(2), sys-stat(2)
-
-                                                          WORKDIR(2)

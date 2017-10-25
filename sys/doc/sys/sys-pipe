@@ -1,44 +1,38 @@
-SYS-PIPE(2)              System Calls Manual             SYS-PIPE(2)
+= pipe: create an interprocess channel
 
-NAME
-       pipe - create an interprocess channel
+    include "sys.m";
+    sys := load Sys Sys->PATH;
 
-SYNOPSIS
-       include "sys.m";
-       sys := load Sys Sys->PATH;
+    pipe: fn(fds: array of ref FD): int;
 
-       pipe: fn(fds: array of ref FD): int;
+Pipe creates a buffered channel for interprocess I/O via file
+descriptors.  It allocates a pipe from the  pipe  device  and
+returns  in  the  array fds file descriptors for the two pipe
+ends. Both returned file  descriptors  are  opened  for  both
+reading  and  writing (Sys->ORDWR).  Data written on one file
+descriptor can be read from the other.  The details  of  flow
+control  and  buffering are given in pipe(3).  When no refer‐
+ences remain to the file descriptor representing one end of a
+pipe,  and all remaining data has been read at the other end,
+subsequent reads at that end will return 0 bytes.  Writes  to
+a pipe with no reader produce an exception.
 
-DESCRIPTION
-       Pipe creates a buffered channel for interprocess I/O via file
-       descriptors.  It allocates a pipe from the  pipe  device  and
-       returns  in  the  array fds file descriptors for the two pipe
-       ends. Both returned file  descriptors  are  opened  for  both
-       reading  and  writing (Sys->ORDWR).  Data written on one file
-       descriptor can be read from the other.  The details  of  flow
-       control  and  buffering are given in pipe(3).  When no refer‐
-       ences remain to the file descriptor representing one end of a
-       pipe,  and all remaining data has been read at the other end,
-       subsequent reads at that end will return 0 bytes.  Writes  to
-       a pipe with no reader produce an exception.
+The array fds passed to the system call must have a length of
+at least 2; only entries 0 and 1 are updated.
 
-       The array fds passed to the system call must have a length of
-       at least 2; only entries 0 and 1 are updated.
+Limbo applications typically use typed  Limbo  channels,  not
+pipes,  for efficient communication by cooperating processes.
+Pipes are still useful, however, to connect applications that
+do  not  (or  cannot)  share  such channels, or when a system
+interface  requires  a  file  descriptor.   For  instance,  a
+process  that  serves  the  9P  protocol  can  pass  the file
+descriptor for one end of a  pipe  to  Sys->mount  (see  sys-
+bind(2)),  and read and write 9P messages on the other end of
+the pipe.
 
-       Limbo applications typically use typed  Limbo  channels,  not
-       pipes,  for efficient communication by cooperating processes.
-       Pipes are still useful, however, to connect applications that
-       do  not  (or  cannot)  share  such channels, or when a system
-       interface  requires  a  file  descriptor.   For  instance,  a
-       process  that  serves  the  9P  protocol  can  pass  the file
-       descriptor for one end of a  pipe  to  Sys->mount  (see  sys-
-       bind(2)),  and read and write 9P messages on the other end of
-       the pipe.
+== diagnostics
+Returns 0 on success; -1 on failure.
 
-DIAGNOSTICS
-       Returns 0 on success; -1 on failure.
+== see ALSO
+pipe(3)
 
-SEE ALSO
-       pipe(3)
-
-                                                         SYS-PIPE(2)

@@ -1,46 +1,40 @@
-MASTER(10.6)                                            MASTER(10.6)
+= master, master.local: list of device specifiers
 
-NAME
-       master, master.local - list of device specifiers
+    /emu/port/master
+    /emu/port/master.local
 
-SYNOPSIS
-       /emu/port/master
-       /emu/port/master.local
+    os/port/master
+    os/port/master.local
 
-       os/port/master
-       os/port/master.local
+Each  device  has  a  name of the form #x where x is a single
+Unicode character, which represents  the  root  of  the  name
+space served (generated) by the driver.  (There can be a fur‐
+ther specifier that selects a particular hierarchy within the
+device,  but  that  is not relevant here.)  These names allow
+the devices' name spaces to be  added  to  a  process's  name
+space (see sys-intro(2)), using bind(1) commands, sys-bind(2)
+operations and namespace(6) files.   A  given  character  can
+represent  only  one driver in a running system, but the same
+character might be used by several drivers in the source tree
+if  they  are never configured into the same system (eg, dif‐
+ferent platforms or mutually-exclusive configurations).   The
+file  #c/drivers  gives  the  local  system's assignment (see
+cons(3)).  A list of the set of characters  used  across  all
+drivers  on  all platforms can be found in the several master
+files.  In the  distribution,  the  master.local  files  list
+characters that are reserved for use by locally-written driv‐
+ers.  They are updated by hand at a given installation.   The
+master  files  by  contrast  are  generated  automatically by
+emu/port/mkfile and os/port/mkfile from the  source  for  all
+platforms  and master.local.  In the distribution, they might
+include names for drivers that exist but are not distributed.
 
-DESCRIPTION
-       Each  device  has  a  name of the form #x where x is a single
-       Unicode character, which represents  the  root  of  the  name
-       space served (generated) by the driver.  (There can be a fur‐
-       ther specifier that selects a particular hierarchy within the
-       device,  but  that  is not relevant here.)  These names allow
-       the devices' name spaces to be  added  to  a  process's  name
-       space (see sys-intro(2)), using bind(1) commands, sys-bind(2)
-       operations and namespace(6) files.   A  given  character  can
-       represent  only  one driver in a running system, but the same
-       character might be used by several drivers in the source tree
-       if  they  are never configured into the same system (eg, dif‐
-       ferent platforms or mutually-exclusive configurations).   The
-       file  #c/drivers  gives  the  local  system's assignment (see
-       cons(3)).  A list of the set of characters  used  across  all
-       drivers  on  all platforms can be found in the several master
-       files.  In the  distribution,  the  master.local  files  list
-       characters that are reserved for use by locally-written driv‐
-       ers.  They are updated by hand at a given installation.   The
-       master  files  by  contrast  are  generated  automatically by
-       emu/port/mkfile and os/port/mkfile from the  source  for  all
-       platforms  and master.local.  In the distribution, they might
-       include names for drivers that exist but are not distributed.
+Except for a few fundamental drivers, the  character  assign‐
+ment  is  arbitrary,  can  vary between installations, and is
+notionally subject to change (although that rarely  happens).
+The  indir(3) allows referring to drivers using a longer name
+that is even less likely to change.
 
-       Except for a few fundamental drivers, the  character  assign‐
-       ment  is  arbitrary,  can  vary between installations, and is
-       notionally subject to change (although that rarely  happens).
-       The  indir(3) allows referring to drivers using a longer name
-       that is even less likely to change.
+== see ALSO
+bind(1), sys-intro(2), indir(3), namespace(6), dev(10.2)
 
-SEE ALSO
-       bind(1), sys-intro(2), indir(3), namespace(6), dev(10.2)
-
-                                                        MASTER(10.6)

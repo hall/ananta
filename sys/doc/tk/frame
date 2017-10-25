@@ -1,76 +1,70 @@
-FRAME(9)              Kernel Developer's Manual             FRAME(9)
+= frame: Create and manipulate frame widgets
 
-NAME
-       frame - Create and manipulate frame widgets
+    frame pathName ?options?
 
-SYNOPSIS
-       frame pathName ?options?
+== standard OPTIONS
+-borderwidth -relief
 
-STANDARD OPTIONS
-       -borderwidth -relief
+== widget-SPECIFIC OPTIONS
+-background colour
+       This  option  is  the  same as the standard background
+       option except that its value may also be specified  as
+       an  empty  string.  In this case, the widget will dis‐
+       play no background or border, and no colours  will  be
+       consumed  from  its  colourmap  for its background and
+       border.
 
-WIDGET-SPECIFIC OPTIONS
-       -background colour
-              This  option  is  the  same as the standard background
-              option except that its value may also be specified  as
-              an  empty  string.  In this case, the widget will dis‐
-              play no background or border, and no colours  will  be
-              consumed  from  its  colourmap  for its background and
-              border.
+-height dist
+       Specifies the desired height for the window.  If  this
+       option  is  less than or equal to zero then the window
+       will not request any size at all.
 
-       -height dist
-              Specifies the desired height for the window.  If  this
-              option  is  less than or equal to zero then the window
-              will not request any size at all.
+-width dist
+       Specifies the desired width for the window.   If  this
+       option  is  less than or equal to zero then the window
+       will not request any size at all.
 
-       -width dist
-              Specifies the desired width for the window.   If  this
-              option  is  less than or equal to zero then the window
-              will not request any size at all.
+The frame command creates a new window (given by the pathName
+argument)  and  makes  it  into  a  frame widget.  Additional
+options, described above, may be  specified  on  the  command
+line to configure aspects of the frame such as its background
+colour and relief.  The frame command returns the  path  name
+of the new window.
 
-DESCRIPTION
-       The frame command creates a new window (given by the pathName
-       argument)  and  makes  it  into  a  frame widget.  Additional
-       options, described above, may be  specified  on  the  command
-       line to configure aspects of the frame such as its background
-       colour and relief.  The frame command returns the  path  name
-       of the new window.
+A frame is a simple widget.  Its primary purpose is to act as
+a spacer or container for complex window layouts.   The  only
+features of a frame are its background colour and an optional
+3-D border to make the frame appear raised or sunken.
 
-       A frame is a simple widget.  Its primary purpose is to act as
-       a spacer or container for complex window layouts.   The  only
-       features of a frame are its background colour and an optional
-       3-D border to make the frame appear raised or sunken.
+== widget COMMAND
+The frame command creates a new  Tk  command  whose  name  is
+pathName..  This command may be used to invoke various opera‐
+tions on the widget.  It has the following general form:
+       pathName option ?arg arg ...?
+PathName is the name of the command, which is the same as the
+frame  widget's path name.  Option and the args determine the
+exact behaviour of the command.  The following  commands  are
+possible for frame widgets:
 
-WIDGET COMMAND
-       The frame command creates a new  Tk  command  whose  name  is
-       pathName..  This command may be used to invoke various opera‐
-       tions on the widget.  It has the following general form:
-              pathName option ?arg arg ...?
-       PathName is the name of the command, which is the same as the
-       frame  widget's path name.  Option and the args determine the
-       exact behaviour of the command.  The following  commands  are
-       possible for frame widgets:
+pathName cget option
+       Returns  the current value of the configuration option
+       given by option.  Option may have any  of  the  values
+       accepted by the frame command.
 
-       pathName cget option
-              Returns  the current value of the configuration option
-              given by option.  Option may have any  of  the  values
-              accepted by the frame command.
+pathName configure ?option? ?value option value ...?
+       Query  or modify the configuration options of the wid‐
+       get.  If no option is specified, returns a list of all
+       of the available options for pathName.  If one or more
+       option-value pairs are  specified,  then  the  command
+       modifies  the given widget option(s) to have the given
+       value(s);  in this case the command returns  an  empty
+       string.  Option may have any of the values accepted by
+       the frame command.
 
-       pathName configure ?option? ?value option value ...?
-              Query  or modify the configuration options of the wid‐
-              get.  If no option is specified, returns a list of all
-              of the available options for pathName.  If one or more
-              option-value pairs are  specified,  then  the  command
-              modifies  the given widget option(s) to have the given
-              value(s);  in this case the command returns  an  empty
-              string.  Option may have any of the values accepted by
-              the frame command.
+== bindings
+When a new frame is created, it has no  default  event  bind‐
+ings: frames are not intended to be interactive.
 
-BINDINGS
-       When a new frame is created, it has no  default  event  bind‐
-       ings: frames are not intended to be interactive.
+== see ALSO
+options(9), types(9)
 
-SEE ALSO
-       options(9), types(9)
-
-                                                            FRAME(9)

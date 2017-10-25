@@ -1,24 +1,18 @@
-SYS-MILLISEC(2)          System Calls Manual         SYS-MILLISEC(2)
+= millisec: millisecond timer
 
-NAME
-       millisec - millisecond timer
+    include "sys.m";
+    sys := load Sys Sys->PATH;
 
-SYNOPSIS
-       include "sys.m";
-       sys := load Sys Sys->PATH;
+    millisec: fn(): int;
 
-       millisec: fn(): int;
+Millisec  returns  the  value of an internal system clock, in
+milliseconds.  The actual resolution of the clock is a  prop‐
+erty  of the underlying system and may be coarser than a mil‐
+lisecond.  The epoch is arbitrary, so millisec is useful  for
+measuring  durations  but  not  absolute time.  If the system
+operates  continuously,  the  millisecond  counter  overflows
+every few months; a reboot resets the epoch.
 
-DESCRIPTION
-       Millisec  returns  the  value of an internal system clock, in
-       milliseconds.  The actual resolution of the clock is a  prop‐
-       erty  of the underlying system and may be coarser than a mil‐
-       lisecond.  The epoch is arbitrary, so millisec is useful  for
-       measuring  durations  but  not  absolute time.  If the system
-       operates  continuously,  the  millisecond  counter  overflows
-       every few months; a reboot resets the epoch.
+== see ALSO
+sys-intro(2), sys-sleep(2)
 
-SEE ALSO
-       sys-intro(2), sys-sleep(2)
-
-                                                     SYS-MILLISEC(2)

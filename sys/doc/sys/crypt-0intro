@@ -1,73 +1,67 @@
-CRYPT-INTRO(2)           System Calls Manual          CRYPT-INTRO(2)
+= Crypt intro: introduction to the Crypt cryptography module
 
-NAME
-       Crypt intro - introduction to the Crypt cryptography module
+    include "ipints.m";
+    ipints := load IPints IPints->PATH;
+    IPint: import ipints;
 
-SYNOPSIS
-       include "ipints.m";
-       ipints := load IPints IPints->PATH;
-       IPint: import ipints;
+    include "crypt.m";
+    crypt := load Crypt Crypt->PATH;
 
-       include "crypt.m";
-       crypt := load Crypt Crypt->PATH;
+Crypt contains a mixed set of functions that variously:
 
-DESCRIPTION
-       Crypt contains a mixed set of functions that variously:
+·      form  cryptographically  secure  digests;  see  crypt-
+       sha1(2)
 
-       ·      form  cryptographically  secure  digests;  see  crypt-
-              sha1(2)
+·      generate public/private key pairs; see crypt-gensk(2)
 
-       ·      generate public/private key pairs; see crypt-gensk(2)
+·      encrypt data, using AES,  DES,  or  IDEA;  see  crypt-
+       crypt(2)
 
-       ·      encrypt data, using AES,  DES,  or  IDEA;  see  crypt-
-              crypt(2)
-
-       ·      create  and  verify cryptographic signatures using the
-              public keys; see crypt-sign(2)
+·      create  and  verify cryptographic signatures using the
+       public keys; see crypt-sign(2)
 
    Public Key Cryptography
-       Public key cryptography has many uses.  Inferno relies on  it
-       only  for digital signatures.  The private key may be used to
-       digitally sign data, the public one to verify the signature.
+Public key cryptography has many uses.  Inferno relies on  it
+only  for digital signatures.  The private key may be used to
+digitally sign data, the public one to verify the signature.
 
-       Inferno provides three data types to represent the  different
-       components  of  the  public key signature scheme.  The PK adt
-       contains the data necessary to construct a public key; the SK
-       adt contains the data necessary to construct a secret key.  A
-       key contains the public or secret parameters for  the  signa‐
-       ture algorithm specified by the adt's pick tag.  Ownership of
-       a key is not recorded in the key value itself but in a  sepa‐
-       rate  certificate.   Finally,  the  PKsig adt contains one or
-       more values representing a given form of digital signature.
+Inferno provides three data types to represent the  different
+components  of  the  public key signature scheme.  The PK adt
+contains the data necessary to construct a public key; the SK
+adt contains the data necessary to construct a secret key.  A
+key contains the public or secret parameters for  the  signa‐
+ture algorithm specified by the adt's pick tag.  Ownership of
+a key is not recorded in the key value itself but in a  sepa‐
+rate  certificate.   Finally,  the  PKsig adt contains one or
+more values representing a given form of digital signature.
 
-       Certificates and indeed signature representations are varied,
-       and implemented by other modules.
+Certificates and indeed signature representations are varied,
+and implemented by other modules.
 
    Large Precision Arithmetic
-       Many  Crypt  operations require integers much larger than int
-       or big.  It therefore  uses  the  multiple-precision  package
-       ipints(2).   That module's IPint adt stands for infinite pre‐
-       cision integer, though, for space considerations, our  imple‐
-       mentation limits the maximum integer to 28192-1.
+Many  Crypt  operations require integers much larger than int
+or big.  It therefore  uses  the  multiple-precision  package
+ipints(2).   That module's IPint adt stands for infinite pre‐
+cision integer, though, for space considerations, our  imple‐
+mentation limits the maximum integer to 28192-1.
 
-       An  IPint  can  be  converted into two external formats.  The
-       first is an array of bytes in which the  first  byte  is  the
-       highest  order  byte  of  the integer.  This format is useful
-       when communicating with the ssl(3)  device.   The  second  is
-       similar  but  represents  the  array  of bytes as text, using
-       either base 16 or a MIME base 64 format, allowing  IPints  to
-       be  stored in files or transmitted across networks in a human
-       readable form.
+An  IPint  can  be  converted into two external formats.  The
+first is an array of bytes in which the  first  byte  is  the
+highest  order  byte  of  the integer.  This format is useful
+when communicating with the ssl(3)  device.   The  second  is
+similar  but  represents  the  array  of bytes as text, using
+either base 16 or a MIME base 64 format, allowing  IPints  to
+be  stored in files or transmitted across networks in a human
+readable form.
 
-SOURCE
-       /libinterp/crypt.c
-       /libinterp/ipint.c
-       /libmp
-       /libsec
+== source
+/libinterp/crypt.c
+/libinterp/ipint.c
+/libmp
+/libsec
 
-SEE ALSO
-       security-intro(2)
-       B. Schneier, Applied Cryptography, 1996,  J.  Wiley  &  Sons,
-       Inc.
+== see ALSO
+security-intro(2)
+B. Schneier, Applied Cryptography, 1996,  J.  Wiley  &  Sons,
+Inc.
 
-                                                      CRYPT-INTRO(2)

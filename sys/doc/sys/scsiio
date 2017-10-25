@@ -1,94 +1,88 @@
-SCSIIO(2)                System Calls Manual               SCSIIO(2)
+= ScsiIO: Scsi: SCSI device operations
 
-NAME
-       ScsiIO: Scsi - SCSI device operations
+    include "scsi.m";
 
-SYNOPSIS
-       include "scsi.m";
+    scsiio := load ScsiIO ScsiIO->PATH;
+    Scsi: adt {
+        inquire:    string;
+        rawfd:      ref Sys->FD;
+        nchange:    int;
+        changetime: int;
+    
+        open:       fn(devdir: string): ref Scsi;
+        rawcmd:     fn(s: self ref Scsi, cmd: array of byte,
+                       data: array of byte, io: int): int;
+        cmd:        fn(s: self ref Scsi, cmd: array of byte,
+                       data: array of byte, io: int): int;
+        ready:      fn(s: self ref Scsi): int;
+    };
+    
+    Sread, Swrite, Snone: con iota;
+    
+    scsierror:  fn(asc: int, ascq: int): string;
+    
+    init:   fn(verbose: int);
+    
+ScsiIO  provides  a  low-level  interface  to a SCSI or ATAPI
+device via sd(3).
 
-       scsiio := load ScsiIO ScsiIO->PATH;
-       Scsi: adt {
-           inquire:    string;
-           rawfd:      ref Sys->FD;
-           nchange:    int;
-           changetime: int;
+Init must be called before using any other operation  of  the
+module.   If  verbose  is  non-zero the module will produce a
+fair amount of debugging output on  file  descriptor  2  when
+SCSI commands fail.
 
-           open:       fn(devdir: string): ref Scsi;
-           rawcmd:     fn(s: self ref Scsi, cmd: array of byte,
-                          data: array of byte, io: int): int;
-           cmd:        fn(s: self ref Scsi, cmd: array of byte,
-                          data: array of byte, io: int): int;
-           ready:      fn(s: self ref Scsi): int;
-       };
+Scsi.open  attempts  to  open the file devdir/raw on which to
+send raw SCSI commands.  On success, it  reads  the  device's
+inquiry  string  and  returns  a reference to a Scsi value to
+represent the connection.  It provides the  following  opera‐
+tions:
 
-       Sread, Swrite, Snone: con iota;
+s.ready()
+       Sends  the  ``unit  ready'' command up to three times,
+       returning zero once  the  unit  responds  that  it  is
+       ready, or -1 on error.
 
-       scsierror:  fn(asc: int, ascq: int): string;
+s.rawcmd(cmd, data, io)
+s.cmd(cmd, data, io)
+       Both  these functions execute a single SCSI command on
+       the named device.  The command data  is  in  the  byte
+       array  cmd.   If  io  is Sread, a successful operation
+       will store the resulting bytes  in  data,  up  to  its
+       length,  returning  the number of bytes stored.  If io
+       is Swrite, the bytes in data are  transmitted  as  the
+       data  argument to the command, and the number of bytes
+       written is returned.  If io is Snone, data is  ignored
+       and  may be nil.  Rawcmd simply issues the command and
+       returns the result; cmd works a bit harder and is  the
+       more  commonly  used routine.  It attempts to send the
+       commmand; if it is successful, cmd returns the result.
+       Otherwise, cmd sends a request sense command to obtain
+       the reason for the failure, sends a unit ready command
+       in  an  attempt to bring the unit out of any inconsis‐
+       tent states, and tries again.  It  also  accounts  for
+       media change.  If the second try fails, cmd returns an
+       error.  On error, both functions return -1 and set the
+       system error string.
 
-       init:   fn(verbose: int);
+The  nchange  and  changetime  elements of Scsi the number of
+times a media change has been detected, and  the  first  time
+the current media was detected (the first time a SCSI command
+was issued after it was inserted).  They  are  maintained  by
+Scsi.cmd.   The  initial  SCSI  inquiry  result  is  kept  in
+inquire.
 
-DESCRIPTION
-       ScsiIO  provides  a  low-level  interface  to a SCSI or ATAPI
-       device via sd(3).
+Scsierror returns a textual description of  the  SCSI  status
+denoted  by the ASC and ASCQ sense codes.  The description is
+found by consulting /lib/scsicodes.
 
-       Init must be called before using any other operation  of  the
-       module.   If  verbose  is  non-zero the module will produce a
-       fair amount of debugging output on  file  descriptor  2  when
-       SCSI commands fail.
+== files
+/lib/scsicodes
+       List of textual messages corresponding to  SCSI  error
+       codes; consulted by scsierror.
 
-       Scsi.open  attempts  to  open the file devdir/raw on which to
-       send raw SCSI commands.  On success, it  reads  the  device's
-       inquiry  string  and  returns  a reference to a Scsi value to
-       represent the connection.  It provides the  following  opera‐
-       tions:
+== source
+/appl/lib/scsiio.b
 
-       s.ready()
-              Sends  the  ``unit  ready'' command up to three times,
-              returning zero once  the  unit  responds  that  it  is
-              ready, or -1 on error.
+== see ALSO
+disks(2), sd(3)
 
-       s.rawcmd(cmd, data, io)
-       s.cmd(cmd, data, io)
-              Both  these functions execute a single SCSI command on
-              the named device.  The command data  is  in  the  byte
-              array  cmd.   If  io  is Sread, a successful operation
-              will store the resulting bytes  in  data,  up  to  its
-              length,  returning  the number of bytes stored.  If io
-              is Swrite, the bytes in data are  transmitted  as  the
-              data  argument to the command, and the number of bytes
-              written is returned.  If io is Snone, data is  ignored
-              and  may be nil.  Rawcmd simply issues the command and
-              returns the result; cmd works a bit harder and is  the
-              more  commonly  used routine.  It attempts to send the
-              commmand; if it is successful, cmd returns the result.
-              Otherwise, cmd sends a request sense command to obtain
-              the reason for the failure, sends a unit ready command
-              in  an  attempt to bring the unit out of any inconsis‐
-              tent states, and tries again.  It  also  accounts  for
-              media change.  If the second try fails, cmd returns an
-              error.  On error, both functions return -1 and set the
-              system error string.
-
-       The  nchange  and  changetime  elements of Scsi the number of
-       times a media change has been detected, and  the  first  time
-       the current media was detected (the first time a SCSI command
-       was issued after it was inserted).  They  are  maintained  by
-       Scsi.cmd.   The  initial  SCSI  inquiry  result  is  kept  in
-       inquire.
-
-       Scsierror returns a textual description of  the  SCSI  status
-       denoted  by the ASC and ASCQ sense codes.  The description is
-       found by consulting /lib/scsicodes.
-
-FILES
-       /lib/scsicodes
-              List of textual messages corresponding to  SCSI  error
-              codes; consulted by scsierror.
-
-SOURCE
-       /appl/lib/scsiio.b
-
-SEE ALSO
-       disks(2), sd(3)
-
-                                                           SCSIIO(2)

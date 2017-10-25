@@ -1,55 +1,48 @@
-FSPROTO(2)               System Calls Manual              FSPROTO(2)
+= FSproto:  readprotofile,  readprotostring : read file system prototype file
 
-NAME
-       FSproto:  readprotofile,  readprotostring  - read file system
-       prototype file
+    include "fsproto.m";
+    fsproto := load FSproto FSproto->PATH;
 
-SYNOPSIS
-       include "fsproto.m";
-       fsproto := load FSproto FSproto->PATH;
+    Direntry: type (string, string, ref Sys->Dir);
 
-       Direntry: type (string, string, ref Sys->Dir);
+    init:   fn(): string;
 
-       init:   fn(): string;
+    readprotofile: fn(proto: string, root: string,
+            entries: chan of Direntry,
+            warnings: chan of (string, string)): string;
 
-       readprotofile: fn(proto: string, root: string,
-               entries: chan of Direntry,
-               warnings: chan of (string, string)): string;
+    readprotostring: fn(proto: string, root: string,
+            entries: chan of Direntry,
+            warnings: chan of (string, string));
 
-       readprotostring: fn(proto: string, root: string,
-               entries: chan of Direntry,
-               warnings: chan of (string, string));
+FSproto provides an interface to read a file system prototype
+file, as defined by proto(6).
 
-DESCRIPTION
-       FSproto provides an interface to read a file system prototype
-       file, as defined by proto(6).
+Init must be called before any other function in the module.
 
-       Init must be called before any other function in the module.
+Readprotofile  reads  a  file  system prototype from the file
+proto.  It traverses the file system, starting at  the  given
+root,  and  each  file  or directory encountered that is men‐
+tioned in the prototype causes readprotofile to send a Diren‐
+try  tuple  on  the  channel entries.  The tuple has the form
+(old,new,dir) where old is the name of the  current  file  or
+directory,  rooted at root, new is the same file's name rela‐
+tive to root, and dir is a reference to the  Sys->Dir  direc‐
+tory  information  for old, as produced by sys-stat(2).  When
+all files in root have been examined, readprotofile  sends  a
+single  tuple  with  all nil components on entries.  For each
+error that occurs during processing (eg,  unable  to  open  a
+directory)  readprotofile  sends  a  tuple  (old,diag) on the
+channel warnings, naming the file  and  giving  a  diagnostic
+string, but processing continues.
 
-       Readprotofile  reads  a  file  system prototype from the file
-       proto.  It traverses the file system, starting at  the  given
-       root,  and  each  file  or directory encountered that is men‐
-       tioned in the prototype causes readprotofile to send a Diren‐
-       try  tuple  on  the  channel entries.  The tuple has the form
-       (old,new,dir) where old is the name of the  current  file  or
-       directory,  rooted at root, new is the same file's name rela‐
-       tive to root, and dir is a reference to the  Sys->Dir  direc‐
-       tory  information  for old, as produced by sys-stat(2).  When
-       all files in root have been examined, readprotofile  sends  a
-       single  tuple  with  all nil components on entries.  For each
-       error that occurs during processing (eg,  unable  to  open  a
-       directory)  readprotofile  sends  a  tuple  (old,diag) on the
-       channel warnings, naming the file  and  giving  a  diagnostic
-       string, but processing continues.
+Readprotostring reads a file system prototype from the string
+proto itself.  Otherwise, its operation is the same as  read‐
+protofile.
 
-       Readprotostring reads a file system prototype from the string
-       proto itself.  Otherwise, its operation is the same as  read‐
-       protofile.
+== source
+/appl/lib/fsproto.b
 
-SOURCE
-       /appl/lib/fsproto.b
+== see ALSO
+fs(1), proto(6), mkfs(8)
 
-SEE ALSO
-       fs(1), proto(6), mkfs(8)
-
-                                                          FSPROTO(2)

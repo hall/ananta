@@ -1,65 +1,60 @@
-COPYRIGHT(9)          Kernel Developer's Manual         COPYRIGHT(9)
+= copyright: copyright notice for Tk documentation
 
-NAME
-       copyright - copyright notice for Tk documentation
+The  following pages were derived by Vita Nuova from documen‐
+tation that is
 
-DESCRIPTION
-       The  following pages were derived by Vita Nuova from documen‐
-       tation that is
+       Copyright © 1990 The Regents of the University of Cal‐
+       ifornia
+       Copyright © 1994-1996 Sun Microsystems, Inc.
 
-              Copyright © 1990 The Regents of the University of Cal‐
-              ifornia
-              Copyright © 1994-1996 Sun Microsystems, Inc.
+and was made available on the following terms:
 
-       and was made available on the following terms:
+       This  software  is  copyrighted  by the Regents of the
+       University of California, Sun Microsystems, Inc.,  and
+       other parties.  The following terms apply to all files
+       associated with the software  unless  explicitly  dis‐
+       claimed in individual files.
 
-              This  software  is  copyrighted  by the Regents of the
-              University of California, Sun Microsystems, Inc.,  and
-              other parties.  The following terms apply to all files
-              associated with the software  unless  explicitly  dis‐
-              claimed in individual files.
+       The authors hereby grant permission to use, copy, mod‐
+       ify, distribute, and license  this  software  and  its
+       documentation  for any purpose, provided that existing
+       copyright notices are retained in all copies and  that
+       this notice is included verbatim in any distributions.
+       No written  agreement,  license,  or  royalty  fee  is
+       required  for  any  of the authorized uses.  Modifica‐
+       tions to this software may  be  copyrighted  by  their
+       authors  and  need  not  follow  the  licensing  terms
+       described  here,  provided  that  the  new  terms  are
+       clearly indicated on the first page of each file where
+       they apply.
 
-              The authors hereby grant permission to use, copy, mod‐
-              ify, distribute, and license  this  software  and  its
-              documentation  for any purpose, provided that existing
-              copyright notices are retained in all copies and  that
-              this notice is included verbatim in any distributions.
-              No written  agreement,  license,  or  royalty  fee  is
-              required  for  any  of the authorized uses.  Modifica‐
-              tions to this software may  be  copyrighted  by  their
-              authors  and  need  not  follow  the  licensing  terms
-              described  here,  provided  that  the  new  terms  are
-              clearly indicated on the first page of each file where
-              they apply.
+       IN NO EVENT  SHALL  THE  AUTHORS  OR  DISTRIBUTORS  BE
+       LIABLE  TO  ANY  PARTY  FOR DIRECT, INDIRECT, SPECIAL,
+       INCIDENTAL, OR CONSEQUENTIAL DAMAGES  ARISING  OUT  OF
+       THE  USE  OF  THIS SOFTWARE, ITS DOCUMENTATION, OR ANY
+       DERIVATIVES THEREOF, EVEN IF  THE  AUTHORS  HAVE  BEEN
+       ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-              IN NO EVENT  SHALL  THE  AUTHORS  OR  DISTRIBUTORS  BE
-              LIABLE  TO  ANY  PARTY  FOR DIRECT, INDIRECT, SPECIAL,
-              INCIDENTAL, OR CONSEQUENTIAL DAMAGES  ARISING  OUT  OF
-              THE  USE  OF  THIS SOFTWARE, ITS DOCUMENTATION, OR ANY
-              DERIVATIVES THEREOF, EVEN IF  THE  AUTHORS  HAVE  BEEN
-              ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+       THE AUTHORS AND DISTRIBUTORS SPECIFICALLY DISCLAIM ANY
+       WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
+       WARRANTIES  OF MERCHANTABILITY, FITNESS FOR A PARTICU‐
+       LAR PURPOSE, AND NON-INFRINGEMENT.  THIS  SOFTWARE  IS
+       PROVIDED ON AN "AS IS" BASIS, AND THE AUTHORS AND DIS‐
+       TRIBUTORS HAVE NO OBLIGATION TO  PROVIDE  MAINTENANCE,
+       SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 
-              THE AUTHORS AND DISTRIBUTORS SPECIFICALLY DISCLAIM ANY
-              WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
-              WARRANTIES  OF MERCHANTABILITY, FITNESS FOR A PARTICU‐
-              LAR PURPOSE, AND NON-INFRINGEMENT.  THIS  SOFTWARE  IS
-              PROVIDED ON AN "AS IS" BASIS, AND THE AUTHORS AND DIS‐
-              TRIBUTORS HAVE NO OBLIGATION TO  PROVIDE  MAINTENANCE,
-              SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
+       GOVERNMENT  USE: If you are acquiring this software on
+       behalf of the U.S. government,  the  Government  shall
+       have  only  "Restricted  Rights"  in  the software and
+       related documentation as defined in the Federal Acqui‐
+       sition Regulations (FARs) in Clause 52.227.19 (c) (2).
+       If you are acquiring the software  on  behalf  of  the
+       Department  of  Defense, the software shall be classi‐
+       fied as "Commercial Computer Software" and the Govern‐
+       ment shall have only "Restricted Rights" as defined in
+       Clause 252.227-7013 (c) (1) of DFARs.  Notwithstanding
+       the  foregoing,  the authors grant the U.S. Government
+       and others acting in its behalf permission to use  and
+       distribute  the  software in accordance with the terms
+       specified in this license.
 
-              GOVERNMENT  USE: If you are acquiring this software on
-              behalf of the U.S. government,  the  Government  shall
-              have  only  "Restricted  Rights"  in  the software and
-              related documentation as defined in the Federal Acqui‐
-              sition Regulations (FARs) in Clause 52.227.19 (c) (2).
-              If you are acquiring the software  on  behalf  of  the
-              Department  of  Defense, the software shall be classi‐
-              fied as "Commercial Computer Software" and the Govern‐
-              ment shall have only "Restricted Rights" as defined in
-              Clause 252.227-7013 (c) (1) of DFARs.  Notwithstanding
-              the  foregoing,  the authors grant the U.S. Government
-              and others acting in its behalf permission to use  and
-              distribute  the  software in accordance with the terms
-              specified in this license.
-
-                                                        COPYRIGHT(9)

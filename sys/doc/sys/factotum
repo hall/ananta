@@ -1,206 +1,197 @@
-FACTOTUM(2)              System Calls Manual             FACTOTUM(2)
+Factotum: attrtext, challenge, copyattrs, delattr, findattr, findattrval, getuserpassd, mount, open, parseattrs, proxy, publicattrs, takeattrs, respond, response, rpc, rpcattrs: client interface to factotum
 
-NAME
-       Factotum:  attrtext, challenge, copyattrs, delattr, findattr,
-       findattrval, getuserpassd, mount,  open,  parseattrs,  proxy,
-       publicattrs,  takeattrs,  respond,  response, rpc, rpcattrs -
-       client interface to factotum
+    include "factotum.m";
+    auth := load Factotum Factotum->PATH;
 
-SYNOPSIS
-       include "factotum.m";
-       auth := load Factotum Factotum->PATH;
+    Authinfo: adt{
+        cuid: string;    # ID on caller
+        suid: string;    # ID on server
+        cap:  string;    # capability (only valid on server side)
+        secret: array of byte;   # key for encryption
+    };
 
-       Authinfo: adt{
-           cuid: string;    # ID on caller
-           suid: string;    # ID on server
-           cap:  string;    # capability (only valid on server side)
-           secret: array of byte;   # key for encryption
-       };
+    AuthRpcMax: con ...;
 
-       AuthRpcMax: con ...;
+    init:          fn();
+    mount:  fn(fd: ref Sys->FD, mnt: string, flags: int,
+                    aname: string, keyspec: string): (int, ref Authinfo);
 
-       init:          fn();
-       mount:  fn(fd: ref Sys->FD, mnt: string, flags: int,
-                   aname: string, keyspec: string): (int, ref Authinfo);
+    getuserpasswd: fn(keyspec: string): (string, string);
 
-       getuserpasswd: fn(keyspec: string): (string, string);
+    Challenge: adt {
+        user:  string;      # user (some protocols)
+        chal:  string;      # challenge string
+    };
 
-       Challenge: adt {
-           user:  string;      # user (some protocols)
-           chal:  string;      # challenge string
-       };
+    challenge: fn(keyspec: string): ref Challenge;
+    response:  fn(c: ref Challenge, resp: string): ref Authinfo;
+    respond:   fn(chal: string, keyspec: string): (string, string);
+    
+    open:      fn(): ref Sys->FD;
+    rpc:       fn(facfd: ref Sys->FD, verb: string, a: array of byte):
+                  (string, array of byte);
+    proxy:     fn(afd: ref Sys->FD, facfd: ref Sys->FD, arg: string):
+                  ref Authinfo;
+    rpcattrs:  fn(facfd: ref Sys->FD): list of ref Attr;
+    
+    Attr: adt {
+        tag:    int;      # Aattr, Aval, or Aquery
+        name:   string;
+        val:    string;
 
-       challenge: fn(keyspec: string): ref Challenge;
-       response:  fn(c: ref Challenge, resp: string): ref Authinfo;
-       respond:   fn(chal: string, keyspec: string): (string, string);
+        text:   fn(a: self ref Attr): string;
+    };
+    
+    parseattrs:  fn(s: string): list of ref Attr;
+    copyattrs:   fn(l: list of ref Attr): list of ref Attr;
+    delattr:     fn(l: list of ref Attr, n: string): list of ref Attr;
+    takeattrs:   fn(l: list of ref Attr, names: list of string): list of ref Attr;
+    findattr:    fn(l: list of ref Attr, n: string): ref Attr;
+    findattrval: fn(l: list of ref Attr, n: string): string;
+    publicattrs: fn(l: list of ref Attr): list of ref Attr;
+    attrtext:    fn(l: list of ref Attr): string;
+    
+Factotum interacts with an  instance  of  the  authentication
+agent  factotum(4)  to authenticate a client to a server.  It
+can also interact with Plan 9's factotum if that  is  in  the
+name space (as well as or instead of factotum(4)).
 
-       open:      fn(): ref Sys->FD;
-       rpc:       fn(facfd: ref Sys->FD, verb: string, a: array of byte):
-                     (string, array of byte);
-       proxy:     fn(afd: ref Sys->FD, facfd: ref Sys->FD, arg: string):
-                     ref Authinfo;
-       rpcattrs:  fn(facfd: ref Sys->FD): list of ref Attr;
+Factotum  supports  both  the basic RPC interface to factotum
+and various high-level operations built on that.   The  high-
+level functions will be described first.
 
-       Attr: adt {
-           tag:    int;      # Aattr, Aval, or Aquery
-           name:   string;
-           val:    string;
+Init must be called before any other function.
 
-           text:   fn(a: self ref Attr): string;
-       };
+Mount  is  similar  to Sys->mount (see sys-bind(2)), but uses
+factotum to authenticate, if the server requires it.   Facto‐
+tum->mount should be used instead of Sys->mount when mounting
+file servers that use attach(5)  to  authenticate.   (If  the
+server on fd does not require authentication, Factotum->mount
+simply calls Sys->mount.)   Mount  returns  (v,ai).   If  the
+integer  v  is non-negative, the mount succeeded; on error, v
+is negative, either the authentication or the  mount  failed,
+ai is nil, and the system error string contains a diagnostic.
+If the server required authentication and that  was  success‐
+ful,  ai is a non-nil reference to an Authinfo value contain‐
+ing the agreed user IDs, a  capability  for  cap(3)  that  is
+valid  only on the server, and an array of bytes containing a
+shared secret that can be used by client and server to create
+encryption and hashing keys for the conversation.
 
-       parseattrs:  fn(s: string): list of ref Attr;
-       copyattrs:   fn(l: list of ref Attr): list of ref Attr;
-       delattr:     fn(l: list of ref Attr, n: string): list of ref Attr;
-       takeattrs:   fn(l: list of ref Attr, names: list of string): list of ref Attr;
-       findattr:    fn(l: list of ref Attr, n: string): ref Attr;
-       findattrval: fn(l: list of ref Attr, n: string): string;
-       publicattrs: fn(l: list of ref Attr): list of ref Attr;
-       attrtext:    fn(l: list of ref Attr): string;
+Getuserpasswd  returns a tuple (user,password) containing the
+values for the user and !password attributes  of  a  factotum
+entry that has proto=pass and matches the given keyspec.  The
+tuple values are nil if no entry matches or the caller  lacks
+permission to see them.
 
-DESCRIPTION
-       Factotum interacts with an  instance  of  the  authentication
-       agent  factotum(4)  to authenticate a client to a server.  It
-       can also interact with Plan 9's factotum if that  is  in  the
-       name space (as well as or instead of factotum(4)).
+The  pair  of  functions  challenge and response give servers
+access to challenge/response protocols provided by  factotum.
+All such authentication protocols are embedded in an applica‐
+tion-level protocol such as FTP, IMAP, POP3 and so on,  in  a
+way  specific  to  that  protocol.  These functions calculate
+parameters for application-specific messages.
 
-       Factotum  supports  both  the basic RPC interface to factotum
-       and various high-level operations built on that.   The  high-
-       level functions will be described first.
+A server calls challenge to get a challenge value to  present
+to  the user who will answer the challenge.  The server veri‐
+fies the user's response by calling response,  which  returns
+an  Authinfo  value  (as  described above) if the response is
+correct.   The  specific   challenge/response   protocol   is
+selected by the proto attribute in the keyspec for challenge,
+which opens a connection to factotum, obtains a string repre‐
+senting a challenge value, and returns a reference to a Chal‐
+lenge adt that gives the challenge and  a  user  name.   Some
+protocols  take  the  user  name from a user attribute in the
+keyspec, and others negotiate it  within  the  authentication
+protocol.   In the latter case, the user field of the result‐
+ing Challenge gives the name negotiated.
 
-       Init must be called before any other function.
+In the other direction, a process uses respond  to  calculate
+the correct response to a given challenge.  Chal is the chal‐
+lenge presented by a server, and keyspec gives the attributes
+of the relevant key in the local factotum.  Respond interacts
+with factotum and returns a tuple (response, user) that gives
+the  response string to return to the server, and an optional
+user name, depending on the protocol.  On error, the response
+is nil, and the system error string contains a diagnostic.
 
-       Mount  is  similar  to Sys->mount (see sys-bind(2)), but uses
-       factotum to authenticate, if the server requires it.   Facto‐
-       tum->mount should be used instead of Sys->mount when mounting
-       file servers that use attach(5)  to  authenticate.   (If  the
-       server on fd does not require authentication, Factotum->mount
-       simply calls Sys->mount.)   Mount  returns  (v,ai).   If  the
-       integer  v  is non-negative, the mount succeeded; on error, v
-       is negative, either the authentication or the  mount  failed,
-       ai is nil, and the system error string contains a diagnostic.
-       If the server required authentication and that  was  success‐
-       ful,  ai is a non-nil reference to an Authinfo value contain‐
-       ing the agreed user IDs, a  capability  for  cap(3)  that  is
-       valid  only on the server, and an array of bytes containing a
-       shared secret that can be used by client and server to create
-       encryption and hashing keys for the conversation.
+Factotum(4)  represents keys as attribute value pairs in tex‐
+tual form, with space-separated fields.  A  field  can  be  a
+value-less  attribute, an attribute=value pair, or attribute?
+to  mark  a  required  attribute  with  unknown  value.    An
+attribute  name  that begins with an exclamation mark (!)  is
+to be considered hidden or secret.  Values  containing  white
+space  or  special characters can be quoted using the conven‐
+tions of sh(1).
 
-       Getuserpasswd  returns a tuple (user,password) containing the
-       values for the user and !password attributes  of  a  factotum
-       entry that has proto=pass and matches the given keyspec.  The
-       tuple values are nil if no entry matches or the caller  lacks
-       permission to see them.
+Parseattrs parses a string s of that form into a list of Attr
+references.  Each Attr has a tag that identifies the value as
+Aattr (a value-less attribute), a  Aval  (an  attribute-value
+pair),  or Aquery (an attribute for which a value is needed).
+Other operations include:
 
-       The  pair  of  functions  challenge and response give servers
-       access to challenge/response protocols provided by  factotum.
-       All such authentication protocols are embedded in an applica‐
-       tion-level protocol such as FTP, IMAP, POP3 and so on,  in  a
-       way  specific  to  that  protocol.  These functions calculate
-       parameters for application-specific messages.
+copyattrs      Return a copy of attribute list l.
 
-       A server calls challenge to get a challenge value to  present
-       to  the user who will answer the challenge.  The server veri‐
-       fies the user's response by calling response,  which  returns
-       an  Authinfo  value  (as  described above) if the response is
-       correct.   The  specific   challenge/response   protocol   is
-       selected by the proto attribute in the keyspec for challenge,
-       which opens a connection to factotum, obtains a string repre‐
-       senting a challenge value, and returns a reference to a Chal‐
-       lenge adt that gives the challenge and  a  user  name.   Some
-       protocols  take  the  user  name from a user attribute in the
-       keyspec, and others negotiate it  within  the  authentication
-       protocol.   In the latter case, the user field of the result‐
-       ing Challenge gives the name negotiated.
+delattr        Return a copy of  l  removing  all  attributes
+               with name n.
 
-       In the other direction, a process uses respond  to  calculate
-       the correct response to a given challenge.  Chal is the chal‐
-       lenge presented by a server, and keyspec gives the attributes
-       of the relevant key in the local factotum.  Respond interacts
-       with factotum and returns a tuple (response, user) that gives
-       the  response string to return to the server, and an optional
-       user name, depending on the protocol.  On error, the response
-       is nil, and the system error string contains a diagnostic.
+takeattrs      Return the subset of list l that contains only
+               the attributes listed in names.
 
-       Factotum(4)  represents keys as attribute value pairs in tex‐
-       tual form, with space-separated fields.  A  field  can  be  a
-       value-less  attribute, an attribute=value pair, or attribute?
-       to  mark  a  required  attribute  with  unknown  value.    An
-       attribute  name  that begins with an exclamation mark (!)  is
-       to be considered hidden or secret.  Values  containing  white
-       space  or  special characters can be quoted using the conven‐
-       tions of sh(1).
+findattr       Return a reference to the first Attr in l with
+               the name n.
 
-       Parseattrs parses a string s of that form into a list of Attr
-       references.  Each Attr has a tag that identifies the value as
-       Aattr (a value-less attribute), a  Aval  (an  attribute-value
-       pair),  or Aquery (an attribute for which a value is needed).
-       Other operations include:
+findattrval    Return  the  value of the first attribute in l
+               with name n; return nil if  the  attribute  is
+               not found or has no value.
 
-       copyattrs      Return a copy of attribute list l.
+publicattrs    Return  a  copy  of  l  in  which  all  secret
+               attributes have been removed.
 
-       delattr        Return a copy of  l  removing  all  attributes
-                      with name n.
+attrtext       Return the textual representation of attribute
+               list l, acceptable to parseattrs.
 
-       takeattrs      Return the subset of list l that contains only
-                      the attributes listed in names.
+The low-level interfaces to factotum are as follows.
 
-       findattr       Return a reference to the first Attr in l with
-                      the name n.
+Proxy links an authenticating server on afd with the factotum
+agent on facfd.  Typically facfd is  the  result  of  calling
+Factotum->open, which is equivalent to
 
-       findattrval    Return  the  value of the first attribute in l
-                      with name n; return nil if  the  attribute  is
-                      not found or has no value.
+       sys->open("/mnt/factotum/rpc", Sys->ORDWR)
 
-       publicattrs    Return  a  copy  of  l  in  which  all  secret
-                      attributes have been removed.
+Afd  is a file descriptor that represents a connection to the
+service that requires authentication.  It  is  typically  the
+result  of  sys-open(2),  dial(2),  or  sys-fauth(2).  Params
+gives any parameters for factotum,  as  a  string  containing
+space-separated  attr=value  pairs.   Proxy  ferries messages
+between the server and factotum until the end of the selected
+authentication  protocol.   If  authentication  failed, proxy
+returns nil; otherwise on success it always returns a non-nil
+reference to an Authinfo value with contents as above, but if
+the protocol does not supply that  authentication  data,  all
+the values are nil.
 
-       attrtext       Return the textual representation of attribute
-                      list l, acceptable to parseattrs.
+Rpcattrs returns the initial attributes provided in the start
+request, and any others added later by the protocol.
 
-       The low-level interfaces to factotum are as follows.
+Rpc does one message exchange with the factotum on facfd.  It
+writes  a  message  containing  the  given  verb and optional
+binary parameter a, and returns (v,a) where v is the response
+string  from  factotum  and a is an optional binary parameter
+for that response.  Exceptionally, v is the string "rpc fail‐
+ure"  if  communication fails or a message is garbled, or "no
+key" if rpc cannot find a suitable key.  See factotum(4)  for
+details of the protocol.
 
-       Proxy links an authenticating server on afd with the factotum
-       agent on facfd.  Typically facfd is  the  result  of  calling
-       Factotum->open, which is equivalent to
+AuthRpcMax  is an integer constant giving the maximum size of
+a message in an rpc exchange.
 
-              sys->open("/mnt/factotum/rpc", Sys->ORDWR)
+== source
+/appl/lib/factotum.b
 
-       Afd  is a file descriptor that represents a connection to the
-       service that requires authentication.  It  is  typically  the
-       result  of  sys-open(2),  dial(2),  or  sys-fauth(2).  Params
-       gives any parameters for factotum,  as  a  string  containing
-       space-separated  attr=value  pairs.   Proxy  ferries messages
-       between the server and factotum until the end of the selected
-       authentication  protocol.   If  authentication  failed, proxy
-       returns nil; otherwise on success it always returns a non-nil
-       reference to an Authinfo value with contents as above, but if
-       the protocol does not supply that  authentication  data,  all
-       the values are nil.
+== see ALSO
+sys-bind(2), sys-fauth(2), factotum(4), attach(5)
 
-       Rpcattrs returns the initial attributes provided in the start
-       request, and any others added later by the protocol.
+== diagnostics
+Functions that  return nil references on error also  set  the
+system error string.
 
-       Rpc does one message exchange with the factotum on facfd.  It
-       writes  a  message  containing  the  given  verb and optional
-       binary parameter a, and returns (v,a) where v is the response
-       string  from  factotum  and a is an optional binary parameter
-       for that response.  Exceptionally, v is the string "rpc fail‐
-       ure"  if  communication fails or a message is garbled, or "no
-       key" if rpc cannot find a suitable key.  See factotum(4)  for
-       details of the protocol.
-
-       AuthRpcMax  is an integer constant giving the maximum size of
-       a message in an rpc exchange.
-
-SOURCE
-       /appl/lib/factotum.b
-
-SEE ALSO
-       sys-bind(2), sys-fauth(2), factotum(4), attach(5)
-
-DIAGNOSTICS
-       Functions that  return nil references on error also  set  the
-       system error string.
-
-                                                         FACTOTUM(2)

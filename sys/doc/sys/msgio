@@ -1,103 +1,95 @@
-MSGIO(2)                 System Calls Manual                MSGIO(2)
+= msgio: getmsg, sendmsg, senderrmsg, getstring, putstring, getbytearray, putbytearray, puterror: exchange data on delimited and undelimited streams
 
-NAME
-       msgio:  getmsg,  sendmsg,  senderrmsg,  getstring, putstring,
-       getbytearray,  putbytearray,  puterror  -  exchange  data  on
-       delimited and undelimited streams
+    include "msgio.m";
+    msgio := load Msgio Msgio->PATH;
 
-SYNOPSIS
-       include "msgio.m";
-       msgio := load Msgio Msgio->PATH;
+    init:         fn();
 
-       init:         fn();
+    getmsg:       fn(fd: ref Sys->FD): array of byte;
+    sendmsg:      fn(fd: ref Sys->FD, buf: array of byte, n: int): int;
+    senderrmsg:   fn(fd: ref Sys->FD, s: string): int;
 
-       getmsg:       fn(fd: ref Sys->FD): array of byte;
-       sendmsg:      fn(fd: ref Sys->FD, buf: array of byte, n: int): int;
-       senderrmsg:   fn(fd: ref Sys->FD, s: string): int;
+    getstring:    fn(fd: ref Sys->FD): (string, string);
+    putstring:    fn(fd: ref Sys->FD, s: string): int;
+    getbytearray: fn(fd: ref Sys->FD): (array of byte, string);
+    putbytearray: fn(fd: ref Sys->FD, a: array of byte, n: int): int;
+    puterror:     fn(fd: ref Sys->FD, s: string): int;
 
-       getstring:    fn(fd: ref Sys->FD): (string, string);
-       putstring:    fn(fd: ref Sys->FD, s: string): int;
-       getbytearray: fn(fd: ref Sys->FD): (array of byte, string);
-       putbytearray: fn(fd: ref Sys->FD, a: array of byte, n: int): int;
-       puterror:     fn(fd: ref Sys->FD, s: string): int;
+Msgio  provides  two  complementary sets of functions for the
+exchange of data over a network connection that uses  a  con‐
+nection-oriented transport protocols.  The connection is rep‐
+resented by a file descriptor fd.
 
-DESCRIPTION
-       Msgio  provides  two  complementary sets of functions for the
-       exchange of data over a network connection that uses  a  con‐
-       nection-oriented transport protocols.  The connection is rep‐
-       resented by a file descriptor fd.
+Init must be called before any other operation of the module.
 
-       Init must be called before any other operation of the module.
+The first set allows arbitrary data, packed  into  arrays  of
+bytes, to be exchanged on network connections using protocols
+such as TCP/IP that do not preserve record boundaries.   They
+are  used  to  implement  various  authentication  protocols,
+including auth(6).
 
-       The first set allows arbitrary data, packed  into  arrays  of
-       bytes, to be exchanged on network connections using protocols
-       such as TCP/IP that do not preserve record boundaries.   They
-       are  used  to  implement  various  authentication  protocols,
-       including auth(6).
+Each data message is transmitted with a five-byte header con‐
+taining  a  four-character zero-padded decimal count n termi‐
+nated by a newline, followed by n bytes of message data.   An
+error  message has a similar structure, except that the first
+character of the count is replaced  by  an  exclamation  mark
+(!);  the  message  data  following  contains  the diagnostic
+string in its UTF-8 encoding (see utf(6)).
 
-       Each data message is transmitted with a five-byte header con‐
-       taining  a  four-character zero-padded decimal count n termi‐
-       nated by a newline, followed by n bytes of message data.   An
-       error  message has a similar structure, except that the first
-       character of the count is replaced  by  an  exclamation  mark
-       (!);  the  message  data  following  contains  the diagnostic
-       string in its UTF-8 encoding (see utf(6)).
+Getmsg reads the next message from fd and  returns  its  data
+content.
 
-       Getmsg reads the next message from fd and  returns  its  data
-       content.
+Sendmsg  sends  the  first n bytes of buf as a message on fd,
+and returns n.
 
-       Sendmsg  sends  the  first n bytes of buf as a message on fd,
-       and returns n.
+Senderrmsg sends the error message s.
 
-       Senderrmsg sends the error message s.
+The second set of functions provide  I/O  for  strings,  byte
+arrays  and  error strings over network connections that pro‐
+vide a record structure for communication  (as  provided  for
+arbitrary networks by ssl(3)).
 
-       The second set of functions provide  I/O  for  strings,  byte
-       arrays  and  error strings over network connections that pro‐
-       vide a record structure for communication  (as  provided  for
-       arbitrary networks by ssl(3)).
+Putstring  writes  string  s to fd.  It returns the number of
+bytes written, or -1 if an error occurred.  Messages  written
+by putstring are truncated to 4096 bytes.
 
-       Putstring  writes  string  s to fd.  It returns the number of
-       bytes written, or -1 if an error occurred.  Messages  written
-       by putstring are truncated to 4096 bytes.
+Getstring  reads a string as written by putstring from fd and
+returns a tuple (result,error).   If  successful,  the  error
+string is nil.
 
-       Getstring  reads a string as written by putstring from fd and
-       returns a tuple (result,error).   If  successful,  the  error
-       string is nil.
+Putbytearray  writes  the array of bytes a to fd.  It returns
+the number of bytes written, or  -1  if  an  error  occurred.
+Messages written by putbytearray are truncated to 4096 bytes.
 
-       Putbytearray  writes  the array of bytes a to fd.  It returns
-       the number of bytes written, or  -1  if  an  error  occurred.
-       Messages written by putbytearray are truncated to 4096 bytes.
+Getbytearray reads an array of bytes as written by putbytear‐
+ray from fd and returns a tuple of the  form  (result,error).
+If successful, the error string is nil.
 
-       Getbytearray reads an array of bytes as written by putbytear‐
-       ray from fd and returns a tuple of the  form  (result,error).
-       If successful, the error string is nil.
+Puterror  writes  an error string s to fd.  It can be used in
+place of putstring or putbytearray to cause  a  corresponding
+getstring or getbytearray to fail (in the receiving process),
+forcing them to return the error string s.   It  may  not  be
+longer than Sys->ERRMAX bytes.
 
-       Puterror  writes  an error string s to fd.  It can be used in
-       place of putstring or putbytearray to cause  a  corresponding
-       getstring or getbytearray to fail (in the receiving process),
-       forcing them to return the error string s.   It  may  not  be
-       longer than Sys->ERRMAX bytes.
+== source
+/appl/lib/msgio.b
 
-SOURCE
-       /appl/lib/msgio.b
+== diagnostics
+The  output  functions return an int which is -1 if there was
+an I/O error, and a non-negative value otherwise;  they  also
+set the system error string.  Getmsg returns nil if there was
+an error reading from fd; it sets the system error string  to
+reflect  the  cause.  It also returns nil if an error message
+was received instead of a  data  message;  the  system  error
+string  will  contain  the  error  message's diagnostic.  The
+other input functions (for streams with delimiters) return  a
+tuple  that  includes  a  string  indicating the cause of the
+error, as the second element of the tuple.
 
-DIAGNOSTICS
-       The  output  functions return an int which is -1 if there was
-       an I/O error, and a non-negative value otherwise;  they  also
-       set the system error string.  Getmsg returns nil if there was
-       an error reading from fd; it sets the system error string  to
-       reflect  the  cause.  It also returns nil if an error message
-       was received instead of a  data  message;  the  system  error
-       string  will  contain  the  error  message's diagnostic.  The
-       other input functions (for streams with delimiters) return  a
-       tuple  that  includes  a  string  indicating the cause of the
-       error, as the second element of the tuple.
+== bugs
+The module  is  really  intended  to  retrofit  the  original
+Inferno  authentication  protocols  into a new regime, and is
+not yet intended for general-purpose use, hence the irregular
+naming  and  calling conventions, inherited from the original
+implementation in Keyring.
 
-BUGS
-       The module  is  really  intended  to  retrofit  the  original
-       Inferno  authentication  protocols  into a new regime, and is
-       not yet intended for general-purpose use, hence the irregular
-       naming  and  calling conventions, inherited from the original
-       implementation in Keyring.
-
-                                                            MSGIO(2)

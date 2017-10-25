@@ -1,78 +1,71 @@
-5CV(10.1)                                                  5CV(10.1)
+= 5cv, mkppcimage, sqz: convert kernel executable to boot format
 
-NAME
-       5cv, mkppcimage, sqz - convert kernel executable to boot for‐
-       mat
+    5cv [ -Dn ] [ -Hn ] [ -s ] executable outfile
 
-SYNOPSIS
-       5cv [ -Dn ] [ -Hn ] [ -s ] executable outfile
+    mkppcimage [ -l loadaddr ] executable outfile
 
-       mkppcimage [ -l loadaddr ] executable outfile
+    sqz [ -w ] [ -t ] executable
 
-       sqz [ -w ] [ -t ] executable
+These commands convert a kernel executable in Inferno/Plan  9
+a.out(10.5)  format  into  another  format  used  by  a third
+party's boot loader.  Most convert the input  executable  and
+write the new format to outfile.
 
-DESCRIPTION
-       These commands convert a kernel executable in Inferno/Plan  9
-       a.out(10.5)  format  into  another  format  used  by  a third
-       party's boot loader.  Most convert the input  executable  and
-       write the new format to outfile.
+5cv  converts  an ARM executable into one of several alterna‐
+tive formats.  The output format  is  controlled  by  the  -H
+option:
 
-       5cv  converts  an ARM executable into one of several alterna‐
-       tive formats.  The output format  is  controlled  by  the  -H
-       option:
+-H1     AIF for RISCOS.
 
-       -H1     AIF for RISCOS.
+-H2     Plan 9.
 
-       -H2     Plan 9.
+-H3     Boot for NetBSD.
 
-       -H3     Boot for NetBSD.
+-H4     Headerless,  stripped,  and  padded  to 2K in length.
+        Used for the ROM resident serial bootstrap loader  in
+        a Cirrus EP72xx.
 
-       -H4     Headerless,  stripped,  and  padded  to 2K in length.
-               Used for the ROM resident serial bootstrap loader  in
-               a Cirrus EP72xx.
+-H5     Headerless, and stripped, for general use.
 
-       -H5     Headerless, and stripped, for general use.
+-H6     EPOC IMG format. Not a complete conversion, currently
+        sufficient for use with  some  NT  based  downloaders
+        which  autosense the file type by the "EP" signature,
+        and then ignore the contents of the header.
 
-       -H6     EPOC IMG format. Not a complete conversion, currently
-               sufficient for use with  some  NT  based  downloaders
-               which  autosense the file type by the "EP" signature,
-               and then ignore the contents of the header.
+The other options are:
 
-       The other options are:
+-s     Strip symbol table.
 
-       -s     Strip symbol table.
+-Dn    Enables debug output.
 
-       -Dn    Enables debug output.
+Mkppcimage converts a PowerPC or ARM  executable  to  a  boot
+image  format used by PPCBOOT and UBOOT.  The output file has
+a PPCBOOT image with one component labelled as an `OS kernel'
+for  the appropriate architecture, containing the a.out(10.6)
+header, text and initialised data, all uncompressed.  Symbols
+are  not  included.   By  default the load address is deduced
+from the executable's entry point; the -l option allows load‐
+addr to be set explicitly, with the number in C syntax (deci‐
+mal by default).  Other attributes are deduced from the  exe‐
+cutable.
 
-       Mkppcimage converts a PowerPC or ARM  executable  to  a  boot
-       image  format used by PPCBOOT and UBOOT.  The output file has
-       a PPCBOOT image with one component labelled as an `OS kernel'
-       for  the appropriate architecture, containing the a.out(10.6)
-       header, text and initialised data, all uncompressed.  Symbols
-       are  not  included.   By  default the load address is deduced
-       from the executable's entry point; the -l option allows load‐
-       addr to be set explicitly, with the number in C syntax (deci‐
-       mal by default).  Other attributes are deduced from the  exe‐
-       cutable.
+Sqz squeezes (compresses) the given ARM or PowerPC executable
+using a method that achieves respectable compression for exe‐
+cutables  but is much faster to decompress than (say) gzip's.
+By default, both the program text and  initialised  data  are
+compressed;  the  -t  option  causes sqz to compress only the
+program text, leaving the data as-is.  By default, sqz prints
+compression  statistics  on its standard error output; the -w
+option causes it also to write the  compressed  file  on  its
+standard  output.   Either  the  bootstrap that loads it must
+decompress the result, or a small uncompressed stub must also
+be loaded that decompresses the remainder.
 
-       Sqz squeezes (compresses) the given ARM or PowerPC executable
-       using a method that achieves respectable compression for exe‐
-       cutables  but is much faster to decompress than (say) gzip's.
-       By default, both the program text and  initialised  data  are
-       compressed;  the  -t  option  causes sqz to compress only the
-       program text, leaving the data as-is.  By default, sqz prints
-       compression  statistics  on its standard error output; the -w
-       option causes it also to write the  compressed  file  on  its
-       standard  output.   Either  the  bootstrap that loads it must
-       decompress the result, or a small uncompressed stub must also
-       be loaded that decompresses the remainder.
+== source
+/utils/5cv
+/utils/mkppcimage
+/utils/sqz
 
-SOURCE
-       /utils/5cv
-       /utils/mkppcimage
-       /utils/sqz
+== see ALSO
+2l(10.1), 5cv(10.1), ms2(10.1), a.out(10.5)
 
-SEE ALSO
-       2l(10.1), 5cv(10.1), ms2(10.1), a.out(10.5)
-
-                                                           5CV(10.1)

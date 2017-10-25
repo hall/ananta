@@ -1,65 +1,58 @@
-IPINTS-GENPRIME(2)       System Calls Manual      IPINTS-GENPRIME(2)
+= ipints: genprime, gensafeprime, genstrongprime, DSAprimes, probably_prime : prime number generation
 
-NAME
-       ipints:  genprime,  gensafeprime,  genstrongprime, DSAprimes,
-       probably_prime  - prime number generation
+    include "ipints.m";
+    ipints := load IPints IPints->PATH;
+    IPint: import ipints;
 
-SYNOPSIS
-       include "ipints.m";
-       ipints := load IPints IPints->PATH;
-       IPint: import ipints;
+    probably_prime: fn(n: ref IPint, nrep: int): int;
 
-       probably_prime: fn(n: ref IPint, nrep: int): int;
+    genprime: fn(nbits: int, nrep: int): ref IPint;
+    gensafeprime: fn(nbits: int, nrep: int): (ref IPint, ref IPint); # p, alpha
+    genstrongprime: fn(nbits: int, nrep: int): ref IPint;
+    DSAprimes: fn(): (ref IPint, ref IPint, array of byte);     # q, p, seed
 
-       genprime: fn(nbits: int, nrep: int): ref IPint;
-       gensafeprime: fn(nbits: int, nrep: int): (ref IPint, ref IPint); # p, alpha
-       genstrongprime: fn(nbits: int, nrep: int): ref IPint;
-       DSAprimes: fn(): (ref IPint, ref IPint, array of byte);     # q, p, seed
+This set of functions in IPints (see ipints(2))  helps  Limbo
+applications generate and test large prime numbers with rela‐
+tive efficiency.  The numbers are all represented by IPint.
 
-DESCRIPTION
-       This set of functions in IPints (see ipints(2))  helps  Limbo
-       applications generate and test large prime numbers with rela‐
-       tive efficiency.  The numbers are all represented by IPint.
+Probably_prime uses the Miller-Rabin  test  to  test  n.   It
+returns  true  (non-zero) if P is probably prime.  The proba‐
+bility of n not being prime is 1/4**nrep.  If  probably_prime
+returns false (zero), n is certainly not prime.
 
-       Probably_prime uses the Miller-Rabin  test  to  test  n.   It
-       returns  true  (non-zero) if P is probably prime.  The proba‐
-       bility of n not being prime is 1/4**nrep.  If  probably_prime
-       returns false (zero), n is certainly not prime.
+Genprime  returns  a  random prime of length nbits.  Since it
+uses the Miller-Rabin test,  nrep  is  the  repetition  count
+passed to probably_prime.
 
-       Genprime  returns  a  random prime of length nbits.  Since it
-       uses the Miller-Rabin test,  nrep  is  the  repetition  count
-       passed to probably_prime.
+Gensafeprime  returns  a tuple (p, alpha), where p is a prime
+of length nbits and alpha is a generator of  the  multiplica‐
+tive  group  of  integers mod p; there is a prime q such that
+p-1=2*q.
 
-       Gensafeprime  returns  a tuple (p, alpha), where p is a prime
-       of length nbits and alpha is a generator of  the  multiplica‐
-       tive  group  of  integers mod p; there is a prime q such that
-       p-1=2*q.
+Genstrongprime returns a prime p with the  following  proper‐
+ties:
 
-       Genstrongprime returns a prime p with the  following  proper‐
-       ties:
+-      (p-1)/2  is  prime.   Therefore  p-1 has a large prime
+       factor, p'.
 
-       -      (p-1)/2  is  prime.   Therefore  p-1 has a large prime
-              factor, p'.
+-      p'-1 has a large prime factor
 
-       -      p'-1 has a large prime factor
+-      p+1 has a large prime factor
 
-       -      p+1 has a large prime factor
+DSAprimes uses the NIST recommended algorithm for  generating
+DSA  primes  and  returns a tuple (q, p, seed), where p and q
+are primes, and q divides p-1.  The random seed used is  also
+returned, so that sceptics can later confirm the computation.
 
-       DSAprimes uses the NIST recommended algorithm for  generating
-       DSA  primes  and  returns a tuple (q, p, seed), where p and q
-       are primes, and q divides p-1.  The random seed used is  also
-       returned, so that sceptics can later confirm the computation.
+== source
+/libinterp/ipint.c
+/libsec/port/probably_prime.c
+/libsec/port/dsaprimes.c
+/libsec/port/genprime.c
+/libsec/port/gensafeprime.c
+/libsec/port/genstrongprime.c
 
-SOURCE
-       /libinterp/ipint.c
-       /libsec/port/probably_prime.c
-       /libsec/port/dsaprimes.c
-       /libsec/port/genprime.c
-       /libsec/port/gensafeprime.c
-       /libsec/port/genstrongprime.c
+== see ALSO
+crypt-intro(2),   crypt-crypt(2),   crypt-dsagen(2),   crypt-
+gensk(2), ipints(2)
 
-SEE ALSO
-       crypt-intro(2),   crypt-crypt(2),   crypt-dsagen(2),   crypt-
-       gensk(2), ipints(2)
-
-                                                  IPINTS-GENPRIME(2)

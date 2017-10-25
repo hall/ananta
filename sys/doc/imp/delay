@@ -1,30 +1,23 @@
-DELAY(10.2)                                              DELAY(10.2)
+= delay, microdelay, addclock0link: small delays, clock interrupts
 
-NAME
-       delay, microdelay, addclock0link - small delays, clock inter‐
-       rupts
+    void delay(int n)
 
-SYNOPSIS
-       void delay(int n)
+    void microdelay(int n)
 
-       void microdelay(int n)
+    void addclock0link(void(*clockf)(void))
 
-       void addclock0link(void(*clockf)(void))
+Delay busy waits for n milliseconds, forced to  be  at  least
+one millisecond.
 
-DESCRIPTION
-       Delay busy waits for n milliseconds, forced to  be  at  least
-       one millisecond.
+Microdelay is similar, but busy waits for n microseconds.
 
-       Microdelay is similar, but busy waits for n microseconds.
+For   delays  on  the  order  of  clock  ticks,  tsleep  (see
+sleep(10.2)) provides a better alternative to the busy  wait‐
+ing of these routines.
 
-       For   delays  on  the  order  of  clock  ticks,  tsleep  (see
-       sleep(10.2)) provides a better alternative to the busy  wait‐
-       ing of these routines.
+Addclock0link  adds  clockf to a list of functions to be exe‐
+cuted at each clock interrupt.
 
-       Addclock0link  adds  clockf to a list of functions to be exe‐
-       cuted at each clock interrupt.
+== see ALSO
+sleep(10.2)
 
-SEE ALSO
-       sleep(10.2)
-
-                                                         DELAY(10.2)

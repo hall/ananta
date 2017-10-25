@@ -1,40 +1,33 @@
-ENV(3)                Library Functions Manual                ENV(3)
+= env: environment device
 
-NAME
-       env - environment device
+    bind #e /env
 
-SYNOPSIS
-       bind #e /env
+    /env/name
 
-       /env/name
+The  environment  device  serves a one-level directory giving
+access to environment variables and their values.  It is con‐
+ventionally bound to /env.  The value of an environment vari‐
+able name may be obtained by reading the file /env/name.   If
+the  file  does  not exist, the variable is unset and has the
+value nil. The maximum length  of  a  variable  name  is  127
+bytes.
 
-DESCRIPTION
-       The  environment  device  serves a one-level directory giving
-       access to environment variables and their values.  It is con‐
-       ventionally bound to /env.  The value of an environment vari‐
-       able name may be obtained by reading the file /env/name.   If
-       the  file  does  not exist, the variable is unset and has the
-       value nil. The maximum length  of  a  variable  name  is  127
-       bytes.
+New environment variables are set by creating the correspond‐
+ing file in /env and writing the required value to that file.
+Similarly  environment  variables  are  destroyed  (unset) by
+removing the corresponding file.
 
-       New environment variables are set by creating the correspond‐
-       ing file in /env and writing the required value to that file.
-       Similarly  environment  variables  are  destroyed  (unset) by
-       removing the corresponding file.
+Processes sharing an `environment group' see the  same  files
+and  contents;  changes  made  by one process are seen by the
+others.  A process can insulate itself from  further  changes
+using the option to sys-pctl(2), which creates a new environ‐
+ment group that is a copy of the old, but further changes  in
+each  are independent.  A new empty environment group is cre‐
+ated by the option to sys-pctl(2).
 
-       Processes sharing an `environment group' see the  same  files
-       and  contents;  changes  made  by one process are seen by the
-       others.  A process can insulate itself from  further  changes
-       using the option to sys-pctl(2), which creates a new environ‐
-       ment group that is a copy of the old, but further changes  in
-       each  are independent.  A new empty environment group is cre‐
-       ated by the option to sys-pctl(2).
+== source
+/os/port/devenv.c
+/emu/port/devenv.c
 
-SOURCE
-       /os/port/devenv.c
-       /emu/port/devenv.c
-
-SEE ALSO
-       env(1), sh(1), env(2), sys-pctl(2)
-
-                                                              ENV(3)
+== see ALSO
+env(1), sh(1), env(2), sys-pctl(2)

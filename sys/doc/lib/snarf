@@ -1,28 +1,21 @@
-SNARF(3)              Library Functions Manual              SNARF(3)
+= snarf: host window system clipboard
 
-NAME
-       snarf - host window system clipboard
+    bind -a #^ /dev
+    bind -b #^ /chan
 
-SYNOPSIS
-       bind -a #^ /dev
-       bind -b #^ /chan
+    /dev/snarf
+    /chan/snarf
 
-       /dev/snarf
-       /chan/snarf
+Snarf  serves a single file, snarf.  Reading the file returns
+the current contents of the host window  system's  own  clip‐
+board  (equivalent to the Inferno window system's `snarf buf‐
+fer').  If the file is opened for writing, subsequent  writes
+append  to  an internal buffer; when the file is closed, that
+buffer's contents are written to  the  host  window  system's
+clipboard.
 
-DESCRIPTION
-       Snarf  serves a single file, snarf.  Reading the file returns
-       the current contents of the host window  system's  own  clip‐
-       board  (equivalent to the Inferno window system's `snarf buf‐
-       fer').  If the file is opened for writing, subsequent  writes
-       append  to  an internal buffer; when the file is closed, that
-       buffer's contents are written to  the  host  window  system's
-       clipboard.
+Emu(1)  automatically binds the device to both /dev and /chan
+when it starts up, if a window system is configured.
 
-       Emu(1)  automatically binds the device to both /dev and /chan
-       when it starts up, if a window system is configured.
-
-SEE ALSO
-       wm(1)
-
-                               hosted                       SNARF(3)
+== see ALSO
+wm(1)

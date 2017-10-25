@@ -1,128 +1,122 @@
-CHOICEBUTTON(9)       Kernel Developer's Manual      CHOICEBUTTON(9)
+= choicebutton: create and manipulate choicebutton widgets
 
-NAME
-       choicebutton - create and manipulate choicebutton widgets
+    choicebutton pathName ?options?
 
-SYNOPSIS
-       choicebutton pathName ?options?
+== standard OPTIONS
+-activebackground -borderwidth      -relief
+-activeforeground -font             -text
+-anchor           -foreground
+-background       -image
+-bitmap           -justify
 
-STANDARD OPTIONS
-       -activebackground -borderwidth      -relief
-       -activeforeground -font             -text
-       -anchor           -foreground
-       -background       -image
-       -bitmap           -justify
+== widget-SPECIFIC OPTIONS
+-command command
+       Specifies  a  Tk command to associate with the button.
+       This command is typically invoked when mouse button  1
+       is  released  over  the  button  window.  The button's
+       global variable (-variable  option)  will  be  updated
+       before the command is invoked.
 
-WIDGET-SPECIFIC OPTIONS
-       -command command
-              Specifies  a  Tk command to associate with the button.
-              This command is typically invoked when mouse button  1
-              is  released  over  the  button  window.  The button's
-              global variable (-variable  option)  will  be  updated
-              before the command is invoked.
+-height dist
+       Specifies  a  desired  height for the button.  If this
+       option isn't specified, the button's desired height is
+       computed  from  the  size  of  the highest item in the
+       -values list.
 
-       -height dist
-              Specifies  a  desired  height for the button.  If this
-              option isn't specified, the button's desired height is
-              computed  from  the  size  of  the highest item in the
-              -values list.
+-selectcolor colour
+       Specifies a background colour to use when  the  button
+       is selected.  If specified as an empty string, no spe‐
+       cial colour is used for displaying when the widget  is
+       selected.
 
-       -selectcolor colour
-              Specifies a background colour to use when  the  button
-              is selected.  If specified as an empty string, no spe‐
-              cial colour is used for displaying when the widget  is
-              selected.
+-values list
+       Specifies  a  list  of all the values the choicebutton
+       can choose from.
 
-       -values list
-              Specifies  a  list  of all the values the choicebutton
-              can choose from.
+-variable string
+       Specifies name of global variable to set whenever this
+       button  is  selected.  The variable will be set to the
+       index of the currently selected item. Changes in  this
+       variable also cause the button to choose the appropri‐
+       ate item (provided it is an integer and within range).
 
-       -variable string
-              Specifies name of global variable to set whenever this
-              button  is  selected.  The variable will be set to the
-              index of the currently selected item. Changes in  this
-              variable also cause the button to choose the appropri‐
-              ate item (provided it is an integer and within range).
+-width dist
+       Specifies a desired width for  the  button.   If  this
+       option  isn't specified, the button's desired width is
+       computed from the size of the widest item in the -val‐
+       ues list.
 
-       -width dist
-              Specifies a desired width for  the  button.   If  this
-              option  isn't specified, the button's desired width is
-              computed from the size of the widest item in the -val‐
-              ues list.
+The  choicebutton  command creates a new window (given by the
+pathName argument) and makes it into a  choicebutton  widget.
+Additional  options, described above, may be specified on the
+command line to configure aspects of the choicebutton such as
+its  colours, font, text, and initial relief.  The choicebut‐
+ton command returns its pathName argument.  At the time  this
+command is invoked, there must not exist a window named path‐
+Name.
 
-DESCRIPTION
-       The  choicebutton  command creates a new window (given by the
-       pathName argument) and makes it into a  choicebutton  widget.
-       Additional  options, described above, may be specified on the
-       command line to configure aspects of the choicebutton such as
-       its  colours, font, text, and initial relief.  The choicebut‐
-       ton command returns its pathName argument.  At the time  this
-       command is invoked, there must not exist a window named path‐
-       Name.
+A choicebutton is a widget that displays  a  textual  string,
+one  of  the  items given in the list argument to the -values
+option.  When clicked on, the choicebutton  displays  a  menu
+showing  all  the  available  choices,  allowing  the user to
+change the choice by selecting an item.  In  the  description
+below,  an index is a zero-based index into the set of values
+specified with the -values option.
 
-       A choicebutton is a widget that displays  a  textual  string,
-       one  of  the  items given in the list argument to the -values
-       option.  When clicked on, the choicebutton  displays  a  menu
-       showing  all  the  available  choices,  allowing  the user to
-       change the choice by selecting an item.  In  the  description
-       below,  an index is a zero-based index into the set of values
-       specified with the -values option.
+== widget COMMAND
+The choicebutton command creates a new Tk command whose  name
+is  pathName.   This  command  may  be used to invoke various
+operations on the widget.  It has the following general form:
+       pathName option ?arg arg ...?
+Option and the args determine the exact behaviour of the com‐
+mand.   The  following commands are possible for choicebutton
+widgets:
 
-WIDGET COMMAND
-       The choicebutton command creates a new Tk command whose  name
-       is  pathName.   This  command  may  be used to invoke various
-       operations on the widget.  It has the following general form:
-              pathName option ?arg arg ...?
-       Option and the args determine the exact behaviour of the com‐
-       mand.   The  following commands are possible for choicebutton
-       widgets:
+pathName cget option
+       Returns the current value of the configuration  option
+       given  by  option.   Option may have any of the values
+       accepted by the choicebutton command.
 
-       pathName cget option
-              Returns the current value of the configuration  option
-              given  by  option.   Option may have any of the values
-              accepted by the choicebutton command.
+pathName configure ?option? ?value option value ...?
+       Query or modify the configuration options of the  wid‐
+       get.  If no option is specified, returns a list of all
+       of the available options for pathName.  If one or more
+       option-value pairs are specified, the command modifies
+       the given widget option(s) to have the given value(s);
+       in  this  case  the  command  returns an empty string.
+       Option may have any of  the  values  accepted  by  the
+       choicebutton command.
 
-       pathName configure ?option? ?value option value ...?
-              Query or modify the configuration options of the  wid‐
-              get.  If no option is specified, returns a list of all
-              of the available options for pathName.  If one or more
-              option-value pairs are specified, the command modifies
-              the given widget option(s) to have the given value(s);
-              in  this  case  the  command  returns an empty string.
-              Option may have any of  the  values  accepted  by  the
-              choicebutton command.
+pathName get ?value?
+       Get  the index of the first item with value.  If value
+       is not given, get the index of the currently  selected
+       item.
 
-       pathName get ?value?
-              Get  the index of the first item with value.  If value
-              is not given, get the index of the currently  selected
-              item.
+pathName set index
+       Sets the current item to the indexth value.
 
-       pathName set index
-              Sets the current item to the indexth value.
+pathName getvalue ?index?
+       Get  the  value  of  the indexth item. If index is not
+       given, get the value of the currently selected item.
 
-       pathName getvalue ?index?
-              Get  the  value  of  the indexth item. If index is not
-              given, get the value of the currently selected item.
+pathName setvalue value
+       Set the current item to the first item  having  value.
+       If  no  item has that value, no change is made, and an
+       error is returned.
 
-       pathName setvalue value
-              Set the current item to the first item  having  value.
-              If  no  item has that value, no change is made, and an
-              error is returned.
+pathName invoke index
+       Does just what would have happened if the user invoked
+       the  choicebutton with the mouse and selected the item
+       at index: sets the current item to index and runs  its
+       associated  Tk  command,  if there is one.  The return
+       value is that from invoking  the  Tk  command,  or  an
+       empty string if there is no associated command.
 
-       pathName invoke index
-              Does just what would have happened if the user invoked
-              the  choicebutton with the mouse and selected the item
-              at index: sets the current item to index and runs  its
-              associated  Tk  command,  if there is one.  The return
-              value is that from invoking  the  Tk  command,  or  an
-              empty string if there is no associated command.
+pathName valuecount
+       Returns the number of values configured in the choice‐
+       button.
 
-       pathName valuecount
-              Returns the number of values configured in the choice‐
-              button.
+== see ALSO
+button(9),   checkbutton(9),   options(9),    radiobutton(9),
+types(9)
 
-SEE ALSO
-       button(9),   checkbutton(9),   options(9),    radiobutton(9),
-       types(9)
-
-                                                     CHOICEBUTTON(9)

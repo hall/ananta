@@ -1,35 +1,29 @@
-PSLIB(2)                 System Calls Manual                PSLIB(2)
+= pslib: postscript generation
 
-NAME
-       pslib - postscript generation
+    include "pslib.m";
+    pslib := load Pslib Pslib->PATH;
 
-SYNOPSIS
-       include "pslib.m";
-       pslib := load Pslib Pslib->PATH;
+    init: fn(bufio: Bufio);
+    writeimage: fn(f: ref Bufio->Iobuf,
+                   img: ref Draw->Image, dpi: int): string;
 
-       init: fn(bufio: Bufio);
-       writeimage: fn(f: ref Bufio->Iobuf,
-                      img: ref Draw->Image, dpi: int): string;
+Pslib must first be initialised by calling Init with a loaded
+Bufio module.  Writeimage writes a Postscript file containing
+the data within img to f, which should first have been opened
+for writing by bufio.  Dpi is a value  specifying  the  pixel
+width of pixels in img; the width (and height) of dpi dots in
+img will be one inch when the Postscript is rendered.
 
-DESCRIPTION
-       Pslib must first be initialised by calling Init with a loaded
-       Bufio module.  Writeimage writes a Postscript file containing
-       the data within img to f, which should first have been opened
-       for writing by bufio.  Dpi is a value  specifying  the  pixel
-       width of pixels in img; the width (and height) of dpi dots in
-       img will be one inch when the Postscript is rendered.
+== source
+/appl/lib/pslib.b
 
-SOURCE
-       /appl/lib/pslib.b
+== see ALSO
+bufio(2), draw-image(2)
 
-SEE ALSO
-       bufio(2), draw-image(2)
+== bugs
+The resulting Postscript is really only suitable for  use  as
+encapsulated  Postscript, as there's no way to set the desti‐
+nation paper size.
 
-BUGS
-       The resulting Postscript is really only suitable for  use  as
-       encapsulated  Postscript, as there's no way to set the desti‐
-       nation paper size.
+There should be many more useful functions in this module.
 
-       There should be many more useful functions in this module.
-
-                                                            PSLIB(2)

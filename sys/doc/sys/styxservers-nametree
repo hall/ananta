@@ -1,138 +1,131 @@
-STYXSERVERS-NAMETREE(2)  System Calls Manual STYXSERVERS-NAMETREE(2)
+= Styxservers: nametree: hierarchical name storage for use with Styxservers.
 
-NAME
-       Styxservers:  nametree  -  hierarchical  name storage for use
-       with Styxservers.
+    include "sys.m";
+    include "styx.m";
+    include "styxservers.m";
+    nametree := load Nametree Nametree->PATH;
+         Tree: import nametree;
+    
+    Tree: adt {
+        create: fn(t: self ref Tree, parentpath: big, d: Sys->Dir): string;
+        remove: fn(t: self ref Tree, path: big): string;
+        wstat:   fn(t: self ref Tree, path: big, d: Sys->Dir);
+        quit:   fn(t: self ref Tree);
+    };
+    init:       fn();
+    start:      fn(): (ref Tree, chan of ref Styxservers->Navop);
+    
+Nametree provides the storage for a hierarchical namespace to
+be  used  by styxservers(2).  After the module is loaded, the
+init function should be called  to  initialise  the  module's
+internal  variables.  Start spawns a new nametree process; it
+returns a tuple, say (tree, c), where c is a channel that can
+be  used  to create an instance of Styxservers->Navigator, to
+access files inside nametree, and tree is an adt that  allows
+creation and removal of those files.  On failure, these func‐
+tions return a string describing the error.
 
-SYNOPSIS
-       include "sys.m";
-       include "styx.m";
-       include "styxservers.m";
-       nametree := load Nametree Nametree->PATH;
-            Tree: import nametree;
+Note that the full set of operations on Nametree (i.e.  stat,
+walk,  readdir, wstate, create and remove), is only available
+in conjunction with Styxserver's Navigator interface.   Files
+in  the name space are ultimately identified by a 64-bit path
+value, which forms the path  component  of  the  file's  Qid.
+(See  intro(5)  for a description of the system's interpreta‐
+tion of Qids.)
 
-       Tree: adt {
-           create: fn(t: self ref Tree, parentpath: big, d: Sys->Dir): string;
-           remove: fn(t: self ref Tree, path: big): string;
-           wstat:   fn(t: self ref Tree, path: big, d: Sys->Dir);
-           quit:   fn(t: self ref Tree);
-       };
-       init:       fn();
-       start:      fn(): (ref Tree, chan of ref Styxservers->Navop);
+The Tree operations are:
 
-DESCRIPTION
-       Nametree provides the storage for a hierarchical namespace to
-       be  used  by styxservers(2).  After the module is loaded, the
-       init function should be called  to  initialise  the  module's
-       internal  variables.  Start spawns a new nametree process; it
-       returns a tuple, say (tree, c), where c is a channel that can
-       be  used  to create an instance of Styxservers->Navigator, to
-       access files inside nametree, and tree is an adt that  allows
-       creation and removal of those files.  On failure, these func‐
-       tions return a string describing the error.
+t.create(parentpath, d)
+          Create a new file or directory.  D gives the direc‐
+          tory  information that will be stored for the file,
+          including its own path value, given by  d.qid.path.
+          If  the  file  referenced  by  parentpath  does not
+          exist, creation will not be allowed, other than  in
+          the  special  case when d.qid.path is equal to par‐
+          entpath, in which case it is assumed to be  a  root
+          directory  and  may  be  created.  This potentially
+          allows a single Nametree instance to hold many dis‐
+          tinct  directory hierarchies.  Note that no attempt
+          is made to  ensure  that  parentpath  refers  to  a
+          directory;  the  check is assumed to have been made
+          previously.  When a hierarchy is  traversed,  Name‐
+          tree  interprets  the  name `..'  itself as `parent
+          directory', and that name  should  not  be  created
+          explicitly.
 
-       Note that the full set of operations on Nametree (i.e.  stat,
-       walk,  readdir, wstate, create and remove), is only available
-       in conjunction with Styxserver's Navigator interface.   Files
-       in  the name space are ultimately identified by a 64-bit path
-       value, which forms the path  component  of  the  file's  Qid.
-       (See  intro(5)  for a description of the system's interpreta‐
-       tion of Qids.)
+t.remove(path)
+          Remove  the  file  referred to by path, and all its
+          descendants.
 
-       The Tree operations are:
+t.wstat(path, d)
+          Change the directory information held on file path.
+          The Qid path itself cannot be changed by d.
 
-       t.create(parentpath, d)
-                 Create a new file or directory.  D gives the direc‐
-                 tory  information that will be stored for the file,
-                 including its own path value, given by  d.qid.path.
-                 If  the  file  referenced  by  parentpath  does not
-                 exist, creation will not be allowed, other than  in
-                 the  special  case when d.qid.path is equal to par‐
-                 entpath, in which case it is assumed to be  a  root
-                 directory  and  may  be  created.  This potentially
-                 allows a single Nametree instance to hold many dis‐
-                 tinct  directory hierarchies.  Note that no attempt
-                 is made to  ensure  that  parentpath  refers  to  a
-                 directory;  the  check is assumed to have been made
-                 previously.  When a hierarchy is  traversed,  Name‐
-                 tree  interprets  the  name `..'  itself as `parent
-                 directory', and that name  should  not  be  created
-                 explicitly.
+t.quit()  Shut down the nametree process.
 
-       t.remove(path)
-                 Remove  the  file  referred to by path, and all its
-                 descendants.
+== example
+Here  is a complete example that uses Nametree in conjunction
+with Styxservers in order to serve two files data and ctl ...
+and do nothing with them:
+implement Tst;
+include "sys.m";
+     sys: Sys;
+include "draw.m";
+include "styx.m";
+include "styxservers.m";
+     styxservers: Styxservers;
+     Styxserver, Navigator: import styxservers;
+     nametree: Nametree;
+     Tree: import nametree;
 
-       t.wstat(path, d)
-                 Change the directory information held on file path.
-                 The Qid path itself cannot be changed by d.
+Tst: module
+{
+     init: fn(nil: ref Draw->Context, argv: list of string);
+};
 
-       t.quit()  Shut down the nametree process.
+Qroot, Qctl, Qdata: con big iota;  # paths
+init(nil: ref Draw->Context, args: list of string)
+{
+     sys = load Sys Sys->PATH;
+     styx := load Styx Styx->PATH;
+     styx->init();
+     styxservers = load Styxservers Styxservers->PATH;
+     styxservers->init(styx);
+     nametree = load Nametree Nametree->PATH;
+     nametree->init();
+     sys->pctl(Sys->FORKNS, nil);
+     (tree, treeop) := nametree->start();
+     tree.create(Qroot, dir(".", 8r555|Sys->DMDIR, Qroot));
+     tree.create(Qroot, dir("ctl", 8r666, Qctl));
+     tree.create(Qroot, dir("data", 8r444, Qdata));
+     (tchan, srv) := Styxserver.new(sys->fildes(0),
+                              Navigator.new(treeop), Qroot);
+     while((gm := <-tchan) != nil) {
+          # normally a pick on gm would act on
+          # Tmsg.Read and Tmsg.Write at least
+          srv.default(gm);
+     }
+     tree.quit();
+}
 
-EXAMPLE
-       Here  is a complete example that uses Nametree in conjunction
-       with Styxservers in order to serve two files data and ctl ...
-       and do nothing with them:
-       implement Tst;
-       include "sys.m";
-            sys: Sys;
-       include "draw.m";
-       include "styx.m";
-       include "styxservers.m";
-            styxservers: Styxservers;
-            Styxserver, Navigator: import styxservers;
-            nametree: Nametree;
-            Tree: import nametree;
+dir(name: string, perm: int, qid: big): Sys->Dir
+{
+     d := sys->zerodir;
+     d.name = name;
+     d.uid = "me";
+     d.gid = "me";
+     d.qid.path = qid;
+     if (perm & Sys->DMDIR)
+          d.qid.qtype = Sys->QTDIR;
+     else
+          d.qid.qtype = Sys->QTFILE;
+     d.mode = perm;
+     return d;
+}
 
-       Tst: module
-       {
-            init: fn(nil: ref Draw->Context, argv: list of string);
-       };
+== source
+/appl/lib/nametree.b
 
-       Qroot, Qctl, Qdata: con big iota;  # paths
-       init(nil: ref Draw->Context, args: list of string)
-       {
-            sys = load Sys Sys->PATH;
-            styx := load Styx Styx->PATH;
-            styx->init();
-            styxservers = load Styxservers Styxservers->PATH;
-            styxservers->init(styx);
-            nametree = load Nametree Nametree->PATH;
-            nametree->init();
-            sys->pctl(Sys->FORKNS, nil);
-            (tree, treeop) := nametree->start();
-            tree.create(Qroot, dir(".", 8r555|Sys->DMDIR, Qroot));
-            tree.create(Qroot, dir("ctl", 8r666, Qctl));
-            tree.create(Qroot, dir("data", 8r444, Qdata));
-            (tchan, srv) := Styxserver.new(sys->fildes(0),
-                                     Navigator.new(treeop), Qroot);
-            while((gm := <-tchan) != nil) {
-                 # normally a pick on gm would act on
-                 # Tmsg.Read and Tmsg.Write at least
-                 srv.default(gm);
-            }
-            tree.quit();
-       }
+== see ALSO
+styxservers(2), intro(5)
 
-       dir(name: string, perm: int, qid: big): Sys->Dir
-       {
-            d := sys->zerodir;
-            d.name = name;
-            d.uid = "me";
-            d.gid = "me";
-            d.qid.path = qid;
-            if (perm & Sys->DMDIR)
-                 d.qid.qtype = Sys->QTDIR;
-            else
-                 d.qid.qtype = Sys->QTFILE;
-            d.mode = perm;
-            return d;
-       }
-
-SOURCE
-       /appl/lib/nametree.b
-
-SEE ALSO
-       styxservers(2), intro(5)
-
-                                             STYXSERVERS-NAMETREE(2)

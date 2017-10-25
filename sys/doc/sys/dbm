@@ -1,142 +1,136 @@
-DBM(2)                   System Calls Manual                  DBM(2)
+= Dbm: Dbf, init: data base with hashed indexing
 
-NAME
-       Dbm: Dbf, init - data base with hashed indexing
+    include "dbm.m";
 
-SYNOPSIS
-       include "dbm.m";
+    dbm := load Dbm Dbm->PATH;
+    Datum, Dbf: import dbm;
 
-       dbm := load Dbm Dbm->PATH;
-       Datum, Dbf: import dbm;
+    Datum:  type array of byte;
 
-       Datum:  type array of byte;
+    Dbf: adt {
+        create: fn(file: string, perm: int): ref Dbf;
+        open:   fn(file: string, flags: int): ref Dbf;
+    
+        fetch:  fn(db: self ref Dbf, key: Datum): Datum;
+        delete: fn(db: self ref Dbf, key: Datum): int;
+        store:  fn(db: self ref Dbf, key: Datum, data: Datum,
+                      replace: int): int;
+    
+        firstkey: fn(db: self ref Dbf): Datum;
+        nextkey:  fn(db: self ref Dbf, key: Datum): Datum;
+    
+        flush:    fn(db: self ref Dbf);
+        isrdonly: fn(db: self ref Dbf): int;
+    };
+    
+    init:   fn();
 
-       Dbf: adt {
-           create: fn(file: string, perm: int): ref Dbf;
-           open:   fn(file: string, flags: int): ref Dbf;
+Dbm  maintains  key/content  pairs in a data base.  The func‐
+tions will handle very large (a billion blocks) databases and
+will access a keyed item in one or two filesystem accesses.
 
-           fetch:  fn(db: self ref Dbf, key: Datum): Datum;
-           delete: fn(db: self ref Dbf, key: Datum): int;
-           store:  fn(db: self ref Dbf, key: Datum, data: Datum,
-                         replace: int): int;
+Keys  and  contents  are  both represented by arrays of bytes
+(with the synonym Datum), allowing arbitrary binary values.
 
-           firstkey: fn(db: self ref Dbf): Datum;
-           nextkey:  fn(db: self ref Dbf, key: Datum): Datum;
+The data base is stored in two files.  One file is  a  direc‐
+tory  containing a bit map and has as its suffix.  The second
+file contains all data and has as its suffix.  An application
+can  access several databases at once, but must avoid concur‐
+rent operations on any one database (eg, by using  a  monitor
+process to control access).
 
-           flush:    fn(db: self ref Dbf);
-           isrdonly: fn(db: self ref Dbf): int;
-       };
+Init must be called before any other operation of the module.
 
-       init:   fn();
+A  database  is  created  by Dbf.create, which accepts a file
+permission parameter perm, as described for Sys->create  (see
+sys-open(2)); it creates the two files file.dir and file.pag.
+If successful, it returns  a  Dbf  reference  describing  the
+database,  which  is  open for reading and writing.  (It will
+truncate an existing database.)  It returns nil if it  cannot
+create  the  database  for  some  reason,  and sets the error
+string.
 
-DESCRIPTION
-       Dbm  maintains  key/content  pairs in a data base.  The func‐
-       tions will handle very large (a billion blocks) databases and
-       will access a keyed item in one or two filesystem accesses.
+Dbf.open accepts  a  mode  parameter  as  described  in  sys-
+open(2),  and  opens  the  existing  database in file.dir and
+file.pag.  If successful, it returns a Dbf reference describ‐
+ing  the database, which is open either for reading and writ‐
+ing (ie, Sys->ORDWR), or only  for  reading  (Sys->OREAD)  as
+determined by mode.  It returns nil if the database cannot be
+opened successfully, and sets the error string.
 
-       Keys  and  contents  are  both represented by arrays of bytes
-       (with the synonym Datum), allowing arbitrary binary values.
+The remaining operations apply to an existing  Dbf  reference
+db:
 
-       The data base is stored in two files.  One file is  a  direc‐
-       tory  containing a bit map and has as its suffix.  The second
-       file contains all data and has as its suffix.  An application
-       can  access several databases at once, but must avoid concur‐
-       rent operations on any one database (eg, by using  a  monitor
-       process to control access).
+db.fetch(key)
+       Return the data stored under a key; nil is returned if
+       the key is not in the database.
 
-       Init must be called before any other operation of the module.
+db.store(key, data, replace)
+       Store data under the given key.  If  replace  is  non-
+       zero,  store will simply replace the existing value by
+       the new one if the key is already in the database;  if
+       replace  is  zero  store will return 0 if the new item
+       was inserted, but 1 if the key already appears in  the
+       database, and the new value will not be stored.
 
-       A  database  is  created  by Dbf.create, which accepts a file
-       permission parameter perm, as described for Sys->create  (see
-       sys-open(2)); it creates the two files file.dir and file.pag.
-       If successful, it returns  a  Dbf  reference  describing  the
-       database,  which  is  open for reading and writing.  (It will
-       truncate an existing database.)  It returns nil if it  cannot
-       create  the  database  for  some  reason,  and sets the error
-       string.
+db.delete(key)
+       Key and its associated value is removed from the data‐
+       base.
 
-       Dbf.open accepts  a  mode  parameter  as  described  in  sys-
-       open(2),  and  opens  the  existing  database in file.dir and
-       file.pag.  If successful, it returns a Dbf reference describ‐
-       ing  the database, which is open either for reading and writ‐
-       ing (ie, Sys->ORDWR), or only  for  reading  (Sys->OREAD)  as
-       determined by mode.  It returns nil if the database cannot be
-       opened successfully, and sets the error string.
+db.firstkey()
+       Return the first key in the database;  return  nil  if
+       the database is empty.
 
-       The remaining operations apply to an existing  Dbf  reference
-       db:
+db.nextkey(key)
+       Return  the  key  following  the  given key, or nil if
+       there is none.
 
-       db.fetch(key)
-              Return the data stored under a key; nil is returned if
-              the key is not in the database.
+db.flush()
+       Discard any data cached from the file.  The  cache  is
+       write-through,  so  it  is  not necessary to flush the
+       file before the application exits.
 
-       db.store(key, data, replace)
-              Store data under the given key.  If  replace  is  non-
-              zero,  store will simply replace the existing value by
-              the new one if the key is already in the database;  if
-              replace  is  zero  store will return 0 if the new item
-              was inserted, but 1 if the key already appears in  the
-              database, and the new value will not be stored.
+db.isrdonly()
+       Return true if db was  opened  only  for  reading  and
+       writes are not allowed.
 
-       db.delete(key)
-              Key and its associated value is removed from the data‐
-              base.
+== example
+A  linear pass through all keys in a database may be made, in
+an (apparently) random order,  by  use  of  Dbf.firstkey  and
+Dbf.nextkey.  This code will traverse the data base:
 
-       db.firstkey()
-              Return the first key in the database;  return  nil  if
-              the database is empty.
+       for(key := db.firstkey(); key != nil; key = db.nextkey(key)){
+            d := db.fetch(key);
+       }
 
-       db.nextkey(key)
-              Return  the  key  following  the  given key, or nil if
-              there is none.
+The  order  of keys presented by Dbf.firstkey and Dbf.nextkey
+depends on a hashing function, not on anything interesting.
 
-       db.flush()
-              Discard any data cached from the file.  The  cache  is
-              write-through,  so  it  is  not necessary to flush the
-              file before the application exits.
+== source
+/appl/lib/dbm.b
 
-       db.isrdonly()
-              Return true if db was  opened  only  for  reading  and
-              writes are not allowed.
+== diagnostics
+All functions that return an int indicate errors  with  nega‐
+tive values.  A zero return indicates success.  Routines that
+return pointers, including values of Datum, return nil values
+on  error.   Dbf.create and Dbf.open return nil on failure to
+access the database, setting  the  error  string  to  a  more
+detailed diagnostic.
 
-EXAMPLE
-       A  linear pass through all keys in a database may be made, in
-       an (apparently) random order,  by  use  of  Dbf.firstkey  and
-       Dbf.nextkey.  This code will traverse the data base:
+== bugs
+On  some systems (notably Plan 9 but also some Unix systems),
+the .pag file might contain holes where  no  data  block  has
+ever  been  written  so  that its apparent size is about four
+times its actual content.  These files cannot  be  copied  by
+normal means (cp, cat) without filling in the holes.
 
-              for(key := db.firstkey(); key != nil; key = db.nextkey(key)){
-                   d := db.fetch(key);
-              }
+Except  for  firstkey  and  nextkey, Datum values returned by
+these functions point to storage that is  changed  by  subse‐
+quent calls.
 
-       The  order  of keys presented by Dbf.firstkey and Dbf.nextkey
-       depends on a hashing function, not on anything interesting.
+The  sum  of  the sizes of a key/content pair must not exceed
+the internal block size (currently 512 bytes).  Moreover  all
+key/content  pairs  that  hash  together must fit on a single
+block.  Dbf.store will return an error in the  event  that  a
+block fills with inseparable data.
 
-SOURCE
-       /appl/lib/dbm.b
-
-DIAGNOSTICS
-       All functions that return an int indicate errors  with  nega‐
-       tive values.  A zero return indicates success.  Routines that
-       return pointers, including values of Datum, return nil values
-       on  error.   Dbf.create and Dbf.open return nil on failure to
-       access the database, setting  the  error  string  to  a  more
-       detailed diagnostic.
-
-BUGS
-       On  some systems (notably Plan 9 but also some Unix systems),
-       the .pag file might contain holes where  no  data  block  has
-       ever  been  written  so  that its apparent size is about four
-       times its actual content.  These files cannot  be  copied  by
-       normal means (cp, cat) without filling in the holes.
-
-       Except  for  firstkey  and  nextkey, Datum values returned by
-       these functions point to storage that is  changed  by  subse‐
-       quent calls.
-
-       The  sum  of  the sizes of a key/content pair must not exceed
-       the internal block size (currently 512 bytes).  Moreover  all
-       key/content  pairs  that  hash  together must fit on a single
-       block.  Dbf.store will return an error in the  event  that  a
-       block fills with inseparable data.
-
-                                                              DBM(2)

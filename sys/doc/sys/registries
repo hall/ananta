@@ -1,215 +1,209 @@
-REGISTRIES(2)            System Calls Manual           REGISTRIES(2)
+= registries: access services registry
 
-NAME
-       registries - access services registry
+    include "registries.m";
+    registries := load Registries Registries->PATH;
 
-SYNOPSIS
-       include "registries.m";
-       registries := load Registries Registries->PATH;
+    init: fn();
 
-       init: fn();
+    Attributes: adt {
+       attrs: list of (string, string);
+    
+       get:   fn(a: self ref Attributes, attr: string): string;
+       set:   fn(a: self ref Attributes, attr, val: string);
+       new:   fn(attrs: list of (string, string)): ref Attributes;
+    };
+    
+    Attached: adt {
+       fd:           ref Sys->FD;  # connection to the service
+       signerpkhash: string;     # hash of signer's key
+       localuser:    string;     # user name here
+       remoteuser:   string;     # user name there
+    };
+    
+    Service: adt {
+       addr:    string;          # dial this to connect to the service
+       attrs:   ref Attributes;  # service description
+    
+       attach:  fn(s: self ref Service, user: string,
+                   keydir: string): ref Attached;
+    };
+    
+    Registered: adt {
+       addr:    string;          # address where registered
+       reg:     ref Registry;    # registry where registered
+       fd:      ref Sys->FD;     # file representing registration entry
+    };
+    
+    Registry: adt {
+       dir:     string;
+    
+       new:        fn(dir: string): ref Registry;
+       connect:    fn(svc: ref Service, user: string, keydir: string):
+                      ref Registry;
+       services:   fn(r: self ref Registry):
+                      (list of ref Service, string);
+       find:       fn(r: self ref Registry, a: list of (string, string)):
+                      (list of ref Service, string);
+       register:   fn(r: self ref Registry, addr: string,
+                      attrs: ref Attributes, persist: int):
+                      (ref Registered, string);
+       unregister: fn(r: self ref Registry, addr: string): string;
+    };
+    
+Registries  helps  access  and  update the contents of one or
+more registry (4) servers.   Each  registry  lists  services,
+each  described  by  a  set  of  attribute/value  pairs.  The
+attributes need not identify the service uniquely.
 
-       Attributes: adt {
-          attrs: list of (string, string);
+Init must be called before any other function in the module.
 
-          get:   fn(a: self ref Attributes, attr: string): string;
-          set:   fn(a: self ref Attributes, attr, val: string);
-          new:   fn(attrs: list of (string, string)): ref Attributes;
-       };
+Attributes represents a set of attribute/value pairs; a given
+attribute name cannot appear more than once.  It provides the
+following members and operations:
 
-       Attached: adt {
-          fd:           ref Sys->FD;  # connection to the service
-          signerpkhash: string;     # hash of signer's key
-          localuser:    string;     # user name here
-          remoteuser:   string;     # user name there
-       };
+attrs  The  current  value  of  the  set,  as   a   list   of
+       (attr,value) tuples.
 
-       Service: adt {
-          addr:    string;          # dial this to connect to the service
-          attrs:   ref Attributes;  # service description
+Attributes.new(attrs)
+       Return  a  new Attributes value given attrs, a list of
+       (attr,value) tuples.
 
-          attach:  fn(s: self ref Service, user: string,
-                      keydir: string): ref Attached;
-       };
+a.get(attr)
+       Return the value of attr in attribute set a.
 
-       Registered: adt {
-          addr:    string;          # address where registered
-          reg:     ref Registry;    # registry where registered
-          fd:      ref Sys->FD;     # file representing registration entry
-       };
+a.set(attr, value)
+       Set the value of attr in attribute set a.
 
-       Registry: adt {
-          dir:     string;
+A Service value represents a service registered in some  reg‐
+istry.  It has the following members and operations:
 
-          new:        fn(dir: string): ref Registry;
-          connect:    fn(svc: ref Service, user: string, keydir: string):
-                         ref Registry;
-          services:   fn(r: self ref Registry):
-                         (list of ref Service, string);
-          find:       fn(r: self ref Registry, a: list of (string, string)):
-                         (list of ref Service, string);
-          register:   fn(r: self ref Registry, addr: string,
-                         attrs: ref Attributes, persist: int):
-                         (ref Registered, string);
-          unregister: fn(r: self ref Registry, addr: string): string;
-       };
+addr   A  string  that  represents  where  the service can be
+       reached: it is often a  dial(2)  address  string,  but
+       might  be a name in the name space; the interpretation
+       is internal to Registries.
 
-DESCRIPTION
-       Registries  helps  access  and  update the contents of one or
-       more registry (4) servers.   Each  registry  lists  services,
-       each  described  by  a  set  of  attribute/value  pairs.  The
-       attributes need not identify the service uniquely.
+attrs  The service's attributes  (complete  service  descrip‐
+       tion).
 
-       Init must be called before any other function in the module.
+svc.attach(user,keydir)
+       Attempts to attach to the service svc, and if success‐
+       ful returns an Attached value to represent the connec‐
+       tion;  otherwise returns nil and sets the system error
+       string.  User is the local name of the user making the
+       connection; if nil, the contents of /dev/user are used
+       by default.  Keydir is the name of  a  directory  con‐
+       taining  the user's certified keys for authentication;
+       if nil, the default is /usr/user/keyring.  If an error
+       occurs,  the  return value is nil and the system error
+       string contains a diagnostic.  Not all services demand
+       authentication,  and  either or both values can be nil
+       to select suitable  defaults.   If  authentication  is
+       done,  the  certified data determines the remote iden‐
+       tity, not user, which is used  only  to  help  find  a
+       suitable set of keys and has no effect on security.
 
-       Attributes represents a set of attribute/value pairs; a given
-       attribute name cannot appear more than once.  It provides the
-       following members and operations:
+Attached  holds data about an active connection to a particu‐
+lar service.  (There can be several distinct  connections  to
+the same Service.)  It provides the following members:
 
-       attrs  The  current  value  of  the  set,  as   a   list   of
-              (attr,value) tuples.
+fd     A  file  descriptor  that  can  be read and written to
+       exchange data with the service.  The  meaning  of  the
+       data depends on the service (eg, it might be a 9P con‐
+       nection  or  a  SOAP  implementation).   Typically  an
+       attribute of the service description hints at the pro‐
+       tocol.
 
-       Attributes.new(attrs)
-              Return  a  new Attributes value given attrs, a list of
-              (attr,value) tuples.
+signerpkhash
+       A hexadecimal string giving the SHA-1 hash of the  key
+       of  the signer used for mutual authentication (ie, its
+       thumbprint); if no authentication was  needed  or  did
+       not use public key methods, it is nil.
 
-       a.get(attr)
-              Return the value of attr in attribute set a.
+localuser
+       If  authentication  was required, the name used as the
+       local name for authentication; otherwise nil.
 
-       a.set(attr, value)
-              Set the value of attr in attribute set a.
+remoteuser
+       If authentication was required,  the  remote  identity
+       for this connection; otherwise nil.
 
-       A Service value represents a service registered in some  reg‐
-       istry.  It has the following members and operations:
+A  service provider registers using one of the Registry func‐
+tions listed below.  An active registration is represented by
+a value of type Registered:
 
-       addr   A  string  that  represents  where  the service can be
-              reached: it is often a  dial(2)  address  string,  but
-              might  be a name in the name space; the interpretation
-              is internal to Registries.
+addr   Location of service, as registered.
 
-       attrs  The service's attributes  (complete  service  descrip‐
-              tion).
+reg    The registry that registered the service.
 
-       svc.attach(user,keydir)
-              Attempts to attach to the service svc, and if success‐
-              ful returns an Attached value to represent the connec‐
-              tion;  otherwise returns nil and sets the system error
-              string.  User is the local name of the user making the
-              connection; if nil, the contents of /dev/user are used
-              by default.  Keydir is the name of  a  directory  con‐
-              taining  the user's certified keys for authentication;
-              if nil, the default is /usr/user/keyring.  If an error
-              occurs,  the  return value is nil and the system error
-              string contains a diagnostic.  Not all services demand
-              authentication,  and  either or both values can be nil
-              to select suitable  defaults.   If  authentication  is
-              done,  the  certified data determines the remote iden‐
-              tity, not user, which is used  only  to  help  find  a
-              suitable set of keys and has no effect on security.
+fd     File  descriptor  open for on the service file in reg‐
+       istry(4) that holds the service  description.   Unless
+       the service has a non-zero persist attribute, the ser‐
+       vice registration will be removed when  this  file  is
+       closed  (eg,  when this Registration value is freed by
+       the garbage collector if there is  no  other  copy  of
+       fd).   The  file  can  be written as described in reg‐
+       istry(4) to change the some or all of current  set  of
+       attributes and/or values in the service description.
 
-       Attached  holds data about an active connection to a particu‐
-       lar service.  (There can be several distinct  connections  to
-       the same Service.)  It provides the following members:
+A  Registry  represents  a connection to a single registry(4)
+instance.  It provides the following members and operations:
 
-       fd     A  file  descriptor  that  can  be read and written to
-              exchange data with the service.  The  meaning  of  the
-              data depends on the service (eg, it might be a 9P con‐
-              nection  or  a  SOAP  implementation).   Typically  an
-              attribute of the service description hints at the pro‐
-              tocol.
+dir    Location of the registry in the name space.
 
-       signerpkhash
-              A hexadecimal string giving the SHA-1 hash of the  key
-              of  the signer used for mutual authentication (ie, its
-              thumbprint); if no authentication was  needed  or  did
-              not use public key methods, it is nil.
+Registry.new(dir)
+       Return a new Registry value for the  registry  located
+       at  dir  in the name space; if dir is nil, the default
+       is /mnt/registry.
 
-       localuser
-              If  authentication  was required, the name used as the
-              local name for authentication; otherwise nil.
+Registry.connect(svc, user, keydir)
+       Connect to the registry at the location determined  by
+       the  service  description  svc;  if  svc  is  nil, the
+       default is to try dial(2)  to  net!$registry!registry,
+       the symbolic name of the default registry for the cur‐
+       rent host.   (The  registry  might  or  might  not  be
+       local.)   Attributes  of svc determine the method used
+       to connect to the registry and whether  authentication
+       is  required.   User  and keydir provide user name and
+       certificate directory (see getauthinfo(8)) if  authen‐
+       tication  is  required;  either  or both can be nil to
+       select  the  defaults  for  the  given  authentication
+       method.   On  successful connection, connect returns a
+       Registry value that can subsequently be used to access
+       that  registry and its services.  It returns nil on an
+       error and sets the system error string.
 
-       remoteuser
-              If authentication was required,  the  remote  identity
-              for this connection; otherwise nil.
+reg.services()
+       Returns a tuple (svcs,err) where svcs  is  a  list  of
+       Service values, one for each service registered by reg
+       at time of asking.  If  no  services  are  registered,
+       both  values  are  nil.  If an error occurred, svcs is
+       nil but err is a diagnostic string.
 
-       A  service provider registers using one of the Registry func‐
-       tions listed below.  An active registration is represented by
-       a value of type Registered:
+reg.find(attrs)
+       Return a tuple (svcs,err) where svcs is a list of Ser‐
+       vice  values,  one  for each service registered by reg
+       that  (at  time  of  asking)  matched   all   of   the
+       attribute/value  pairs  in  attrs.   A  value  of  "*"
+       matches any value.  If no services matched, both  val‐
+       ues  are  nil.   If an error occurred, svcs is nil but
+       err is a diagnostic string.
 
-       addr   Location of service, as registered.
+reg.register(addr, attrs, persist)
+       Attempts to register with reg a service named addr and
+       the  given  attributes  attrs,  and  returns  a  tuple
+       (r,err) where r is a non-nil  Registration  value  for
+       the  entry if successful, and err is a diagnostic oth‐
+       erwise.  Persist is non-zero if the service  registra‐
+       tion  should  survive  the Registration value (connec‐
+       tion); normally it is zero and the registry entry van‐
+       ishes when the service frees the Registration value.
 
-       reg    The registry that registered the service.
+reg.unregister(addr)
+       Attempt  to  remove  the registration entry at reg for
+       the service named addr.  Only the service owner can do
+       so.   Returns  nil  on success and a diagnostic other‐
+       wise.
 
-       fd     File  descriptor  open for on the service file in reg‐
-              istry(4) that holds the service  description.   Unless
-              the service has a non-zero persist attribute, the ser‐
-              vice registration will be removed when  this  file  is
-              closed  (eg,  when this Registration value is freed by
-              the garbage collector if there is  no  other  copy  of
-              fd).   The  file  can  be written as described in reg‐
-              istry(4) to change the some or all of current  set  of
-              attributes and/or values in the service description.
+== see ALSO
+attrdb(2), registry(4), svc(8)
 
-       A  Registry  represents  a connection to a single registry(4)
-       instance.  It provides the following members and operations:
-
-       dir    Location of the registry in the name space.
-
-       Registry.new(dir)
-              Return a new Registry value for the  registry  located
-              at  dir  in the name space; if dir is nil, the default
-              is /mnt/registry.
-
-       Registry.connect(svc, user, keydir)
-              Connect to the registry at the location determined  by
-              the  service  description  svc;  if  svc  is  nil, the
-              default is to try dial(2)  to  net!$registry!registry,
-              the symbolic name of the default registry for the cur‐
-              rent host.   (The  registry  might  or  might  not  be
-              local.)   Attributes  of svc determine the method used
-              to connect to the registry and whether  authentication
-              is  required.   User  and keydir provide user name and
-              certificate directory (see getauthinfo(8)) if  authen‐
-              tication  is  required;  either  or both can be nil to
-              select  the  defaults  for  the  given  authentication
-              method.   On  successful connection, connect returns a
-              Registry value that can subsequently be used to access
-              that  registry and its services.  It returns nil on an
-              error and sets the system error string.
-
-       reg.services()
-              Returns a tuple (svcs,err) where svcs  is  a  list  of
-              Service values, one for each service registered by reg
-              at time of asking.  If  no  services  are  registered,
-              both  values  are  nil.  If an error occurred, svcs is
-              nil but err is a diagnostic string.
-
-       reg.find(attrs)
-              Return a tuple (svcs,err) where svcs is a list of Ser‐
-              vice  values,  one  for each service registered by reg
-              that  (at  time  of  asking)  matched   all   of   the
-              attribute/value  pairs  in  attrs.   A  value  of  "*"
-              matches any value.  If no services matched, both  val‐
-              ues  are  nil.   If an error occurred, svcs is nil but
-              err is a diagnostic string.
-
-       reg.register(addr, attrs, persist)
-              Attempts to register with reg a service named addr and
-              the  given  attributes  attrs,  and  returns  a  tuple
-              (r,err) where r is a non-nil  Registration  value  for
-              the  entry if successful, and err is a diagnostic oth‐
-              erwise.  Persist is non-zero if the service  registra‐
-              tion  should  survive  the Registration value (connec‐
-              tion); normally it is zero and the registry entry van‐
-              ishes when the service frees the Registration value.
-
-       reg.unregister(addr)
-              Attempt  to  remove  the registration entry at reg for
-              the service named addr.  Only the service owner can do
-              so.   Returns  nil  on success and a diagnostic other‐
-              wise.
-
-SEE ALSO
-       attrdb(2), registry(4), svc(8)
-
-                                                       REGISTRIES(2)

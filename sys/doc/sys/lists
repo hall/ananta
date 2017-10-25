@@ -1,111 +1,103 @@
-LISTS(2)                 System Calls Manual                LISTS(2)
+= lists: allsat, anysat, append, combine, concat, delete, filter, find, ismember, last, map, pair, partition, reverse, unpair: list operations
 
-NAME
-       lists:  allsat, anysat, append, combine, concat, delete, fil‐
-       ter, find, ismember, last,  map,  pair,  partition,  reverse,
-       unpair- list operations
+    include "lists.m"
+    lists := load Lists Lists->PATH;
 
-SYNOPSIS
-       include "lists.m"
-       lists := load Lists Lists->PATH;
+    append:    fn[T](l: list of T, x: T): list of T;
+    combine:   fn[T](l1: list of T, l2: list of T): list of T;
+    concat:    fn[T](l1: list of T, l2: list of T): list of T;
+    delete:    fn[T](x: T, l: list of T): list of T
+                 for { T => eq:  fn(a, b: T): int; };
+    find:      fn[T](x: T, l: list of T): list of T
+                 for { T => eq:  fn(a, b: T): int; };
+    ismember:  fn[T](x: T, l: list of T): int
+                 for { T =>  eq: fn(a, b: T): int; };
+    last:      fn[T](l: list of T): T;
+    pair:      fn[T1, T2](l1: list of T1, l2: list of T2):
+                 list of (T1, T2);
+    reverse:   fn[T](l: list of T): list of T;
+    unpair:    fn[T1, T2](l: list of (T1, T2)):
+                 (list of T1, list of T2);
+    
+    allsat:    fn[T](p: ref fn(x: T): int, l: list of T): int;
+    anysat:    fn[T](p: ref fn(x: T): int, l: list of T): int;
+    filter:    fn[T](p: ref fn(x: T): int, l: list of T): list of T;
+    map:       fn[T](f: ref fn(x: T): T, l: list of T): list of T;
+    partition: fn[T](p: ref fn(x: T): int, l: list of T):
+                 (list of T, list of T);
 
-       append:    fn[T](l: list of T, x: T): list of T;
-       combine:   fn[T](l1: list of T, l2: list of T): list of T;
-       concat:    fn[T](l1: list of T, l2: list of T): list of T;
-       delete:    fn[T](x: T, l: list of T): list of T
-                    for { T => eq:  fn(a, b: T): int; };
-       find:      fn[T](x: T, l: list of T): list of T
-                    for { T => eq:  fn(a, b: T): int; };
-       ismember:  fn[T](x: T, l: list of T): int
-                    for { T =>  eq: fn(a, b: T): int; };
-       last:      fn[T](l: list of T): T;
-       pair:      fn[T1, T2](l1: list of T1, l2: list of T2):
-                    list of (T1, T2);
-       reverse:   fn[T](l: list of T): list of T;
-       unpair:    fn[T1, T2](l: list of (T1, T2)):
-                    (list of T1, list of T2);
+The  module provides operations on lists of type T, which may
+be any reference type, or string.  Reference types are array,
+chan,  list,  module,  and  ref  adt.  None of the operations
+change their parameter lists: they always return a new list.
 
-       allsat:    fn[T](p: ref fn(x: T): int, l: list of T): int;
-       anysat:    fn[T](p: ref fn(x: T): int, l: list of T): int;
-       filter:    fn[T](p: ref fn(x: T): int, l: list of T): list of T;
-       map:       fn[T](f: ref fn(x: T): T, l: list of T): list of T;
-       partition: fn[T](p: ref fn(x: T): int, l: list of T):
-                    (list of T, list of T);
+First, there is a group of common list operations.
 
-DESCRIPTION
-       The  module provides operations on lists of type T, which may
-       be any reference type, or string.  Reference types are array,
-       chan,  list,  module,  and  ref  adt.  None of the operations
-       change their parameter lists: they always return a new list.
+Append returns a new list with the elements of l followed  by
+the element x.
 
-       First, there is a group of common list operations.
+Combine  returns  a new list that has the elements of both l1
+and l2 in no defined order.
 
-       Append returns a new list with the elements of l followed  by
-       the element x.
+Concat returns a new list that has the elements  of  l1  fol‐
+lowed by the elements of l2.
 
-       Combine  returns  a new list that has the elements of both l1
-       and l2 in no defined order.
+Delete  returns  a  new  list in which the first element of l
+that is equal to x has been removed (all others  remain).   X
+must  be  an adt reference type T with an operation T.eq that
+returns true (non-zero) if two values of type T  are  consid‐
+ered equal.
 
-       Concat returns a new list that has the elements  of  l1  fol‐
-       lowed by the elements of l2.
+Find  finds the first instance of x in list l and returns the
+tail of l with x at its head.  Find returns nil if  there  is
+no instance of x in l.
 
-       Delete  returns  a  new  list in which the first element of l
-       that is equal to x has been removed (all others  remain).   X
-       must  be  an adt reference type T with an operation T.eq that
-       returns true (non-zero) if two values of type T  are  consid‐
-       ered equal.
+Ismember  returns 1 if there is an element of l that is equal
+to x.
 
-       Find  finds the first instance of x in list l and returns the
-       tail of l with x at its head.  Find returns nil if  there  is
-       no instance of x in l.
+Last returns the value of the element at the end of  list  l.
+A run-time error occurs if l is nil.
 
-       Ismember  returns 1 if there is an element of l that is equal
-       to x.
+Pair  takes  two  lists  l1 and l2, and returns a new list of
+tuples (v1, v2) in which each element of l1 has  been  paired
+with  the  corresponding  element  of  l2.   A run-time error
+occurs if the lists are not equal in length.
 
-       Last returns the value of the element at the end of  list  l.
-       A run-time error occurs if l is nil.
+Reverse returns a new list containing the elements  of  l  in
+reverse order.
 
-       Pair  takes  two  lists  l1 and l2, and returns a new list of
-       tuples (v1, v2) in which each element of l1 has  been  paired
-       with  the  corresponding  element  of  l2.   A run-time error
-       occurs if the lists are not equal in length.
+Unpair takes a list of tuples (v1, v2) and returns a tuple of
+lists (l1, l2) where l1 contains the first  element  of  each
+tuple, and l2 contains the second element of each tuple.
 
-       Reverse returns a new list containing the elements  of  l  in
-       reverse order.
+A  second group of operations applies a function f or a Bool‐
+ean predicate p to each element of  a  list  l,  returning  a
+transformed  list  or  a  Boolean  value.  A predicate p must
+return non-zero if its parameter value satisfies  its  condi‐
+tion, and must return zero if it does not.
 
-       Unpair takes a list of tuples (v1, v2) and returns a tuple of
-       lists (l1, l2) where l1 contains the first  element  of  each
-       tuple, and l2 contains the second element of each tuple.
+Allsat  returns 1 if all elements of l satisfy p, and returns
+0 otherwise.
 
-       A  second group of operations applies a function f or a Bool‐
-       ean predicate p to each element of  a  list  l,  returning  a
-       transformed  list  or  a  Boolean  value.  A predicate p must
-       return non-zero if its parameter value satisfies  its  condi‐
-       tion, and must return zero if it does not.
+Anysat returns 1 if any element of l satisfies p, and returns
+0 otherwise.
 
-       Allsat  returns 1 if all elements of l satisfy p, and returns
-       0 otherwise.
+Filter  returns  a new list containing only the elements of l
+that satisfy p.
 
-       Anysat returns 1 if any element of l satisfies p, and returns
-       0 otherwise.
+Map returns a new list in which each element of  l  has  been
+transformed by f (ie, if l is e0::e1::...  then the result is
+f(e0)::f(e1)::...).
 
-       Filter  returns  a new list containing only the elements of l
-       that satisfy p.
+Partition returns a tuple of lists (l1, l2) of lists where l1
+contains all elements of l that satisfy p and l2 contains all
+elements of l that do not satisfy p.
 
-       Map returns a new list in which each element of  l  has  been
-       transformed by f (ie, if l is e0::e1::...  then the result is
-       f(e0)::f(e1)::...).
+== source
+/appl/lib/lists.b
 
-       Partition returns a tuple of lists (l1, l2) of lists where l1
-       contains all elements of l that satisfy p and l2 contains all
-       elements of l that do not satisfy p.
+== bugs
+The current implementation of polymorphism is limited to ref‐
+erence  types  and  strings, which in turn limits use of this
+module.
 
-SOURCE
-       /appl/lib/lists.b
-
-BUGS
-       The current implementation of polymorphism is limited to ref‐
-       erence  types  and  strings, which in turn limits use of this
-       module.
-
-                                                            LISTS(2)

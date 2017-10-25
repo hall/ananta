@@ -1,32 +1,14 @@
+= Native Kernel Debugging with Acid
+Tad Hunt <tad@plan9.bell-labs.com>
 
 
+== Introduction
 
-
-
-
-
-
-
-
-`"\\$1("` "\fI\\$2\fP\f(CW)\fP"
-
-
-Native Kernel Debugging with Acid
-
-Tad Hunt
-tad@plan9.bell-labs.com
-
-Lucent Technologies Inc
-
-(Revised 22 May 2000 by Vita Nuova)
-
-Introduction
-
-This tutorial provides an introduction to the Acid debugger. It assumes that you are familiar with the features of a typical source-level debugger. The Acid debugger is built round a command language with a syntax similar to C.
-This tutorial is not an
-introduction to Acid as a whole, but
-offers a brief tour
-of the basic built in and standard library functions,
+This tutorial provides an introduction to the Acid debugger.
+It assumes that you are familiar with the features of a typical source-level debugger.
+The Acid debugger is built around a command language with a syntax similar to C.
+This tutorial is not an introduction to Acid as a whole,
+but offers a brief tour of the basic built in and standard library functions,
 especially those needed for debugging native Inferno kernels on a target board.
 
 Acid was originally developed by Phil Winterbottom
@@ -34,12 +16,12 @@ to help debug multi-threaded programs in
 the concurrent language Alef, and provide more sophisticated
 debugging for C programs.
 In the paper
-_"Acid:_ A Debugger Built From a Language" ,
+_Acid: A Debugger Built From a Language_,
 Winterbottom
 discusses Acid's design, including some worked examples of unusual
 applications of Acid to find memory leaks and assist code coverage analysis.
 Following that is the
-_"Acid_ Reference Manual" ,
+_Acid_ Reference Manual_,
 also by Phil Winterbottom,
 which gives a more precise specification of the Acid debugging language and its libraries.
 

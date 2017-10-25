@@ -1,24 +1,8 @@
+= Acid Reference Manual
+Phil Winterbottom <philw@plan9.bell-labs.com>
 
 
-
-
-
-
-
-
-Acid Reference Manual
-
-Phil Winterbottom
-philw@plan9.bell-labs.com
-
-\l'1i'
-
-Previously appeared with minor differences as the
-``Acid Manual'' in
-_"Plan_ 9 Programmer's Manual, Volume 2 (Second Edition)".
-
-
-Introduction
+== Introduction
 
 Acid is a general purpose, source level symbolic debugger.
 The debugger is built around a simple command language. 

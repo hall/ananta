@@ -1,21 +1,6 @@
+= Acid: A Debugger Built From A Language
+Phil Winterbottom
 
-Acid: A Debugger Built From A Language
-
-_"Phil_ Winterbottom"
-
-_"Lucent_ Technologies Inc"
-
-
-\l'1i'
-
-Originally appeared in
-
-Proc. of the Winter 1994 USENIX Conf.,
-
-pp. 211-222,
-San Francisco, CA;
-and subsequently in the
-_"Plan_ 9 Programmer's Manual, Volume 2 (Second Edition)" .
 
 Acid is an unusual source-level symbolic debugger for Plan 9. It is implemented
 as a language interpreter with specialized primitives that provide
@@ -32,7 +17,7 @@ debugging environment encourages new ways of reasoning about the way
 programs run and the conditions under which they fail.
 
 
-Introduction
+== Introduction
 
 The size and complexity
 of programs have increased in proportion to processor speed and memory but

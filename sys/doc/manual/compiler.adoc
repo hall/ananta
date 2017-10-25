@@ -1,93 +1,80 @@
 = Plan 9 C Compilers
 Ken Thompson
 
-
-This paper describes the overall structure and function of the Plan 9
-C compilers.  A more detailed implementation document for any one of
-the compilers is yet to be written.
+This paper describes the overall structure and function of the Plan 9 C compilers.
+A more detailed implementation document for any one of the compilers is yet to be written.
 
 
-Introduction
+== introduction
 
-There are many compilers in the series. Eight of the compilers (MIPS
-3000, SPARC, Intel 386, AMD64, Power PC, ARM, DEC Alpha, and Motorola
-68020) are considered active and are used to compile current versions
-of Plan 9 or Inferno.  Several others (Motorola 68000, Intel 960, AMD
-29000) have had only limited use, such as to program peripherals or
-experimental devices.
+There are many compilers in the series.
+Eight of the compilers (MIPS 3000, SPARC, Intel 386, AMD64, Power PC, ARM, DEC Alpha, and Motorola 68020)
+are considered active and are used to compile current versions of Plan 9 or Inferno.
+Several others (Motorola 68000, Intel 960, AMD 29000) have had only limited use,
+such as to program peripherals or experimental devices.
 
-Structure
+
+== structure
 
 The compiler is a single program that produces an object file.
-Combined in the compiler are the traditional roles of preprocessor,
-lexical analyzer, parser, code generator, local optimizer, and first
-half of the assembler.  The object files are binary forms of assembly
-language, similar to what might be passed between the first and second
-passes of an assembler.
+Combined in the compiler are the traditional roles of preprocessor, lexical analyzer,
+parser, code generator, local optimizer, and first half of the assembler.
+The object files are binary forms of assembly language,
+similar to what might be passed between the first and second passes of an assembler.
 
-Object files and libraries are combined by a loader program to produce
-the executable binary.  The loader combines the roles of second half of
-the assembler, global optimizer, and loader.  The names of the compliers,
-loaders, and assemblers are as follows:
+Object files and libraries are combined by a loader program to produce the executable binary.
+The loader combines the roles of second half of the assembler, global optimizer, and loader.
+The names of the compliers, loaders, and assemblers are as follows:
 
+    kc kl ka  SPARC
+    qc ql     Power PC
+    vc vl va  MIPS
+    1c 1l     Motorola 68000
+    2c 2l     Motorola 68020
+    5c 5l     ARM 7500
+    6c 6l     Intel 960
+    7c 7l     DEC Alpha
+    8c 8l     Intel 386
+    9c 9l     AMD 29000
 
-
-\\$1	\f(CW\\$2\fP  \f(CW\\$3\fP  \f(CW\\$4\fP
-
-
-
-
-
-
-
-
-
-
-
-
-There is a further breakdown in the source of the compilers
-into object-independent and object-dependent parts.  All of the
-object-independent parts are combined into source files in the directory
-`/sys/src/cmd/cc` .  The object-dependent parts are collected in a
-separate directory for each compiler, for example `/sys/src/cmd/vc` .
-All of the code, both object-independent and object-dependent, is
-machine-independent and may be cross-compiled and executed on any of
-the architectures.
-
-== The Language
-
-The compiler implements ANSI C with some restrictions and extensions
-[ANSI90].  Most of the restrictions are due to personal preference,
-while most of the extensions were to help in the implementation of
-Plan 9.  There are other departures from the standard, particularly in
-the libraries, that are beyond the scope of this paper.
-
-== Register, volatile, const
-
-The keyword `register `is recognized syntactically but is semantically
-ignored.  Thus taking the address of a `register `variable is not
-diagnosed.  The keyword `volatile `disables all optimizations, in
-particular registerization, of the corresponding variable.  The keyword
-`const `generates warnings (if warnings are enabled by the compiler's
-`-w `option) of non-constant use of the variable, but does not affect
-the generated code.
-
-== The preprocessor
-
-The C preprocessor is probably the biggest departure from the ANSI
-standard.
-
-The preprocessor built into the Plan 9 compilers does not support `#if` ,
-although it does handle `#ifdef `and `#include` .  If it is necessary to
-be more standard, the source text can first be run through the separate
-ANSI C preprocessor, `cpp` .
-
-== Unnamed substructures
-
-The most important and most heavily used of the extensions is the
-declaration of an unnamed substructure or subunion.  For example:
+There is a further breakdown in the source of the compilers into object-independent and object-dependent parts.
+All of the object-independent parts are combined into source files in the directory `/sys/src/cmd/cc`.
+The object-dependent parts are collected in a separate directory for each compiler, for example `/sys/src/cmd/vc`.
+All of the code, both object-independent and object-dependent, 
+is machine-independent and may be cross-compiled and executed on any of the architectures.
 
 
+== the language
+
+The compiler implements ANSI C with some restrictions and extensions [ANSI90].
+Most of the restrictions are due to personal preference,
+while most of the extensions were to help in the implementation of Plan 9.
+There are other departures from the standard, particularly in the libraries, that are beyond the scope of this paper.
+
+
+=== register, volatile, const
+
+The keyword `register `is recognized syntactically but is semantically ignored.
+Thus taking the address of a `register `variable is not diagnosed.
+The keyword `volatile `disables all optimizations, in particular registerization, of the corresponding variable.
+The keyword `const `generates warnings (if warnings are enabled by the compiler's `-w `option)
+of non-constant use of the variable, but does not affect the generated code.
+
+
+=== the preprocessor
+
+The C preprocessor is probably the biggest departure from the ANSI standard.
+
+The preprocessor built into the Plan 9 compilers does not support `#if`,
+although it does handle `#ifdef `and `#include`.
+If it is necessary to be more standard,
+the source text can first be run through the separate ANSI C preprocessor, `cpp`.
+
+
+=== unnamed substructures
+
+The most important and most heavily used of the extensions is the declaration of an unnamed substructure or subunion.
+For example:
 
 	typedef
 	struct	lock
@@ -111,12 +98,10 @@ declaration of an unnamed substructure or subunion.  For example:
 	Lock*	lock;
 	Node*	node;
 
-
-The declaration of `Node `has an unnamed substructure of type `Lock
-`and an unnamed subunion.  One use of this feature allows references
-to elements of the subunit to be accessed as if they were in the
-outer structure.  Thus `node->dval `and `node->locked `are legitimate
-references.
+The declaration of `Node `has an unnamed substructure of type `Lock` and an unnamed subunion.
+One use of this feature allows references to elements of the subunit
+to be accessed as if they were in the outer structure.
+Thus `node->dval` and `node->locked `are legitimate references.
 
 When an outer structure is used in a context that is only legal for
 an unnamed substructure, the compiler promotes the reference to the
@@ -145,7 +130,8 @@ structure, the type name (it must be a `typedef` ) of the unnamed
 structure can be used as an identifier.  In our example, `&node->Lock
 `gives the address of the anonymous `Lock `structure.
 
-== Structure displays
+
+=== structure displays
 
 A structure cast followed by a list of expressions in braces is an
 expression with the type of the structure and elements assigned from the
@@ -154,7 +140,8 @@ the language.  It is common to see code like this:
 
     r = (Rectangle){point1, (Point){x,y+2}};
 
-== Initialization indexes
+
+=== initialization indexes
 
 In initializers of arrays, one may place a constant expression in square
 brackets before an initializer.  This causes the next initializer to
@@ -177,7 +164,8 @@ In the same way, individual structures members may be initialized in any
 order by preceding the initialization with `.tagname` .  Both forms allow
 an optional `=` , to be compatible with a proposed extension to ANSI C.
 
-== External register
+
+== external register
 
 The declaration `extern ``register `will dedicate a register to a variable
 on a global basis.  It can be used only under special circumstances.
@@ -191,12 +179,14 @@ used for two variables in the Plan 9 kernel, `u `and `m` .  `U `is a
 pointer to the structure representing the currently running process and
 `m `is a pointer to the per-machine data structure.
 
-== Long long
+
+=== long long
 
 The compilers accept `long ``long `as a basic type meaning 64-bit integer.
 On all of the machines this type is synthesized from 32-bit instructions.
 
-== Pragma
+
+=== pragma
 
 The compilers accept `#pragma ``lib `_libname_ and pass the library
 name string uninterpreted to the loader.  The loader uses the library
@@ -237,13 +227,15 @@ says that the `print `format verb `s `processes an argument of type
 this information to report type violations in the arguments to `print` ,
 `error` , and similar routines.
 
-== Object module conventions
+
+== object module conventions
 
 The overall conventions of the runtime environment are important to
 runtime efficiency.  In this section, several of these conventions
 are discussed.
 
-== Register saving
+
+=== Register saving
 
 In the Plan 9 compilers, the caller of a procedure saves the registers.
 With caller-saves, the leaf procedures can use all the registers and
@@ -265,7 +257,8 @@ faster.  Since this is a potential security hole, and can lead to
 non-determinism, the system may eventually save the registers on entry,
 or more likely clear the registers on return.
 
-== Calling convention
+
+=== calling convention
 
 Older C compilers maintain a frame pointer, which is at a known constant
 offset from the stack pointer within each function.  For machines where
@@ -277,7 +270,8 @@ the stack pointer.
 
 On some architectures, the first argument to a subroutine is passed in a register.
 
-== Functions returning structures
+
+=== functions returning structures
 
 Structures longer than one word are awkward to implement since they do
 not fit in registers and must be passed around in memory.  Functions that
@@ -299,13 +293,15 @@ There is also a danger of calling a function that returns a structure
 without declaring it as such.  With ANSI C function prototypes, this
 error need never occur.
 
-== Implementation
+
+== implementation
 
 The compiler is divided internally into four machine-independent passes,
 four machine-dependent passes, and an output pass.  The next nine sections
 describe each pass in order.
 
-== Parsing
+
+=== parsing
 
 The first pass is a YACC-based parser [Joh79].  Declarations are
 interpreted immediately, building a block structured symbol table.
@@ -317,19 +313,22 @@ The input stream of the parser is a pushdown list of input activations.
 The preprocessor expansions of macros and `#include `are implemented
 as pushdowns.  Thus there is no separate pass for preprocessing.
 
-== Typing
+
+=== typing
 
 The next pass distributes typing information to every node of the tree.
 Implicit operations on the tree are added, such as type promotions and
 taking the address of arrays and functions.
 
-== Machine-independent optimization
+
+=== machine-independent optimization
 
 The next pass performs optimizations and transformations of the tree,
 such as converting `&*x `and `*&x `into `x` .  Constant expressions are
 converted to constants in this pass.
 
-== Arithmetic rewrites
+
+=== arithmetic rewrites
 
 This is another machine-independent optimization.  Subtrees of add,
 subtract, and multiply of integers are rewritten for easier compilation.
@@ -337,7 +336,8 @@ The major transformation is factoring: `4+8*a+16*b+5 `is transformed into
 `9+8*(a+2*b)` .  Such expressions arise from address manipulation and
 array indexing.
 
-== Addressability
+
+=== addressability
 
 This is the first of the machine-dependent passes.  The addressability
 of a processor is defined as the set of expressions that is legal in the
@@ -398,7 +398,8 @@ subtrees is marked with the maximum mark of its subtrees.  The actual
 values of the marks are not too important, but the relative values are.
 The goal is to compile the harder (larger mark) subtree first.
 
-== Code generation
+
+=== code generation
 
 Code is generated by recursive descent.  The Sethi-Ullman complexity
 completely guides the order.  The addressability defines the leaves.
@@ -422,7 +423,8 @@ this part of a compiler with a machine description.  Since this code
 generator is so small (less than 500 lines of C) and easy, it hardly
 seems worth the effort.
 
-== Registerization
+
+=== registerization
 
 Up to now, the compiler has operated on syntax trees that are roughly
 equivalent to the original source language.  The previous pass has
@@ -465,7 +467,8 @@ Most of the code in the registerization pass is machine-independent.
 The major machine-dependency is in examining a machine instruction to
 ask if it sets or references a variable.
 
-== Machine code optimization
+
+=== machine code optimization
 
 The next pass walks the machine code for opportunistic optimizations.
 For the most part, this is highly specific to a particular processor.
@@ -476,7 +479,7 @@ two patterns that are repetitively matched and replaced until no more
 matches are found.  The first tries to remove ``move'' instructions by
 relabeling variables.
 
-When a ``move'' instruction is encountered, if the destination variable is
+When a 'move' instruction is encountered, if the destination variable is
 set before the source variable is referenced, then all of the references
 to the destination variable can be renamed to the source and the ``move''
 can be deleted.  This transformation uses the reverse data flow set up
@@ -486,13 +489,13 @@ An example of this pattern is depicted in the following table.
 The pattern is in the left column and the replacement action is in the
 right column.
 
-	MOVE	a->b		\fR(remove)\fP
+	MOVE	a->b		(remove)
 
-	(sequence with no mention of \f(CWa\fP)
+	(sequence with no mention of `a`)
 
 	USE	b		USE	a
 
-	(sequence with no mention of \f(CWa\fP)
+	(sequence with no mention of `a`)
 
 	SET	b		SET	b
 
@@ -514,11 +517,11 @@ pattern is in the left column and the rewrite is in the right column.
 
 	SET	a		SET	b
 
-	(sequence with no use of \f(CWb\fP)
+	(sequence with no use of `b`)
 
 	USE	a		USE	b
 
-	(sequence with no use of \f(CWb\fP)
+	(sequence with no use of `b`)
 
 	MOVE	a->b		MOVE	b->a
 
@@ -531,7 +534,8 @@ detect and remove redundant instructions.  Often, a fine candidate for
 registerization is rejected because of the cost of instructions that
 are later removed.
 
-== Writing the object file
+
+=== writing the object file
 
 The last pass walks the internal assembly language and writes the object
 file.  The object file is reduced in size by about a factor of three
@@ -540,7 +544,8 @@ object file format is that it is independent of the compiling machine.
 All integer and floating numbers in the object code are converted to
 known formats and byte orders.
 
-== The loader
+
+== the loader
 
 The loader is a multiple pass program that reads object files and
 libraries and produces an executable binary.  The loader also does
@@ -594,20 +599,22 @@ The name and absolute line number of all `#include `files is also placed
 in the symbol table so that the debuggers can associate object code to
 source files.
 
-== Performance
+
+== performance
 
 The following is a table of the source size of the MIPS compiler.
 
-	lines	module
-	\0509	machine-independent headers
-	1070	machine-independent YACC source
-	6090	machine-independent C source
+|===
+|lines |module
 
-	\0545	machine-dependent headers
-	6532	machine-dependent C source
-
-	\0298	loader headers
-	5215	loader C source
+|509   |machine-independent headers
+|1070  |machine-independent YACC source
+|6090  |machine-independent C source
+|545   |machine-dependent headers
+|6532  |machine-dependent C source
+|298   |loader headers
+|5215  |loader C source
+|===
 
 The following table shows timing of a test program that plays checkers,
 running on a MIPS R4000.  The test program is 26 files totaling 12600
@@ -617,25 +624,25 @@ were done with the Plan 9 operating system; the other tests were done on
 the vendor's operating system.  The hardware was identical in both cases.
 The optimizer in the vendor's compiler is reputed to be extremely good.
 
-	\0\04.49s	Plan 9 \f(CWvc\fP \f(CW-N\fP compile time (opposite of \f(CW-O\fP)
-	\0\01.72s	Plan 9 \f(CWvc\fP \f(CW-N\fP load time
-	148.69s	Plan 9 \f(CWvc\fP \f(CW-N\fP run time
+	4.49s::   Plan 9 `vc -N` compile time (opposite of `-O`)
+	1.72s::   Plan 9 `vc -N` load time
+	148.69s:: Plan 9 `vc -N` run time
 
-	\015.07s	Plan 9 \f(CWvc\fP compile time (\f(CW-O\fP implicit)
-	\0\01.66s	Plan 9 \f(CWvc\fP load time
-	\089.96s	Plan 9 \f(CWvc\fP run time
+	15.07s::  Plan 9 `vc` compile time (`-O` implicit)
+	1.66s::   Plan 9 `vc` load time
+	89.96s::  Plan 9 `vc` run time
 
-	\014.83s	vendor \f(CWcc\fP compile time
-	\0\00.38s	vendor \f(CWcc\fP load time
-	104.75s	vendor \f(CWcc\fP run time
+	14.83s::  vendor `cc` compile time
+	0.38s::   vendor `cc` load time
+	104.75s:: vendor `cc` run time
 
-	\043.59s	vendor \f(CWcc\fP \f(CW-O\fP compile time
-	\0\00.38s	vendor \f(CWcc\fP \f(CW-O\fP load time
-	\076.19s	vendor \f(CWcc\fP \f(CW-O\fP run time
+	43.59s::  vendor `cc -O` compile time
+	0.38s::   vendor `cc -O` load time
+	76.19s::  vendor `cc -O` run time
 
-	\0\08.19s	vendor \f(CWcc\fP \f(CW-O3\fP compile time
-	\035.97s	vendor \f(CWcc\fP \f(CW-O3\fP load time
-	\071.16s	vendor \f(CWcc\fP \f(CW-O3\fP run time
+	8.19s::   vendor `cc -O3` compile time
+	35.97s::  vendor `cc -O3` load time
+	71.16s::  vendor `cc -O3` run time
 
 To compare the Intel compiler, a program that is about 40% bit
 manipulation and about 60% single precision floating point was run on the
@@ -644,52 +651,41 @@ version 10.0, in 16-bit mode and once under Plan 9 in 32-bit mode.
 The Plan 9 execution time was 27 sec while the Windows execution time
 was 31 sec.
 
-== Conclusions
 
-The new compilers compile quickly, load slowly, and produce medium quality
-object code.  The compilers are relatively portable, requiring but a
-couple of weeks' work to produce a compiler for a different computer.
-For Plan 9, where we needed several compilers with specialized features
-and our own object formats, this project was indispensable.  It is also
-necessary for us to be able to freely distribute our compilers with the
-Plan 9 distribution.
+== conclusions
 
-Two problems have come up in retrospect.  The first has to do with
-the division of labor between compiler and loader.  Plan 9 runs on
-multi-processors and as such compilations are often done in parallel.
+The new compilers compile quickly, load slowly, and produce medium quality object code.
+The compilers are relatively portable,
+requiring but a couple of weeks' work to produce a compiler for a different computer.
+For Plan 9, where we needed several compilers with specialized features and our own object formats,
+this project was indispensable.
+It is also necessary for us to be able to freely distribute our compilers with the Plan 9 distribution.
+
+Two problems have come up in retrospect.
+The first has to do with the division of labor between compiler and loader.
+Plan 9 runs on multi-processors and as such compilations are often done in parallel.
 Unfortunately, all compilations must be complete before loading can begin.
-The load is then single-threaded.  With this model, any shift of work
-from compile to load results in a significant increase in real time.
-The same is true of libraries that are compiled infrequently and loaded
-often.  In the future, we may try to put some of the loader work back
-into the compiler.
+The load is then single-threaded.
+With this model, any shift of work from compile to load results in a significant increase in real time.
+The same is true of libraries that are compiled infrequently and loaded often.
+In the future, we may try to put some of the loader work back into the compiler.
 
-The second problem comes from the various optimizations performed over
-several passes.  Often optimizations in different passes depend on each
-other.  Iterating the passes could compromise efficiency, or even loop.
+The second problem comes from the various optimizations performed over several passes.
+Often optimizations in different passes depend on each other.
+Iterating the passes could compromise efficiency, or even loop.
 We see no real solution to this problem.
 
-== References
 
-[Aho87] A. V. Aho, R. Sethi, and J. D. Ullman, Compilers \- Principles,
-Techniques, and Tools, Addison Wesley, Reading, MA, 1987.
+== references
 
-[ANSI90] \f2American National Standard for Information Systems \-
-Programming Language C\f1, American National Standards Institute, Inc.,
-New York, 1990.
+[Aho87] A. V. Aho, R. Sethi, and J. D. Ullman, _Compilers - Principles, Techniques, and Tools_, Addison Wesley, Reading, MA, 1987.
 
-[Dav91] J. W. Davidson and D. B. Whalley, ``Methods for Saving and
-Restoring Register Values across Function Calls'', Software\-Practice
-and Experience, Vol 21(2), pp. 149-165, February 1991.
+[ANSI90] _American National Standard for Information Systems - Programming Language C_, American National Standards Institute, Inc., New York, 1990.
 
-[Joh79] S. C. Johnson, ``YACC \- Yet Another Compiler Compiler'', UNIX
-Programmer's Manual, Seventh Ed., Vol. 2A, AT&T Bell Laboratories,
-Murray Hill, NJ, 1979.
+[Dav91] J. W. Davidson and D. B. Whalley, 'Methods for Saving and Restoring Register Values across Function Calls', _Software - Practice and Experience_, Vol 21(2), pp. 149-165, February 1991.
 
-[Set70] R. Sethi and J. D. Ullman, ``The Generation of Optimal Code for
-Arithmetic Expressions'', Journal of the ACM, Vol 17(4), pp. 715-728,
-1970.
+[Joh79] S. C. Johnson, 'YACC - Yet Another Compiler Compiler', _UNIX Programmer's Manual, Seventh Ed._, Vol. 2A, AT&T Bell Laboratories, Murray Hill, NJ, 1979.
 
-[Szy78] T. G. Szymanski, ``Assembling Code for Machines with
-Span-dependent Instructions'', Communications of the ACM, Vol 21(4),
-pp. 300-308, 1978.
+[Set70] R. Sethi and J. D. Ullman, 'The Generation of Optimal Code for Arithmetic Expressions', _Journal of the ACM_, Vol 17(4), pp. 715-728, 1970.
+
+[Szy78] T. G. Szymanski, 'Assembling Code for Machines with Span-dependent Instructions', _Communications of the ACM_, Vol 21(4), pp. 300-308, 1978.

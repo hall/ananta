@@ -1,38 +1,31 @@
-VACFS(4)              Kernel Interfaces Manual              VACFS(4)
+= vacfs: mount venti archive
 
-NAME
-       vacfs - mount venti archive
+    vacfs [ -Ddp ] [ -a addr ] [vac:score]
 
-SYNOPSIS
-       vacfs [ -Ddp ] [ -a addr ] [vac:score]
+Vacfs  makes  the  contents of a venti archive available over
+styx.  Standard input is used for reading  and  writing  styx
+messages.   If  score is not specified, vacfs serves multiple
+venti archives.  In this case the  root  directory  lists  no
+files,  but  walking to a directory score opens the venti ar‐
+chive with that score.  Note that the vacfs does not  support
+writing.
 
-DESCRIPTION
-       Vacfs  makes  the  contents of a venti archive available over
-       styx.  Standard input is used for reading  and  writing  styx
-       messages.   If  score is not specified, vacfs serves multiple
-       venti archives.  In this case the  root  directory  lists  no
-       files,  but  walking to a directory score opens the venti ar‐
-       chive with that score.  Note that the vacfs does not  support
-       writing.
+-D::     Print styx trace messages.
 
-       -D     Print styx trace messages.
+-d::     Print debug messages.
 
-       -d     Print debug messages.
+-p::     Disable permission checking.
 
-       -p     Disable permission checking.
+-a address::
+       Dial address instead of the default venti server.
 
-       -a address
-              Dial address instead of the default venti server.
 
-SOURCE
-       /appl/cmd/vacfs.b
+== related
 
-SEE ALSO
-       vacget(1), vacput(1), vcache(1), venti(2), ventisrv(8)
+    vacget(1), vacput(1), vcache(1), venti(2), ventisrv(8)
 
-BUGS
-       Vacfs needs more testing.
-       When  the  venti  connection  is  broken,  directories appear
-       empty.
 
-                                                            VACFS(4)
+== bugs
+
+Vacfs needs more testing.
+When  the  venti  connection  is  broken,  directories appear empty.

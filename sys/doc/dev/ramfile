@@ -1,40 +1,34 @@
-RAMFILE(4)            Kernel Interfaces Manual            RAMFILE(4)
+= ramfile: synthesise file
 
-NAME
-       ramfile - synthesise file
+    ramfile file [ data ]
 
-SYNOPSIS
-       ramfile file [ data ]
+Ramfile  puts  a  virtual file in the name space at file, and
+services file requests on it.  Data written to  the  file  is
+stored  in  ramfile's memory; read requests return the previ‐
+ously stored data.  If the optional  data  argument  is  pro‐
+vided, the file will initially contain that text.  The parent
+directory of file must exist; ramfile creates a  union  mount
+on  that  directory, and if file previously existed, the syn‐
+thesised file will hide it.
 
-DESCRIPTION
-       Ramfile  puts  a  virtual file in the name space at file, and
-       services file requests on it.  Data written to  the  file  is
-       stored  in  ramfile's memory; read requests return the previ‐
-       ously stored data.  If the optional  data  argument  is  pro‐
-       vided, the file will initially contain that text.  The parent
-       directory of file must exist; ramfile creates a  union  mount
-       on  that  directory, and if file previously existed, the syn‐
-       thesised file will hide it.
+Ramfile uses sys-file2chan(2), which  simplifies  implementa‐
+tion  but  prevents  it  from  knowing when the file has been
+truncated.  Instead, it truncates the file on  any  write  to
+the  start  of the file (offset 0), allowing cp(1) to copy in
+new contents, and text editors to edit it.  Indeed, the  file
+will be usable by all applications that do not rely on updat‐
+ing parts of the file in place, or if they do, do not  update
+the start of the file.
 
-       Ramfile uses sys-file2chan(2), which  simplifies  implementa‐
-       tion  but  prevents  it  from  knowing when the file has been
-       truncated.  Instead, it truncates the file on  any  write  to
-       the  start  of the file (offset 0), allowing cp(1) to copy in
-       new contents, and text editors to edit it.  Indeed, the  file
-       will be usable by all applications that do not rely on updat‐
-       ing parts of the file in place, or if they do, do not  update
-       the start of the file.
 
-SOURCE
-       /appl/cmd/ramfile.b
+== related
 
-SEE ALSO
-       bind(1), sys-file2chan(2), srv(3), memfs(4)
+    bind(1), sys-file2chan(2), srv(3), memfs(4)
 
-BUGS
-       Ramfile  cannot  tell  when  the path has been unmounted; the
-       only option is to kill(1) it.
-       The file always appears to have zero length  to  sys-stat(2),
-       which prevents loading a Dis file from it.
 
-                                                          RAMFILE(4)
+== bugs
+
+Ramfile  cannot  tell  when  the path has been unmounted; the
+only option is to kill(1) it.
+The file always appears to have zero length  to  sys-stat(2),
+which prevents loading a Dis file from it.

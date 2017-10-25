@@ -1,39 +1,33 @@
-EXPORT(4)             Kernel Interfaces Manual             EXPORT(4)
+= export: export name space on a connection
 
-NAME
-       export - export name space on a connection
+    export [ -a ] dir [ file ]
 
-SYNOPSIS
-       export [ -a ] dir [ file ]
+Export  calls sys-export(2) to serve the name space rooted at
+dir over a connection to a 9P (Styx)  client.   Export  opens
+the  connection on the given file, or uses the standard input
+by default.  It returns when the client  closes  the  connec‐
+tion.   If  the -a option is given, however, export starts an
+Inferno kernel process to serve the name  space  and  returns
+immediately.   Export  serves  the current name space without
+forking it; changes made to it will be visible to clients.
 
-DESCRIPTION
-       Export  calls sys-export(2) to serve the name space rooted at
-       dir over a connection to a 9P (Styx)  client.   Export  opens
-       the  connection on the given file, or uses the standard input
-       by default.  It returns when the client  closes  the  connec‐
-       tion.   If  the -a option is given, however, export starts an
-       Inferno kernel process to serve the name  space  and  returns
-       immediately.   Export  serves  the current name space without
-       forking it; changes made to it will be visible to clients.
+Export starts serving 9P immediately;  it  assumes  that  the
+connection  has  been  authenticated  if required.  Export is
+typically called via listen(1), which  can  authenticate  the
+connection.
 
-       Export starts serving 9P immediately;  it  assumes  that  the
-       connection  has  been  authenticated  if required.  Export is
-       typically called via listen(1), which  can  authenticate  the
-       connection.
 
-EXAMPLE
-       Start  a  background  process  to serve the name space on the
-       serial port.
+== example
 
-              export / /dev/eia0 &
+Start  a  background  process  to serve the name space on the
+serial port.
 
-       Although useful when bootstrapping a system, this  is  unsafe
-       unless a transport protocol is run on the connection.
+    export / /dev/eia0 &
 
-SOURCE
-       /appl/cmd/export.b
+Although useful when bootstrapping a system, this  is  unsafe
+unless a transport protocol is run on the connection.
 
-SEE ALSO
-       cpu(1), listen(1), dial(2), sys-export(2), intro(5)
 
-                                                           EXPORT(4)
+== related
+
+    bin/cpu, bin/listen, sys/dial, sys/sys-export, intro(5)

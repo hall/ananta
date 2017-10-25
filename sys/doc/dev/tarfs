@@ -1,28 +1,20 @@
-TARFS(4)              Kernel Interfaces Manual              TARFS(4)
+= tarfs: mount tar archive
 
-NAME
-       tarfs - mount tar archive
+    tarfs [ -ab ] [ -p ] tarfile mountpt
 
-SYNOPSIS
-       tarfs [ -ab ] [ -p ] tarfile mountpt
+Tarfs  makes  the  contents  of  the  directories  and  files
+archived in the given Unix/POSIX tar archive tarfile  visible
+in  the  name space under mountpt.  They can then be accessed
+in an obvious way by other commands such as ls(1) and  cp(1).
+Only  read  access  is  supported.   User and group names are
+taken from the ``ustar'' headers  when  present.   Otherwise,
+the  numeric  user  and  group  IDs  are used.  The -a and -b
+options cause the tarfile's name space to be placed after  or
+before  the  current  contents  of mountpt; the default is to
+replace that directory's contents.  Option -p causes  permis‐
+sions in the tar file to be discarded.
 
-DESCRIPTION
-       Tarfs  makes  the  contents  of  the  directories  and  files
-       archived in the given Unix/POSIX tar archive tarfile  visible
-       in  the  name space under mountpt.  They can then be accessed
-       in an obvious way by other commands such as ls(1) and  cp(1).
-       Only  read  access  is  supported.   User and group names are
-       taken from the ``ustar'' headers  when  present.   Otherwise,
-       the  numeric  user  and  group  IDs  are used.  The -a and -b
-       options cause the tarfile's name space to be placed after  or
-       before  the  current  contents  of mountpt; the default is to
-       replace that directory's contents.  Option -p causes  permis‐
-       sions in the tar file to be discarded.
 
-SOURCE
-       /appl/cmd/tarfs.b
+== related
 
-SEE ALSO
-       gettar(1), archfs(4), intro(5)
-
-                                                            TARFS(4)
+    gettar(1), archfs(4), intro(5)

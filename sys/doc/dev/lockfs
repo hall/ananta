@@ -1,44 +1,38 @@
-LOCKFS(4)             Kernel Interfaces Manual             LOCKFS(4)
+= lockfs: exclusive access file server
 
-NAME
-       lockfs - exclusive access file server
+    lockfs [ -A ] [ -a alg ]... [ -p addr ] dir [ mountpoint ]
 
-SYNOPSIS
-       lockfs [ -A ] [ -a alg ]... [ -p addr ] dir [ mountpoint ]
+Lockfs  acts  as  a filesystem layer above an existing names‐
+pace, allowing multiple-reader, exclusive  writer  access  to
+the  files therein. Opening a file served by lockfs obtains a
+lock on the file, or blocks until a  lock  can  be  obtained.
+Lockfs  serves  a  single-level directory that initially con‐
+tains the files in dir.  If the -p option is provided, lockfs
+will  listen for incoming connections on addr, authenticating
+them as required.  Each -a argument  provides  an  acceptable
+algorithm  to run on the connection.  The list of all algs is
+passed to server (see security-auth(2)).  If no -a  arguments
+are  given,  -a  none is assumed.  If the -A option is given,
+then no authentication will be performed.
 
-DESCRIPTION
-       Lockfs  acts  as  a filesystem layer above an existing names‐
-       pace, allowing multiple-reader, exclusive  writer  access  to
-       the  files therein. Opening a file served by lockfs obtains a
-       lock on the file, or blocks until a  lock  can  be  obtained.
-       Lockfs  serves  a  single-level directory that initially con‐
-       tains the files in dir.  If the -p option is provided, lockfs
-       will  listen for incoming connections on addr, authenticating
-       them as required.  Each -a argument  provides  an  acceptable
-       algorithm  to run on the connection.  The list of all algs is
-       passed to server (see security-auth(2)).  If no -a  arguments
-       are  given,  -a  none is assumed.  If the -A option is given,
-       then no authentication will be performed.
+If the -p option is not given, the lockfs file system will be
+mounted on mountpoint, or dir if mountpoint is not given.
 
-       If the -p option is not given, the lockfs file system will be
-       mounted on mountpoint, or dir if mountpoint is not given.
 
-EXAMPLE
-       Run a lock server guarding access to /lib/datafiles:
+== example
 
-              lockfs -p 'tcp!*!32454' /lib/datafiles
+Run a lock server guarding access to /lib/datafiles:
 
-       Mount the above server (where locksrv was originally run on a
-       server named machine.
+       lockfs -p 'tcp!*!32454' /lib/datafiles
 
-              mount -c tcp!machine!32454 /n/remote
+Mount the above server (where locksrv was originally run on a
+server named machine.
 
-SOURCE
-       /appl/cmd/lockfs.b
+       mount -c tcp!machine!32454 /n/remote
 
-BUGS
-       There's no way to break a lock held by a malingering process.
 
-       Should probably support multi-level directories.
+== bugs
 
-                                                           LOCKFS(4)
+There's no way to break a lock held by a malingering process.
+
+Should probably support multi-level directories.

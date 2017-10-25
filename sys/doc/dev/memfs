@@ -1,47 +1,41 @@
-MEMFS(4)              Kernel Interfaces Manual              MEMFS(4)
+= memfs: mount a heap based filesystem
 
-NAME
-       memfs - mount a heap based filesystem
+    memfs [-s] [-rab] [-m size] [mountpoint]
 
-SYNOPSIS
-       memfs [-s] [-rab] [-m size] [mountpoint]
+Memfs  mounts  a  newly  created heap-based filesystem on the
+given mountpoint directory (default /tmp).
 
-DESCRIPTION
-       Memfs  mounts  a  newly  created heap-based filesystem on the
-       given mountpoint directory (default /tmp).
+The filesystem is entirely maintained in memory, no  external
+storage  is used.  File data is allocated in 512 byte blocks.
+If a maximum size is specified, the actual maximum is rounded
+down to the nearest whole number of blocks:
 
-       The filesystem is entirely maintained in memory, no  external
-       storage  is used.  File data is allocated in 512 byte blocks.
-       If a maximum size is specified, the actual maximum is rounded
-       down to the nearest whole number of blocks:
+       actualsize := (size / 512) * 512;
 
-              actualsize := (size / 512) * 512;
+The  root  of the filesystem is owned by the user who invoked
+memfs and is created with Read, Write and Execute permissions
+for  the  owner and Read and Execute permissions for everyone
+else (8r755).
 
-       The  root  of the filesystem is owned by the user who invoked
-       memfs and is created with Read, Write and Execute permissions
-       for  the  owner and Read and Execute permissions for everyone
-       else (8r755).
 
-OPTIONS
-       -s     Serve styx on file descriptor 0.  The  mountpoint  and
-              other mount options are ignored.
+== options
 
-       -r     The  default  option.   The  old  mountpoint directory
-              becomes a union directory consisting of just the  root
-              of the new filesystem.
+-s::     Serve styx on file descriptor 0.  The  mountpoint  and
+       other mount options are ignored.
 
-       -a     Add  the  root of the new filesystem to the end of the
-              union directory represented by the  mountpoint  direc‐
-              tory.
+-r::     The  default  option.   The  old  mountpoint directory
+       becomes a union directory consisting of just the  root
+       of the new filesystem.
 
-       -b     Add the root of the new filesystem to the beginning of
-              the union  directory  represented  by  the  mountpoint
-              directory.
+-a::     Add  the  root of the new filesystem to the end of the
+       union directory represented by the  mountpoint  direc‐
+       tory.
 
-SOURCE
-       /appl/cmd/memfs.b
+-b::     Add the root of the new filesystem to the beginning of
+       the union  directory  represented  by  the  mountpoint
+       directory.
 
-SEE ALSO
-       ramfile(4)
 
-                                                            MEMFS(4)
+== related
+
+    ramfile(4)

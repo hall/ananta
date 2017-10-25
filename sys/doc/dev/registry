@@ -1,142 +1,138 @@
-REGISTRY(4)           Kernel Interfaces Manual           REGISTRY(4)
+= registry, regquery: registration of services dynamically
 
-NAME
-       registry, regquery - registration of services dynamically
+    ndb/registry [ -f dbfile ]
 
-SYNOPSIS
-       ndb/registry [ -f dbfile ]
+    ndb/regquery [ -m mntpt ] [ -n ] [ attr value ] ...
 
-       ndb/regquery [ -m mntpt ] [ -n ] [ attr value ] ...
+Registry  is  a  file  server  that provides registration and
+location of services by their attributes where services  come
+and   go.   It  was  originally  intended  to  register  Grid
+resources but has much wider use.  Registry serves 9P on  its
+standard  input.  That can be mounted in the local name space
+(see below for an example), or served over a connection  (eg,
+via  listen(1)).   The  conventional  local  mount  point  is
+/mnt/registry, which is where registries(2) expects  to  find
+the  local  registry  by default.  There can, however, be any
+number of registries  active,  each  supporting  a  different
+group  of  users  and  services,  in different authentication
+domains.
 
-DESCRIPTION
-       Registry  is  a  file  server  that provides registration and
-       location of services by their attributes where services  come
-       and   go.   It  was  originally  intended  to  register  Grid
-       resources but has much wider use.  Registry serves 9P on  its
-       standard  input.  That can be mounted in the local name space
-       (see below for an example), or served over a connection  (eg,
-       via  listen(1)).   The  conventional  local  mount  point  is
-       /mnt/registry, which is where registries(2) expects  to  find
-       the  local  registry  by default.  There can, however, be any
-       number of registries  active,  each  supporting  a  different
-       group  of  users  and  services,  in different authentication
-       domains.
+Registry serves a one-level directory containing a  few  con‐
+trol  files  and  one  file  per registered service.  All the
+files are text files with similar format: zero or more  lines
+of  one  or  more  words,  separated by white space (blank or
+tab).  A word can be quoted, using single quotes in the style
+of sh(1), allowing it to contain white space or represent the
+empty string ''.  Within a quoted word, a single quote  char‐
+acter is represented by two adjacent ones.  (In programs, use
+String->quoted from string(2), or more simply the  %q  string
+format of sys-print(2) to quote strings appropriately.)
 
-       Registry serves a one-level directory containing a  few  con‐
-       trol  files  and  one  file  per registered service.  All the
-       files are text files with similar format: zero or more  lines
-       of  one  or  more  words,  separated by white space (blank or
-       tab).  A word can be quoted, using single quotes in the style
-       of sh(1), allowing it to contain white space or represent the
-       empty string ''.  Within a quoted word, a single quote  char‐
-       acter is represented by two adjacent ones.  (In programs, use
-       String->quoted from string(2), or more simply the  %q  string
-       format of sys-print(2) to quote strings appropriately.)
+The control files are:
 
-       The control files are:
+new::    A  text  file that is opened and written to register a
+       new service.  Opening new returns a file descriptor to
+       a  new but anonymous service file.  It must be written
+       to set its name and initial  description.   The  first
+       write contains one or more words:
 
-       new    A  text  file that is opened and written to register a
-              new service.  Opening new returns a file descriptor to
-              a  new but anonymous service file.  It must be written
-              to set its name and initial  description.   The  first
-              write contains one or more words:
+              svcname [ attr value ]..."
 
-                     svcname [ attr value ]..."
+       The first word, svcname, is the proposed service name.
+       The write returns an error if the name duplicates  any
+       existing  name.   Otherwise,  a  new file svcname will
+       appear in the directory.  The optional attribute value
+       pairs  form the initial service description.  The ser‐
+       vice is removed from the register by default when  the
+       file is closed.  To advertise a service without having
+       to hold open a file descriptor, include an attr  named
+       persist  with  non-zero  value;  the service will then
+       remain  registered  until  explicitly   removed   (see
+       below).
 
-              The first word, svcname, is the proposed service name.
-              The write returns an error if the name duplicates  any
-              existing  name.   Otherwise,  a  new file svcname will
-              appear in the directory.  The optional attribute value
-              pairs  form the initial service description.  The ser‐
-              vice is removed from the register by default when  the
-              file is closed.  To advertise a service without having
-              to hold open a file descriptor, include an attr  named
-              persist  with  non-zero  value;  the service will then
-              remain  registered  until  explicitly   removed   (see
-              below).
+index::  A  read-only  text  file  containing a list of all the
+       currently-registered services,  one  per  line.   Each
+       line  contains a sequence of words.  The first word is
+       the service name and the remaining  ones  are  paired:
+       attribute name then value.
 
-       index  A  read-only  text  file  containing a list of all the
-              currently-registered services,  one  per  line.   Each
-              line  contains a sequence of words.  The first word is
-              the service name and the remaining  ones  are  paired:
-              attribute name then value.
+find::   A  text  file  which  should be opened for reading and
+       writing.  Each write provides a set of attribute/value
+       pairs that acts as a filter, selecting only those ser‐
+       vices that possess all the given attributes  with  the
+       given values; the value "*" matches any value.  Subse‐
+       quent reads return a list of  services,  in  the  same
+       format  as  index,  but listing only the selected ser‐
+       vices.  The selection is made from those available  at
+       the time of the write.  There is a separate filter for
+       each open instance of find, so that several  processes
+       can  set different filters simultaneously.  (Note that
+       after the write, the file offset must be set  to  zero
+       using sys-seek(2) before reading.)
 
-       find   A  text  file  which  should be opened for reading and
-              writing.  Each write provides a set of attribute/value
-              pairs that acts as a filter, selecting only those ser‐
-              vices that possess all the given attributes  with  the
-              given values; the value "*" matches any value.  Subse‐
-              quent reads return a list of  services,  in  the  same
-              format  as  index,  but listing only the selected ser‐
-              vices.  The selection is made from those available  at
-              the time of the write.  There is a separate filter for
-              each open instance of find, so that several  processes
-              can  set different filters simultaneously.  (Note that
-              after the write, the file offset must be set  to  zero
-              using sys-seek(2) before reading.)
+event::  A  read-only text file that can be used to detect when
+       changes are made to the  registry.   Reading  from  it
+       blocks until a change is made. At that point, the read
+       completes and returns a string with a  newline  termi‐
+       nated  decimal  version number representing the number
+       of  changes  made  to  the  registry,  which   matches
+       Qid.vers for the registry directory.  Multiple changes
+       are coalesced into one report.
 
-       event  A  read-only text file that can be used to detect when
-              changes are made to the  registry.   Reading  from  it
-              blocks until a change is made. At that point, the read
-              completes and returns a string with a  newline  termi‐
-              nated  decimal  version number representing the number
-              of  changes  made  to  the  registry,  which   matches
-              Qid.vers for the registry directory.  Multiple changes
-              are coalesced into one report.
+A service file created by new may be read by anyone, but  may
+be  written only by its owner.  Each write must contain a set
+of attribute/value pairs, formatted as above, which adds  new
+attributes  to  the service description and changes the value
+of existing attributes.  The file remains until  the  service
+is  struck  off  the  register.   The  owner of a service can
+remove its registration at any time by  removing  the  corre‐
+sponding service file (eg, using rm(1) or sys-remove(2)).
 
-       A service file created by new may be read by anyone, but  may
-       be  written only by its owner.  Each write must contain a set
-       of attribute/value pairs, formatted as above, which adds  new
-       attributes  to  the service description and changes the value
-       of existing attributes.  The file remains until  the  service
-       is  struck  off  the  register.   The  owner of a service can
-       remove its registration at any time by  removing  the  corre‐
-       sponding service file (eg, using rm(1) or sys-remove(2)).
+Typically,  most  services  register  themselves dynamically,
+perhaps using their locations (eg, network address) as  their
+service  names.   (Registry  itself  does  not  interpret the
+name.)  The -f option causes registry to load initially a set
+of  static  service  descriptions  from  dbfile,  which is in
+attrdb(6) format.  The database entry for each  service  con‐
+tains  the  pair service=svcname, causing registry to make an
+entry for the given svcname with attribute/value  pairs  ini‐
+tialised from the rest of that database entry.  For example:
 
-       Typically,  most  services  register  themselves dynamically,
-       perhaps using their locations (eg, network address) as  their
-       service  names.   (Registry  itself  does  not  interpret the
-       name.)  The -f option causes registry to load initially a set
-       of  static  service  descriptions  from  dbfile,  which is in
-       attrdb(6) format.  The database entry for each  service  con‐
-       tains  the  pair service=svcname, causing registry to make an
-       entry for the given svcname with attribute/value  pairs  ini‐
-       tialised from the rest of that database entry.  For example:
+       service=net!click!1234
+            description='snapshot service' auth=none
 
-              service=net!click!1234
-                   description='snapshot service' auth=none
+Static  entries are regarded as persistent but can be removed
+explicitly by the registry owner.
 
-       Static  entries are regarded as persistent but can be removed
-       explicitly by the registry owner.
+Regquery looks for services in the registry mounted at  mntpt
+(default:   /mnt/registry)   that   match   all   the   given
+attribute/value pairs.  It prints the resulting list of  ser‐
+vices,  one  per  line.   If the -n option is given, regquery
+prints only the service name(s); otherwise it prints the ser‐
+vice  description as well.  If no attributes are given on the
+command line, regquery prompts for  successive  queries,  one
+per line, and prints each result.
 
-       Regquery looks for services in the registry mounted at  mntpt
-       (default:   /mnt/registry)   that   match   all   the   given
-       attribute/value pairs.  It prints the resulting list of  ser‐
-       vices,  one  per  line.   If the -n option is given, regquery
-       prints only the service name(s); otherwise it prints the ser‐
-       vice  description as well.  If no attributes are given on the
-       command line, regquery prompts for  successive  queries,  one
-       per line, and prints each result.
 
-EXAMPLE
-       Start  a  registry  that appears at the standard location for
-       local registries, /mnt/registry:
+== example
 
-              mount {ndb/registry} /mnt/registry
+Start  a  registry  that appears at the standard location for
+local registries, /mnt/registry:
 
-       Make that registry available to the network on  authenticated
-       connections:
+       mount {ndb/registry} /mnt/registry
 
-              listen -v 'tcp!*!registry' {export /mnt/registry&}
+Make that registry available to the network on  authenticated
+connections:
 
-SOURCE
-       /appl/cmd/ndb/registry.b
+    listen -v 'tcp!*!registry' {export /mnt/registry&}
 
-SEE ALSO
-       attrdb(2), registries(2)
 
-BUGS
-       It is not currently possible to have two values with the same
-       attribute name in the same service description.
+== related
 
-                                                         REGISTRY(4)
+    attrdb(2), registries(2)
+
+
+== bugs
+
+It is not currently possible to have two values with the same
+attribute name in the same service description.

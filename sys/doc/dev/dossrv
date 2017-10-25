@@ -1,52 +1,41 @@
-DOSSRV(4)             Kernel Interfaces Manual             DOSSRV(4)
+= dossrv, 9660srv: DOS/Windows and ISO 9660 file systems
 
-NAME
-       dossrv, 9660srv - DOS/Windows and ISO 9660 file systems
+   dossrv  [-v] [-s] [-F] [-c] [ -f devicefile ] [ -m mountpoint ] [ -S sectors/track ]
 
-SYNOPSIS
-       dossrv  [-v] [-s] [-F] [-c] [ -f devicefile ] [ -m mountpoint
-       ] [ -S sectors/track ]
+   9660srv [-rab] cdfile dir
 
-       9660srv [-rab] cdfile dir
+Dossrv makes the contents of a DOS/Windows file system  visi‐
+ble in the Inferno name space.  The options are:
 
-DESCRIPTION
-       Dossrv makes the contents of a DOS/Windows file system  visi‐
-       ble in the Inferno name space.  The options are:
+-v::     print  a  debugging  trace,  including 9P messages, on standard error
 
-       -v     print  a  debugging  trace,  including 9P messages, on
-              standard error
+-F::     display FAT information
 
-       -F     display FAT information
+-c::     display cluster data and I/O activity
 
-       -c     display cluster data and I/O activity
+-s::     standard ouput is connected to a client; serve that
 
-       -s     standard ouput is connected to a client; serve that
+-f devicefile::
+       the  DOS/Windows  file  system  image;   defaults   to
+       /dev/hd0disk.
 
-       -f devicefile
-              the  DOS/Windows  file  system  image;   defaults   to
-              /dev/hd0disk.
+-m mountpoint::
+       The  directory  where  the contents of the file system
+       should appear; defaults to /n/dos.
 
-       -m mountpoint
-              The  directory  where  the contents of the file system
-              should appear; defaults to /n/dos.
+-S sectors/track::
+       The number of sectors per track. The default is 9.
 
-       -S sectors/track
-              The number of sectors per track. The default is 9.
+9660srv  performs  a  similar  function  for  files  (notably
+CDROMs) in ISO9660 format, including the Rock Ridge extension
+and its Plan 9 variant.  It makes the contents of cdfile vis‐
+ible  in  the  name  space  at dir.  The options are those of
+bind(1): -r, to replace the contents of dir; -a,  to  make  a
+union  directory  with  the CD contents after the contents of
+dir; -b, to make a  union  directory  with  the  CD  contents
+before the contents of dir.
 
-       9660srv  performs  a  similar  function  for  files  (notably
-       CDROMs) in ISO9660 format, including the Rock Ridge extension
-       and its Plan 9 variant.  It makes the contents of cdfile vis‐
-       ible  in  the  name  space  at dir.  The options are those of
-       bind(1): -r, to replace the contents of dir; -a,  to  make  a
-       union  directory  with  the CD contents after the contents of
-       dir; -b, to make a  union  directory  with  the  CD  contents
-       before the contents of dir.
 
-SOURCE
-       /appl/cmd/dossrv.b
-       /appl/cmd/9660srv.b
+== bugs
 
-BUGS
-       Dossrv cannot handle all the FAT32 extensions.
-
-                                                           DOSSRV(4)
+Dossrv cannot handle all the FAT32 extensions.

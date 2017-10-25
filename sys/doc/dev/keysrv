@@ -1,71 +1,65 @@
-KEYSRV(4)             Kernel Interfaces Manual             KEYSRV(4)
+= keysrv: secret key server
 
-NAME
-       keysrv - secret key server
+    auth/keysrv
 
-SYNOPSIS
-       auth/keysrv
+Keysrv  is a file service run on a connection to an authenti‐
+cation server.  It allows a remote user to  change  a  secret
+stored  on  the  server  by  keyfs(4),  which  must have been
+started before keysrv, in a name space with  the  authentica‐
+tion data available under /mnt/keys.
 
-DESCRIPTION
-       Keysrv  is a file service run on a connection to an authenti‐
-       cation server.  It allows a remote user to  change  a  secret
-       stored  on  the  server  by  keyfs(4),  which  must have been
-       started before keysrv, in a name space with  the  authentica‐
-       tion data available under /mnt/keys.
+Keysrv serves a single file, secret, on a connection accessed
+through file descriptor 0 (ie, the standard  `input').   When
+invoked,  it  first  authenticates the connection using secu‐
+rity-auth(2), requiring the client to use sha1  and  rc4_256.
+If  authentication succeeds, keysrv exports a name space con‐
+taining a file secret.  The authentication ensures that  only
+a  user that possesses a valid certificate can connect to the
+service.
 
-       Keysrv serves a single file, secret, on a connection accessed
-       through file descriptor 0 (ie, the standard  `input').   When
-       invoked,  it  first  authenticates the connection using secu‐
-       rity-auth(2), requiring the client to use sha1  and  rc4_256.
-       If  authentication succeeds, keysrv exports a name space con‐
-       taining a file secret.  The authentication ensures that  only
-       a  user that possesses a valid certificate can connect to the
-       service.
+If the authenticated user (ie, the user name in the  verified
+certificate)   has  an  entry  in  /mnt/keys,  as  served  by
+keyfs(4), and that user has a non-empty secret, then the file
+secret  will accept reads and writes.  (Otherwise, every read
+or write returns an  appropriate  error.)   Every  successful
+read  returns  0 bytes; thus a read can be used to check that
+the user is known and has a secret key.  Each write  contains
+data of the following form:
 
-       If the authenticated user (ie, the user name in the  verified
-       certificate)   has  an  entry  in  /mnt/keys,  as  served  by
-       keyfs(4), and that user has a non-empty secret, then the file
-       secret  will accept reads and writes.  (Otherwise, every read
-       or write returns an  appropriate  error.)   Every  successful
-       read  returns  0 bytes; thus a read can be used to check that
-       the user is known and has a secret key.  Each write  contains
-       data of the following form:
+       oldhash [ newsecret ]
 
-              oldhash [ newsecret ]
+Oldhash  is the SHA1 hash (see keyring-sha1(2)) of the user's
+existing secret, as 20 hexadecimal digits.  If the  value  of
+oldhash  does  not match that of the stored secret, the write
+returns an error and suitable diagnostic.  Oldhash is option‐
+ally  followed by a newsecret, in clear text as a sequence of
+bytes (typically the secret as utf(6)), separated  from  old‐
+hash  by  a single space.  If the oldhash matches that of the
+secret currently stored, newsecret replaces  it.   The  write
+returns  an error if oldhash does not match the stored value,
+or if something else goes wrong.
 
-       Oldhash  is the SHA1 hash (see keyring-sha1(2)) of the user's
-       existing secret, as 20 hexadecimal digits.  If the  value  of
-       oldhash  does  not match that of the stored secret, the write
-       returns an error and suitable diagnostic.  Oldhash is option‐
-       ally  followed by a newsecret, in clear text as a sequence of
-       bytes (typically the secret as utf(6)), separated  from  old‐
-       hash  by  a single space.  If the oldhash matches that of the
-       secret currently stored, newsecret replaces  it.   The  write
-       returns  an error if oldhash does not match the stored value,
-       or if something else goes wrong.
+Keysrv can be invoked via listen(1):
 
-       Keysrv can be invoked via listen(1):
+       listen -t -A 'tcp!*!infkey' {auth/keysrv}
 
-              listen -t -A 'tcp!*!infkey' {auth/keysrv}
+Normally that is done automatically when starting an  authen‐
+tication service using svc/auth (see svc(8)).
 
-       Normally that is done automatically when starting an  authen‐
-       tication service using svc/auth (see svc(8)).
+Passwd(1)  dials  the  service, authenticates, and mounts the
+resulting connection on /mnt/keysrv, where  it  accesses  the
+secret file to change the secret.
 
-       Passwd(1)  dials  the  service, authenticates, and mounts the
-       resulting connection on /mnt/keysrv, where  it  accesses  the
-       secret file to change the secret.
 
-FILES
-       /mnt/keys
-              mount point for keyfs(4)
+== files
 
-       /mnt/keysrv
-              exported mount point for keysrv
+/mnt/keys::
+       mount point for keyfs(4)
 
-SOURCE
-       /appl/cmd/auth/keysrv.b
+/mnt/keysrv::
+       exported mount point for keysrv
 
-SEE ALSO
-       listen(1), passwd(1), keyfs(4), logind(8)
 
-                                                           KEYSRV(4)
+== related
+
+    bin/listen, bin/passwd, bin/keyfs, bin/logind

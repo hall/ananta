@@ -1,36 +1,26 @@
-ARCHFS(4)             Kernel Interfaces Manual             ARCHFS(4)
+= archfs: mount a mkfs archive
 
-NAME
-       archfs - mount a mkfs archive
+    archfs [ -ab ] [ -s ] [ -m mountpoint ] archfile [ prefix ... ]
 
-SYNOPSIS
-       archfs [ -ab ] [ -s ] [ -m mountpoint ] archfile [ prefix ...
-       ]
+Archfs mounts at mountpoint (default: /mnt/arch), a read-only
+file system representing the contents of archfile, which is a
+file of the format produced by mkfs(8) with  the  -a  option.
+Typically  the archive file will have been created by mkfs(8)
+or create(8).  Any prefix names limit the file system's  con‐
+tents  to  files  and  directories  in the archive whose path
+names start with one of the prefixes.
 
-DESCRIPTION
-       Archfs mounts at mountpoint (default: /mnt/arch), a read-only
-       file system representing the contents of archfile, which is a
-       file of the format produced by mkfs(8) with  the  -a  option.
-       Typically  the archive file will have been created by mkfs(8)
-       or create(8).  Any prefix names limit the file system's  con‐
-       tents  to  files  and  directories  in the archive whose path
-       names start with one of the prefixes.
+The -a and -b  options  cause  the  archive  contents  to  be
+mounted  after or before the mount point's existing contents,
+in a union dirctory (see bind(1) for details).  Normally  the
+archive  contents replace the contents of mountpoint.  The -s
+option causes the rest of the archive to be  skipped  once  a
+file is found in the archive which does not start with any of
+the given prefixes. This is useful an  archive  is  known  to
+start  with  a  description  of  its  contents (eg, the /wrap
+directory provided by create(8)), and that  is  all  that  is
+needed under mountpoint.
 
-       The -a and -b  options  cause  the  archive  contents  to  be
-       mounted  after or before the mount point's existing contents,
-       in a union dirctory (see bind(1) for details).  Normally  the
-       archive  contents replace the contents of mountpoint.  The -s
-       option causes the rest of the archive to be  skipped  once  a
-       file is found in the archive which does not start with any of
-       the given prefixes. This is useful an  archive  is  known  to
-       start  with  a  description  of  its  contents (eg, the /wrap
-       directory provided by create(8)), and that  is  all  that  is
-       needed under mountpoint.
+== related
 
-SOURCE
-       /appl/cmd/archfs.b
-
-SEE ALSO
-       tarfs(4), mkfs(8), create(8)
-
-                                                           ARCHFS(4)
+    dev/tarfs, bin/mkfs, bin/create

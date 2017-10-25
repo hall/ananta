@@ -1,344 +1,344 @@
-FACTOTUM(4)           Kernel Interfaces Manual           FACTOTUM(4)
+= factotum, feedkey: authentication agent
 
-NAME
-       factotum, feedkey - authentication agent
+    auth/factotum  [  -d  ]  [  -s  srvname  ]  [  -m  mtpt ] ...
+    attribute?  ...
 
-SYNOPSIS
-       auth/factotum  [  -d  ]  [  -s  srvname  ]  [  -m  mtpt ] ...
-       attribute?  ...
+    auth/feedkey
 
-       auth/feedkey
+Factotum is a user-level file system that acts as the authen‐
+tication  agent  for a user.  It does so by managing a set of
+keys.  A key is a collection of information used to authenti‐
+cate   a   particular   action.    Stored   as   a   list  of
+attribute=value pairs, a key typically contains  a  user,  an
+authentication domain, a protocol, and some secret data.
 
-DESCRIPTION
-       Factotum is a user-level file system that acts as the authen‐
-       tication  agent  for a user.  It does so by managing a set of
-       keys.  A key is a collection of information used to authenti‐
-       cate   a   particular   action.    Stored   as   a   list  of
-       attribute=value pairs, a key typically contains  a  user,  an
-       authentication domain, a protocol, and some secret data.
+Factotum  serves  srv(3) directory #sfactotum, which it binds
+to /mnt/factotum.  It serves the following files:
 
-       Factotum  serves  srv(3) directory #sfactotum, which it binds
-       to /mnt/factotum.  It serves the following files:
+rpc::    each open represents a new private channel to factotum
 
-       rpc    each open represents a new private channel to factotum
+proto::  when read lists the protocols available
 
-       proto  when read lists the protocols available
+needkey::
+       allows external programs to control  the  addition  of
+       new keys
 
-       needkey
-              allows external programs to control  the  addition  of
-              new keys
+log::    a log of actions
 
-       log    a log of actions
+ctl::    for  maintaining keys; when read, it returns a list of
+       keys.  For secret attributes, only the attribute  name
+       follow by a is returned.
 
-       ctl    for  maintaining keys; when read, it returns a list of
-              keys.  For secret attributes, only the attribute  name
-              follow by a is returned.
+In  any authentication, the caller typically acts as a client
+and the callee  as  a  server.   The  server  determines  the
+authentication domain, sometimes after a negotiation with the
+client.  Authentication always requires the client  to  prove
+its  identity to the server.  Under some protocols, including
+the one normally  used  by  Inferno,  the  authentication  is
+mutual.   Proof is accomplished using secret information kept
+by factotum in conjunction with a cryptographic protocol.
 
-       In  any authentication, the caller typically acts as a client
-       and the callee  as  a  server.   The  server  determines  the
-       authentication domain, sometimes after a negotiation with the
-       client.  Authentication always requires the client  to  prove
-       its  identity to the server.  Under some protocols, including
-       the one normally  used  by  Inferno,  the  authentication  is
-       mutual.   Proof is accomplished using secret information kept
-       by factotum in conjunction with a cryptographic protocol.
+Factotum can act in the role of client for any  process  pos‐
+sessing the same user id as it.  Factotum can act in the role
+of server for any process.
 
-       Factotum can act in the role of client for any  process  pos‐
-       sessing the same user id as it.  Factotum can act in the role
-       of server for any process.
+Factotum's structure is independent of any particular authen‐
+tication protocol.  Factotum currently supports the following
+protocols:
 
-       Factotum's structure is independent of any particular authen‐
-       tication protocol.  Factotum currently supports the following
-       protocols:
+infauth::
+       Inferno's authentication protocol auth(6)
 
-       infauth
-              Inferno's authentication protocol auth(6)
+p9any::  a metaprotocol used to negotiate which actual protocol
+       to use.
 
-       p9any  a metaprotocol used to negotiate which actual protocol
-              to use.
+p9sk1::  a  Plan  9 shared key protocol described in authsrv in
+       section 6 of Plan 9's Programmer's Manual
 
-       p9sk1  a  Plan  9 shared key protocol described in authsrv in
-              section 6 of Plan 9's Programmer's Manual
+pass::   passwords in the clear.
 
-       pass   passwords in the clear.
+The options are:
 
-       The options are:
+-m::     specifies the mount point to use, by default /mnt/fac‐
+       totum.
 
-       -m     specifies the mount point to use, by default /mnt/fac‐
-              totum.
-
-       -s     specifies  the  service  name to use, by default it is
-              factotum.
-
-       -d     turns on debugging, written to standard error.
-
-       Feedkey is a wm(1) user interface for entering new keys.   It
-       puts  its  window  in  the  wm(1) toolbar, and waits, reading
-       requests from needkey.  For each request, it pops open a win‐
-       dow  containing  suitable  prompts  and waits for user input.
-       See the sections on key confirmation and key prompting below.
-
-   Key Tuples
-       A key tuple is  a  space-delimited  list  of  attribute=value
-       pairs.  Values containing spaces must be quoted following the
-       conventions of sh(1).  An attribute whose name begins with an
-       exclamation  point  (!)  is `secret' and does not appear when
-       reading the ctl file.  See  the  `Protocols'  section  below.
-       Here are some examples:
-
-           proto=p9sk1 dom=avayalabs.com user=presotto !password=lucent
-           proto=pass user=tb !password=does.it.matter
-
-       The  required  attributes depend on the authentication proto‐
-       col.  The `Protocols' section below describes the  attributes
-       specific to each supported protocol.
-
-       All  keys  can  have additional attributes that act either as
-       comments or as selectors to distinguish them  in  the  facto‐
-       tum(2) and other library calls.
-
-       The  factotum  owner can use any key stored by factotum.  Any
-       key may have one or more owner attributes listing  the  users
-       who can use the key as though they were the owner.  For exam‐
-       ple, the TLS and SSH host keys on  a  server  often  have  an
-       attribute  owner=*  to  allow any user (and in particular, to
-       run the TLS or SSH server-side protocol.
-
-       Any key may have a role attribute for restricting how it  can
-       be  used.   If this attribute is missing, the key can be used
-       in any role.  The possible values are:
-
-       client for authenticating outbound calls
-
-       server for authenticating inbound calls
-
-       speaksfor
-              for authenticating processes whose user  id  does  not
-              match factotum's.
-
-       If  a  key has a disabled attribute (with any value), the key
-       is not used during any protocols.
-
-   Key Templates
-       Key templates are used by routines that interface  to  facto‐
-       tum,  such  as those in factotum(2), to specify which key and
-       protocol to use for an authentication.  Like a key  tuple,  a
-       key  template  is  also  a list of attribute=value pairs.  It
-       must  specify  at  least  the  protocol  and   enough   other
-       attributes  to  uniquely  identify  a key, or set of keys, to
-       use.  The keys chosen are those that match all the attributes
-       specified in the template.  The possible attribute/value for‐
-       mats are:
-
-       attr=val  The attribute attr must exist in the  key  and  its
-                 value must exactly match val
-
-       attr?     The  attribute  attr  must exist in the key but its
-                 value doesn't matter.
-
-       attr      The attribute attr must exist in  the  key  with  a
-                 null value
-
-       Key  templates  are  also  used  by factotum to request a key
-       either via an RPC error or via the  needkey  interface.   The
-       possible attribute/value formats are:
-
-       attr=val  This pair must remain unchanged
-
-       attr?     This attribute needs a value
-
-       attr      The pair must remain unchanged
-
-   Control and Key Management
-       A number of messages can be written to the control file.  The
-       messages are:
-
-       key attribute-value-list
-              add a new key.  This will replace any  old  key  whose
-              public attributes match (ie, non !  attributes).
-
-       delkey attribute-value-list
-              delete a key whose attributes match those given.
-
-       debug  toggle  debugging on and off, i.e., the debugging also
-              turned on by the -d option.
-
-   Prompting for keys
-       The needkey file provides a connection from factotum to a key
-       server,  normally  the  program auth/fgui.  Whenever factotum
-       needs a new key, it first checks to see if needkey is opened.
-       If  it  isn't, it returns a error to its client.  If the file
-       is opened a request can be read from it  with  the  following
-       format:
-
-       needkey tag=tagno <key template>
-
-       It is up to the reader to then query the user for any missing
-       fields, write the key tuple into the ctl file, and then reply
-       by writing into the needkey file the string:
-
-       tag=tagno
-
-       Needkey is exclusive open and can only be opened by a process
-       with the same user id as factotum.
-
-   The RPC Protocol
-       Authentication is performed by
-
-       1)     opening rpc
-
-       2)     setting up the protocol and key to be  used  (see  the
-              start RPC below),
-
-       3)     shuttling messages back and forth between factotum and
-              the other party (see the read and write  RPC's)  until
-              done
-
-       4)     if successful, reading back an AuthInfo structure (see
-              factotum(2)).
-
-       The RPC protocol is normally embodied by one of the  routines
-       in  factotum(2).   We  describe it here should anyone want to
-       extend that module.
-
-       An RPC consists of writing a request message to rpc  followed
-       by reading a reply message back.  RPC's are strictly ordered;
-       requests and replies of  different  RPC's  cannot  be  inter‐
-       leaved.   Messages  consist  of  a  verb, a single space, and
-       data.  The data format depends  on  the  verb.   The  request
-       verbs are:
-
-       start attribute-value-list
-              start a new authentication.  Attribute-value-pair-list
-              must include a proto attribute, a role attribute  with
-              value  client or server, and enough other attibutes to
-              uniquely identify a  key  to  use.   A  start  RPC  is
-              required  before  any  others.    The possible replies
-              are:
-
-              ok     start succeeded.
-
-              error string
-                     where string is the reason.
-
-       read   get data from factotum to send  to  the  other  party.
-              The possible replies are:
-
-              ok     read succeeded, this is zero length message.
-
-              ok data
-                     read  succeeded, the data follows the space and
-                     is unformatted.
-
-              done   authentication has succeeded, no further  RPC's
-                     are necessary
-
-              done haveai
-                     authentication   has   succeeded,  an  AuthInfo
-                     structure (see factotum(2))  can  be  retrieved
-                     with an authinfo RPC
-
-              phase string
-                     its  not  your turn to read, get some data from
-                     the other party and return it with a write RPC.
-
-              error string
-                     authentication failed, string is the reason.
-
-              protocol not started
-                     a start RPC needs to precede reads and writes
-
-              needkey attribute-value-list
-                     a key matching the argument  is  needed.   This
-                     will  not appear if the needkey file is in use.
-                     Otherwise, a suitable key can be written to ctl
-                     and after that, authentication may proceed (ie,
-                     the read restarted).
-
-       write data
-              send data from the other party to factotum.  The  pos‐
-              sible replies are:
-
-              ok     the write succeeded
-
-              needkey attribute-value-list
-                     see above
-
-              toosmall n
-                     the  write is too short, get more data from the
-                     other party and retry the write.   n  specifies
-                     the maximun total number of bytes.
-
-              phase string
-                     its  not your turn to write, get some data from
-                     factotum first.
-
-              done   see above
-
-              done haveai
-                     see above
-
-       authinfo
-              retrieve the AuthInfo structure.  The possible replies
-              are:
-
-              ok data
-                     data is a marshaled form of the AuthInfo struc‐
-                     ture.
-
-              error string
-                     where string is the reason for the error.
-
-       attr   retrieve the attributes used in the  start  RPC.   The
-              possible replies are:
-
-              ok attribute-value-list
-
-              error string
-                     where string is the reason for the error.
-
-   Protocols
-       Factotum  can  support  many  authentication  protocols, each
-       implemented  by  a   separate   module   in   the   directory
-       /dis/auth/proto.   Currently  only  a  few are implemented in
-       Inferno:
-
-       Infauth is the  Inferno  public-key  authentication  protocol
-       described  by auth(6).  It requires a key with proto=infauth,
-       and a !authinfo attribute  providing  Inferno  authentication
-       data  as  an  S-expression (see sexprs(6)).  The S-expression
-       has five string elements: the signer's public key,  the  cer‐
-       tificate  for  the  user's public key, the user's secret key,
-       and the values for parameters alpha and p,  selected  by  the
-       signer when the key was generated.  The keys and certificates
-       are represented as strings of the form produced  by  keyring-
-       certtostr(2);  the parameter values are represented as binary
-       in  the  form  produced  by  IPint.iptobytes  (see   keyring-
-       ipint(2)).   Normally  infauth  checks that the other party's
-       key was signed by the signer in the !authinfo  data,  but  if
-       the  key  has  the  attribute anysigner with non-zero integer
-       value, infauth will accept keys signed by  any  signer.   The
-       actual  signer  can  be  determined  by  inspecting  the data
-       returned by the authinfo request; the option is intended  for
-       use  by  services  that support calls from many domains, each
-       with its own signer.
-
-       P9sk1 is the shared-secret protocol used to  authenticate  to
-       various Plan 9 services.  It requires a key with proto=p9sk1,
-       a dom attribute identifying the authentication domain, a user
-       name  valid  in  that  domain, and either a !password or !hex
-       attribute specifying the password or hexadecimal secret to be
-       used.   P9sk1 normally is invoked by Plan 9's general authen‐
-       tication protocol, p9any, which  is  supported  by  Inferno's
+-s::     specifies  the  service  name to use, by default it is
        factotum.
 
-       Pass  requires  a key with proto=pass in addition to user and
-       !password attributes.
+-d::     turns on debugging, written to standard error.
 
-SOURCE
-       /appl/cmd/auth/factotum
+Feedkey is a bin/wm user interface for entering new keys.   It
+puts  its  window  in  the  wm(1) toolbar, and waits, reading
+requests from needkey.  For each request, it pops open a win‐
+dow  containing  suitable  prompts  and waits for user input.
+See the sections on key confirmation and key prompting below.
 
-SEE ALSO
-       factotum(2)
 
-                                                         FACTOTUM(4)
+== Key Tuples
+
+A key tuple is  a  space-delimited  list  of  attribute=value
+pairs.  Values containing spaces must be quoted following the
+conventions of sh(1).  An attribute whose name begins with an
+exclamation  point  (!)  is `secret' and does not appear when
+reading the ctl file.  See  the  `Protocols'  section  below.
+Here are some examples:
+
+    proto=p9sk1 dom=avayalabs.com user=presotto !password=lucent
+    proto=pass user=tb !password=does.it.matter
+
+The  required  attributes depend on the authentication proto‐
+col.  The `Protocols' section below describes the  attributes
+specific to each supported protocol.
+
+All  keys  can  have additional attributes that act either as
+comments or as selectors to distinguish them  in  the  facto‐
+tum(2) and other library calls.
+
+The  factotum  owner can use any key stored by factotum.  Any
+key may have one or more owner attributes listing  the  users
+who can use the key as though they were the owner.  For exam‐
+ple, the TLS and SSH host keys on  a  server  often  have  an
+attribute  owner=*  to  allow any user (and in particular, to
+run the TLS or SSH server-side protocol.
+
+Any key may have a role attribute for restricting how it  can
+be  used.   If this attribute is missing, the key can be used
+in any role.  The possible values are:
+
+client for authenticating outbound calls
+
+server for authenticating inbound calls
+
+speaksfor
+       for authenticating processes whose user  id  does  not
+       match factotum's.
+
+If  a  key has a disabled attribute (with any value), the key
+is not used during any protocols.
+
+   Key Templates
+Key templates are used by routines that interface  to  facto‐
+tum,  such  as those in factotum(2), to specify which key and
+protocol to use for an authentication.  Like a key  tuple,  a
+key  template  is  also  a list of attribute=value pairs.  It
+must  specify  at  least  the  protocol  and   enough   other
+attributes  to  uniquely  identify  a key, or set of keys, to
+use.  The keys chosen are those that match all the attributes
+specified in the template.  The possible attribute/value for‐
+mats are:
+
+attr=val::  The attribute attr must exist in the  key  and  its
+          value must exactly match val
+
+attr?::     The  attribute  attr  must exist in the key but its
+          value doesn't matter.
+
+attr::      The attribute attr must exist in  the  key  with  a
+          null value
+
+Key  templates  are  also  used  by factotum to request a key
+either via an RPC error or via the  needkey  interface.   The
+possible attribute/value formats are:
+
+attr=val::  This pair must remain unchanged
+
+attr?::     This attribute needs a value
+
+attr::      The pair must remain unchanged
+
+   Control and Key Management
+A number of messages can be written to the control file.  The
+messages are:
+
+key attribute-value-list::
+       add a new key.  This will replace any  old  key  whose
+       public attributes match (ie, non !  attributes).
+
+delkey attribute-value-list::
+       delete a key whose attributes match those given.
+
+debug::  toggle  debugging on and off, i.e., the debugging also
+       turned on by the -d option.
+
+
+== Prompting for keys
+
+The needkey file provides a connection from factotum to a key
+server,  normally  the  program auth/fgui.  Whenever factotum
+needs a new key, it first checks to see if needkey is opened.
+If  it  isn't, it returns a error to its client.  If the file
+is opened a request can be read from it  with  the  following
+format:
+
+    needkey tag=tagno <key template>
+
+It is up to the reader to then query the user for any missing
+fields, write the key tuple into the ctl file, and then reply
+by writing into the needkey file the string:
+
+    tag=tagno
+
+Needkey is exclusive open and can only be opened by a process
+with the same user id as factotum.
+
+
+== The RPC Protocol
+
+Authentication is performed by
+
+  1.     opening rpc
+
+  2.     setting up the protocol and key to be  used  (see  the
+       start RPC below),
+
+  3.     shuttling messages back and forth between factotum and
+       the other party (see the read and write  RPC's)  until
+       done
+
+  4.     if successful, reading back an AuthInfo structure (see
+       factotum(2)).
+
+The RPC protocol is normally embodied by one of the  routines
+in  factotum(2).   We  describe it here should anyone want to
+extend that module.
+
+An RPC consists of writing a request message to rpc  followed
+by reading a reply message back.  RPC's are strictly ordered;
+requests and replies of  different  RPC's  cannot  be  inter‐
+leaved.   Messages  consist  of  a  verb, a single space, and
+data.  The data format depends  on  the  verb.   The  request
+verbs are:
+
+start attribute-value-list::
+       start a new authentication.  Attribute-value-pair-list
+       must include a proto attribute, a role attribute  with
+       value  client or server, and enough other attibutes to
+       uniquely identify a  key  to  use.   A  start  RPC  is
+       required  before  any  others.    The possible replies
+       are:
+
+       ok     start succeeded.
+
+       error string
+              where string is the reason.
+
+read::   get data from factotum to send  to  the  other  party.
+       The possible replies are:
+
+       ok     read succeeded, this is zero length message.
+
+       ok data
+              read  succeeded, the data follows the space and
+              is unformatted.
+
+       done   authentication has succeeded, no further  RPC's
+              are necessary
+
+       done haveai
+              authentication   has   succeeded,  an  AuthInfo
+              structure (see factotum(2))  can  be  retrieved
+              with an authinfo RPC
+
+       phase string
+              its  not  your turn to read, get some data from
+              the other party and return it with a write RPC.
+
+       error string
+              authentication failed, string is the reason.
+
+       protocol not started
+              a start RPC needs to precede reads and writes
+
+       needkey attribute-value-list
+              a key matching the argument  is  needed.   This
+              will  not appear if the needkey file is in use.
+              Otherwise, a suitable key can be written to ctl
+              and after that, authentication may proceed (ie,
+              the read restarted).
+
+write data::
+       send data from the other party to factotum.  The  pos‐
+       sible replies are:
+
+       ok     the write succeeded
+
+       needkey attribute-value-list
+              see above
+
+       toosmall n
+              the  write is too short, get more data from the
+              other party and retry the write.   n  specifies
+              the maximun total number of bytes.
+
+       phase string
+              its  not your turn to write, get some data from
+              factotum first.
+
+       done   see above
+
+       done haveai
+              see above
+
+authinfo::
+       retrieve the AuthInfo structure.  The possible replies
+       are:
+
+       ok data
+              data is a marshaled form of the AuthInfo struc‐
+              ture.
+
+       error string
+              where string is the reason for the error.
+
+attr::   retrieve the attributes used in the  start  RPC.   The
+       possible replies are:
+
+       ok attribute-value-list
+
+       error string
+              where string is the reason for the error.
+
+
+== Protocols
+
+Factotum  can  support  many  authentication  protocols, each
+implemented  by  a   separate   module   in   the   directory
+/dis/auth/proto.   Currently  only  a  few are implemented in
+Inferno:
+
+Infauth is the  Inferno  public-key  authentication  protocol
+described  by auth(6).  It requires a key with proto=infauth,
+and a !authinfo attribute  providing  Inferno  authentication
+data  as  an  S-expression (see sexprs(6)).  The S-expression
+has five string elements: the signer's public key,  the  cer‐
+tificate  for  the  user's public key, the user's secret key,
+and the values for parameters alpha and p,  selected  by  the
+signer when the key was generated.  The keys and certificates
+are represented as strings of the form produced  by  keyring-
+certtostr(2);  the parameter values are represented as binary
+in  the  form  produced  by  IPint.iptobytes  (see   keyring-
+ipint(2)).   Normally  infauth  checks that the other party's
+key was signed by the signer in the !authinfo  data,  but  if
+the  key  has  the  attribute anysigner with non-zero integer
+value, infauth will accept keys signed by  any  signer.   The
+actual  signer  can  be  determined  by  inspecting  the data
+returned by the authinfo request; the option is intended  for
+use  by  services  that support calls from many domains, each
+with its own signer.
+
+P9sk1 is the shared-secret protocol used to  authenticate  to
+various Plan 9 services.  It requires a key with proto=p9sk1,
+a dom attribute identifying the authentication domain, a user
+name  valid  in  that  domain, and either a !password or !hex
+attribute specifying the password or hexadecimal secret to be
+used.   P9sk1 normally is invoked by Plan 9's general authen‐
+tication protocol, p9any, which  is  supported  by  Inferno's
+factotum.
+
+Pass  requires  a key with proto=pass in addition to user and
+!password attributes.
+
+
+== related
+
+    sys/factotum

@@ -1,7 +1,5 @@
-= The Limbo Programming Language
-Dennis M. Ritchie
+= the limbo programming language
 :toc: left
-:example: subs=-post_replacements
 :source-highlighter: pygments
 
 Limbo is a programming language intended for applications running distributed systems on small computers.
@@ -90,7 +88,6 @@ Sys: module {
 
 NOTE: Conventionally, each module contains a constant declaration for the name `PATH` as a string that names the file where the object module can be found.
 Loading the file is performed dynamically during execution except for a few modules built into the execution environment.
-
 
 
 == lexical conventions
@@ -325,6 +322,7 @@ The five basic data types are:
 
 The `byte`, `int`, `big`, and `real` types are collectively called arithmetic types.
 
+
 ==== tuple type
 
 The _tuple_ type is a type consisting of an ordered collection of two or more objects, each having its own data type.
@@ -392,6 +390,41 @@ Once an instance of such a channel (say `c`) has been declared and initialized, 
 sends such a tuple across it.
 
 
+===== buffered channels
+
+A buffered channel can be declared:
+
+    c := chan[1] of int;
+
+Here the buffer size is 1.
+A send on this channel will succeed immediately if there is a receiver waiting or if the buffer is empty.
+A receive on this channel will succeed immediately if there is a data item in the buffer.
+This allows us to write a very simple locking mechanism:
+
+    acquire(c: chan of int) {
+        c <-= 0;
+    }
+
+    release(c: chan of int) {
+        <-c;
+    }
+    
+    new(): chan of int 
+        return chan[1] of int;
+    }
+    
+The declaration
+
+    c := chan[0] of int;
+
+is equivalent to 
+
+    c := chan of int;
+
+An attempt to create a channel with a negative buffer size will raise an exception.
+An attempt to create a channel with a very large buffer may result in an immediate memory exception if there is not enough room for the buffer.
+
+
 ==== abstract data types
 
 An abstract data type or _adt_ is an object that can contain data objects of several different types and declare functions that operate on them.
@@ -429,9 +462,9 @@ The identifier is declared as a module identifier by a _module-declaration_, as 
 An object of module type serves as a handle for the module, and is used to access its functions.
 
 
-==== Module-qualified type
+==== module-qualified type
 
-When an `adt` is declared within a module declaration, the type name of that `adt` is not generally visible to the rest of the program unless a specific `import` request is given (see <<_declarations_with_code_import_code>> and <<_referring_to_modules>>).
+When an `adt` is declared within a module declaration, the type name of that `adt` is not generally visible to the rest of the program unless a specific `import` request is given (see <<_declarations_with_code_import_code>> and <<_module_references>>).
 Without such a request, when `adt` objects implemented by a module are declared by a client of that module, the `adt` type name is qualified:
 
 [subs=quotes]
@@ -444,7 +477,7 @@ Here the first identifier is either the name of a module or a variable of the mo
 the second is the name of a type mentioned in the module declaration.
 
 
-==== Function reference types
+==== function reference types
 
 A function reference type represents a reference to a function of a given type.
 
@@ -455,7 +488,8 @@ ref _function-type_
 
 Function types are discussed in <<_function_types>>.
 
-==== Named types
+
+==== named types
 
 Finally, data types may be named, using a `type` declaration;
 this is discussed in <<_type_declarations>>.
@@ -467,7 +501,7 @@ _type-name_:
 ----
 
 
-=== Function types
+=== function types
 
 A function type characterizes the arguments and return value of a function.
 
@@ -539,7 +573,7 @@ the notation is an artifice for describing facilities built into the runtime sys
 The type of a function includes user-defined exceptions that it raises, which must be listed in a corresponding `raises` clause.
 
 
-== Limbo programs
+== limbo programs
 
 Limbo source programs that implement modules are stored in files, conventionally named with the suffix `.b`.
 Each such file begins with a single `implement` directive naming the type of the module being implemented, followed by a sequence of declarations.
@@ -579,7 +613,7 @@ Several module types may be listed, however, in the `implement` declaration, whe
 When the same name appears in more than one such module type, it must have the same type.
 
 
-== Declarations
+== declarations
 
 Declarations take several forms:
 
@@ -604,7 +638,7 @@ _expression-list_:
 ----
 
 
-=== Data declarations
+=== data declarations
 
 These forms constitute the basic way to declare and initialize data:
 
@@ -659,7 +693,7 @@ declares the identifiers on the left as `int` and `real` and initializes them to
 Declarations with `:=` can also be expressions, and are discussed again in <<_declare_expressions>>.
 
 
-=== Constant declarations
+=== constant declarations
 
 The `con` declaration
 
@@ -801,7 +835,7 @@ For example, if `Constant` is a `pick adt` and `Constant.Real` is one of its var
 will declare `c` to have type `ref Constant` and initialize it with a value of the variant type `ref Constant.Real`.
 
 
-=== Type declarations
+=== type declarations
 
 The type declaration
 
@@ -815,7 +849,7 @@ Type declarations are transparent;
 that is, an object declared with the newly-named type has the same type as the one it abbreviates.
 
 
-=== Module declarations
+=== module declarations
 
 A module declaration collects and packages declarations of `adt`, functions, constants and simple types, and creates an interface with a name that serves to identify the type of the module.
 The syntax is
@@ -886,7 +920,7 @@ For example:
 The right side of the assignment must be a constant expression (<<_constant_expressions>>).
 
 
-=== Declarations with `import`
+=== declarations with `import`
 
 These declarations take the form
 
@@ -900,7 +934,7 @@ The `import` declaration lifts the names of specified members of a module direct
 The use of `import` will be discussed more fully in <<_module_qualification>>, after the syntax for expressions involving modules has been presented.
 
 
-=== Exception declarations
+=== exception declarations
 
 Exceptions represent run-time errors not data objects or values.
 Exception declarations have the form:
@@ -915,7 +949,171 @@ An exception optionally includes a tuple of data values that qualifies the excep
 the types of those values are provided by the tuple type in this declaration.
 
 
-=== Declarations with `include`
+==== exceptions
+
+Both string exceptions and user defined exceptions are now provided.
+The `Sys` module interface to exceptions has been removed and replaced by new language constructs in limbo.
+
+
+==== string exceptions
+
+Simple string exceptions can be raised as follows
+
+[subs=quotes]
+----
+raise _s_;
+----
+
+where _s_ is any value of type string (it need not be constant).
+
+Exception handlers may be attached to a block (or sequence of statements)
+
+    {
+	    foo();
+	    bar();
+    } exception e {
+    "a" or "b" =>
+	    sys->print("caught %s\en", e);
+	    raise;
+    "ab*" =>
+	    sys->print("caught %s\en", e);
+	    exit;
+    "abcd*" =>
+	    sys->print("caught %s\en", e);
+	    raise e;
+    "a*" =>
+	    sys->print("caught %s\en", e);
+	    raise "c";
+    "*" =>
+	    sys->print("caught %s\en", e);
+    }
+    LL:
+
+Any exception occurring within the block (and in nested function calls within the block) can potentially be caught by the exception handler.
+An exception is caught by a guard exactly maching the exception string or by a guard "_s_*" where _s_ is a prefix of the exception string.
+The most specific match is used. Thus a raise of "a" will be caught by the first guard and not by the fourth guard.
+A raise of "abcde" is caught by the third and not the second or fourth.
+If a match is found, the sequence of statements following the guard are executed.
+If not, the system searches for a handler at a higher level.
+
+As shown above, the exception is available through the exception identifier (e in this case) if given following the exception keyword.
+
+The exception is reraised using
+
+    raise;
+
+or
+
+    raise e;
+
+Both the block and the exception code will fall through to the statement labelled LL unless, of course, they do an explicit exit, return or raise first.
+
+
+==== user-defined exceptions
+
+You can declare your own exceptions:
+
+[source,limbo]
+----
+    implement Fibonacci;
+    
+    include "sys.m";
+    include "draw.m";
+    
+    Fibonacci: module
+    {
+	    init: fn(nil: ref Draw->Context, argv: list of string);
+    };
+    
+    
+    init(nil: ref Draw->Context, nil: list of string)
+    {
+	    sys := load Sys Sys->PATH;
+	    for(i := 0; ; i++){
+		    f := fibonacci(i);
+		    if(f < 0)
+			    break;
+		    sys->print("F(%d) = %d\en", i, f);
+	    }
+    }
+
+
+    FIB: exception(int, int);
+
+
+    fibonacci(n: int): int
+    {
+	    {
+		    fib(1, n, 1, 1);
+	    }exception e{
+	    FIB =>
+		    (x, nil) := e;
+		    return x;
+	    "*" =>
+		    sys->print("unexpected string exception %s raised\en", e);
+	    * =>
+		    sys->print("unexpected exception raised\en");
+	    }
+	    return 0;
+    }
+    
+    
+    fib(n: int, m: int, x: int, y: int) raises (FIB)
+    {
+	    if(n >= m)
+		raise FIB(x, y);
+
+	    {
+		    fib(n+1, m, x, y);
+	    }exception e{
+	    FIB =>
+		    (x, y) = e;
+		    x = x+y;
+		    y = x-y;
+		    raise FIB(x, y);
+	    }
+    }
+----
+
+`FIB` is a declared exception that returns two integers.
+The values are supplied when raising the exception:
+
+    raise FIB(3, 4);
+
+When caught the values can be recovered by treating the declared exception identifier as if it were a tuple of 2 integers:
+
+    (x, y) = e;
+
+In general each exception alternative treats the exception identifier appropriately: as a string when the exception qualifier is a string, as the relevant tuple when the exception is declared.
+
+If you do
+
+    "abcde" or FIB =>
+	(x, y) = e;
+	sys->print("%s\en", e);
+
+you will get a compiler error as `e`'s type is indeterminate within this alternative.
+
+Reraising is the same as in the case of string exceptions.
+
+Note also the difference between the string guard "*" and the guard `*` in the function fibonacci.
+The former will match any string exception, the latter any exception.
+If a string exception does occur it matches the former as it is the most specific.
+If an unexpected user defined exception occurs it matches the latter.
+
+The main difference between declared exceptions and string exceptions is that the former must be caught by the immediate caller of a function that raises them, otherwise they turn into a string exception whose name is derived from that of the exception declaration.
+
+==== The `raises` clause
+
+The definition of the function fib in the above example also lists the user defined exceptions it can raise via the use of a `raises `clause.
+In this case there is just the one exception (`FIB`).
+These clauses (if given) must be compatible between any declaration and definition of the function.
+
+The compiler reports instances of functions which either raise some exception which is not mentioned in their raises clause or does not raise some exception which is mentioned in their raises clause.
+Currently the report is a warning.
+
+
+=== declarations with `include`
 
 The string following the `include` keyword names a file, which is inserted into the program's text at that point.
 The included text is treated like text literally present.
@@ -924,7 +1122,7 @@ The directories to be searched for included files may be specified to the Limbo 
 Include files may be nested.
 
 
-== Function definitions
+== function definitions
 
 All executable code is supplied as part of a function definition.
 The syntax is
@@ -963,14 +1161,14 @@ Functions that are declared within an `adt` use the qualified form of definition
 Because an `adt` may contain an `adt`, more than one qualification is possible.
 
 
-== Expressions
+== expressions
 
 Expressions in Limbo resemble those of C, although some of the operators are different.
 The most salient difference between Limbo's expression semantics and those of C is that Limbo has no automatic coercions between types;
 in Limbo every type conversion is explicit.
 
 
-=== Terms
+=== terms
 
 The basic elements of expressions are terms:
 
@@ -999,7 +1197,7 @@ The operators on terms all associate to the left, and their order of precedence,
     () [] ++ --
 
 
-==== Simple terms
+==== simple terms
 
 The first five kinds of term are constants and identifiers.
 Constants have a type indicated by their syntax.
@@ -1008,7 +1206,7 @@ when used as a term in an expression it denotes the value stored in the object, 
 Sometimes, as discussed below, identifiers used in expressions are type names, function names, or module identifiers.
 
 
-==== Parenthesized terms
+==== parenthesized terms
 
 A comma-separated list of expressions enclosed in parentheses is a term.
 If a single expression is present in the list, the type and value are those of the expression;
@@ -1017,7 +1215,7 @@ If there is more than one expression in the list, the value is a tuple.
 The member types and values are taken from those of the expressions.
 
 
-==== Selection
+==== selection
 
 A term of the form
 
@@ -1037,7 +1235,7 @@ In the second case, the term must yield a value of a tuple type, and the identif
 The result is the value of that element.
 
 
-==== Module qualification
+==== module qualification
 
 A term of the form
 
@@ -1118,7 +1316,7 @@ Using `import` makes the code less verbose:
     v1.v = nil;
 
 
-==== Function calls
+==== function calls
 
 The interpretation of an expression in the form
 
@@ -1196,7 +1394,7 @@ which might be used as follows:
     error("unknown command");
 
 
-==== Subscripting and slicing
+==== subscripting and slicing
 
 In a term of the form
 
@@ -1258,7 +1456,7 @@ Here the array `buf` is filled by successive calls to `sys->read` that may suppl
 The invariant is that the slice `b` always refers to the part of the array still to be stored into.
 
 
-==== Postfix increment and decrement
+==== postfix increment and decrement
 
 A term of the form
 
@@ -1283,7 +1481,7 @@ _term_ --
 behaves analogously to the increment case except that 1 is subtracted from the lvalue.
 
 
-=== Monadic expressions
+=== monadic expressions
 
 Monadic expressions are expressions with monadic operators, together with a few more specialized notations:
 
@@ -1304,7 +1502,7 @@ _monadic-operator_: _one of_
 ----
 
 
-==== Monadic additive operators
+==== monadic additive operators
 
 The `-` operator produces the negative of its operand, which must have an arithmetic type.
 The type of the result is the same as the type of its operand.
@@ -1314,19 +1512,19 @@ it is supplied only for symmetry.
 However, its argument must have an arithmetic type and the type of the result is the same.
 
 
-==== Logical negation
+==== logical negation
 
 The `!` operator yields the `int` value 1 if its operand has the value 0, and yields 0 otherwise.
 The operand must have type `int`.
 
 
-==== One's complement
+==== one's complement
 
 The `~` operator yields the 1's complement of its operand, which must have type `int` or `byte`.
 The type of the result is the same as that of its operand.
 
 
-==== Reference and indirection operators
+==== reference and indirection operators
 
 If _e_ is an expression of an `adt` type, then `ref` _e_ is an expression of `ref adt` type whose value refers to (points to) an anonymous object with value _e_.
 The `ref` operator differs from the unary `&` operator of C;
@@ -1349,7 +1547,7 @@ the expression `*pp` at first refers to a copy of the value stored in `p` , so `
 however, when `p` is changed later, `*pp` does not change.
 
 
-==== Prefix increment and decrement
+==== prefix increment and decrement
 
 A monadic expression of the form
 
@@ -1374,7 +1572,7 @@ The term
 behaves analogously to the increment case except that 1 is subtracted from the lvalue.
 
 
-==== Head and tail
+==== head and tail
 
 The operand of the `hd` operator must be a non-empty list.
 The value is the first member of the list and has that member's type.
@@ -1384,20 +1582,20 @@ The value is the tail of the list, that is, the part of the list after its first
 The tail of a list with one member is `nil`.
 
 
-==== Length
+==== length
 
 The operand of the `len` operator is a string, an array, or a list.
 The value is an `int` giving the number of elements currently in the item.
 
 
-==== Tagof
+==== tagof
 
 The operand of the `tagof` operator is a monadic expression of type `ref adt` that refers to a `pick adt`.
 or the type name of a `pick adt` or one of its variants.
 The value is an `int` giving a unique value for each of the variants and for the `pick adt` type itself.
 
 
-==== Channel communication
+==== channel communication
 
 The operand of the communication operator `<-` has type `chan of` _sometype_.
 The value of the expression is the first unread object previously sent over that channel, and has the type associated with the channel.
@@ -1412,7 +1610,7 @@ If no member of the array has data ready, the expression delays.
 Communication channels are treated more fully in <<_code_alt_code_statement>> and <<_code_spawn_code_statement>> with the discussion of the `alt` and `spawn` statements.
 
 
-==== Creation of arrays
+==== creation of arrays
 
 In the expressions
 
@@ -1458,7 +1656,7 @@ If the expression giving the size of the array is omitted, its size is taken fro
 It is erroneous to initialize a member twice.
 
 
-==== Creation of lists
+==== creation of lists
 
 The value of an expression
 
@@ -1473,7 +1671,7 @@ The first expression is the head of the list, and the remaining expressions are 
 Where a list is expected, `nil` specifies an empty list.
 
 
-==== Creation of channels
+==== creation of channels
 
 The value of
 
@@ -1504,7 +1702,7 @@ The _expression_ must be of type `int`, and sets the size of the channel's buffe
 If the size is zero, the channel is unbuffered, as for the first form.
 
 
-==== Casts
+==== casts
 
 An expression of the form
 
@@ -1517,7 +1715,7 @@ in which a type name is followed by an expression is called a _cast_, and conver
 Only certain specialized forms are provided for.
 
 
-===== Arithmetic casts
+===== arithmetic casts
 
 In arithmetic casts, the named type must be one of `byte`, `int`, `big`, or `real`, and the monadic-expression must have arithmetic type.
 For example,
@@ -1529,7 +1727,7 @@ When real values are converted to integral ones, they are rounded to the nearest
 The effect of overflow during conversion is undefined.
 
 
-===== Casts to strings
+===== casts to strings
 
 Here the named data type is `string`.
 In a first form, the monadic expression has arithmetic type `byte`, (`int`, `big`, or `real`)
@@ -1541,7 +1739,7 @@ The value is a new string containing the Unicode characters obtained by interpre
 (UTF-8 is a representation of 16-bit Unicode characters as one, two, or three bytes.)  The result of the conversion is undefined if the byte array ends within a multi-byte UTF-8 sequence.
 
 
-===== Casts from strings
+===== casts from strings
 
 In a first form, the monadic expression is a string, and the named type is an arithmetic type.
 The value is obtained by converting the string to that type.
@@ -1560,7 +1758,7 @@ takes the string `s` apart into bytes in the second line, and puts it back in th
 The length of `s` is 8, because it contains that many characters; the length of `a` is larger, because some of its characters require more than one byte in the UTF-8 representation.
 
 
-===== Casts to `adt` and `ref adt`
+===== casts to `adt` and `ref adt`
 
 Here the named type is that of an `adt` or `ref adt`, and the monadic expression is a comma-separated list of expressions within parentheses.
 The value of the expression is an instance of an `adt` of the named type whose data members are initialized with the members of the list, or whose single data member is initialized with the parenthesized expression.
@@ -1586,7 +1784,7 @@ The declaration and assignment could also be written
     p := Point(1, 2);
 
 
-=== Binary expressions
+=== binary expressions
 
 Binary expressions are either monadic expressions, or have two operands
 and an infix operator; the syntax is
@@ -1594,8 +1792,8 @@ and an infix operator; the syntax is
 [subs=quotes]
 ----
 _binary-expression_:
-_monadic-expression_
-_binary-expression_ _binary-operator_ _binary-expression_
+    _monadic-expression_
+    _binary-expression_ _binary-operator_ _binary-expression_
 
 _binary-operator_: _one of_
     ** * / % + - << >> < > <= >= == != & ^ | :: && ||
@@ -1618,7 +1816,7 @@ Their precedence is as listed here, with tightest first:
     ||
 
 
-==== Exponentiation
+==== exponentiation
 
 The `**` operator accomplishes exponentiation.
 The type of the left operand must be `int`, `big` or `real`.
@@ -1631,24 +1829,25 @@ The operator is right associative, thus
     2**3**2 = 2**(3**2) = 2**9 = 512
 
 
-==== Multiplicative operators
+==== multiplicative operators
 
 The `*`, `/`, and `%` operators respectively accomplish multiplication, division, and remainder.
 The operands must be of identical arithmetic type, and the result has that same type.
 The remainder operator does not apply to type `real`.
 If overflow or division by 0 occurs, the result is undefined.
 The absolute value of `a%b` is less than the absolute value of `b`;
-`"(a/b)*b` + a%b is always equal to `a`;
+`(a/b)*b + a%b` is always equal to `a`;
 and `a%b` is non-negative if `a` and `b` are.
 
-==== Additive operators
+
+==== additive operators
 
 The `+` and `-` operators respectively accomplish addition and subtraction of arithmetic operands of identical type; the result has the same type.
 The behavior on overflow or underflow is undefined.
 The `+` operator may also be applied to strings; the result is a string that is the concatenation of the operands.
 
 
-==== Shift operators
+==== shift operators
 
 The shift operators are `<<` and `>>`.
 The left operand may be `big`, `int`, or `byte`; the right operand is `int`.
@@ -1658,7 +1857,7 @@ For the left-shift operator `<<`, the fill bits are 0;
 for the right-shift operator `>>`, the fill bits are a copy of the sign for the `int` case, and 0 for the `byte` case.
 
 
-==== Relational operators
+==== relational operators
 
 The relational operators are `<` (less than), `>` (greater than), `<=` (less than or equal), `>=` (greater than or equal), `==` (equal to), `!=` (not equal to).
 The first four operators, which generate orderings, apply only to arithmetic types and to strings; the types of their operands must be identical, except that a string may be compared to `nil`.
@@ -1672,24 +1871,26 @@ An uninitialized string, or one set to `nil`, is identical to the empty string d
 The value of any comparison is the `int` value 1 if the stated relation is true, 0 if it is false.
 
 
-==== Bitwise logical operators
+==== bitwise logical operators
 
 The logical operators `&` (and), `^` (exclusive or) and `|` (inclusive or) require operands of the same type, which must be `byte`, `int`, or `big`.
 The result has the same type and its value is obtained by applying the operation bitwise.
 
 
-==== List concatenation
+==== list concatenation
 
 The concatenation operator `::` takes a object of any data type as its left operand and a list as its right operand.
 The list's underlying type must be the same as the type of the left operand.
 The result is a new list with the left operand tacked onto the front:
 
-    hd (a :: l)
+----
+hd (a :: l)
+----
 
 is the same as `a`.
 
 
-==== Logical operators
+==== logical operators
 
 The logical _and_ operator `&&` first evaluates its left operand.
 If the result is zero, then the value of the whole expression is the `int` value 0.
@@ -1705,7 +1906,114 @@ otherwise it is 0.
 The operands must have the same arithmetic type.
 
 
-=== General Expressions
+=== fixed point types
+
+A declaration of the form
+
+    x: fixed(0.2, 12345.0);
+
+declares `x `to be a variable of a fixed point type.
+The scale of the type is 1/5 and the maximum absolute value of the type is 12345.0.
+
+Similarly
+
+    x: fixed(0.125, 4096.0)
+
+specifies a scale of 0.125 and a maximum absolute value of 4096.
+This requires only 17 bits so the underlying type will be `int` and the compiler is free to allocate the remaining 15 bits to greater range or greater accuracy.
+In fact the compiler always chooses the latter.
+
+The maximum absolute value is optional:
+
+    x: fixed(0.125);
+
+is equivalent to
+
+    x: fixed(0.125, 2147483647.0 * 0.125);
+
+and ensures the underlying type is exactly an int ie the compiler has no scope to add any extra bits for more accuracy.
+
+A binary fixed point type with 8 bits before the binary point and 24 after might therefore be declared as
+
+    x: fixed(2.0**-24);
+
+The scale must be static: its value known at compile time and it must be positive and real;
+similarly for the maximum absolute value when specified.
+
+Currently the only underlying base type supported is `int`.
+
+A shorthand for fixed point types is available through the use of `type` declarations:
+
+    fpt: type fixed(2.0**-16);
+
+We can then do
+
+    x, y, z: fpt;
+    zero: con fpt(0);
+    
+    x = fpt(3.21);
+    y = fpt(4.678);
+    z = fpt(16r1234.5678);
+    z = -x;
+    z = x+y;
+    z = x-y;
+    z = x*y;
+    z = x/y;
+    sys->print("z=%f", real z);
+
+There is no implicit numerical casting in Limbo so we have to use explicit casts to initialize fixed point variables.
+Note the use of a base to initialize `z` using a new literal representation.
+
+Given
+
+    fpt1: type fixed(0.12345);
+    x: fpt1;
+    fpt2: type fixed(0.1234);
+    y: fpt2;
+    fpt3: type fixed(0.123);
+    z: fpt3;
+
+then
+
+    z = x*y;
+
+is illegal. We must add casts and do
+
+    z = fpt3(x)*fpt3(y);
+
+i.e., type equivalence between fixed point types requires equivalence of scale (and of maximum absolute value when specified).
+Fixed point types may be used where any other numerical type (byte, int, big, real) can be used.
+So you can compare them, have a list of them, have a channel of them, cast them to or from string and so on.
+
+You cannot use complement(~), not(!), and(&), or(|), xor(^) or modulus(%) on them as fixed point types are basically a form of real type.
+
+
+==== accuracy
+
+A fixed point value is a multiple of its scale.
+Given fixed point values X, Y and Z of scale s, t and u respectively, we can write
+
+    X = sx
+    Y = ty
+    Z = uz
+
+where x, y and z are integers.
+
+For the multiplication Z = X*Y the accuracy achieved is given by
+
+    | z - (st/u)xy | < 1
+
+and for the division Z = X/Y
+
+    | z - (s/(tu))x/y | < 1
+
+That is, the result is always within the result scale of the correct real value.
+
+This also applies when casting a fixed point type to another, casting an integer to a fixed point type and casting a fixed point type to an integer.
+These are all examples of the multiplication law with t = y = 1 since an integer may be thought of as a fixed point type with a scale of _1_.
+
+
+=== general expressions
 
 The remaining syntax for expressions is
 
@@ -1742,7 +2050,7 @@ _lvalue-expression-list_:
 ----
 
 
-==== Simple assignments
+==== simple assignments
 
 In general, the types of the left and right operands must be the same;
 this type must be a data type.
@@ -1787,7 +2095,7 @@ In this case, the elements in the array on the right replace the elements of `e1
 The length of the array is unchanged.
 
 
-==== Compound assignments
+==== compound assignments
 
 A compound assignment with _op_= is interpreted in terms of the plain assignment;
 
@@ -1806,7 +2114,7 @@ e1 = (e1) _op_ (e2);
 except that `e1` is evaluated only once.
 
 
-==== Send expressions
+==== send expressions
 
 A _send-expression_ takes the form
 
@@ -1826,7 +2134,7 @@ If no task is executing a channel receive operation on the specified channel, an
 Task synchronization is discussed in <<_code_alt_code_statement>> and <<_code_spawn_code_statement>>.
 
 
-==== Declare-expressions
+==== declare-expressions
 
 A _declare-expression_ is an assignment that also declares identifiers on its left:
 
@@ -1844,7 +2152,7 @@ As with ordinary assignments, the keyword `nil` may stand for an identifier whos
 The value and type of a declare-expression are the same as those of the expression.
 
 
-==== Load expressions
+==== load expressions
 
 A _load-expression_ has the form
 
@@ -1867,7 +2175,7 @@ Each evaluation of `load` creates a separate instance of the specified module;
 it does not share data with any other instance.
 
 
-=== Constant expressions
+=== constant expressions
 
 In several places a constant expression is required.
 Such an expression contains operands that are identifiers previously declared with `con`, or `int`, `big`, `real`, or `string` constants.
@@ -1880,7 +2188,7 @@ These may be connected by any of the following operators:
 
 together with arithmetic and string casts, and parentheses for grouping.
 
-=== Expression evaluation
+=== expression evaluation
 
 Expressions in Limbo are not reordered by the compiler;
 values are computed in accordance with the parse of the expression.
@@ -1899,7 +2207,7 @@ The default rounding mode is round-to-nearest-even.
 A set of routines in the `Math` library module permits independent control of these modes within each thread.
 
 
-== Statements
+== statements
 
 The executable code within a function definition consists of a sequence of statements and declarations.
 As discussed in <<_scope>>, declarations become effective at the place they appear.
@@ -1938,7 +2246,7 @@ _label_:
 ----
 
 
-=== Expression statements
+=== expression statements
 
 Expression statements consist of an expression followed by a semicolon:
 
@@ -1950,13 +2258,13 @@ _expression_ ;
 Most often expression statements are assignments, but other expressions that cause effects are often useful, for example calling a function or sending or receiving on a channel.
 
 
-=== Null statement
+=== null statement
 
 The null statement consists of a lone semicolon.
 It is most useful for supplying an empty body to a looping statement with internal side effects.
 
 
-=== Blocks
+=== blocks
 
 Blocks are _statements_ enclosed in `{}` characters.
 
@@ -1969,7 +2277,7 @@ A block starts a new scope.
 The effect of any declarations within a block disappears at the end of the block.
 
 
-=== Conditional statements
+=== conditional statements
 
 The conditional statement takes two forms:
 
@@ -1985,7 +2293,7 @@ In the second form, the second _statement_ is executed if the _expression_ is 0.
 The statement after `else` is connected to the nearest `else` -less `if`.
 
 
-=== Simple looping statements
+=== simple looping statements
 
 The simple looping statements are
 
@@ -2343,7 +2651,7 @@ The _expression_ is either a string describing the failure, or an exception name
 If an expression is not given, the `raise` statement must appear in the body of an exception handler; it raises the currently active exception.
 
 
-=== Exception handler
+=== exception handler
 
 Various errors in a Limbo program can be detected only at run-time.
 These include programming errors such as an attempt to index outside the bounds of an array, system errors such as exhausting memory, and user-defined exceptions declared at compile-time by exception declarations and caused at run-time by the `raise` statement.
@@ -2366,7 +2674,65 @@ The qualifier `*` matches any string or user-defined exception.
 An exception that is raised and not successfully handled by a thread will terminate the thread.
 
 
-== Referring to modules
+== function references
+
+Function references may be declared as follows:
+
+    fp: ref fn(s1: string, s2: string): int;
+
+Given the function
+
+    cmp(s1: string, s2: string): int
+    {
+        if(s1 < s2)
+            return -1;
+        if(s1 > s2)
+            return 1;
+        return 0;
+    }
+
+a reference to it can be created by assignment:
+
+    fp = cmp;
+
+where the name can be qualified by an explicit module reference as usual:
+
+    fp = mod->cmp;
+
+or it can be returned from a function:
+
+    Cmp: type ref fn(s1: string, s2: string): int;
+
+    rcmp(s1: string, s2: string): int
+    {
+	    return -cmp(s1, s2);
+    }
+
+    choose(i: int): Cmp {
+	    if(i)
+		    return rcmp;
+	    return cmp;
+    }
+
+(the declaration of the synonym `Cmp` was done only for clarity).
+They may be declared and passed as parameters:
+
+    sort(a: array of string, f: ref fn(s1, s2: string): int): array of string
+    {
+	    # ...
+    }
+	    # ...
+    b := sort(a, cmp);
+    c := sort(a, rcmp);
+    
+The function is called via the reference by
+
+    r := fp("fred", "bloggs");
+
+Otherwise function references behave just like any other reference type.
+
+
+== module references
 
 As discussed above, modules present constants, functions, and types in their interface.
 Their names may be the same as names in other modules or of local objects or types within a module that uses another.
@@ -2453,7 +2819,7 @@ the constants and types of `Mod` are accessed as if they had been imported;
 the functions declared in `Mod` are imported as well, and refer dynamically to the current instance of the module being implemented.
 
 
-== Scope
+== scope
 
 The scope of an identifier is the lexical range of a program throughout which the identifier means a particular type of, or instance of, an object.
 The same identifier may be associated with several different objects in different parts of the same program.
@@ -2475,7 +2841,7 @@ As discussed above, within `case alt` and `pick`, each qualifier and the stateme
 The scope of a label is restricted to the labeled statement, and label names may coincide with those of other entities in the same scope.
 
 
-=== Forward referencing
+=== forward referencing
 
 In general, names must be declared before they are used.
 
@@ -2529,7 +2895,7 @@ An earlier version of the language required circular references to be annoted by
 The notation can still be seen in some system source code, because the `cyclic` qualifier is taken into account in type checking, as described below, and some instances remain to provide backward compatibility.
 
 
-=== Type equality and compatibility
+=== type equality and compatibility
 
 In an assignment and in passing an actual argument to a function, the types of the target and the expression being assigned or passed must be equal (with certain exceptions, e.g. assignment of `nil` to a reference type).
 When a function is defined, its type must be equal to the type of a function with the same name if one is in scope.
@@ -2570,7 +2936,7 @@ When a module is loaded, the module stored in the file system must have a type t
 The type of the stored module type is compatible with the mentioned type if and only if all data members of the two types are equal in name and type, and all `adt` or functions actually mentioned by the program executing `load` have names and types equal to corresponding members of the stored module.
 
 
-== Examples
+== examples
 
 Because Limbo was designed for the Inferno environment, several of these examples consist of simplified versions of already simple Inferno applications in a prototype Inferno implementation.
 Some appreciation for the resources available in this environment should become evident, but its full description is available elsewhere; the discussion here will focus on language features.
@@ -2579,7 +2945,7 @@ However, several of the programs use facilities from the module `Sys` , which pr
 Some of the programs are annotated with line numbers; they are there only for descriptive purposes.
 
 
-=== A simple command interpreter module
+=== a simple command interpreter module
 
 This version of a shell program reads from a keyboard and executes `commands` typed by the user.
 Its own interface has the type of a `Command` module, and that is the type of the things it executes.
@@ -2676,7 +3042,8 @@ The free use of strings, lists, and tuple-returning functions is common in Limbo
 The `sys->read` routine gathers an array of bytes into `buf`.
 Thus the expression for the first argument of `sys->tokenize` converts this array to a string by slicing the array with `[0:n]`, using the actual number of bytes gathered by the `read`, and using a cast.
 
-=== Infrared remote control
+
+=== infrared remote control
 
 This example shows two instances of a module for interfacing to a TV remote control;
 one is for the real remote, which in this case is connected to a serial port on a set-top box, and the other is simulated for testing programs running on a regular operating system.
@@ -2959,7 +3326,8 @@ movie(entry: ref Dbinfo, cc: chan of int)
 }
 ----
 
-=== Monitors
+
+=== monitors
 
 Statically allocated storage within a module is accessible to all the functions of that module, and there is no explicit mechanism in Limbo for synchronizing concurrent updates to this storage from several tasks.
 However, it is straightforward to build a variety of concurrency-control mechanisms by using channel communications.
@@ -3054,7 +3422,7 @@ Limbo channels are usually unbuffered: a sender blocks until there is a receiver
 Buffered channels are used sparingly in Limbo programs, typically to improve throughput or, less often, in specialized ways as in the monitor example above.
 
 
-=== Guarding sends and receives
+=== guarding sends and receives
 
 In some applications, a process takes input from one channel, and sends it on to another channel, possibly having transformed it.
 In case the input and output processes run at different rates, the process itself acts as a buffer, holding a queue of values internally.
@@ -3138,7 +3506,7 @@ s := <- ch;
 ----
 
 
-== Syntax summary
+== syntax summary
 
 This section summarizes the grammar of Limbo above the lexical level; constants and identifiers are left undefined.
 
@@ -3427,460 +3795,6 @@ _load-expression_:
 ----
 
 
-== Addendum
+== references
 
-
-This addendum provides a brief summary of several language changes to
-Limbo since _The Limbo Programming Language_ was last revised:
-
-
-=== Buffered channels
-
-A buffered channel can now be declared:
-
-    c := chan[1] of int;
-
-Here the buffer size is 1. A send on this channel will succeed immediately
-if there is a receiver waiting or if the buffer is empty. A receive on
-this channel will succeed immediately if there is a data item in the
-buffer. This allows us to write a very simple locking mechanism:
-
-    acquire(c: chan of int)
-    {
-	    c <-= 0;
-    }
-
-    release(c: chan of int)
-    {
-	    <-c;
-    }
-    
-    new(): chan of int
-    {
-	    return chan[1] of int;
-    }
-    
-The declaration
-
-    c := chan[0] of int;
-
-is equivalent to 
-
-    c := chan of int;
-
-An attempt to create a channel with a negative buffer size will raise
-an exception. An attempt to create a channel with a very large buffer
-may result in an immediate memory exception if there is not enough room
-for the buffer.
-
-=== Unrestricted
-
-
-The implementation has changed to remove the restriction that only one
-process can be waiting in an `alt `to send or receive on a particular
-channel.
-The busy exception never occurs now. Thus you can do
-
-    i()
-    {
-	    c := chan of int;
-	    c1 := chan of int;
-	    spawn p(c, c1);
-	    <-c;
-	    spawn p(c, c1);
-	    <-c;
-	    for(i := 0; i < 20; i++)
-		    c1 <-= i;
-    }
-    
-    p(c: chan of int, c1: chan of int)
-    {
-	    c <-= 0;
-	    for(;;)
-		    alt{
-			    i := <-c1 =>
-				    ;
-		    }
-    }
-
-The two spawned processes can both wait on `c1 `without fuss.
-Processes
-are queued on a strict FIFO basis so, in the example above, the two
-processes receive on `c1 `alternately.
-
-=== Function references
-
-Function references may be declared as follows:
-
-    fp: ref fn(s1: string, s2: string): int;
-
-Given the function
-
-    cmp(s1: string, s2: string): int
-    {
-	    if(s1 < s2)
-		    return -1;
-	    if(s1 > s2)
-		    return 1;
-	    return 0;
-    }
-
-a reference to it can be created by assignment:
-
-    fp = cmp;
-
-where the name can be qualified by an explicit module reference as usual:
-
-    fp = mod->cmp;
-
-or it can be returned from a function:
-
-    Cmp: type ref fn(s1: string, s2: string): int;
-
-    rcmp(s1: string, s2: string): int
-    {
-	    return -cmp(s1, s2);
-    }
-
-    choose(i: int): Cmp {
-	    if(i)
-		    return rcmp;
-	    return cmp;
-    }
-
-(the declaration of the synonym `Cmp `was done only for clarity).
-They may be declared and passed as parameters:
-
-    sort(a: array of string, f: ref fn(s1, s2: string): int): array of string
-    {
-	    # ...
-    }
-	    # ...
-    b := sort(a, cmp);
-    c := sort(a, rcmp);
-    
-The function is called via the reference by
-
-    r := fp("fred", "bloggs");
-
-Otherwise function references behave just like any other reference type.
-
-
-=== Exceptions
-
-Both string exceptions and user defined exceptions are now provided.
-The `Sys `module interface to exceptions has been removed and replaced
-by new language constructs in limbo.
-
-=== String exceptions
-
-Simple string exceptions can be raised as follows
-
-    raise \fIs\fP;
-
-where _s_ is any value of type string (it need not be constant).
-
-Exception handlers may be attached to a block (or sequence of statements)
-
-    {
-	    foo();
-	    bar();
-    } exception e {
-    "a" or "b" =>
-	    sys->print("caught %s\en", e);
-	    raise;
-    "ab*" =>
-	    sys->print("caught %s\en", e);
-	    exit;
-    "abcd*" =>
-	    sys->print("caught %s\en", e);
-	    raise e;
-    "a*" =>
-	    sys->print("caught %s\en", e);
-	    raise "c";
-    "*" =>
-	    sys->print("caught %s\en", e);
-    }
-    LL:
-
-
-Any exception occurring within the block (and in nested function calls
-within the block) can potentially be caught by the exception handler. An
-exception is caught by a guard exactly maching the exception string
-or by a guard \f5\&"\fP\fIs\fP\f5*"\fP where _s_ is a prefix of the
-exception string.
-The most specific match is used. Thus a raise of "a"
-will be caught by the first guard and not by the fourth guard. A raise of
-"abcde" is caught by the third and not the second or fourth. If a match
-is found, the sequence of statements following the guard are executed.
-If not, the system searches for a handler at a higher level.
-
-As shown above, the exception is available through the exception
-identifier (e in this case) if given following the exception keyword.
-
-The exception is reraised using
-
-    raise;
-
-or
-
-    raise e;
-
-
-Both the block and the exception code will fall through to the statement
-labelled LL unless, of course, they do an explicit exit, return or
-raise first.
-
-=== User-defined exceptions
-
-You can declare your own exceptions:
-
-    implement Fibonacci;
-    
-    include "sys.m";
-    include "draw.m";
-    
-    Fibonacci: module
-    {
-	    init: fn(nil: ref Draw->Context, argv: list of string);
-    };
-    
-    
-    init(nil: ref Draw->Context, nil: list of string)
-    {
-	    sys := load Sys Sys->PATH;
-	    for(i := 0; ; i++){
-		    f := fibonacci(i);
-		    if(f < 0)
-			    break;
-		    sys->print("F(%d) = %d\en", i, f);
-	    }
-    }
-
-
-    FIB: exception(int, int);
-
-
-    fibonacci(n: int): int
-    {
-	    {
-		    fib(1, n, 1, 1);
-	    }exception e{
-	    FIB =>
-		    (x, nil) := e;
-		    return x;
-	    "*" =>
-		    sys->print("unexpected string exception %s raised\en", e);
-	    * =>
-		    sys->print("unexpected exception raised\en");
-	    }
-	    return 0;
-    }
-    
-    
-    fib(n: int, m: int, x: int, y: int) raises (FIB)
-    {
-	    if(n >= m)
-		raise FIB(x, y);
-
-	    {
-		    fib(n+1, m, x, y);
-	    }exception e{
-	    FIB =>
-		    (x, y) = e;
-		    x = x+y;
-		    y = x-y;
-		    raise FIB(x, y);
-	    }
-    }
-
-
-`FIB `is a declared exception that returns two integers. The values are
-supplied when raising the exception:
-
-    raise FIB(3, 4);
-
-When caught the values can be recovered by treating the declared exception
-identifier as if it were a tuple of 2 integers:
-
-    (x, y) = e;
-
-In general each exception alternative treats the exception identifier
-appropriately : as a string when the exception qualifier is a string,
-as the relevant tuple when the exception is declared.
-
-If you do
-
-    "abcde" or FIB =>
-	(x, y) = e;
-	sys->print("%s\en", e);
-
-you will get a compiler error as `e` 's type is indeterminate within
-this alternative.
-
-Reraising is the same as in the case of string exceptions.
-
-Note also the difference between the string guard \&\f5"*"\fP and the
-guard `* `in the function fibonacci.
-The former will match any string
-exception, the latter any exception. If a string exception does occur
-it matches the former as it is the most specific.
-If an unexpected user
-defined exception occurs it matches the latter.
-
-The main difference between declared exceptions and string exceptions
-is that the former must be caught by the immediate caller of a function
-that raises them, otherwise they turn into a string exception whose name
-is derived from that of the exception declaration.
-
-The `raises `clause
-
-The definition of the function fib in the above example also lists the
-user defined exceptions it can raise via the use of a `raises `clause. In
-this case there is just the one exception (\f5FIB\f1). These clauses
-(if given) must be compatible between any declaration and definition of
-the function.
-
-The compiler reports instances of functions which either raise some
-exception which is not mentioned in their raises clause or does not raise
-some exception which is mentioned in their raises clause. Currently the
-report is a warning.
-
-=== Exponentiation
-
-The exponentiation operator (written as `**` ) is now part of the
-Limbo language.
-Its precedence is above that of multiplication,
-division and modulus but below that of the unary operators. It is right
-associative. Thus
-
-    3**4*2 = (3**4)*2 = 81*2 = 162
-    -3**4 = (-3)**4 = 81
-    2**3**2 = 2**(3**2) = 2**9 = 512
-
-The type of the left operand must be `int` , `big `or `real` .
-The type
-of the right operand must be `int` .
-The type of the result is the type
-of the left operand.
-
-=== Fixed point types
-
-A declaration of the form
-
-    x: fixed(0.2, 12345.0);
-
-declares `x `to be a variable of a fixed point type. The scale of the
-type is 1/5 and the maximum absolute value of the type is 12345.0.
-
-Similarly
-
-    x: fixed(0.125, 4096.0)
-
-specifies a scale of 0.125 and a maximum absolute value of 4096.
-This requires only 17 bits so the underlying type will be `int `and the
-compiler is free to allocate the remaining 15 bits to greater range or
-greater accuracy. In fact the compiler always chooses the latter.
-
-The maximum absolute value is optional :
-
-    x: fixed(0.125);
-
-is equivalent to
-
-    x: fixed(0.125, 2147483647.0 * 0.125);
-
-and ensures the underlying type is exactly an int ie the compiler has
-no scope to add any extra bits for more accuracy.
-
-A binary fixed point type with 8 bits before the binary point and 24
-after might therefore be declared as
-
-    x: fixed(2.0**-24);
-
-
-The scale must be static: its value known at compile time and it must
-be positive and real; similarly for the maximum absolute value when
-specified.
-
-Currently the only underlying base type supported is `int` .
-
-A shorthand for fixed point types is available through the use of `type
-`declarations:
-
-    fpt: type fixed(2.0**-16);
-
-We can then do
-
-    x, y, z: fpt;
-    zero: con fpt(0);
-    
-    x = fpt(3.21);
-    y = fpt(4.678);
-    z = fpt(16r1234.5678);
-    z = -x;
-    z = x+y;
-    z = x-y;
-    z = x*y;
-    z = x/y;
-    sys->print("z=%f", real z);
-
-There is no implicit numerical casting in Limbo so we have to use
-explicit casts to initialize fixed point variables. Note the use of a
-base to initialize `z `using a new literal representation.
-
-Given
-
-    fpt1: type fixed(0.12345);
-    x: fpt1;
-    fpt2: type fixed(0.1234);
-    y: fpt2;
-    fpt3: type fixed(0.123);
-    z: fpt3;
-
-then
-
-    z = x*y;
-
-is illegal. We must add casts and do
-
-    z = fpt3(x)*fpt3(y);
-
-ie type equivalence between fixed point types requires equivalence of
-scale (and of maximum absolute value when specified).
-
-Fixed point types may be used where any other numerical type (byte, int,
-big, real) can be used. So you can compare them, have a list of them,
-have a channel of them, cast them to or from string and so on.
-
-You cannot use complement(~), not(!), and(&), or(|), xor(^) or modulus(%)
-on them as fixed point types are basically a form of real type.
-
-=== Accuracy
-
-A fixed point value is a multiple of its scale. Given fixed point values
-X, Y and Z of scale s, t and u respectively, we can write
-
-    X = sx
-    Y = ty
-    Z = uz
-
-where x, y and z are integers.
-
-For the multiplication Z = X*Y the accuracy achieved is given by
-
-    | z - (st/u)xy | < 1
-
-and for the division Z = X/Y
-
-    | z - (s/(tu))x/y | < 1
-
-That is, the result is always within the result scale of the correct
-real value.
-
-This also applies when casting a fixed point type to another, casting
-an integer to a fixed point type and casting a fixed point type to an
-integer. These are all examples of the multiplication law with t = y =
-1 since an integer may be thought of as a fixed point type with a scale
-of _1._
-
+ . This paper is adapted from the original by Dennis M. Ritchie.

@@ -5,7 +5,7 @@ SYSTARG=Nt
 SYSHOST=Nt
 OBJTYPE=386
 OBJDIR=$SYSTARG/$OBJTYPE
-<$ROOT/mkfiles/mkhost-$SYSHOST
+<$OBJDIR/../mkfile
 <$OBJDIR/mkfile
 
 TARG=ntsrv

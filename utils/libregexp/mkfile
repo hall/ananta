@@ -1,7 +1,7 @@
 <$ROOT/mkconfig
 
 #XXX
-<$ROOT/mkfiles/mkhost-$SYSHOST		# variables appropriate for host system
+<$OBJDIR/../mkfile		# variables appropriate for host system
 <$OBJDIR/mkfile	# variables used to build target object type
 
 LIB=libregexp.a

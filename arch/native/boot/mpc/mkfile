@@ -1,6 +1,6 @@
 objtype=power
 OBJTYPE=power	# always
-<../../../mkconfig
+<$ROOT/mkconfig
 SYSTARG=$OSTARG	# always
 <$OBJDIR/mkfile
 INSTALLDIR=$ROOT/Inferno/$OBJTYPE/bin	#path of directory where kernel is installed

@@ -1,6 +1,6 @@
 SYSTARG=Plan9
 OBJTYPE=$objtype
-<../../mkconfig
+<$ROOT/mkconfig
 
 #Configurable parameters
 

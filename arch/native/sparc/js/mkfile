@@ -1,6 +1,6 @@
 SYSTARG=Inferno
 OBJTYPE=sparc
-<../../mkconfig
+<$ROOT/mkconfig
 
 #Configurable parameters
 

@@ -1,4 +1,4 @@
-<../../mkconfig
+<$ROOT/mkconfig
 
 #
 #	the test command is only needed on Windows NT and Windows 95

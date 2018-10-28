@@ -1,6 +1,6 @@
 SYSTARG=Unixware
 OBJTYPE=386
-<../../mkconfig
+<$ROOT/mkconfig
 SYSTARG=Unixware
 OBJTYPE=386
 

@@ -1,6 +1,6 @@
 SYSTARG=DragonFly
 OBJTYPE=386
-<../../mkconfig
+<$ROOT/mkconfig
 SYSTARG=DragonFly
 OBJTYPE=386
 

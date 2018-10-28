@@ -1,4 +1,4 @@
-<../../mkconfig
+<$ROOT/mkconfig
 SYSTARG=OpenBSD
 OBJTYPE=386
 

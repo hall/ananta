@@ -1,4 +1,4 @@
-<../../mkconfig
+<$ROOT/mkconfig
 
 #XXX
 <$ROOT/mkfiles/mkhost-$SYSHOST		# variables appropriate for host system

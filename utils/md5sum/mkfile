@@ -1,4 +1,4 @@
-<../../mkconfig
+<$ROOT/mkconfig
 
 #
 #	the md5sum command is needed for the test suite

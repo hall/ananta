@@ -1,6 +1,6 @@
 SYSTARG=FreeBSD
 OBJTYPE=386
-<../../mkconfig
+<$ROOT/mkconfig
 SYSTARG=FreeBSD
 OBJTYPE=386
 

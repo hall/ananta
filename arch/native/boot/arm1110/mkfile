@@ -1,4 +1,4 @@
-<../../../mkconfig
+<$ROOT/mkconfig
 objtype=arm
 SYSTARG=$OSTARG
 OBJTYPE=arm

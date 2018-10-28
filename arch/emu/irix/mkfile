@@ -1,6 +1,6 @@
 SYSTARG=Irix
 OBJTYPE=mips
-<../../mkconfig
+<$ROOT/mkconfig
 SYSTARG=Irix
 OBJTYPE=mips
 

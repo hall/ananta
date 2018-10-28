@@ -1,5 +1,5 @@
 SYSTARG=MacOSX
-<../../mkconfig
+<$ROOT/mkconfig
 SYSTARG=MacOSX
 
 #Configurable parameters

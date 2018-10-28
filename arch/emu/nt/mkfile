@@ -2,7 +2,7 @@ SYSTARG=Nt
 OBJTYPE=386
 #uncomment following line for full Microsoft debug symbols
 #LDEBUG=-debug -debugtype:cv -pdb:none
-<../../mkconfig
+<$ROOT/mkconfig
 SYSTARG=Nt
 OBJTYPE=386
 

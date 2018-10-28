@@ -1,6 +1,6 @@
 SYSTARG=Solaris
 OBJTYPE=sparc
-<../../mkconfig
+<$ROOT/mkconfig
 SYSTARG=Solaris
 OBJTYPE=sparc
 

@@ -1,4 +1,4 @@
-<../../mkconfig
+<$ROOT/mkconfig
 
 #
 #	this directory contains a stripped-down version of rc

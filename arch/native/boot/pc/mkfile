@@ -1,4 +1,4 @@
-<../../../mkconfig
+<$ROOT/mkconfig
 objtype=386
 SYSTARG=$OSTARG
 OBJTYPE=386

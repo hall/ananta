@@ -1,6 +1,6 @@
 SYSTARG=NetBSD
 OBJTYPE=386
-<../../mkconfig
+<$ROOT/mkconfig
 SYSTARG=NetBSD
 OBJTYPE=386
 

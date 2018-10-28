@@ -274,7 +274,7 @@ cleanexit(int x)
 
 	if(dflag == 0)
 		termrestore();
-	kill(0, SIGKILL);
+	kill(0, SIGTERM);
 	exit(0);
 }
 

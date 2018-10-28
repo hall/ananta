@@ -145,6 +145,76 @@ emptydirs = \
     usr/inferno/charon\
     usr/inferno/keyring\
     usr/inferno/tmp\
+    dis/acme\
+    dis\
+    dis/ip\
+    dis/ip/ppp\
+    dis/ip/nppp\
+    dis/lego\
+    dis/dbm\
+    dis/charon\
+    dis/acme\
+    dis/palm\
+    dis/grid\
+    dis/grid/lib\
+    dis/grid/demo\
+    dis/ndb\
+    dis/avr\
+    dis/lib\
+    dis/lib/encoding\
+    dis/lib/styxconv\
+    dis/lib/ftree\
+    dis/lib/mash\
+    dis/lib/ida\
+    dis/lib/spki\
+    dis/lib/usb\
+    dis/lib/print\
+    dis/lib/crypt\
+    dis/lib/w3c\
+    dis/lib/convcs\
+    dis/lib/strokes\
+    dis/auxi\
+    dis/svc\
+    dis/svc/webget\
+    dis/svc/httpd\
+    dis/ebook\
+    dis/demo\
+    dis/demo/lego\
+    dis/demo/ns\
+    dis/demo/camera\
+    dis/demo/chat\
+    dis/demo/whiteboard\
+    dis/demo/spree\
+    dis/demo/odbc\
+    dis/demo/cpupool\
+    dis/auth\
+    dis/auth/proto\
+    dis/sh\
+    dis/spki\
+    dis/fs\
+    dis/alphabet\
+    dis/alphabet/grid\
+    dis/alphabet/fs\
+    dis/alphabet/abc\
+    dis/alphabet/main\
+    dis/wm\
+    dis/wm/brutus\
+    dis/usb\
+    dis/collab\
+    dis/collab/lib\
+    dis/collab/clients\
+    dis/collab/servers\
+    dis/mpc\
+    dis/spree\
+    dis/spree/engines\
+    dis/spree/lib\
+    dis/spree/clients\
+    dis/math\
+    dis/install\
+    dis/mpeg\
+    dis/disk\
+    dis/tiny\
+
 
 mkdirs:V:
 	mkdir -p $emptydirs $OBJDIR/bin $OBJDIR/lib

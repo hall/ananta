@@ -13,7 +13,7 @@ are automated using `mk`.
 == Introduction
 
 `mk` performs the same task as `make` [Feld79] but is different in many
-ways.  This document describes `mk`'s capabilities and discusses how
+ways.  This document describes `mk` 's capabilities and discusses how
 they are used in Plan 9. There are occasional references to differences
 between `mk` and `make`, but an appendix summarizes the details.
 

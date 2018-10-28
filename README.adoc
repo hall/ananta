@@ -60,5 +60,5 @@ Documentation is at link:{docpath}[].
 
 == about
 
-https://github.com/brytonhall/inf[`{name}`] is licensed under the GNU GPLv3.
+https://gitlab.com/hall/inf[`{name}`] is licensed under the [GNU GPLv3](LICENSE).
 

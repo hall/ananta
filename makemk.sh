@@ -5,6 +5,7 @@
 # look after itself.
 
 # grab settings from mkconfig
+ROOT=$PWD
 . ./mkconfig
 
 SYSTYPE=posix

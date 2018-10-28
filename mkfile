@@ -5,6 +5,7 @@
 #	- the remaining libraries
 #	- commands
 #	- utilities
+ROOT=$PWD
 <mkconfig
 
 EMUDIRS=\
@@ -49,6 +50,7 @@ emuclean:V:             $ROOT/arch/emu/clean-$HOSTMODEL
 kernel:V:               kernel/all-$HOSTMODEL
 kernelclean:V:          kernel/clean-$HOSTMODEL
 kernelinstall:V:        kernel/install-$HOSTMODEL
+nuke:V:         nuke-$HOSTMODEL
 
 &-Posix:QV:
 	for j in $DIRS utils tools; do

@@ -1,13 +1,13 @@
 # Edit the following variables.
 ############################################################
 # On Windows, this MUST be of the form 'drive:/path'
-ROOT=$HOME/src/inf
+#ROOT=$HOME/src/inf
 
 TKSTYLE=std       # Tk version (std, ...)
 
 # Except for building kernels, SYSTARG must be SYSHOST
 SYSHOST=linux     # build  system (Hp, Inferno, Irix, Linux, MacOSX, Nt, Plan9, Solaris)
-SYSTARG=$SYSHOST  # target system (Hp, Inferno, Irix, Linux,         Nt, Plan9, Solaris)
+SYSTARG=$SYSHOST  # target system
 
 OBJTYPE=386       # target system architecture (386, arm, mips, power, s800, sparc, ...)
 #OBJTYPE=$objtype # plan9 sets $objtype automatically

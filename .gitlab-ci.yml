@@ -1,0 +1,11 @@
+image: i386/gcc:6.1
+
+build:
+  before_script:
+    - ./makemk.sh
+    - export PATH=$PWD/arch/linux/386/bin/:$PATH
+    - export MKFLAGS='SYSHOST=linux OBJTYPE=386 ROOT='$PWD
+  script:
+    - mk $MKFLAGS mkdirs
+    - mk $MKFLAGS install
+    - emu cat /dev/sysctl || echo ' -' exited with status $? '(ignored)'

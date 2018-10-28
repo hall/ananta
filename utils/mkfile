@@ -1,4 +1,4 @@
-<../mkconfig
+<$ROOT/mkconfig
 
 #
 #	Utils we build everywhere, because the Plan 9 versions don't yet

@@ -1,0 +1,83 @@
+<$ROOT/mkconfig
+
+#Configurable parameters
+
+CONF=pc			#default configuration
+CONFLIST=pc pcdisk
+CLEANCONFLIST=pc pcdisk zpc zpcrem pix pcsoe
+
+SYSTARG=$OSTARG
+OBJTYPE=386
+INSTALLDIR=$OBJDIR/bin	#path of directory where kernel is installed
+#INSTALLDIR=/$OBJTYPE
+
+#end configurable parameters
+
+<$OBJDIR/mkfile	#set vars based on target system
+
+<| $SHELLNAME $ROOT/arch/native/port/mkdevlist $CONF	#sets $IP, $DEVS, $ETHERS, $VGAS, $PORT, $MISC, $LIBS, $OTHERS
+
+OBJ=\
+	l.$O\
+	fpsave.$O\
+	portclock.$O\
+	tod.$O\
+	i8250.$O\
+	i8253.$O\
+	i8259.$O\
+	kbd.$O\
+	main.$O\
+	memory.$O\
+	mmu.$O\
+	trap.$O\
+	$CONF.root.$O\
+	$IP\
+	$DEVS\
+	$ETHERS\
+	$LINKS\
+	$PORT\
+	$MISC\
+	$OTHERS\
+
+LIBNAMES=${LIBS:%=lib%.a}
+
+HFILES=\
+	mem.h\
+	dat.h\
+	fns.h\
+	io.h\
+
+CFLAGS=-wFVT -I$OBJDIR/include -I$ROOT/include -I$ROOT/include/libinterp -I$ROOT/arch/native/port
+KERNDATE=`{$NDATE}
+
+default:V: i$CONF
+
+i$CONF: $OBJ $CONF.c $CONF.root.h $LIBNAMES
+	$CC $CFLAGS '-DKERNDATE='$KERNDATE $CONF.c
+	$LD -o $target -T0x80100020 -l $OBJ $CONF.$O $LIBFILES
+	$KSIZE $target
+
+install:V: i$CONF
+	cp i$CONF $INSTALLDIR/i$CONF
+
+<$ROOT/arch/native/port/portmkfile
+
+clock.$O:	$OBJDIR/include/ureg.h
+devether.$O:	$OBJDIR/include/ureg.h
+fault386.$O:	$OBJDIR/include/ureg.h
+main.$O:	$OBJDIR/include/ureg.h
+trap.$O:	$OBJDIR/include/ureg.h
+
+devether.$O $ETHERS:	etherif.h $ROOT/arch/native/port/netif.h
+$IP devip.$O:	$ROOT/arch/native/ip/ip.h
+
+# to be moved to port/interp 
+bench.h:D: $ROOT/module/bench.m
+	rm -f $target && limbo -a -I$ROOT/module $ROOT/module/bench.m > $target
+benchmod.h:D:  $ROOT/module/bench.m
+	rm -f $target && limbo -t Bench -I$ROOT/module $ROOT/module/bench.m > $target
+devbench.$O: bench.h benchmod.h
+$VGA screen.$O:	screen.h vga.h
+
+devuart.$O:	$ROOT/arch/native/port/devuart.c $ROOT/arch/native/port/uart.h
+	$CC $CFLAGS $ROOT/arch/native/port/devuart.c

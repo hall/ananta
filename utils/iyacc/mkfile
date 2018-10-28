@@ -8,6 +8,7 @@ HFILES= $ROOT/include/bio.h\
 
 LIBS=bio 9		# libbio.a uses lib9.a so order matters.
 
+BIN=$OBJDIR/bin
 
 <$ROOT/mkfiles/mkone-$SHELLTYPE
 

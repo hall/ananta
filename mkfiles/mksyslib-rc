@@ -1,7 +1,7 @@
 #
 #	Rules for updating a library with rc
 #
-LIBRARY=$OBJDIR/lib$LIB
+LIBRARY=$OBJDIR/lib/$LIB
 LIBOBJ=${OFILES:%=$LIBRARY(%)}
 
 default:V:	all

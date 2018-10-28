@@ -1,7 +1,7 @@
 # Edit the following variables.
 ############################################################
 # On Windows, this MUST be of the form 'drive:/path'
-ROOT=/home/bryton/repos/inf
+ROOT=$HOME/src/inf
 
 TKSTYLE=std       # Tk version (std, ...)
 
@@ -14,7 +14,7 @@ OBJTYPE=386       # target system architecture (386, arm, mips, power, s800, spa
 
 ############################################################
 
-OBJDIR=$ROOT/arch/$OBJTYPE/$SYSTARG
+OBJDIR=$ROOT/arch/$SYSTARG/$OBJTYPE
 
-<$ROOT/arch/mk-$SYSTARG     # variables appropriate for host system
-<$OBJDIR/mkfile          # variables used to build target object type
+<$ROOT/arch/$SYSTARG/mkfile     # variables appropriate for host system
+<$OBJDIR/mkfile                 # variables used to build target object type

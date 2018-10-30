@@ -9,5 +9,8 @@
 *.a
 **/y.*
 libinterp/*.h
-emu/*/*.c
+arch/emu/*/*.root.[ch]
+arch/emu/*/errstr.h
+arch/emu/*/emu.c
 emu/*/*.h
+

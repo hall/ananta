@@ -8,4 +8,4 @@ build:
   script:
     - mk $MKFLAGS mkdirs
     - mk -depg -e -k $MKFLAGS install
-    - emu cat /dev/sysctl || echo ' -' exited with status $? '(ignored)'
+    - emu cat /dev/sysctl

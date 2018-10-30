@@ -36,7 +36,7 @@ KERNEL_DIRS=\
 
 DIRS=\
 	$EMUDIRS\
-	appl\
+#	appl\
 
 foo:QV:
 	echo mk all, clean, install
@@ -52,9 +52,8 @@ kernelclean:V:          kernel/clean-$HOSTMODEL
 kernelinstall:V:        kernel/install-$HOSTMODEL
 nuke:V:         nuke-$HOSTMODEL
 
-&-Posix:QV:
+&-Posix:V:
 	for j in $DIRS utils tools; do
-                echo "(cd $j; mk $MKFLAGS $stem)"
 		(cd $j; mk $MKFLAGS $stem) || exit 1
 	done
 &-Nt:V:
@@ -214,7 +213,6 @@ emptydirs = \
     dis/mpeg\
     dis/disk\
     dis/tiny\
-
 
 mkdirs:V:
 	mkdir -p $emptydirs $OBJDIR/bin $OBJDIR/lib

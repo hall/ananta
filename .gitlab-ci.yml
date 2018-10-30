@@ -7,5 +7,5 @@ build:
     - export MKFLAGS='SYSHOST=linux OBJTYPE=386 ROOT='$PWD
   script:
     - mk $MKFLAGS mkdirs
-    - mk $MKFLAGS install
+    - mk -depg -e -k $MKFLAGS install
     - emu cat /dev/sysctl || echo ' -' exited with status $? '(ignored)'

@@ -1,37 +1,35 @@
 = The Inferno Shell
-Roger Peppé <rog@vitanuova.com>
 
-The Inferno shell _sh_ is a reasonably small shell that brings together
-aspects of several other shells along with Inferno's dynamically loaded
-modules, which it uses for much of the functionality traditionally built
-in to the shell. This paper focuses principally on the features that
-make it unusual, and presents an example 'network chat' application
-written entirely in _sh_ script.
+
+The Inferno shell _sh_ is a reasonably small shell that brings together aspects of several other shells along with Inferno's dynamically loaded modules,
+which it uses for much of the functionality traditionally built in to the shell.
+This paper focuses principally on the features that make it unusual,
+and presents an example 'network chat' application written entirely in _sh_ script.
 
 
 == Introduction
 
-Shells come in many shapes and sizes. The Inferno shell _sh_ (actually
-one of three shells supplied with Inferno) is an attempt to combine the
-strengths of a Unix-like shell, notably Tom Duff's _rc_, with some of
-the features peculiar to Inferno.  It owes its largest debt to _rc_,
+Shells come in many shapes and sizes.
+The Inferno shell _sh_ (actually one of three shells supplied with Inferno)
+is an attempt to combine the strengths of a Unix-like shell,
+notably Tom Duff's _rc_,
+with some of the features peculiar to Inferno.
+It owes its largest debt to _rc_,
 which provides almost all of the syntax and most of the semantics too;
-when in doubt, I copied _rc_'s behaviour. In fact, I borrowed as many good
-ideas as I could from elsewhere, inventing new concepts and syntax only
-when unbearably tempted. See Credits for a list of those I could remember.
+when in doubt, I copied _rc_'s behaviour.
+In fact, I borrowed as many good ideas as I could from elsewhere,
+inventing new concepts and syntax only when unbearably tempted.
+See Credits for a list of those I could remember.
 
-This paper does not attempt to give more than a brief overview of the
-aspects of _sh_ which it holds in common with Plan 9's _rc_.  The reader
-is referred to _sh_(1) (the definitive reference) and Tom Duff's paper
-'Rc - The Plan 9 Shell'.  I have occasionally pinched examples from the
-latter, so the differences are easily contrasted.
+This paper does not attempt to give more than a brief overview of the aspects of _sh_ which it holds in common with Plan 9's _rc_.
+The reader is referred to _sh_(1) (the definitive reference) and Tom Duff's paper 'Rc - The Plan 9 Shell'.
+I have occasionally pinched examples from the latter, so the differences are easily contrasted.
+
 
 == Overview
 
-_sh_ is, at its simplest level, a command interpreter that will be
-familiar to all those who have used the Bourne-shell, C shell, or any
-of the numerous variants thereof (e.g.  _bash_, _ksh_, _tcsh_).  All of
-the following commands behave as expected:
+_sh_ is, at its simplest level, a command interpreter that will be familiar to all those who have used the Bourne-shell, C shell, or any of the numerous variants thereof (e.g. _bash_, _ksh_, _tcsh_).
+All of the following commands behave as expected:
 
     date
     cat /lib/keyboard
@@ -43,21 +41,17 @@ the following commands behave as expected:
     ls; date
     limbo *.b &
 
-An _rc_ concept that will be less familiar to users of more conventional
-shells is the role of _lists_ in the shell.  Each simple _sh_ command, and
-the value of any _sh_ environment variable, consists of a list of words.
-_sh_ lists are flat, a simple ordered list of words, where a word is a
-sequence of characters that may include white-space or characters special
-to the shell. The Bourne-shell and its kin have no such concept, which
-means that every time the value of any environment variable is used,
-it is split into blank separated words.  For instance, the command:
+An _rc_ concept that will be less familiar to users of more conventional shells is the role of _lists_ in the shell.
+Each simple _sh_ command, and the value of any _sh_ environment variable, consists of a list of words.
+_sh_ lists are flat, a simple ordered list of words, where a word is a sequence of characters that may include white-space or characters special to the shell.
+The Bourne-shell and its kin have no such concept, which means that every time the value of any environment variable is used, it is split into blank separated words.
+For instance, the command:
 
     x='-l /lib/keyboard'
     ls $x
 
-would in many shells pass the two arguments `-l` and `/lib/keyboard`
-to the `ls` command.  In _sh_, it will pass the single argument `-l
-/lib/keyboard`.
+would in many shells pass the two arguments `-l` and `/lib/keyboard` to the `ls` command.
+In _sh_, it will pass the single argument `-l /lib/keyboard`.
 
 The following aspects of _sh_'s syntax will be familiar to users of _rc_.
 
@@ -85,8 +79,7 @@ List concatenation:
 
     cat /appl/cmd/sh/^(std regex expr)^.b
 
-To the above, _sh_ adds a variant of the `\`{}` operator: `"{}`, which is
-the same except that it does not split the input into tokens, for example:
+To the above, _sh_ adds a variant of the `'{}` operator: `"{}`, which is the same except that it does not split the input into tokens, for example:
 
     for i in "{echo one two three} {
         echo loop
@@ -94,24 +87,22 @@ the same except that it does not split the input into tokens, for example:
 
 will only print `loop` once.
 
-_sh_ also adds a new redirection operator `<>`, which opens the standard
-input (by default) for reading _and_ writing.
+_sh_ also adds a new redirection operator `<>`, which opens the standard input (by default) for reading _and_ writing.
+
 
 == Command blocks
 
-Possibly _sh_'s most significant departure from the norm is its use
-of command blocks as values.  In a conventional shell, a command block
-groups commands together into a single syntactic unit that can then be
-used wherever a simple command might appear.  For example:
+Possibly _sh_'s most significant departure from the norm is its use of command blocks as values.
+In a conventional shell, a command block groups commands together into a single syntactic unit that can then be used wherever a simple command might appear.
+For example:
 
     {
         echo hello
         echo goodbye
     } > /dev/null
 
-_sh_ allows this, but it also allows a command block to appear wherever a
-normal word would appear. In this case, the command block is not executed
-immediately, but is bundled up as if it was a single quoted word.
+_sh_ allows this, but it also allows a command block to appear wherever a normal word would appear.
+In this case, the command block is not executed immediately, but is bundled up as if it was a single quoted word.
 For example:
 
     cmd = {
@@ -119,9 +110,8 @@ For example:
         echo goodbye
     }
 
-will store the contents of the braced block inside the environment
-variable `$cmd`.  Printing the value of `$cmd` gets the block back again,
-for example:
+will store the contents of the braced block inside the environment variable `$cmd`.
+Printing the value of `$cmd` gets the block back again, for example:
 
     echo $cmd
 
@@ -129,25 +119,18 @@ gives
 
     {echo hello;echo goodbye}
 
-Note that when the shell parsed the block, it ignored everything that was
-not syntactically relevant to the execution of the block; for instance,
-the white space has been reduced to the minimum necessary, and the
-newline has been changed to the functionally identical semi-colon.
+Note that when the shell parsed the block, it ignored everything that was not syntactically relevant to the execution of the block;
+for instance, the white space has been reduced to the minimum necessary, and the newline has been changed to the functionally-identical semi-colon.
 
-It is also worth pointing out that `echo` is an external module,
-implementing only the standard `Command`(2) interface; it has no knowledge
-of shell command blocks. When the shell invokes an external command,
-and one of the arguments is a command block, it simply passes the
-equivalent string. Internally, built in commands are slightly different
-for efficiency's sake, as we will see, but for almost all purposes you
-can treat command blocks as if they were strings holding functionally
-equivalent shell commands.
+It is also worth pointing out that `echo` is an external module, implementing only the standard `Command`(2) interface;
+it has no knowledge of shell command blocks.
+When the shell invokes an external command, and one of the arguments is a command block, it simply passes the equivalent string.
+Internally, built in commands are slightly different for efficiency's sake, as we will see,
+but for almost all purposes you can treat command blocks as if they were strings holding functionally equivalent shell commands.
 
-This equivalence also applies to the execution of commands.  When the
-shell comes to execute a simple command (a sequence of words), it
-examines the first word to decide what to execute. In most shells,
-this word can be either the file name of an external command, or the
-name of a command built in to the shell (e.g. `exit`).
+This equivalence also applies to the execution of commands.
+When the shell comes to execute a simple command (a sequence of words), it examines the first word to decide what to execute.
+In most shells, this word can be either the file name of an external command, or the name of a command built in to the shell (e.g. `exit`).
 
 _sh_ follows these conventional rules, but first, it examines the first
 character of the first word, and if it is an open brace (`{`) character,
@@ -1333,31 +1316,24 @@ remain the case.
 
 == Credits
 
-_sh_ is almost entirely an amalgam of other people's ideas that I have
-been fortunate enough to encounter over the years. I hope they will
-forgive me for the corruption I've applied...
+Adapted from the original article by Roger Peppé <rog@vitanuova.com>.
 
-I have been a happy user of a version of Tom Duff's _rc_ for ten years
-or so; without _rc_, this shell would not exist in anything like its
-present form.  Thanks, Tom.
+_sh_ is almost entirely an amalgam of other people's ideas that I have been fortunate enough to encounter over the years.
+I hope they will forgive me for the corruption I've applied...
 
-It was Byron Rakitzis's UNIX version of _rc_ that I was using for most
-of those ten years; it was his version of the grammar that eventually
-became _sh_'s grammar, and the name of my `glom()` function came straight
-from his _rc_ source.
+I have been a happy user of a version of Tom Duff's _rc_ for ten years or so;
+without _rc_, this shell would not exist in anything like its present form.
+Thanks, Tom.
 
-From Paul Haahr's _es_, a descendent of Byron's _rc_, and the shell
-that probably holds the most in common with _sh_, I stole the 'blocks
-as values' idea; the way that blocks transform into strings and vice
-versa is completely _es_'s.  The syntax of the `if` command also comes
-directly from _es_.
+It was Byron Rakitzis's UNIX version of _rc_ that I was using for most of those ten years;
+it was his version of the grammar that eventually became _sh_'s grammar, and the name of my `glom()` function came straight from his _rc_ source.
 
-From Bruce Ellis's _mash_, the other programmable shell for Inferno,
-I took the `load` command, the `"{}` syntax and the `<>` redirection
-operator.
+From Paul Haahr's _es_, a descendent of Byron's _rc_, and the shell that probably holds the most in common with _sh_, I stole the 'blocks as values' idea;
+the way that blocks transform into strings and vice versa is completely _es_'s.
+The syntax of the `if` command also comes directly from _es_.
 
-Last, but by no means least, S. R. Bourne, the author of the original
-_sh_, the granddaddy of this _sh_, is indirectly responsible for all
-these shells.  That so much has remained unchanged from then is a
-testament to the power of his original vision.
+From Bruce Ellis's _mash_, the other programmable shell for Inferno, I took the `load` command, the `"{}` syntax and the `<>` redirection operator.
+
+Last, but by no means least, S. R. Bourne, the author of the original _sh_, the granddaddy of this _sh_, is indirectly responsible for all these shells.
+That so much has remained unchanged from then is a testament to the power of his original vision.
 

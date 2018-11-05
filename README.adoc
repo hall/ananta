@@ -1,17 +1,17 @@
 = {name}: one hell of an operating system
-:docpath: ./sys/doc/manual
+:docpath: https://inf.bryton.io/manual
 :name: inf
 
-link:{docpath}/intro.adoc[{name}] is a derivative of http://www.inferno-os.info/inferno/[Inferno] (a distributed operating system originally developed at http://www.bell-labs.com/[Bell Labs] and currently maintained by http://www.vitanuova.com/[Vita Nuova]) aimed at modernization for mass adoption.
+link:{docpath}[{name}] is a derivative of http://www.inferno-os.info/inferno/[Inferno] (a distributed operating system originally developed at http://www.bell-labs.com/[Bell Labs] and currently maintained by http://www.vitanuova.com/[Vita Nuova]) aimed at modernization for mass adoption.
 
 WARNING: {name} is not ready for production use.
 
-Applications are written in link:{docpath}/limbo.adoc[limbo] and compiled for link:{docpath}/dis.adoc[dis] to run anywhere on a network in a portable operating system.
+Applications are written in link:{docpath}/limbo[] and compiled for link:{docpath}/dis[] to run anywhere on a network in a portable operating system.
 
 The design has three principles:
 
  .  All resources are named and accessed as files.
- .  One protocol (link:{docpath}/9p.adoc[9p]) allows uniform access to these resources.
+ .  One protocol (link:{docpath}/9p[]) allows uniform access to these resources.
  .  A single local namespace joins resources provided by remote services.
 
 In this manner, programs can access resources using only the file operations `open`, `read`, `write`, and `close`.
@@ -46,13 +46,13 @@ The following system/architecture pairs are supported:
 To install
 
  . edit link:mkconfig[`mkconfig`]
- . execute link:makemk.sh[`makemk.sh`] to build link:{docpath}/mk.adoc[`mk`].
+ . execute link:makemk.sh[`makemk.sh`] to build link:{docpath}/mk[`mk`].
  . set `PATH` to include the `$ROOT/arch/$OBJTYPE/$SYSTARG/bin/` directory.
  . run `mk install`
 
 This will create and install the libraries, limbo compiler, emu (if running hosted), and auxiliary commands.
 
-Now execute `emu` and you should see the link:{docpath}/sh.adoc[`sh`] prompt awaiting your input:
+Now execute `emu` and you should see the link:{docpath}/sh[`sh`] prompt awaiting your input:
 
     ;
 

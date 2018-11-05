@@ -10,7 +10,9 @@ build:
     - emu cat /dev/sysctl
 
 pages:
-  image: rraghur/hugo-asciidoctor
+  image: asciidoctor/docker-asciidoctor
+  before_script:
+    - apk add hugo
   script:
     - cd sys/
     - hugo

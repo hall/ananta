@@ -13,3 +13,6 @@ arch/emu/*/errstr.h
 arch/emu/*/emu.c
 emu/*/*.h
 
+# hugo
+public/
+resources/

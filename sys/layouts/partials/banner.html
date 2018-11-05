@@ -1,0 +1,32 @@
+<div id="header">
+<!--
+  <div class="superHeader">
+  {{ if .Site.Menus.left }}
+    <div class="left">
+      {{- range $index, $element := .Site.Menus.left -}}
+        {{ if ne 0 $index }} | {{ end }}<a href="{{.URL}}">{{.Name}}</a>
+      {{- end -}}
+    </div>
+  {{ end }}
+
+  {{ if .Site.Menus.right }}
+    <div class="right">
+      <span class="doNotDisplay">Related sites:</span>
+      {{ range $index, $element := .Site.Menus.right }}
+        <a href="{{.URL}}">{{.Name}}</a>{{ if ne (add $index 1) (len $.Site.Menus.right) }} | {{ end }}
+      {{ end }}
+    </div>
+  {{ end }}
+  </div>
+-->
+
+  <div class="midHeader">
+    <div class="headerIcons headerTitle">
+      <a href="https://inf.bryton.io"><i class="fas fa-fw fa-terminal"></i></a>
+      <a href="https://gitlab.com/hall/inf"><i class="fab fa-fw fa-gitlab"></i></a>
+    </div>
+    <h1 class="headerTitle"><a href="/">{{ .Site.Title }}<span id="headerSubTitle">{{ .Site.Params.tagline }}</span></a></h1>
+  </div>
+    
+  <div class="subHeader"><br></div>
+</div>

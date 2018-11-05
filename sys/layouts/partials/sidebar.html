@@ -1,0 +1,36 @@
+<div id="side-bar">
+  <div>
+    <ul>
+      {{ $currentNode := . }}
+      {{ range (union .Site.Home.Sections (where .Site.Pages "Section" .Site.Home.Section)).ByWeight }}
+	{{ if not .IsHome }}
+          {{ template "section-tree-nav" dict "sect" . "currentnode" $currentNode }}
+        {{ end }}
+      {{ end }}
+    </ul>
+  </div>
+</div>
+
+
+{{ define "section-tree-nav" }}
+  {{ $currentNode := .currentnode }}
+  {{ with .sect }}
+    <li>
+      {{- if .IsSection -}}
+        {{ $path := split .File.Dir "/" }}
+        <a href="{{.RelPermalink}}" {{ if .IsAncestor $currentNode }} class="thisPage" {{ end }}>{{ or .Title (index $path (sub (len $path) 2)) }}/</a>
+
+        {{if .IsAncestor $currentNode }}
+          <ul>
+            {{ range (union .Sections .Pages).ByWeight }}
+              {{ template "section-tree-nav" dict "sect" . "currentnode" $currentNode }}
+            {{ end }}
+          </ul>
+        {{ end }}
+
+      {{else}}
+        <a href="{{.RelPermalink}}" {{ if eq $currentNode . }} class="thisPage" {{ end }}>{{ or .Title .File.TranslationBaseName }}</a>
+      {{- end -}}
+    </li>
+  {{ end }}
+{{ end }}

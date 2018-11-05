@@ -3,7 +3,6 @@
 *.dis
 *.sbl
 *.pdf
-*.html
 *.out
 *.o
 *.a

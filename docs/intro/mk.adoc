@@ -45,7 +45,7 @@ Options are:
   in conjunction with *-n* to learn what updates would be triggered by
   modifying the _targets_.
 
-=== The mkfile
+== The mkfile
 
 A _mkfile_ consists of _assignments_ (described under `Environment') and
 _rules_. A rule contains _targets_ and a _tail_. A target is a literal
@@ -112,7 +112,7 @@ conditions:
   If the target and prerequisites of both rules match exactly, the
   second rule overrides the first.
 
-=== Environment
+== Environment
 
 Rules may make use of *sh* environment variables. A legal reference of
 the form *$OBJ* or *$\{name}* is expanded as in _sh_(1). A reference of
@@ -146,7 +146,7 @@ shell command with an awk script and a configuration file as arguments
 in order for the _awk_ script to process the file and output a set of
 variables and their values.
 
-=== Execution
+== Execution
 
 During execution, _mk_ determines which targets must be updated, and in
 what order, to build the _names_ specified on the command line. It then
@@ -230,12 +230,12 @@ bar=b.b
 
 will compile *b.b* into *foo*, if *a.b* is newer than *foo*.
 
-=== Aggregates
+== Aggregates
 
 Names of the form _a_(_b_) refer to member _b_ of the aggregate _a_.
 Currently, there are no aggregates supported under Inferno.
 
-=== Attributes
+== Attributes
 
 The colon separating the target from the prerequisites may be
 immediately followed by _attributes_ and another colon. The attributes

@@ -15,7 +15,7 @@ appropriate than Tk on devices that use infrared remote control for
 interaction, such as televisions, or devices with limited screen space,
 such as pocket devices or portable telephones.
 
-=== Configuration
+== Configuration
 
 _Mux_ produces a menu derived from the configuration file
 */services/basic*. Each line in the file has three fields, separated by
@@ -33,7 +33,7 @@ __________________________
 **/dis/mux/**__app__*.dis*
 __________________________
 
-=== Applications
+== Applications
 
 The following applications are available:
 
@@ -61,7 +61,7 @@ The following applications are available:
 *audioctl*::
   Audio Control
 
-=== Interaction
+== Interaction
 
 _Mux_ can be controlled using an infrared device, but for demonstration
 purposes under _emu_(1) the infrared is emulated using the keyboard (see

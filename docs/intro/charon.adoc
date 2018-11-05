@@ -20,7 +20,7 @@ once the cache bounds have been reached. Currently, _charon_ does not
 provide a general purpose web cache; all other resources have to be
 reloaded when needed.
 
-=== Navigation
+== Navigation
 
 _Charon_ provides navigation controls familiar to any web-surfer: back,
 forward, reload, home, stop and URL entry. Navigation of web-based
@@ -57,7 +57,7 @@ processing the component, its block is coloured red. The component
 address and amount downloaded, or reason for failure, can be obtained by
 clicking mouse button-1 on its progress block.
 
-=== Web Standards
+== Web Standards
 
 Standards are the life-blood of the World-Wide-Web; without them, the
 web could not exist. Web standards are under constant review with
@@ -96,7 +96,7 @@ Images::
   GIF87a and GIF89a - animated GIFs always loop. +
   JPEG, XBitmap, Inferno BIT _image_(6) format.
 
-=== Configuration
+== Configuration
 
 While using _charon_, a sub-set of the configuration options can be
 modified. Clicking the Configuration button displays a config popup

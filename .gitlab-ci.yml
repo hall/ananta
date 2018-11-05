@@ -12,7 +12,7 @@ build:
 pages:
   image: asciidoctor/docker-asciidoctor
   before_script:
-    - curl -sL https://github.com/gohugoio/hugo/releases/download/v0.50/hugo_0.50_Linux-64bit.tar.gz | tar xz -C /bin/
+    - curl -sL https://github.com/gohugoio/hugo/releases/download/v0.49.2/hugo_0.49.2_Linux-64bit.tar.gz | tar xz -C /bin/
   script:
     - hugo
   artifacts:

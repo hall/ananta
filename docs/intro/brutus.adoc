@@ -62,7 +62,7 @@ linenumber
 in the console window selects all the text on line _linenumber_ and
 moves the window to show the selected text.
 
-=== SGML
+== SGML
 
 If the first line of a file is exactly:
 

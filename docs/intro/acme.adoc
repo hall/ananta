@@ -24,7 +24,7 @@ font; the default is */fonts/lucidasans/euro.8.font*
 (*.../lucm/unicode.9.font*). Tab intervals are set to the width of 4
 numeral zeros in the variable-pitch font.
 
-=== Windows
+== Windows
 
 _Acme_ windows are in two parts: a one-line _tag_ above a multi-line
 _body_. The body typically contains an image of a file or the output of
@@ -40,7 +40,7 @@ window.
 If a window holds a directory, the name (first word of the tag) will end
 with a slash.
 
-=== Scrolling
+== Scrolling
 
 Each window has a scroll bar to the left of the body. Scrolling occurs
 when the button is pressed, rather than released, and continues as long
@@ -52,7 +52,7 @@ Button 2 allows absolute movement within the text; clicking it at
 different heights within the scroll bar changes the focused text without
 intermediate scrolling.
 
-=== Layout
+== Layout
 
 _Acme_ windows are arranged in columns. By default, it creates two
 columns when starting; this can be overridden with the *-c* option.
@@ -72,7 +72,7 @@ Tags exist at the top of each column and across the whole display.
 _Acme_ pre-loads them with useful commands. Also, the tag across the top
 maintains a list of executing long-running commands.
 
-=== Typing
+== Typing
 
 The behaviour of typed text is as one would expect except that the
 characters are delivered to the tag or body under the mouse; there is no
@@ -87,7 +87,7 @@ Most text, including the names of windows, may be edited uniformly. The
 only exception is that the command names to the left of the bar in a tag
 are maintained automatically; changes to them are repaired by _acme_.
 
-=== "Directory context
+== "Directory context
 
 Each window's tag names a directory: explicitly if the window holds a
 directory; implicitly if it holds a regular file (e.g. the directory
@@ -100,7 +100,7 @@ real directory associated with a non-existent file (e.g.
 */module/not-a-file*). File names beginning with a slash are assumed to
 be absolute file names.
 
-=== Errors
+== Errors
 
 Windows whose names begin with *-* or *+* conventionally hold
 diagnostics and other data not directly associated with files. A window
@@ -109,7 +109,7 @@ Diagnostics from commands run by _acme_ appear in a window named
 __directory__**/+Errors** where _directory_ is identified by the context
 of the command. These error windows are created when needed.
 
-=== "Mouse button 1
+== "Mouse button 1
 
 Mouse button 1 selects text and double-clicking highlights the text for
 replacement text to be typed in.
@@ -123,7 +123,7 @@ will match the pairs \{ and }, [ and ], ( and ), < and >, « and », ' and
 ', " and ", ` and `. Also whole lines of text may be highlighted by
 double clicking at the beginning or end of the line.
 
-=== "Mouse button 2
+== "Mouse button 2
 
 By an action similar to selecting text with button 1, button 2 indicates
 text to execute as a command. If the indicated text has multiple
@@ -245,7 +245,7 @@ containing */appl/cmd/date.b* executing *limbo date.b* will run
 _limbo_(1) in */appl/cmd*, producing output in a window labelled
 */appl/cmd/+Errors*.
 
-=== "Mouse button 3
+== "Mouse button 3
 
 Pointing at text with button 3 instructs _acme_ to locate or acquire the
 file, string, etc. described by the indicated text and its context. This
@@ -289,7 +289,7 @@ string within a non-null selected string in the tag, so that (for
 example) complex regular expressions may be selected and applied
 repeatedly to the body by just clicking button 3 over them.
 
-=== "Chords of mouse buttons
+== Chords of mouse buttons
 
 Several operations are bound to multiple-button actions. After selecting
 text, with button 1 still down, pressing button 2 executes *Cut* and
@@ -323,7 +323,7 @@ extra argument is passed as expected and an environment variable
 *$acmeaddr* is created that holds, in the form interpreted by button 3,
 the fully-qualified address of the extra argument.
 
-=== "Support programs
+== Support programs
 
 _win_ creates a new _acme_ window and runs a _command_ (default
 */dis/sh.dis*) in it, turning the window into a shell window in which
@@ -338,7 +338,7 @@ _agrep_ does for grep what adiff does for diff above. _cd_ changes
 directory but when used in a win window for example, sends information
 to the window to display a new heading reflecting the new directory.
 
-=== Mail
+== Mail
 
 In the directory */acme/mail* there are two mail programs that may be
 used under acme. These _Mail_ and _Mailpop3_ can be run to display the
@@ -350,7 +350,7 @@ specified as its first argument, the latter uses the POP3 protocol to
 connect to a server for the user's mail and will prompt for a password
 when first run. Otherwise their behaviour is the same.
 
-=== "Applications and guide files
+== Applications and guide files
 
 In the directory */acme* live several subdirectories, each corresponding
 to a program or set of related programs that employ _acme's_ user

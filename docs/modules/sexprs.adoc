@@ -227,5 +227,5 @@ part of the token.
 == see ALSO
 bufio(2), xml(2), sexprs(6)
 
-R. Rivest, ``S-expressions'', Network Working Group  Internet Draft, (4 May 1997), reproduced in /lib/sexp.
+ - R. Rivest, ``S-expressions'', Network Working Group  Internet Draft, (4 May 1997), reproduced in /lib/sexp.
 

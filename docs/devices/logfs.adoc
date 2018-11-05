@@ -74,7 +74,7 @@ fsys name
        boot  loaders, so such medium implementations may also
        enforce a minimum size for the boot partition.
 
-[fsys name] open [-P] [-W]
+[fsys name] open [-P] [-W]::
        Initialises the specified file system,  and  makes  it
        available  for use. The file system structure is veri‐
        fied, bad blocks are repaired and, in the case of  the
@@ -96,7 +96,7 @@ fsys name
        device.  Use before shutting down the  system  if  the
        device is not unmounted.  (See notes below.)
 
-[fsys name] trace [level]
+[fsys name] trace [level]::
        If level is non-zero, internal diagnostics for the log
        file system are enabled at the given level.  If  level
        is zero, or missing, tracing is disabled.

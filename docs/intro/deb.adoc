@@ -17,7 +17,7 @@ In order to display source code and set breakpoints accurately, an up to
 date symbol file (*.sbl*) must be available as well as the limbo source
 file (*.b*).
 
-=== Main window
+== Main window
 
 The main window is comprised of a menu bar, an icon bar and three text
 panels. One panel, labelled _Threads_, lists the process IDs (PIDs) of
@@ -58,7 +58,7 @@ The main window provides a set of menus for viewing source files,
 attaching to other threads, setting debugger options and searching for
 text in the source code window.
 
-=== Stack Window
+== Stack Window
 
 The stack window is used to inspect the values of local and global
 variables and function arguments. Items are displayed in a hierarchical

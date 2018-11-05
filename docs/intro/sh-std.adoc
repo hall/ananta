@@ -170,7 +170,7 @@ continue executing as usual. The commands are as follows:
   *Tl* yields all but the first of its arguments, or nil if there are no
   arguments.
 
-=== Syntactic considerations
+== Syntactic considerations
 
 It is worth being aware of a few pitfalls that await the user of some of
 these commands. Unlike other shells, the syntax of _sh_ does not include

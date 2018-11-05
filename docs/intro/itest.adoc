@@ -43,7 +43,7 @@ on the command line or in a configuration file. Options:
 The test results to be replayed by _itreplay_ are specified on the
 command line as one or more record directories.
 
-=== TEST FORMAT
+== TEST FORMAT
 
 A test directory must contain either a t.dis file or a t.sh file,
 depending on whether the test is written as a Limbo program or as a
@@ -55,7 +55,7 @@ use _sh-test_(2). A test directory should also contain a README file
 Tests are run with their working directory set to their own test
 directory.
 
-=== RECORD DIRECTORY FORMAT
+== RECORD DIRECTORY FORMAT
 
 Each record directory contains a number of files:
 

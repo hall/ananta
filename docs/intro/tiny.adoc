@@ -62,7 +62,7 @@ Options are:
   Execute the single _command_ rather than prompting to read commands
   from the standard input.
 
-=== Command line syntax
+== Command line syntax
 
 Each line consists of one or more command pipelines each separated by
 either an ampersand (&) which indicates that the pipeline should be run
@@ -89,7 +89,7 @@ a list of strings.
 
 Any input following a *#* on a line is discarded as comment.
 
-=== Finding the module
+== Finding the module
 
 The command field is converted to the pathname of the Dis file of some
 module. That field can be either an absolute pathname, starting from
@@ -116,7 +116,7 @@ named file will not load.
 In lieu of a path mechanism, a process can create a union directory at
 */dis*.
 
-=== File name expansion
+== File name expansion
 
 Command line arguments (including the command field itself) are expanded
 by the shell according to the regular expression rules described in
@@ -125,7 +125,7 @@ _filepat_(2).
 This expansion is not applied to the filenames used for input/output
 redirection.
 
-=== Quoting
+== Quoting
 
 The shell special characters can be stripped of their meaning and
 treated as literals by enclosing them in single quotes. Inside a quoted
@@ -149,7 +149,7 @@ ab
 $
 ....
 
-=== Shell special characters
+== Shell special characters
 
 The following characters are treated specially by _sh_ and must be
 quoted to be taken literally:
@@ -179,12 +179,12 @@ newline::
 *<*::
   Input re-direction.
 
-=== Prompt
+== Prompt
 
 The shell uses a prompt consisting of the system name as provided by
 */dev/sysname* suffixed by *$*.
 
-=== Input/output re-directions
+== Input/output re-directions
 
 By default, standard input is the console keyboard and standard output
 the console display. Each command can specify that standard input be
@@ -198,7 +198,7 @@ overwritten. Any previous contents are lost.
 In cases of competing re-direction mechanisms (re-direct to a file and
 to a pipe), the pipe has precedence.
 
-=== Background tasks
+== Background tasks
 
 In general, the shell waits for the termination of a command pipeline
 before continuing execution, for example, prompting the user for the
@@ -207,7 +207,7 @@ ampersand (*&*) character, the wait stage is skipped and the shell
 continues execution immediately, in this case the command pipeline
 executes as a background task.
 
-=== Name space concerns
+== Name space concerns
 
 When started, the shell creates an independent file name space that is a
 copy of the file name space of the shell's creator.

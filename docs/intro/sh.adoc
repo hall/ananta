@@ -10,7 +10,7 @@ executes command lines read from a terminal or a file or, with the *-c*
 flag, from _sh_'s argument list. It can also be used to give
 programmable functionality to Limbo modules (see _sh_(2)).
 
-=== Command Lines
+== Command Lines
 
 A command line is a sequence of commands, separated by ampersands or
 semicolons (*&* or *;*), terminated by a newline. The commands are
@@ -25,7 +25,7 @@ the null string if the command was successful.
 A number-sign (*#*) and any following characters up to (but not
 including) the next newline are ignored, except in quotation marks.
 
-=== Simple Commands
+== Simple Commands
 
 A simple command is a sequence of arguments interspersed with I/O
 redirections. If the first argument is the name of a _sh_ builtin or it
@@ -61,7 +61,7 @@ ____________________________________________________
 5.  an executable script file named ``**./ls**''.
 ____________________________________________________
 
-=== Arguments and Variables
+== Arguments and Variables
 
 A number of constructions may be used where _sh's_ syntax requires an
 argument to appear. In many cases a construction's value will be a list
@@ -172,7 +172,7 @@ two commands *old* and *new* and uses *cmp* to compare their outputs
 	cmp <{old} <{new}
 ....
 
-=== Free Carets
+== Free Carets
 
 In most circumstances, _sh_ will insert the *^* operator automatically
 between words that are not separated by white space. Whenever one of *$*
@@ -192,7 +192,7 @@ _________________________
 *limbo -^$flags $stem^.b*
 _________________________
 
-=== Assignment
+== Assignment
 
 A command of the form __name__**=**_value_ or __name__**:=**_value_
 assigns _value_ to the environment variable named _name_. _Value_ is
@@ -217,7 +217,7 @@ instance, after the assignment:
 *$a* is *one*, *$b* is *two*, and *$c* contains the remaining three
 elements *(three four five)*.
 
-=== I/O Redirections
+== I/O Redirections
 
 The sequence **>**__file__ redirects the standard output file (file
 descriptor 1, normally the terminal) to the named _file_; **>>**__file__
@@ -245,7 +245,7 @@ effects: the first puts standard output in */dev/null* and then puts
 diagnostic output in the same place, where the second directs diagnostic
 output to the terminal and sends standard output to */dev/null*.
 
-=== Compound Commands
+== Compound Commands
 
 A pair of commands separated by a pipe operator (*|*) is a command. The
 standard output of the left command is sent through a pipe to the
@@ -288,7 +288,7 @@ an empty string:
 	{{echo $*}} hello world
 ....
 
-=== Built-in Commands
+== Built-in Commands
 
 The term ``built-in command'', or just ``builtin'', is used somewhat
 loosely in this document to refer to any command that is executed
@@ -400,7 +400,7 @@ well-formed command blocks are not quoted.
 of values. For example, **$\{unquote $\{quote **__list__*}}* yields
 _list_. A list quoted with *bquote* can only be unquoted by parsing.
 
-=== Environment
+== Environment
 
 The _environment_ is a list of strings made available to externally
 executing commands by the *env* module (see _env_(2)). If the *env*
@@ -421,7 +421,7 @@ context might occur. This happens for processes executing in a pipeline,
 processes run asynchronously with *&*, and in any builtin command that
 runs a shell command asynchronously.
 
-=== Exceptions
+== Exceptions
 
 When _sh_ encounters an error processing its input, an exception is
 raised, and if the *-v* flag is set, an error message is printed to
@@ -453,7 +453,7 @@ include:
 *builtin not found*::
   A substitution builtin was named but not found.
 
-=== Special Variables
+== Special Variables
 
 The following variables are set or used by _sh_.
 
@@ -481,7 +481,7 @@ The following variables are set or used by _sh_.
   name of the last-raised exception, whichever is most recent. When _sh_
   exits at end-of-file of its input, *$status* is its exit status.
 
-=== Invocation
+== Invocation
 
 If _sh_ is started with no arguments it reads commands from standard
 input. Otherwise its first non-flag argument is the name of a file from

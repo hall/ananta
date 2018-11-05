@@ -54,7 +54,7 @@ _stem_.
   Specify the initial _size_ of the token stack created for the parser
   (default: 200).
 
-=== Differences from C yacc
+== Differences from C yacc
 
 The Limbo _yacc_ is in many respects identical to the C _yacc_. The
 differences are summarised below:
@@ -65,16 +65,11 @@ the end of the line).
 A *%module* directive is required, which replaces the *%union*
 directive. It is of the form:
 
-_________________________________________
---
-_________________________________________
+----
 *%module* _modname_ *\{* +
 _module types, functions and constants_ +
 *}*
-_________________________________________
-
---
-_________________________________________
+----
 
 *Modname* will be the module's implementation type; the body of the
 directive, augmented with *con* definitions for the _yacc_-assigned
@@ -235,10 +230,8 @@ YYLEX.lex(lex: self ref YYLEX): int
 
 == SEE ALSO
 
-S. C. Johnson and R. Sethi, ``Yacc: A parser generator'', _Unix Research
-System Programmer's Manual,_ Tenth Edition, Volume 2 +
-B. W. Kernighan and Rob Pike, _The UNIX Programming Environment,_
-Prentice Hall, 1984
+ - S. C. Johnson and R. Sethi, ``Yacc: A parser generator'', _Unix Research System Programmer's Manual,_ Tenth Edition, Volume 2 +
+ - B. W. Kernighan and Rob Pike, _The UNIX Programming Environment,_ Prentice Hall, 1984
 
 == BUGS
 

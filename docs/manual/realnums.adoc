@@ -1,13 +1,4 @@
-
-
-\&[\\$1]\\$2
-
-
-
-delim $$
-
-
-Real Inferno
+= Real: Inferno
 
 _"Eric_ Grosse"
 
@@ -490,122 +481,19 @@ delim off
 
 References
 
-
-
-
-
-
-
-
-
-
-
-S. Dorward,
-R. Pike, 
-D.\ L. Presotto,
-D.\ M. Ritchie,
-H. Trickey,
-P. Winterbottom,
-``The Inferno Operating System'',
-_"Bell_ Labs Technical Journal" ,
-Vol. 2,
-No. 1,
-Winter 1997, pp. 5-18.
-Reprinted in this volume.
-
-W.\ D. Clinger.
-``How to read floating point numbers accurately.
-In \fIProceedings of the ACM SIGPLAN'90 Conference on Programming
-Language Design and Implementation\fP, pages 92-101, 1990.
-
-
-
-James\ W. Demmel and Xiaoye Li.
-Faster numerical algorithms via exception handling.
-In Jr. Earl\ Swartzlander, Mary\ Jane Irwin, and Graham Jullien,
-editors, \fIProceedings: 11th Symposium on Computer Arithmetic\fP. IEEE
-Computer Society Press, 1993.
-
-
-
-Jack\ J. Dongarra, Jeremy\ Du Croz, Sven Hammarling, and Richard\ J. Hanson.
-Algorithm 656: An extended set of Basic Linear Algebra Subprograms.
-\fIACM Trans. on Mathematical Software\fP, 14(1):18-32, March 1988.
-
-
-
-D.\ M. Gay.
-Correctly rounded binary-decimal and decimal-binary conversions.
-Numerical Analysis Manuscript No. 90-10, AT&T Bell Laboratories,
-Murray Hill, NJ, 1990.
-freely redistributable, available at
-`http://netlib.bell-labs.com/netlib/fp/` .
-
-
-
-E.\ H. Grosse and W.\ M. Coughran, Jr.
-The pine programming language.
-Numerical Analysis Manuscript 83-4, AT&T Bell Laboratories, 1983.
-
-`ftp://cm.bell-labs.com/cm/cs/doc/92/pine.ps.Z` .
-
-
-
-IEEE.
-Standard for binary floating-point arithmetic.
-Technical Report Std 754-1985, ANSI, 1985.
-
-
-
-Bo\ Kagstrom, Per Ling, and Charles Van\ Loan.
-Portable high performance GEMM-based Level 3 BLAS.
-In R.\ F.\ Sincovec et\ al., editor, \fIParallel Processing for
-Scientific Computing\fP, pages 339-346. SIAM Publications, 1993.
-`/netlib/blas/` .
-
-
-
-W.\ Kahan.
-Lecture notes on the status of IEEE Standard 754 for binary
-floating-point arithmetic.
-Technical report, Univ. Calif. Berkeley, May 23 1995.
-Work in Progress.
-
-
-
-U.\ Kulisch and W.L. Miranker.
-\fIComputer arithmetic in theory and practice.\fP
-Academic Press, 1980.
-
-
-
-M.\ D. McIlroy.
-Mass produced software components.
-In Peter Naur and Brian Randell, editors, \fISoftware Engineering\fP,
-pages 138-155, 1969.
-Garmisch, Germany, October 1968.
-
-
-
-Kwok\ C. Ng.
-`fdlibm` :
-C math library for machines that support ieee 754
-floating-point.
-freely redistributable; available at
-`http://netlib.bell-labs.com/netlib/fdlibm/` ,
-March 1995.
-
-
-
-G.\ L. Steele and J.\ L. White.
-How to print floating point numbers accurately.
-In \fIProceedings of the ACM SIGPLAN'90 Conference on Programming
-Language Design and Implementation\fP, pages 112-126, 1990.
-
-
-
-X3J11.1.
-Chapter 5, floating-point C extensions.
-Technical report, ANSI, March 29 1995.
+ - S. Dorward, R. Pike,  D.\ L. Presotto, D.\ M. Ritchie, H. Trickey, P. Winterbottom, ``The Inferno Operating System'', _"Bell_ Labs Technical Journal" , Vol. 2, No. 1, Winter 1997, pp. 5-18. Reprinted in this volume.
+ - W.\ D. Clinger. ``How to read floating point numbers accurately. In \fIProceedings of the ACM SIGPLAN'90 Conference on Programming Language Design and Implementation\fP, pages 92-101, 1990.
+ - James\ W. Demmel and Xiaoye Li. Faster numerical algorithms via exception handling. In Jr. Earl\ Swartzlander, Mary\ Jane Irwin, and Graham Jullien, editors, \fIProceedings: 11th Symposium on Computer Arithmetic\fP. IEEE Computer Society Press, 1993.
+ - Jack\ J. Dongarra, Jeremy\ Du Croz, Sven Hammarling, and Richard\ J. Hanson. Algorithm 656: An extended set of Basic Linear Algebra Subprograms. \fIACM Trans. on Mathematical Software\fP, 14(1):18-32, March 1988.
+ - D.\ M. Gay. Correctly rounded binary-decimal and decimal-binary conversions. Numerical Analysis Manuscript No. 90-10, AT&T Bell Laboratories, Murray Hill, NJ, 1990. freely redistributable, available at `http://netlib.bell-labs.com/netlib/fp/` .
+ - E.\ H. Grosse and W.\ M. Coughran, Jr. The pine programming language. Numerical Analysis Manuscript 83-4, AT&T Bell Laboratories, 1983. `ftp://cm.bell-labs.com/cm/cs/doc/92/pine.ps.Z` .
+ - IEEE. Standard for binary floating-point arithmetic. Technical Report Std 754-1985, ANSI, 1985.
+ - Bo\ Kagstrom, Per Ling, and Charles Van\ Loan. Portable high performance GEMM-based Level 3 BLAS. In R.\ F.\ Sincovec et\ al., editor, \fIParallel Processing for Scientific Computing\fP, pages 339-346. SIAM Publications, 1993. `/netlib/blas/` .
+ - W.\ Kahan. Lecture notes on the status of IEEE Standard 754 for binary floating-point arithmetic. Technical report, Univ. Calif. Berkeley, May 23 1995. Work in Progress.
+ - U.\ Kulisch and W.L. Miranker. \fIComputer arithmetic in theory and practice.\fP Academic Press, 1980.
+ - M.\ D. McIlroy. Mass produced software components. In Peter Naur and Brian Randell, editors, \fISoftware Engineering\fP, pages 138-155, 1969. Garmisch, Germany, October 1968.
+ - Kwok\ C. Ng. `fdlibm` : C math library for machines that support ieee 754 floating-point. freely redistributable; available at `http://netlib.bell-labs.com/netlib/fdlibm/` , March 1995.
+ - G.\ L. Steele and J.\ L. White. How to print floating point numbers accurately. In \fIProceedings of the ACM SIGPLAN'90 Conference on Programming Language Design and Implementation\fP, pages 112-126, 1990.
+ - X3J11.1. Chapter 5, floating-point C extensions. Technical report, ANSI, March 29 1995.
 
 

@@ -31,13 +31,13 @@ the selected namespace. The *Resources* button returns to the initial
 view containing the currently registered resources and *Refresh* updates
 the list in case any resources have been added or removed.
 
-=== The Command List
+== The Command List
 
 This contains a list of all commands to be executed. Any arguments may
 be entered by clicking on the gap after _args_: and typing into the box.
 Commands will be executed in order from top (first) to bottom (last).
 
-=== The Namespace List
+== The Namespace List
 
 This contains a list of all the directories to be imported in order to
 create the local namespace of the selected _grid-cpu_(4) resource(s). By
@@ -65,7 +65,7 @@ For example: If one of the commands is:
 _Session_ will import */usr/inferno/* but */appl/lib* would have to be
 specified in the namespace list.
 
-=== Execution
+== Execution
 
 Once the command and namespace lists have been configured, click *Ok* on
 the _Session_ window. This will bring up the _grid-query_(1) window

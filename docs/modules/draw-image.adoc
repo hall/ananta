@@ -512,7 +512,7 @@ win.origin(log, scr)
 draw-intro(2), draw-display(2), draw-point(2),  draw-rect(2),
 draw-screen(2), colour(6), image(6), font(6) utf(6)
 
-T. Porter, T. Duff.  ``Compositing Digital Images'', Computer Graphics (Proc. SIGGRAPH), 18:3, pp. 253-259, 1984.
+ - T. Porter, T. Duff.  ``Compositing Digital Images'', Computer Graphics (Proc. SIGGRAPH), 18:3, pp. 253-259, 1984.
 
 == diagnostics
 These functions raise exceptions if argument images are  nil,

@@ -281,15 +281,11 @@ different robots.
 The brick has 3 motor outputs and 3 sensor inputs.
 The motors can be run forwards or reverse with 8 different power settings.
 They can be stalled, also with 8 power levels, and they can be left 'floating'
-[A stalled motor presents resistance to turning proportional to the stall power level]
+(A stalled motor presents resistance to turning proportional to the stall power level)
 
-There are 2 types of sensor \- buttons and light-sensors.
-[You can also get a 'rotation sensor', but we had not got one in our kit!]
+There are 2 types of sensor \- buttons and light-sensors. (You can also get a 'rotation sensor', but we had not got one in our kit!)
 
-We decided on a name space comprised of 2 directories, 
-`motor
-`and 
-`sensor` .
+We decided on a name space comprised of 2 directories,  `motor` and `sensor`.
 We didn't need to use subdirectories for our name space but it was easy, so we did!
 
 The motor directory contains 4 files \- 
@@ -521,7 +517,7 @@ stop the motor.  It should be possible to reduce the delay by keeping the file o
 
 but the firmware only accepts command messages written to file offset 0.
 
-[Fixing this is left as an exercise for the reader!]
+(Fixing this is left as an exercise for the reader!)
 
 Ok, lets play with a sensor...
 

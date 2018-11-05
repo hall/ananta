@@ -19,7 +19,7 @@ is set to _address._ Initially dot is set to 0. _Command_ is repeated
 _count_ times with dot advancing between repetitions. The default count
 is 1. _Address_ and _count_ are expressions.
 
-=== Expressions
+== Expressions
 
 Expressions take one of the following forms:
 
@@ -55,7 +55,7 @@ __e1__**&**_e2_::
   Bitwise conjunction.
 _________________________________________
 
-=== Commands
+== Commands
 
 Commands have the following syntax:
 

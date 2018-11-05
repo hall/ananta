@@ -19,21 +19,21 @@ messages to _stdout_ which are then read and displayed (if appropriate)
 by _monitor_. _Monitor_ reads on _stdin_ and accepts the following
 input:
 
-=== Interface 1
+== Interface 1
 
 **add**__ addr__::
   display a connection from address _addr_
 **del**__ addr__::
   remove a connection from address _addr_
 
-=== Interface 2
+== Interface 2
 
 **data set**__ id__** \{**__ data__* }*::
   set and display the string _data_ in slot _id_.
 **data set**__ id__* finished*::
   clear slot _id_
 
-=== Common
+== Common
 
 **setup maxusers**__ n__::
   set display to fit a maximum of _n_ connections. -1 signifies

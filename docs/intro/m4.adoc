@@ -155,4 +155,4 @@ Edition UNIX than its more elaborate relatives in System V and POSIX.
 
 == SEE ALSO
 
-B. W. Kernighan and D. M. Ritchie, _The M4 Macro Processor_
+ - B. W. Kernighan and D. M. Ritchie, _The M4 Macro Processor_

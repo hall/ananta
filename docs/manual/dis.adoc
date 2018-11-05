@@ -1564,29 +1564,11 @@ Its format is defined in the entry _sbl_(6) of [1].
 
 == References
 
-1. _Inferno Programmer's Manual_ (Third Edition), Volume 1 (`the manual'),
-Vita Nuova Holdings Limited, June 2000.
-
-2. P Winterbottom and R Pike, _The Design of the Inferno Virtual Machine_,
-reprinted in this volume.
-
-
-R. Pike, D. Presotto, S. Dorward, B. Flandrena, K. Thompson, H. Trickey,
-and P. Winterbottom. ``Plan 9 from Bell Labs'', _"J._ Computing Systems"
-8:3, Summer 1995, pp. 221-254.
-
-Dorward, S., et al., ``Inferno'', _"IEEE_ Compcon 97 Proceedings" , 1997.
-
-Arnold, K. and Gosling, J., _"The_ Java Programming Language" ,
-Addison-Wesley, 1996.
-
-Nori, K. V., Ammann, U., Nabeli, H. H., and Jacobi, Ch.,  ``Pascal P
-Implementation notes'', in Barron, D. W. (ed.), _"Pascal\-The_ Language
-and its Implementation" , Wiley, 1981, pp. 125-170.
-
-Ditzel, D. R. and McLellan, R., ``Register Allocation for Free:
-The C Machine Stack Cache'', _"Proc._ of Symp. on Arch. Supp. for
-Prog. Lang. and Op. Sys." , March, 1982, pp. 48-56.
-
-Case, B., ``Implementing the Java Virtual Machine'', _"Microprocessor_
-Report" , March 25, 1996, pp. 12-17.
+ - 1. _Inferno Programmer's Manual_ (Third Edition), Volume 1 (`the manual'), Vita Nuova Holdings Limited, June 2000.
+ - 2. P Winterbottom and R Pike, _The Design of the Inferno Virtual Machine_, reprinted in this volume.
+ - R. Pike, D. Presotto, S. Dorward, B. Flandrena, K. Thompson, H. Trickey, and P. Winterbottom. ``Plan 9 from Bell Labs'', _"J._ Computing Systems" 8:3, Summer 1995, pp. 221-254.
+ - Dorward, S., et al., ``Inferno'', _"IEEE_ Compcon 97 Proceedings" , 1997.
+ - Arnold, K. and Gosling, J., _"The_ Java Programming Language" , Addison-Wesley, 1996.
+ - Nori, K. V., Ammann, U., Nabeli, H. H., and Jacobi, Ch.,  ``Pascal P Implementation notes'', in Barron, D. W. (ed.), _"Pascal\-The_ Language and its Implementation" , Wiley, 1981, pp. 125-170.
+ - Ditzel, D. R. and McLellan, R., ``Register Allocation for Free: The C Machine Stack Cache'', _"Proc._ of Symp. on Arch. Supp. for Prog. Lang. and Op. Sys." , March, 1982, pp. 48-56.
+ - Case, B., ``Implementing the Java Virtual Machine'', _"Microprocessor_ Report" , March 25, 1996, pp. 12-17.

@@ -30,7 +30,7 @@ have been started using *wm/wmmash*. In the following descriptions,
 references to return values indicate strings put on a command's standard
 output.
 
-=== Creating a Menu Bar
+== Creating a Menu Bar
 
 The *def* subcommand is used to define graphical pushbuttons and menus.
 The *def button* and *def ibutton* commands are used to define
@@ -61,7 +61,7 @@ have the values they had when the layout was done. +
 The *env* subcommand can be used to make a new copy of the environment
 for use by button or menu actions.
 
-=== Displaying Popup Widgets
+== Displaying Popup Widgets
 
 The *notice* subcommand pops up a window containing _message_ and a
 single button to dismiss the window. The icon displayed in the window is
@@ -85,7 +85,7 @@ The *string* subcommand pops up a small window with _mesg_ as the label
 of a text field. Characters typed into the text field, up to but not
 including ENTER, are returned.
 
-=== Dealing With the Selection
+== Dealing With the Selection
 
  +
 The *sel* subcommand returns whatever is currently selected. When typing
@@ -99,7 +99,7 @@ between the shell and other applications. The Snarf and Paste buttons on
 the popup menu associated with mouse button two can also be used to do
 this.
 
-=== Miscellaneous Tk Subcommands
+== Miscellaneous Tk Subcommands
 
 The *taskbar* subcommand lets you put _string_ in the title bar of the
 _mash_ window. The old value is returned. +

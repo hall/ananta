@@ -1,24 +1,4 @@
-
-
-\\!h0c n \\nx 0
-
-
-
-
-
-
-
-
-
-
-
-
-
-\l'1i'
-
-
-
-Acme: A User Interface for Programmers
+= Acme: A User Interface for Programmers
 
 _"Rob_ Pike
 _rob@plan9.bell-labs.com_
@@ -1222,9 +1202,7 @@ Murray Hill, NJ,
 1992;
 revised in this volume.
 
-[Alle92]
-
-Allegro Common Lisp user Guide, Vol 2, 
+[Alle92] Allegro Common Lisp user Guide, Vol 2, 
 
 Chapter 14, "The Emacs-Lisp Interface". 
 March 1992.

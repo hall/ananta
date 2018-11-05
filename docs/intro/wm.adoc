@@ -11,7 +11,7 @@ application windows. When started, it runs _command_, (by default
 means for starting new applications; that facility must be provided by
 an auxilliary program, *wm/toolbar* being one such example.
 
-=== Control Interface
+== Control Interface
 
 _Wm_ provides a control interface to programs running inside it through
 the *Wmcontext* adt that can be obtained from the *Draw->Context* that
@@ -67,7 +67,7 @@ have happened. These include:
 *exit*::
   The window manager is closing down.
 
-=== Controlling Application
+== Controlling Application
 
 The first application that starts under _wm_ is given the privilege of
 being able to control other applications running under the same _wm_. If

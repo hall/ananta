@@ -11,7 +11,7 @@ It executes commands read from standard input or a file or, with the
 *-c* flag, from _mash_'s argument list. Its syntax and semantics are
 similar to that of Plan 9's _rc_.
 
-=== Invocation
+== Invocation
 
 If _mash_ is started with no arguments it reads commands from standard
 input. Otherwise its first non-flag argument is the name of a file from
@@ -33,7 +33,7 @@ flags.
 If invoked without arguments _mash_ first runs the commands found in
 */lib/mashinit*.
 
-=== Command Lines
+== Command Lines
 
 Each command is terminated with an ampersand or a semicolon (& or ;).
 When reading from */dev/cons* a newline not escaped with a backslash (\)
@@ -43,7 +43,7 @@ by *&* to finish executing before starting the following command.
 A number-sign (#) and any following characters up to (but not including)
 the next newline are ignored, except in quotation marks.
 
-=== Simple Commands
+== Simple Commands
 
 A simple command is a sequence of words interspersed with I/O
 redirections. If the first word is the name of a _mash_ function or of
@@ -59,7 +59,7 @@ The keywords are
 	case else fn for hd if in len rescue tl while 
 ....
 
-=== Words and Variables
+== Words and Variables
 
 A number of constructions may be used where _mash_'s syntax requires a
 word to appear. In many cases a construction's value will be a list of
@@ -140,7 +140,7 @@ The *^* operator concatenates its two operands. If either operand is a
 singleton, the concatenation is distributive. Otherwise the lists are
 concatenated pairwise.
 
-=== Free Carets
+== Free Carets
 
 In most circumstances, _mash_ will insert the *^* operator automatically
 between words that are not separated by white space. Whenever one of *$*
@@ -161,7 +161,7 @@ _________________________
 *limbo -^$flags $stem^.b*
 _________________________
 
-=== I/O Redirections
+== I/O Redirections
 
 The sequence **>**__file__ redirects the standard output file (file
 descriptor 1, normally */dev/cons*) to the named _file_; **>>**__file__

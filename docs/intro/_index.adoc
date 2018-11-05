@@ -16,7 +16,7 @@ lot of goo.
 * The portable cross-development suites that allow any native Inferno
 platform to be cross-compiled on any hosted system.
 
-=== Manual conventions
+== Manual conventions
 
 Throughout this volume, manual entries are cross referenced by a
 notation of the form _entry_(_n_), where _entry_ is the name of the page
@@ -35,7 +35,7 @@ Inferno root directory. Unless otherwise enabled, the result of changes
 made by Inferno programs to files in the file system space is generally
 restricted to this portion of the host file system.
 
-=== Name spaces
+== Name spaces
 
 One of the great strengths of Inferno is the _name space_ interface to
 the resources available to a process, a hierarchical structure which
@@ -62,12 +62,12 @@ confused, _namespace_(4) gives some conventions that should be adhered
 to if programs are to work properly. (That page also gives a general
 overview of the Inferno source tree.)
 
-=== Start up
+== Start up
 
 See ``Installation of the Inferno Software'' in Volume 2 for details of
 how to start up Inferno.
 
-=== Window/development environment
+== Window/development environment
 
 Inferno provides a powerful development environment in which to write,
 compile, execute and debug programs written in the Limbo language. It

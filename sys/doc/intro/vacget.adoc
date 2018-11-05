@@ -1,0 +1,53 @@
+= vacget, vacput: venti archive utilities
+
+
+*vacget* [ *-vdpt* ] [ *-a* _addr_ ] _vac:score_ +
+*vacput* [ *-vd* ] [ *-i* | *-x* ] [ *-a* _addr_ ] [ *-b* _blocksize_ ]
+[ *-n* _name_ ] [ *-u uid* ] [ *-g gid* ] _path ..._
+
+
+_Vacget_ retrieves a venti archive from a venti server to the current
+working directory.
+
+_Vacput_ writes a venti archive to a venti server. The _paths_ are
+walked recursively and all files and directories written to the archive.
+Temporary files, i.e. those with the *DMTMP* bit set, are skipped.
+Writing only changed files relative to a previously written archive is
+not implemented.
+
+*-d*::
+  Print debug messages.
+*-p*::
+  Try to preserve file permissions and owner/group. Only for vacget.
+*-v*::
+  Be verbose. Prints files as they are being retrieved or written.
+*-t*::
+  List files, do not write them. Only for vacget.
+**-a**__ address__::
+  Dial _address_ instead of the default venti server.
+**-b**__ blocksize__::
+  Use blocks with _blocksize_ bytes instead of the default 8192 byte
+  blocks. Only for vacput.
+**-n**__ name__::
+  Use _name_ as the name in the root block. Only for vacput.
+*-i* or *-x*::
+  Read a list of files from stdin to include (*-i*) or exclude (*-x*)
+  from the (recursively walked) _paths_ specified on the command-line.
+  Only for vacput.
+**-u**__ uid__::
+  Use _uid_ for all files. Only for vacput.
+**-g**__ gid__::
+  Use _gid_ for all files. Only for vacput.
+
+== SOURCE
+
+*/appl/cmd/vacget.b* +
+*/appl/cmd/vacput.b*
+
+== SEE ALSO
+
+_venti_(2), _vacfs_(4)
+
+== BUGS
+
+These tools need more testing.

@@ -1,0 +1,99 @@
+= miniterm: Minitel® emulator
+
+
+*wm/minitel/miniterm* [ _address_ ]
+
+
+_Miniterm_ connects to the Minitel® service at the given _address_, by
+default the France Telecom Internet gateway to its Minitel® service,
+*tcp!pdc.minitelfr.com!513*. The _address_ can be any form acceptable to
+_dial_(2). _Miniterm_ opens a new window that mimics a Minitel display.
+An array of buttons on the right hand side (in 40 character mode) or
+bottom (in 80 character mode) offer the special Minitel functions, with
+French abbreviations. Characters typed on the keyboard are sent to the
+server; typing the return key acts as *Suite* or *Envoi* as required.
+Clicking on a word with the mouse sends it to the server.
+
+The France Telecom gateway offers a demonstration service using ID
+*ZXNET1* with password *DEMFTD*. Once connected, the services *PAGESM*
+(a directory of all Minitel services) and *FT* (France Telecom's
+information service) are available without charge. See
+*www.minitelfr.com* for further information.
+
+On certain native Inferno hardware, _miniterm_ can also connect directly
+via a modem connection, using an address of the form
+**modem!**__modeminit__**!**__number,__ which sends the string
+_modeminit_ to the modem to initialise it, then dials the given
+_number_. For example:
+
+....
+wm/minitel/miniterm modem!F3!00133836431414
+....
+
+Here, the
+
+is a code that tells the modem to enable V.23, which must be used when
+connecting to the France Telecom servers. To use pulse dialing instead
+of tone dialing the phone number can be prefixed with a
+
+as in:
+
+....
+wm/minitel/miniterm modem!F3!P3614
+....
+
+If the parameter specifies a network connection or a direct connection
+with a phone number the software will attempt to connect immediately. If
+the on-screen button *Cx/Fin* is used to disconnect and then re-connect,
+_miniterm_ will use the same address if it is a network connection but
+prompt for a new phone number for a direct connection. When prompting
+for a new number the top row of the screen is used to allow the user to
+edit the last used number. Simple editing is available, and the minitel
+keys do the obvious things.
+
+The Minitel function keys are displayed on the right hand side of the
+screen in 40 column mode on a network connection and can be swapped to
+the left hand side by hitting the
+
+key. In direct dial mode and 80 column network mode the keys are
+displayed at the bottom of the screen. In network mode they are
+redisplayed as appropriate on 40 to 80 column mode changes.
+
+_Miniterm_ provides a software keyboard, activated by the *Clavier*
+button, which understands some of the Minitel keyboard mappings. For
+example, hitting `**A**' results in a capital
+
+on the screen in spite of the Videotex case mapping.
+
+== FILES
+
+*/dev/modem*::
+  soft modem (no longer supported)
+*/dev/modemctl*::
+*/fonts/minitel*::
+  text and semigraphic characters
+
+== SOURCE
+
+*/appl/wm/miniterm*
+
+== SEE ALSO
+
+_charon_(1), _telnet_(1)
+
+== BUGS
+
+There is no button to control use of error correction in direct dial
+mode; it will be enabled only if the server requests it, but not all do.
+Without it direct dial screens are occasionally corrupted.
+
+The software keyboard is not AZERTY. Worse, it does not always come to
+the top on a mode change.
+
+Some screens look wrong in 80 column mode.
+
+On a network connection, choosing *USA* displays
+
+at the bottom left hand corner of the screen. The server really is
+sending this sequence. Both the FT emulator and their explorer plug-in
+suffer from it too.

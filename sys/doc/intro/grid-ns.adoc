@@ -1,0 +1,40 @@
+= grid: ns: exports a selected namespace and serves it on standard input
+
+
+**grid/srv/ns [ -r **__relpath __**]**__ path1 path2...path n__ +
+**grid/runns [ -r **__relpath __**]**__ path1 path2...path n__
+
+
+_Ns_ exports a selected subsection of the local namespace and serves it
+on _stdin._ The path arguments specify which directories are to be
+exported. If subdirectories are exported without their parents, _ns_
+attempts to maintain the namespace structure by creating the parents but
+populating them only with the selected subdirectories. For example,
+exporting */appl/lib* would mean that the exported */appl* directory
+contained nothing apart from the *lib* subdirectory. If _relpath_ is
+specified, all paths will be viewed relative to this path. For instance,
+if _relpath_ is */usr/inferno*, then */usr/inferno/bin/dis* would be
+listed as */bin/dis* and */tmp* would not be listed at all.
+
+_Grid-register_(1) may be used in conjunction with _ns_ to register it
+with a _registry_(4) and to export and serve its namespace across
+_dial_(2) network connections. Incoming connections may also be
+displayed visually using _grid-monitor_(1). For example:
+
+**grid/register [**__ options ...__** ] \{ grid/srv/ns
+**__paths...__**"**__}__**|**__grid/srv/monitor__**1**__'NS__*resource'*
+
+This set of commands is encapsulated within the shell script _runns_
+which will automatically register _ns_ with a _registry_(4) if possible
+and start up the graphical display to show connections to the resource.
+There is no need for the user to execute _ns_ outside of _runns_ unless
+the namespace it provides is required to be accessible in a different
+way to that provided by _grid-register_(1).
+
+== SOURCE
+
+*/appl/grid/srv/ns.b*
+
+== SEE ALSO
+
+_grid-cpu_(4), _grid-monitor_(1), _grid-register_(1), _grid-session_(1)

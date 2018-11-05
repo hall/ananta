@@ -1,0 +1,53 @@
+= look: find lines in a sorted list
+
+
+*look* [ *-dfnix* ] [ **-r**__ endkey__ ] [ **-t**__c__ ] [ _string_ ] [
+_file_ ]
+
+
+_Look_ consults a sorted _file_ and prints all lines that begin with
+_string_. It uses binary search.
+
+The following options are recognised:
+
+*-i*::
+  Interactive. There is no _string_ argument; instead _look_ takes lines
+  from the standard input as strings to be looked up.
+*-x*::
+  Exact. Print only lines of the file whose key matches _string_
+  exactly.
+*-d*::
+  `Directory' order: only letters, digits, tabs and blanks participate
+  in comparisons.
+*-f*::
+  Fold. Upper case letters compare equal to lower case.
+*-n*::
+  Numeric comparison with initial string of digits, optional minus sign,
+  and optional decimal point.
+**-r**__ endkey__::
+  Limit the range of matching values, to include the word _endkey_ but
+  no larger values.
+*-t*[*c*]::
+  Character _c_ terminates the sort key in the _file_. By default, tab
+  terminates the key. If _c_ is missing the entire line comprises the
+  key.
+
+If no _file_ is specified, */lib/words* is assumed, with collating
+sequence *df*.
+
+== FILES
+
+*/lib/words*
+
+== SOURCE
+
+*/appl/cmd/look.b*
+
+== SEE ALSO
+
+_sort_(1), _grep_(1)
+
+== DIAGNOSTICS
+
+The exit status is *"not found"* if no match is found, and *"no
+dictionary"* if _file_ or the default dictionary cannot be opened.

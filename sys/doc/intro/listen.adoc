@@ -1,0 +1,108 @@
+= listen, styxlisten, dial: network connections
+
+
+*listen* [ *-Ats* ] [ *-a* _alg_ ]... [ *-k* _keyfile_ ] [ *-i*
+**\{**__initscript__*}* ] _addr_ _command_ [ _arg_... ] +
+*styxlisten* [ *-Ats* ] [ *-a* _alg_ ]... [ *-k* _keyfile_ ] _addr_
+_command_ [ _arg_... ] +
+*dial* [ *-A* ] [ *-a* _alg_ ] [ *-k* _keyfile_ ] _addr_ _command_ [
+_arg_... ]
+
+
+_Listen_ waits for an incoming network connection on _addr_, (as
+accepted by *announce* in _dial_(2)) and then invokes _sh_(1) to run the
+associated _command_. If the *-A* option is specified, no authentication
+or encryption will take place on the connection; otherwise _listen_ will
+attempt to authenticate the party at the other end of the connection,
+allowing any given _alg_ to be used to encrypt and/or digest the
+connection's data. If neither *-A* or any *-a* option is given, then
+_listen_ will allow any algorithm allowed by the local _ssl_(3) device.
+If _keyfile_ is specified, then that will be used as the server's
+certificate; otherwise **/usr/**__user__*/keyring/default* will be used.
+
+If an _initscript_ is provided, it is executed by each listener after
+announcing its network connection, with the shell variable *net* set to
+the name of the corresponding network directory (see _dial_(2)), before
+listening for incoming calls. This can be used to change, or find out
+the characteristics of an announced port (for instance to find out the
+actual port number that has been announced).
+
+By default, _listen_ backgrounds itself (after checking that the port
+announcement proceeded ok); giving it the *-s* option causes it to run
+synchronously.
+
+_Listen_ currently makes available the whole of its current name space
+visible to the command, which might be undesirable, and perhaps should
+be optional, with a new name space constructed for an incoming call. The
+*-t* option declares the command to be `trusted' giving it access to
+elements of the current name space such as */mnt/keys* on an
+authentication server. By default it has not got that access.
+
+_Styxlisten_ is similar to _listen_, except that it multiplexes a single
+_styx_ (see _intro_(5)) server between multiple clients. _Styxlisten_
+starts its _cmd_ only once; it assumes it will serve styx messages
+through file descriptor 0 when started. For each client that attaches to
+_address_, the command will see a new _attach_(5) message indicating the
+new connection. Unless the *-A* option has been given, the *uname* field
+in the attach message will be the name of the authenticated user. When
+the command exits, the process listening on _address_ is stopped.
+
+_Dial_ is the complement of _listen_. It tries to make a connection to
+_addr_. If the *-A* option is given, no authentication or encryption
+will take place; otherwise Inferno authentication and encryption will be
+performed as usual, using _alg_ if given, or a default algorithm
+otherwise. _Keyfile_ is used for the certificate if given, otherwise
+**/usr/**__user__**/keyring/**__addr,__ if it exists, and failing that,
+**/usr/**__user__*/keyring/default.* _Alg_ is used for the
+encryption/digest algorithm on the connection. When the connection is
+made, _command_ is run in the context of that connection, as described
+below.
+
+For both _dial_ and _listen_, when the command is run, *$user* is set to
+the name of the authenticated user at the other end of the connection
+(if authentication is being used), and *$net* is set to the */net*
+directory corresponding to the connection. The standard input and output
+of the command is redirected to the network connection (standard error
+is unaffected).
+
+== EXAMPLES
+
+Run a custom login daemon and an echo server that logs incoming
+connections:
+
+....
+listen 'tcp!*!echo' {
+	echo connection from `{cat $net/remote} >[1=2]
+	echo user is $user >[1=2]
+	cat &
+}
+....
+
+Dial up the above echo server:
+
+....
+dial tcp!somehost!echo {
+	echo made connection >[1=2]; echo hello; cat >[1=2]
+}
+....
+
+Make the current name-space available to all:
+
+....
+styxlisten 'tcp!*!styx' export /
+....
+
+== SOURCE
+
+*/appl/cmd/dial.b* +
+*/appl/cmd/listen.b*
+
+== BUGS
+
+The way that _styxlisten_ is implemented means that the *aname* from the
+remote _mount_(2) request cannot be passed through to the attach message
+seen by the command that has been started by _styxlisten_.
+
+== SEE ALSO
+
+_dial_(2), _ssl_(3), _auth_(6), _svc_(8)

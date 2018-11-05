@@ -1,0 +1,17 @@
+= touch: update the modification time of one or more files
+
+
+*touch* [*-c*] [ **-t**__ time__ ] _files_
+
+
+*Touch* attempts to set the modification time of the specified files to
+_time_ (by default, the current system time). If a file does not exist,
+*touch* will attempt to create it, unless the *-c* option is given.
+
+== SOURCE
+
+*/appl/cmd/touch.b*
+
+== SEE ALSO
+
+_ls_(1), _chmod_(1), _sys-stat_(2), _stat_(5)

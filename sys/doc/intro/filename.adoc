@@ -1,0 +1,45 @@
+= filename: interactively select a file
+
+
+*wm/filename* [ *-d* _startdir_ ] [ *-g* _geom_ ] [ *-t* _title_ ] [
+_pattern_... ]
+
+
+*Filename* pops up a file browser window, allows the user to select a
+file and prints the name of that file to the standard output. The
+optional list of patterns gives a list of wildcard patterns as
+understood by _filepat_(2); the file browser will initially show only
+files matching one or more of the patterns. (N.B. patterns must be
+quoted to prevent the shell from interpreting them). The following
+options are recognised:
+
+*-d*::
+  _Startdir_ gives the initial directory shown by the file browser.
+*-g*::
+  _Geom_ is given as a tk argument to the file browser window.
+*-t*::
+  _Title_ specifies the title of the file browser window.
+
+== EXAMPLE
+
+The following _sh_(1) command compiles an interactively chosen Limbo
+source file, placing the file browser window at a particular spot on the
+screen and starting at joe's home directory.
+
+....
+limbo `{wm/filename -t 'Select a source file' -g '-x 50 -y 50'
+	-d/usr/joe '*.b' '*.m'}
+....
+
+== SOURCE
+
+*/appl/wm/filename.b*
+
+== SEE ALSO
+
+_wmlib_(2), _sh_(1)
+
+== BUGS
+
+The file browser window actually appears 20 pixels below and to the
+right of the position specified.

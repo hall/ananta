@@ -1,0 +1,37 @@
+= cat: concatenate files
+
+
+*cat* [ *-* ] [ _file ..._ ]
+
+
+_Cat_ reads each _file_ in turn and writes it on the standard output.
+Thus
+
+....
+cat file
+....
+
+prints the file to standard output, and the following
+
+....
+cat file1 file2 >file3
+....
+
+concatenates two files onto a third.
+
+If no _file_ is given, or where *-* is given as an argument, _cat_ reads
+from the standard input. Output is buffered in blocks matching the
+input.
+
+== SOURCE
+
+*/appl/cmd/cat.b*
+
+== SEE ALSO
+
+_cp_(1), _stream_(1)
+
+== BUGS
+
+Beware of *cat a b >a* and *cat a b >b* which destroy input files before
+reading them.

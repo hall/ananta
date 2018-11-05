@@ -1,0 +1,135 @@
+= mash-make: builtin `make' functionality
+
+
+*load make*
+
+*make* [ _-clear_ ] +
+*depends* [ _target_ ] +
+*match* _pattern_ +
+*rules* [ _pattern_ ] +
+
+
+_Make_ is a loadable builtin for _mash_. It can be taught about
+dependencies that exist between components of a program and rules for
+reconstructing the components of a program.
+
+_Make_ will examine file modification times to determine which
+components need to be updated and will issue commands to reconstruct
+them in the correct sequence. It will update a target if any of its
+prerequisites are more up to date than the target or if the target does
+not exist.
+
+Typically, dependencies and rules are kept in a file called *mashfile*.
+The sequence
+
+....
+	load make
+	run mashfile
+....
+
+is used to load the _make_ builtin and read the rules from *mashfile*.
+Thereafter, the command
+
+_______________
+*make* _target_
+_______________
+
+will perform the correct sequence of operations to reconstruct _target_
+and its dependents.
+
+A dependency is specified in _mash_ with a line of the form:
+
+_______________________________________________
+__target-list__** : **__dependent-list__** ; **
+_______________________________________________
+
+or
+
+_________________________________________________________________
+__target-list__** : **__dependent-list__** \{ **__rules__** } ;**
+_________________________________________________________________
+
+Each of the targets in _target-list_ depends upon each of the dependents
+in _dependent-list_. The optional _rules_ specify how to build the
+targets. For example
+
+....
+	lflags = -Cg;
+	rotta.dis : rotta.b rotta.m { limbo $lflags rotta.b };
+....
+
+If the rules are omitted _make_ must be able to infer them from implicit
+rules.
+
+An implicit rule is defined with a line of the form:
+
+____________________________________________
+_pattern_ *:~* _dependency_ *\{* _rules_ *}*
+____________________________________________
+
+If _pattern_ matches a target that _make_ needs to build then _make_
+will build the target by first making the _dependency_ and then applying
+the _rules_. The wildcard components of the matched target are available
+in the _dependency_ and the _rules_ as variables *$1*, *$2*, *$3*...
+with *$1* containing the text matched by the first wildcard, *$2* the
+second wildcard and so on. The whole of the target is available in the
+variable *$0*. For example,
+
+....
+    /*/*.m :~ $2.m  { cp $2.m /$1/$2.m };
+    /module/rotta.m: rotta.m;
+    /altmodule/frame.m: frame.m;
+....
+
+More commonly, implicit rules are defined to provide _make_ with
+knowledge of how to compile _limbo_ source to produce _Dis_ format
+binaries. Typically,
+
+....
+    *.dis       :~ $1.b     { limbo $lflags $1.b};
+    /dis/*.dis  :~ $1.dis   { cp $1.dis /dis};
+....
+
+A target is built with the command
+
+_______________
+*make* _target_
+_______________
+
+The list of rules can be reset with
+
+_____________
+*make -clear*
+_____________
+
+The list of dependencies for a target or for all targets can be
+displayed with the command
+
+______________________
+*depends* [ _target_ ]
+______________________
+
+The rules that match a pattern and the components of the pattern can be
+displayed with
+
+___________________________
+*match* **'**__pattern__*'*
+___________________________
+
+Taking care to hide the pattern from _mash_ file name pattern matching
+with quotes. The command
+
+_____________________
+*rules* [ _pattern_ ]
+_____________________
+
+will display all the rules or the rules that apply to pattern _pattern_
+(if given).
+
+== SOURCE
+
+*/appl/cmd/mash/make.b*
+
+== SEE ALSO
+
+_mash_(1)

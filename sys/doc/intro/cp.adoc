@@ -1,0 +1,56 @@
+= cp, fcp: copy files
+
+
+*cp* [ *-gux* ] _fromfile tofile_ +
+*cp* [ *-gux* ] _fromfile_ ... _todir_ +
+*cp -r* [ *-gux* ] _fromdir_ ... _todir_
+
+*fcp* [ **-R**__ nr__ ] [ **-W**__ nw__ ] _fromfile tofile_ +
+*fcp* [ **-R**__ nr__ ] [ **-W**__ nw__ ] _fromfile_ ... _todir_ +
+*fcp -r* [ **-R**__ nr__ ] [ **-W**__ nw__ ] _fromdir_ ... _todir_
+
+
+In the first form, _fromfile_ is any name and _tofile_ is any name
+except an existing directory. In the second form, the commands copy one
+or more _fromfiles_ into _dir_ under their original file names, as if by
+a sequence of commands in the first form. For example:
+
+______________
+*cp f1 f2 dir*
+______________
+
+is equivalent to:
+
+____________________________
+*cp f1 dir/f1; cp f2 dir/f2*
+____________________________
+
+_Cp_ copies the contents of plain (non-directory) file _fromfile_ to
+_tofile_. The mode and owner of _tofile_ are preserved if it already
+exists; the permissions of _fromfile_ is used otherwise. The *-x* option
+sets the full mode and modified time of _file2_ from _file1_; *-g* sets
+the group id; and *-u* sets the group id and user id (which is usually
+only possible if the file server is in an administrative mode).
+
+The *-r* option directs _cp_ to copy recursively the named directories
+_fromdir ..._ to the target directory _todir_.
+
+_Fcp_ behaves like _cp_, but copies many blocks in parallel. It works
+only with files that respect read and write offsets (see *pread* and
+*pwrite* in _sys-read_(2)), which usually excludes files representing
+devices or services. When it applies, however, it is often much faster
+than _cp_. The *-R* and *-W* options set the number of readers and
+writers (default for each: 8).
+
+== SOURCE
+
+*/appl/cmd/cp.b* +
+*/appl/cmd/fcp.b*
+
+== SEE ALSO
+
+_cat_(1), _mv_(1), _sys-stat_(2)
+
+== DIAGNOSTICS
+
+_Cp_ and _fcp_ refuse to copy a file onto itself.

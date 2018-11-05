@@ -1,0 +1,51 @@
+= ftest, newer: test file attributes
+
+
+*ftest* _test_ _arg_
+
+*newer* _file1_ _file2_
+
+
+_Ftest_ checks the specified attribute of _arg_ according to _test_ and
+yields an exit status signifying the result. For all __test__s apart
+from *-t*, _arg_ is the name of the file to be tested; for *-t*, it is
+the number of a file descriptor. Available tests are:
+
+*-d*::
+  True if the file exists and is a directory.
+*-e*::
+  True if the file exists.
+*-f*::
+  True if the file exists and is a regular file.
+*-r*::
+  True if the file exists and is readable.
+*-s*::
+  True if the file exists and has non-zero size.
+*-t*::
+  True if the open file represented by the number _arg_ represents the
+  same file as */dev/cons*.
+*-w*::
+  True if the file exists and is writable.
+*-x*::
+  True if the file exists and is executable.
+
+_Newer_ checks whether _file1_ exists and is no older than _file2_,
+which must also exist; if so, it yields a true exit status. Otherwise,
+it yields an error status. Neither file may be a directory.
+
+== SOURCE
+
+*/appl/cmd/ftest.b* +
+*/appl/cmd/newer.b*
+
+== SEE ALSO
+
+_sys-stat_(2)
+
+== BUGS
+
+These commands work only with _sh_(1) as none of the other Inferno
+shells can check the exit status of a command.
+
+Checking for read, write and execute capabilities is speculative - the
+file server has the last say. Group permissions are ignored.

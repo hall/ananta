@@ -1,0 +1,24 @@
+= mc: multicolumn print
+
+
+*mc* [ **-c**__ columns__ ] [ _file ..._ ]
+
+
+_Mc_ formats the contents of _files_ (standard input by default) into
+columns. _Columns_ is an integer specifying the number of character
+widths into which _mc_'s output is formatted. If run in an _acme_(1)
+window, the default _columns_ is the number of zeros that will fit
+across the window; otherwise the default _columns_ is 65.
+
+== SOURCE
+
+*/appl/cmd/mc.b*
+
+== SEE ALSO
+
+_acme_(1)
+
+== BUGS
+
+The columns are not aligned properly if the input contains tabs. +
+The output doesn't fit the width of a _wm-sh_(1) window by default.

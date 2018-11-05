@@ -1,0 +1,126 @@
+= file2chan, rblock, rdata, rerror, rget, rread, rreadone, rwrite: shell
+interface to file2chan
+
+
+*load file2chan*
+
+*file2chan* _filename_ _readcmd writecmd_ [ _closecmd_ ] +
+*rblock* [ _tag_ ] +
+*fetchwdata* [ _tag_ ] +
+*putrdata* [ _tag_ ] +
+*rerror* [ _tag_ ] _errmsg_ +
+*rread* [ _tag_ ] _readdata_ +
+*rreadone* [ _tag_ ] _readdata_ +
+*rwrite* [ _tag_ [ _count_ ] ] +
+*$\{rget* (*data|count|offset|fid*) [ _tag_ ] *}* +
+
+
+_File2chan_ is a loadable module for _sh_(1) that provides facilities to
+create a file in the namespace with properties determined by a shell
+script. *File2chan* creates _filename_ in the namespace and spawns a new
+thread to serve the file. If the creation succeeds and the thread is
+spawned successfully, then the environment variable *$apid* is set to
+the process id of the new thread; otherwise an error (non-nil) status is
+returned. _Readcmd_, _writecmd_ and _closecmd_ should be executable
+_sh_(1) command blocks. Subsequently, whenever a process reads from
+_filename_, _readcmd_ will be invoked; whenever a process writes to
+_filename_, _writecmd_ will be invoked; whenever an open file on
+_filename_ is closed, then _closecmd_ will be invoked, if present.
+
+When a read or write request arrives, it is added to a list of currently
+outstanding _tags_ maintained by _file2chan_. If the request is not
+replied to or acknowledged by the time the invoked command has finished,
+then a reply will be made automatically (the default is to accept all
+writes and to give an error on all reads). Each tag is assigned a unique
+_tag id_ which is stored in the environment variable *$tag* for the
+duration of the invoked command. Most commands take an optional _tag_
+argument which should be the _tag id_ of a currently outstanding
+request; if omitted, the value of *$tag* will be used. The following
+commands are provided to reply to requests and obtain information about
+requests:
+
+*rblock*::
+  *Rblock* marks _tag_ as a blocking request - no automatic reply will
+  be made when the currently invoked command has terminated; the process
+  making the request will block until a reply is made.
+*fetchwdata*::
+  *Fetchwdata* writes the data associated with _tag_ (which must be a
+  write request) to its standard output. It is useful if an uncorrupted
+  version of binary data is wanted, as it avoids the data being
+  interpreted as a utf-8 string.
+*putrdata*::
+  *Putrdata* is the converse of *fetchwdata*: it reads data from its
+  standard input and replies to _tag_ (which must be a read request)
+  with the data read. Any data in excess of that requested will be lost.
+*rerror*::
+  *Rerror* replies to _tag_ with an error code; the remote read or write
+  request will return an error, with the description _errmsg_.
+*rread*::
+  *Rread* replies to the read request _tag_ with the data in _readdata_.
+  If _readdata_ is longer than the number of bytes requested, then only
+  the requested number of bytes of _readdata_ will be sent. The offset
+  of the read request is ignored.
+*rreadone*::
+  *Rreadone* is similar to *rread* except that it honours the offset of
+  the client's read request, so the client can use consecutive reads to
+  retrieve all of _readdata_.
+*rwrite*::
+  *Rwrite* replies to the write request _tag_. If _count_ is given, then
+  the client's write request will return that number (it is usually
+  considered an error if the return from _write_ (see _sys-read_(2)) is
+  not the same as the number of bytes written). If _count_ is omitted,
+  all the bytes are assumed to have been written.
+*$\{rget}*::
+  *Rget* retrieves information associated with _tag_. The information it
+  yields depends on its first argument, which must be one of:
+  +
+  *data*;;
+    The data associated with write request _tag_.
+  *count*;;
+    The number of bytes requested by read request _tag_.
+  *fid*;;
+    The client's file identifier associated with _tag_. A unique _fid_
+    is associated with all client requests emanating from the same open
+    file. This is the only *rget* request valid with the _tag_
+    associated with a close operation.
+  *offset*;;
+    The file offset associated with the request _tag_.
+
+== EXAMPLES
+
+The following code creates a very simple memory-based file called
+*/tmp/memfile*.
+
+....
+	file2chan /tmp/memfile {rreadone $data} {data = ${rget data}}
+....
+
+It is, however, very limited, as binary data stored in the file will be
+corrupted, and the size of the file is limited to the amount of data
+that can be transmitted in a single write (see _sys-read_(2)).
+
+The following code implements a single-threaded logfile which can
+support multiple concurrent writers:
+
+....
+	{file2chan /chan/log {} {fetchwdata}} >> /tmp/logfile
+....
+
+The following code makes the command *cmd* available to external
+programs, and defines a shell function to use it. Note that there's an
+approximate 8K limit on the size of the argument list that can be passed
+in this way.
+
+....
+	load std
+	file2chan /chan/cmdchan {} {cmd ${unquote ${rget data}}}
+	fn runcmd {echo -n ${quote $*} > /chan/cmdchan}
+....
+
+== SOURCE
+
+*/appl/cmd/sh/file2chan.b*
+
+== SEE ALSO
+
+_sys-file2chan_(2), _sh_(1), _intro_(5),

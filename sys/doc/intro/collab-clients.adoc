@@ -1,0 +1,95 @@
+= collab: chat, poll, poller, whiteboard: collaborative activities
+
+
+*collab/clients/chat* [ _servicedir_ ] _chatroom_
+
+*collab/clients/poll* [ *-d* ] [ _servicedir_ ] _station_
+
+*collab/clients/poller* [ *-d* ] [ _servicedir_ ] _station_
+
+*collab/clients/whiteboard* [ _servicedir_ ] _id_
+
+
+These commands are _wm_(1) programs that are clients of the services of
+_collabsrv_(8). It must therefore be running in the network for any of
+them to be usable. Furthermore, _collabsrv_'s service directory must
+appear somewhere in the client's name space, for instance by using
+_connect_(1), although plain _mount_ (see _bind_(1)) can also be used.
+In all cases, the optional parameter _servicedir_ names the service
+directory (default: */n/remote/services*). Finally, _collabsrv_ must be
+configured to provide the service.
+
+_Chat_ is a simple multi-user chat program. Each user that wishes to
+chat starts _chat_ naming the desired _chatroom_, which is an
+identifying string agreed amongst the clients. (It is often convenient
+to use the path name of a shared file.) _Chat_ attempts to enter the
+given _chatroom_. It announces the results of the connection, and if
+successful, displays subsequent chat room messages. Its window provides
+a scrollable text area that forms a transcript of the current
+conversation, and a single line of editable text at the bottom of the
+window for sending messages. Messages sent by others appear in the
+transcript tagged with the sender's name. When the user types a new line
+(return, enter) in the text entry area, _chat_ sends the text to all the
+members of the chat room, and it subsequently appears in the user's own
+transcript, tagged with *<you>* in place of the user's name. _Chat_ also
+notes in the transcript the arrival and departure of other users.
+
+_Poll_ and _poller_ together enable simple real-time polls. One user
+runs _poller_, which activates the given polling _station_. The other
+users can subsequently join using _poll_, naming the same _station_, and
+can come and go as they please as long as the _poller_ remains. The
+polling station closes when the _poller_ leaves.
+
+_Poller_ drives the interaction for a sequence of one or more real-time
+polls. It is assumed that the poller is in the same room as those
+polled, allowing the questions and answers to be read out each time, as
+in quiz shows and exit polls. Alternatively, something like _chat_ could
+be used to pose questions to a distant audience. For each poll, the
+polling user selects, in _poller_'s window, the number of possible
+answers (2, 3, or 4) using radio buttons, and hits the *Start* button. A
+bar chart shows results as they come in: each bar shows the percentage
+of those polled (thus far) that have selected the corresponding
+alternative. Once the polling user hits *Stop*, no further results are
+accepted, and the bar chart represents the final result. The *-d* option
+causes _poller_ to display a debugging transcript of the messages it
+receives.
+
+Each user being polled runs _poll_, and initially sees an array of radio
+buttons with labels *A*, *B*, *C* and *D*. They remain disabled until
+the _poller_ hits *Start*, at which point _poll_ enables as many radio
+buttons as allowed by the poller for this round. If the user selects a
+button, _poll_ immediately send the selection to the polling station
+(and thus to the _poller_), and disables all the buttons, although the
+user's selection remains marked. All buttons are also disabled when the
+_poller_ says to stop, whether or not a choice has been made. Buttons
+are enabled again at the start of the next question. The *-d* option
+causes _poll_ to display a debugging transcript.
+
+_Whiteboard_ allows several users to draw on the shared canvas with the
+given _id_, which is an identifying string agreed amongst the clients.
+The whiteboard window contains a canvas to be drawn on with stylus, or
+mouse button 1. Strokes drawn in a given _whiteboard_ appear in all
+others with the same board _id_. There are two controls at the bottom of
+the window: the lower left-hand corner has a small pop-up menu of brush
+shapes, including one for erasing; and a long coloured button showing
+the current drawing colour that pops up a choice of drawing colour from
+a palette. Artists can come and go as they please, but the drawing
+vanishes for ever when the last artist leaves the whiteboard.
+
+== FILES
+
+*/n/remote*::
+  default mount point of collaborative resources +
+*/n/remote/services*::
+  _collabsrv_(8) collaborative activity services directory
+
+== SOURCE
+
+*/appl/collab/clients/chat.b* +
+*/appl/collab/clients/poll.b* +
+*/appl/collab/clients/poller.b* +
+*/appl/collab/clients/whiteboard.b*
+
+== SEE ALSO
+
+_connect_(1), _collabsrv_(8)

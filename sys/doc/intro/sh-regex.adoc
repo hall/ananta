@@ -1,0 +1,89 @@
+= re, match: shell script regular expression handling
+
+
+*load regex*
+
+*match* _regex_ [ _arg_... ] +
+*$\{re* _op_ _arg..._ *}* +
+
+
+_Regex_ is a loadable module for _sh_(1) that provides access to
+regular-expression pattern matching and substitution. For details of
+regular expression syntax in Inferno, see _regexp_(6). _Regex_ defines
+one builtin command, *match*, and one builtin substitution operator,
+*re*. *Match* gives a false exit status if its argument _regex_ fails to
+match any _arg_. *Re* provides several operations, detailed below:
+
+$\{re g _regexp_ [ _arg_...]}::
+  Yields a list of each _arg_ that matches _regexp_.
+$\{re v _regexp_ [ _arg_...]}::
+  Yields a list of each _arg_ that does not match _regexp_.
+$\{re m _regexp_ _arg_}::
+  Yields the portion of _arg_ that matches _regexp_, or an empty list if
+  there was no match.
+$\{re M _regexp_ _arg_}::
+  Yields a list consisting of the portion of _arg_ that matches
+  _regexp_, followed by list elements giving the portion of _arg_ that
+  matched each parenthesized subexpression in turn.
+$\{re mg _regexp_ _arg_}::
+  Similar to *re m* except that it applies the match consecutively
+  through _arg_, yielding a list of all the portions of _arg_ that match
+  _regexp_. If a match is made to the null string, no subsequent
+  substitutions will take place.
+$\{re s _regexp_ _subs_ [ _arg_... ]}::
+  For each _arg_, *re s* substitutes the first occurrence of _regexp_
+  (if any) by _subs_. If _subs_ contains a sequence of the form
+  **\**__d__ where _d_ is a single decimal digit, the __d__th
+  parenthesised subexpression in _regexp_ will be substituted in its
+  place. *\0* is substituted by the entire match. If any other character
+  follows a backslash (*\*), that character will be substituted.
+  Arguments which contain no match to _regexp_ will be left unchanged.
+$\{re sg _regexp_ _subs_ [ _arg_... ]}::
+  Similar to *re s* except that all matches of _regexp_ within each
+  _arg_ will be substituted for, rather than just the first match. Only
+  one occurrence of the null string is substituted.
+
+== EXAMPLES
+
+List all files in the current directory that end in *.dis* or *.sbl*:
+
+....
+	ls -l ${re g '\.(sbl|dis)$' *}
+....
+
+Break _string_ up into its constituent characters, putting the result in
+shell variable *x*:
+
+....
+	x = ${re mg '.|\n' string}
+....
+
+Quote a string *s* so that it can be used as a literal regular
+expression without worrying about metacharacters:
+
+....
+	s = ${re sg '[*|[\\+.^$()?]' '\\\0' $s}
+....
+
+Define a substitution function *pat2regexp* to convert shell-style
+patterns into equivalent regular expressions (e.g. ``**?.sbl***'' would
+become ``**^.\.sbl.*$**''):
+
+....
+	load std
+	subfn pat2regexp {
+		result = '^' ^ ${re sg '\*' '.*'
+			${re sg '?' '.'
+				${re sg '[()+\\.^$|]' '\\\0' $*}
+			}
+		} ^ '$'
+	}
+....
+
+== SOURCE
+
+*/appl/cmd/sh/regex.b*
+
+== SEE ALSO
+
+_regexp_(6), _regex_(2), _sh_(1), _string_(2), _sh-std_(1)

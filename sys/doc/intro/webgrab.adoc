@@ -1,0 +1,81 @@
+= webgrab: fetch web page content as files
+
+
+*webgrab* [ *-r* ] [ *-v* ] [ **-o**__ stem__ ] [ **-p**__ body__ ]
+_url_
+
+
+_Webgrab_ connects to the web server named in the _url_. It fetches the
+content of the web page also determined by the _url_, and stores it
+locally in a file. If the page is written in HTML, _webgrab_ reads it to
+build a list of sub-component pages (eg, frames) and images. It fetches
+those, saving the content in separate files. It adds a comment to the
+end of each HTML file giving the time, and the file's origin. It
+automatically follows redirections offered by the server.
+
+The _stem_ of the names of the output files is normally derived from a
+component of the _url_. If the _url_ contains a path name, the _stem_ is
+the component of that path, less any dot-separated suffix and prefix.
+For example, given
+
+_________________________________________________
+*http://www.vitanuova.com/inferno/old.index.html*
+_________________________________________________
+
+the stem would be *index*. If there is no path name, but the _url_
+contains a domain name, the _stem_ is the penultimate component of the
+domain name (eg, excluding trailing *.com*, and initial *www*, etc). For
+example, given
+
+_____________________________
+*www.innerhost.vitanuova.com*
+_____________________________
+
+the stem would be *vitanuova*. If all else fails, _webgrab_ uses the
+_stem_ *webgrab*.
+
+Given a _stem_, the initial page is stored in __stem__**.**_suffix_
+where _suffix_ is the suffix (eg, *.html*) of the name of the original
+page. Subordinate pages are saved in a similar way in files named
+__stem__**_1.**_suffix1,_ __stem__**_2.**_suffix2,_ ... .
+
+The options are:
+
+*-r*::
+  do not fetch subcomponents (just the `raw' source of _url_ itself)
+*-v*::
+  print a progress report
+*-vv*::
+  print a chatty progress report
+**-o**__ stem__::
+  use the _stem_ as given
+**-p**__ body__::
+  Use HTTP *POST* instead of *GET*, posting _body_ as the data
+
+_Webgrab_ reads the configuration file */services/webget/config* (if it
+exists), to look for the address of an optional HTTP proxy (in the
+
+entry), and list of domains for which a proxy should not be used (in the
+*noproxy* or *noproxydoms* entry). If symbolic network and service names
+might be involved, the connection server *lib/cs* needs to be already
+running.
+
+== FILES
+
+*/services/webget/config*
+
+== SOURCE
+
+*/appl/cmd/webgrab.b*
+
+== BUGS
+
+It should read the proxy name from the _charon_(1) configuration file
+and not the _webget_ configuration file. +
+It cannot do `secure' transfers (*https*). +
+Its HTML parsing is naive, but on the other hand, it is less likely to
+trip over HTML novelties.
+
+== SEE ALSO
+
+_cs_(8)

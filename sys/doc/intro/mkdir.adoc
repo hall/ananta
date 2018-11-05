@@ -1,0 +1,32 @@
+= mkdir: make a directory
+
+
+*mkdir* [ *-p* ] [ _dirname ..._ ]
+
+
+_Mkdir_ creates the specified directories. It requires write permission
+in the parent directory.
+
+The *-p* option causes _mkdir_ to create the whole path _dirname_,
+including any missing parent directories; it also will not complain if
+_dirname_ already exists and is a directory.
+
+The new directories are created with permissions starting with *8r777*
+but masked with the permissions of the parent directory according to the
+procedure followed by _sys-open_(2). For example, if the parent
+directory lacks write permission for group and has no permissions for
+others, so will the newly created directory.
+
+== SOURCE
+
+*/appl/cmd/mkdir.b*
+
+== SEE ALSO
+
+_chmod_(1), _cd_(1), _rm_(1), _sys-open_(2)
+
+== DIAGNOSTICS
+
+If any directory cannot be created successfully, _mkdir_ prints a
+warning, and continues with any remaining directories, but returns
+*"error"* exit status at the end.

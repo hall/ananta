@@ -1,0 +1,25 @@
+= sort: sort file
+
+
+*sort* [ *-nr* ] [ _file_ ]
+
+
+_Sort_ sorts the lines of _file_ (default: standard input) and writes
+the sorted output to standard output.
+
+Whole lines are sorted into increasing order, using lexicographic
+ordering of Unicode characters by default. The sort is stable, so that
+lines that compare equal will appear in the output in the same order as
+in the original file. The sort order is affected by the following
+options:
+
+*-n*::
+  Each line is assumed to have an initial numeric string representing an
+  integer, with optional plus or minus sign, and the lines are sorted by
+  those numeric values into increasing order.
+*-r*::
+  Reverses the sense of comparisons.
+
+== BUGS
+
+The entire file is read into memory to be sorted.

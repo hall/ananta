@@ -1,0 +1,106 @@
+= limbo: Limbo compiler
+
+
+....
+limbo [ option ... ] [ file ... ]
+....
+
+
+*Limbo* compiles the named Limbo _files_ into machine-independent object
+files for the Dis virtual machine. Depending on the options, the
+compiler may create output files or write information to its standard
+output. Conventional files and their extensions include the following.
+
+__file__**.b**::
+  Limbo source file.
+__file__**.dis**::
+  Object code for the Dis virtual machine.
+__file__**.m**::
+  Limbo source file for *module* declarations.
+__file__**.s**::
+  Assembly code.
+__file__**.sbl**::
+  Symbolic debugging information.
+
+With no options, *limbo* produces a *.dis* file for each source file.
+
+The compiler options are:
+
+*-a*::
+  Print on standard output type definitions and call frames useful for
+  writing C language implementations of Limbo modules. Suppresses normal
+  output file generation.
+*-C*::
+  Mark the Dis object file to prevent run-time compilation.
+*-c*::
+  Mark the Dis object file to guarantee run-time compilation.
+**-D**__ flags__::
+  Turn on debugging _flags_. Flags include *A* for arrays, *a* for *alt*
+  statements, *b* for booleans, *C* for *case* body statements, *c* for
+  *case* statements, *D* for use descriptors, *d* for declarations, *e*
+  for expressions, *E* for extended expressions, *F* for function
+  information, *f* for constant folding, *m* for modules, *n* for *nil*
+  references, *P* for program counter manipulations, *r* for reference
+  types, *S* for type signatures, *s* for a code generation summary, *T*
+  for tuples, *t* for type checking, and *v* for variable
+  initialization.
+*-e*::
+  Increase the number of errors the compiler will report before exiting.
+*-G*::
+  Annotate assembly language output with debugging information. A no-op
+  unless *-S* is set.
+*-g*::
+  Generate debugging information for the input files and place it in a
+  file named by stripping any trailing *.b* from the input file name and
+  appending *.sbl*.
+*-i*::
+  Disable inlining of functions. Currently functions containing a single
+  return statement or two return statements and an if clause are
+  candidates for inlining.
+**-I**__ dir__::
+  An *include* file whose name does not begin with slash is sought first
+  relative to the working directory, regardless of the source _file_
+  argument. If this fails, *limbo* sequences through directories named
+  in *-I* options, then searches in */module*. An *include* file
+  contains Limbo source code, normally holding one or more *module*
+  declarations.
+**-o**__ obj__::
+  Place output in file _obj_ (allowed only if there is a single input
+  _file_). The output file will hold either object or assembly code,
+  depending on *-S*. Default is to take the last element of the input
+  file name, strip any trailing *.b*, and append *.dis* for object code
+  and *.s* for assembly code. Thus, the default output file for
+  *dir/mod.b* would be *mod.dis*.
+*-S*::
+  Create assembly language output instead of object code.
+-T module::
+  Print on standard output C stub functions, useful for implementing
+  Limbo modules in the C language for linkage with the interpreter.
+-t module::
+  Print on standard output a table of runtime functions, to link C
+  language implementations of modules with the Limbo interpreter.
+  Suppresses normal output file generation.
+*-w*::
+  Print warning messages about unused variables, etc. More w's (e.g.,
+  -ww) increase the pedantry of the checking.
+
+== FILES
+
+*/module*::
+  directory for Limbo *include* modules
+
+== SOURCE
+
+*/appl/limbo*::
+  compiler source in Limbo
+*/limbo*::
+  compiler source in C for host
+
+== SEE ALSO
+
+_asm_(1), _emu_(1), _mk_(10.1), _intro_(2), _sys-intro_(2), _tk_(2)
+
+``The Limbo Programming Language'' +
+``Program Development in Inferno'' +
+``A Descent into Limbo'' +
+in Volume 2.

@@ -1,0 +1,91 @@
+= ar: archive maintainer
+
+[source,subs=quotes]
+*ar* _key_ [ _posname_ ] _afile_ [ _file ..._ ]
+
+_Ar_ maintains groups of files combined into a single archive file,
+_afile_. The main use of _ar_ is to produce and manipulate UNIX archive
+files, for instance to create program packages for Debian Linux. Note
+that only _iar_(10.1) can manage archives used as object file libraries
+by the Inferno and Plan 9 loaders.
+
+_Key_ is one character from the set *drqtpmx*, optionally concatenated
+with one or more of *vuaibclo*. The _files_ are constituents of the
+archive _afile_. The meanings of the _key_ characters are:
+
+*d*::
+  Delete _files_ from the archive file.
+*r*::
+  Replace _files_ in the archive file, or add them if missing. Optional
+  modifiers are
+  +
+  *u*;;
+    Replace only files with modified dates later than that of the
+    archive.
+  *a*;;
+    Place new files after _posname_ in the archive rather than at the
+    end.
+  *b* or *i*;;
+    Place new files before _posname_ in the archive.
+
+*q*::
+  Quick. Append _files_ to the end of the archive without checking for
+  duplicates. Avoids quadratic behavior in
+
+*t*::
+  List a table of contents of the archive. If names are given, only
+  those files are listed.
+*p*::
+  Print the named files in the archive.
+*m*::
+  Move the named files to the end or elsewhere, specified as with
+
+*o*::
+  Preserve the access and modification times of files extracted with the
+  *x* command.
+*x*::
+  Extract the named files. If no names are given, all files in the
+  archive are extracted. In neither case does *x* alter the archive
+  file.
+*v*::
+  Verbose. Give a file-by-file description of the making of a new
+  archive file from the old archive and the constituent files. With *p*,
+  precede each file with a name. With *t*, give a long listing of all
+  information about the files, somewhat like a listing by _ls_(1),
+  showing +
+
+______________________________
+* mode uid/gid size date name*
+______________________________
+
+*c*::
+  Create. Normally _ar_ will create a new archive when _afile_ does not
+  exist, and give a warning. Option *c* discards any old contents and
+  suppresses the warning.
+
+== EXAMPLE
+
+ar cr arch.a manifest *.tar.gz Replace the contents of
+
+with the *manifest* file and all the _gzip_(1)'d _tar_ files in the
+current directory.
+
+== FILES
+
+*/tmp/art.*.**::
+  temporaries
+
+== SOURCE
+
+*/appl/cmd/ar.b*
+
+== SEE ALSO
+
+_2l_(10.1), _iar_(10.1), _ar_(10.6)
+
+== BUGS
+
+If the same file is mentioned twice in an argument list, it may be put
+in the archive twice. +
+The file format used by this command is taken from UNIX, and makes some
+invalid assumptions, for instance that user IDs are numeric.

@@ -1,0 +1,23 @@
+= uniq: report repeated lines in a file
+
+
+*uniq* [ *-ud* ] [ _file_ ]
+
+
+_Uniq_ copies the input _file_, or the standard input, to the standard
+output, comparing adjacent lines. In the normal case, the second and
+succeeding copies of repeated lines are removed. Repeated lines must be
+adjacent in order to be found.
+
+*-u*::
+  Print unique lines.
+*-d*::
+  Print (one copy of) duplicated lines.
+
+== SOURCE
+
+*/appl/cmd/uniq.b*
+
+== SEE ALSO
+
+_comm_(1), _sort_(1)

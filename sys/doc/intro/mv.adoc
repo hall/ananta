@@ -1,0 +1,25 @@
+= mv: move files
+
+
+*mv* _fromfile_ _tofile_ +
+*mv* _fromfile ..._ _todir_
+
+
+_Mv_ moves _fromfile_ to _tofile_. If the files are in the same
+directory, _fromfile_ is simply renamed; a previously existing file
+named _tofile_ will be (silently) removed. Otherwise, _mv_ copies
+_fromfile_ to _tofile_, then removes _fromfile_. This requires write
+permission for the parent directories involved.
+
+If the last argument is a directory, the earlier arguments (all files)
+will be moved into that directory. Any previously existing files of the
+same name will be overwritten. Directories can only be renamed: _mv_
+refuses to move one into another.
+
+== SOURCE
+
+*/appl/cmd/mv.b*
+
+== SEE ALSO
+
+_cp_(1), _rm_(1), _sys-stat_(2)

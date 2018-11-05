@@ -1,0 +1,34 @@
+= netstat: summarize network connections
+
+
+*netstat*
+
+
+_Netstat_ prints information about network connections. The following is
+presented for each connection:
+
+__________________________________________________________________________________
+connection name: the protocol and conversation directory in */net* (eg.
+*tcp/8*) +
+user name +
+status of the connection +
+address of each end of the connection (eg host and port if IP)
+__________________________________________________________________________________
+
+The information is obtained from the *status* file of each entry under
+the network directories */net/tcp*, */net/udp* and */net/il*.
+
+_Netstat_ relies on a populated */net* directory; the *#I* device must
+therefore have previously been bound there.
+
+== FILES
+
+*/net/*/status*
+
+== SOURCE
+
+*/appl/cmd/netstat.b*
+
+== SEE ALSO
+
+_ip_(3)

@@ -1,0 +1,32 @@
+= cpu: execute a remote command
+
+
+*cpu* [ *-C* _alg_ ] [_net**!**_]_host_ [ _command_ [ _arg_... ] ]
+
+
+*Cpu* dials _host_ (using network *tcp* if _net_ is not given), exports
+the local namespace and executes the given _command_ on that machine.
+The local namespace is visible to the command in */n/client*; local
+device files are bound into the remote device directory. If _command_ is
+not given, then */dis/sh* is run.
+
+The *-C* option sets the algorithm to be used following authentication
+for digesting or encryption, to _alg_. See _ssl_(3) for the supported
+algorithms. The default is *none*: _ssl_(3) is not used after
+authentication.
+
+== SOURCE
+
+*/appl/cmd/cpu.b*
+
+== SEE ALSO
+
+_dial_(2), _keyring-auth_(2), _security-auth_(2)
+
+== BUGS
+
+Although the draw device files are visible to the remote command, the
+original implementation of Tk meant that windowing applications could
+not receive events when run remotely. That has been fixed in this
+release, but _cpu_ has not yet been updated to take advantage. A later
+update will do that.

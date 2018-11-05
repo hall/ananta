@@ -1,0 +1,61 @@
+= uuencode, uudecode: encode/decode a file
+
+
+*uuencode* [ _sourcefile_ ] _remotefile_
+
+*uudecode* [ *-p* ] [ _encodedfile ..._ ]
+
+
+_Uuencode_ and _Uudecode_ are used to transmit files over transmission
+mediums that do not support other than simple ASCII data.
+
+_Uuencode_ converts a file to a purely ASCII based representation. It
+encodes the contents of _sourcefile_ or the standard input if no source
+file is given. The _remotefile_ is included in the encoded file's header
+as the name of the file into which _uudecode_ should place the decoded
+data. The header also includes the permission modes of the source file
+so that these can be preserved on decoding. The encoded output of
+_uuencode_ is sent to the standard output.
+
+_Uudecode_ reads a file, ignoring any leading and trailing lines that
+are not part of the encoding, and recreates the original file with the
+filename and mode specified in it's header. The file to decode is
+_encodedfile_ or standard input if none is given. The *-p* flag can be
+used to send the decoded data to standard output rather than saving it
+in the file whose name is specified in the header.
+
+== EXAMPLES
+
+Encode a dis file limbo.dis so that it can be included in a mail
+message:
+
+....
+uuencode limbo.dis limbo.dis > tmp
+<place in mail message and send to recipient>
+....
+
+Decode the mail message(msg say):
+
+....
+cat msg | uudecode
+....
+
+This creates the file limbo.dis.
+
+Decode the mail message into a file of your choosing(tmp.dis say):
+
+....
+cat msg | uudecode -p > tmp.dis
+....
+
+== SOURCE
+
+*/appl/cmd/uuencode.b* +
+*/appl/cmd/uudecode.b*
+
+== BUGS
+
+The encoded file is expanded by at least a third. +
+Decoding a file may overwrite an existing file. +
+Uuencode should take the remote file name to be the same as the source
+file if one is not given.

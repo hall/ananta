@@ -1,0 +1,96 @@
+ack, crackerbarrel, factor, fibonacci, fit, genprimes, mersenne, parts,
+perms, pi, powers, primes, sieve - miscellaneous mathematical
+applications
+
+
+*math/ack* [ _m_ ] [ _n_ ] +
+*math/crackerbarrel* [ _n_ ] +
+*math/factor* [ _n_ ] +
+*math/fibonacci* +
+*math/fit* [ **-d**__deg__ ] [ *-v* ] [ _file_ ] +
+*math/genprimes* [ _lim_ ] +
+*math/mersenne* [ _num_ ] +
+*math/parts* [ *-a* ] [ _num_... ] +
+*math/perms* [ _n_ ] +
+*math/pi* [ _dp_ ] +
+*math/powers* [ *-p num* ] [ *-n num* ] [ *-f num* ] [ *-l num* ] [ *-m
+num* ] [ *-v* ] +
+*math/primes* [ _m_ ] [ _n_ ] +
+*math/sieve* [ *-a alg* ] [ _lim_ ]
+
+
+A collection of simple mathematical utilities.
+
+*math/ack*::
+  Calculates and times Ackermann's function A(m, n).
+*math/crackerbarrel*::
+  Solves the crackerbarrel puzzle *n* times and outputs the time taken.
+  See the source for details of the puzzle.
+*math/factor*::
+  Factors the number n.
+*math/fibonacci*::
+  Generates the first few terms of the Fibonacci series using recursion
+  and user defined exceptions.
+*math/fit*::
+  Fits a polynomial of degree _deg_ to a set of points (x, y) where x is
+  the independent variable, y the dependent one. All x and y values
+  should be seperated by white space and can be real or integer. The
+  values are read from _file_ or standard input if none is given. The
+  *-v* option prints a table of actual and expected y values.
+*math/genprimes*::
+  Generates primes numbers up to and including *lim* using spawned
+  processes and buffered channels.
+*math/mersenne*::
+  Tests the primality of the Mersenne numbers ie numbers of the form
+  2^n-1. The argument _num_ is the power of 2 in the above.
+*math/parts*::
+  Calculates the number of partitions of the given number(s). The *-a*
+  option will print out a table of the number of partitions of all
+  numbers up to the given number(s).
+*math/perms*::
+  Prints out all permutations of *n* elements.
+*math/pi*::
+  Calculates the value of pi to *dp* decimal places.
+*math/powers*::
+  Investigates the number of representations of an integer as a sum of
+  powers. The *-p* option denotes the power of use (default 2). The *-n*
+  option denotes the number of powers to sum (default 2). The *-f*
+  option denotes the minimum number of such representations found before
+  reporting them (default 2). The *-l* and *-m* options denote the
+  smallest and largest numbers to consider respectively (defaults 0 and
+  8192). Finally the *-v* option prints various statistics during the
+  search.
+*math/primes*::
+  Prints out all primes between *m* and *n .*
+*math/sieve*::
+  Prints out prime numbers up to *lim* using a sieve algorithm. The *-a*
+  option indicates the level of sophistication of the algorithm (0-4).
+
+== EXAMPLE
+
+....
+
+	math/powers -p 3 -m 30000
+gives
+	[2] 1729 = 1**3 + 12**3 = 9**3 + 10**3
+	[2] 4104 = 2**3 + 16**3 = 9**3 + 15**3
+	[2] 20683 = 10**3 + 27**3 = 19**3 + 24**3
+The number of representations found for each integer is indicated in
+square brackets.
+....
+
+== SOURCE
+
+*/appl/math/ack.b* +
+*/appl/math/crackerbarrel.b* +
+*/appl/math/factor.b* +
+*/appl/math/fibonacci.b* +
+*/appl/math/fit.b* +
+*/appl/math/genprimes.b* +
+*/appl/math/mersenne.b* +
+*/appl/math/parts.b* +
+*/appl/math/perms.b* +
+*/appl/math/pi.b* +
+*/appl/math/powers.b* +
+*/appl/math/primes.b* +
+*/appl/math/sieve.b*

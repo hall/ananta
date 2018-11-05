@@ -1,0 +1,53 @@
+= wish: interface to the Tk graphics toolkit
+
+
+*wish* [ _file ..._ ]
+
+*wm/wish* [ *-k* ] [ **-f**__ file__ ]
+
+
+_Wish_ provides a Tcl command line interface to the Limbo/Tk graphics
+toolkit. The input should be in the format of Tcl or Tk commands (see
+_intro_(9)). There are two variants.
+
+Plain *wish* must be run from the Inferno console instead of _mux_(1) or
+_wm_(1). It takes input from each _file_ in turn, then prompts for
+further commands from the standard input. Its commands operate on a Tk
+toplevel covering the whole screen.
+
+*Wm/wish* runs instead in a shell window under _wm_(1). It reads initial
+input from the optional _file_, then prompts for further commands on its
+standard input unless the *-k* option is given. Its commands operate on
+the Tk toplevel of a new window created by *Wmlib->titlebar* (see
+_wmlib_(2)), initially titled *WishPad*.
+
+The following special input sequences are recognised:
+
+*\n*::
+  newline
+*\t*::
+  tab
+*\b*::
+  backspace
+*\\*::
+  backslash
+
+== FILES
+
+*/dev/pointer* +
+*/dev/keyboard*
+
+== SOURCE
+
+*/appl/cmd/wish.b* +
+*/appl/wm/wish.b*
+
+== SEE ALSO
+
+_sh-tk_(1), _tkcmd_(1), _tk_(2), _intro_(9)
+
+== BUGS
+
+Arguably this has been superseded by _sh-tk_(1) for scripting Tk
+applications, and _tkcmd_(1) for development and testing of Tk
+configurations for use by Limbo programs.

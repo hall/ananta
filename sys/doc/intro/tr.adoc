@@ -1,0 +1,60 @@
+= tr: translate characters
+
+
+*tr* [ *-cds* ] [ _string1_ [ _string2_ ] ]
+
+
+_Tr_ copies the standard input to the standard output with substitution
+or deletion of selected characters (runes). Input characters found in
+_string1_ are mapped into the corresponding characters of _string2_.
+When _string2_ is short it is padded to the length of _string1_ by
+duplicating its last character. Any combination of the options *-cds*
+may be used:
+
+*-c*::
+  Complement _string1_: replace it with a lexicographically ordered list
+  of all other characters.
+*-d*::
+  Delete from input all characters in _string1_.
+*-s*::
+  Squeeze repeated output characters that occur in _string2_ to single
+  characters.
+
+In either string a noninitial sequence **-**__x,__ where _x_ is any
+character (possibly quoted), stands for a range of characters: a
+possibly empty sequence of codes running from the successor of the
+previous code up through the code for _x_. The character
+
+followed by 1, 2 or 3 octal digits stands for the character whose 16-bit
+value is given by those digits. The character sequence
+
+followed by 1 to 6 hexadecimal digits stands for the character whose
+21-bit value is given by those digits. A
+
+followed by any other character stands for that character.
+
+== EXAMPLES
+
+Replace all upper-case
+
+letters by lower-case.
+
+....
+tr A-Z a-z <mixed >lower
+....
+
+Create a list of all the words in
+
+one per line in
+
+where a word is taken to be a maximal string of alphabetics. _String2_
+is given as a quoted newline.
+
+....
+tr -cs A-Za-z '
+' <file1 >file2
+....
+
+== SOURCE
+
+*/appl/cmd/tr.b*

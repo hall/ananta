@@ -1,0 +1,18 @@
+= tee: pipe fitting
+
+
+*tee* [ *-a* ] [ _file_ ... ]
+
+
+_Tee_ reads the standard input and writes a copy of each block read to
+each _file_ in turn, and then to the standard output. Normally _tee_
+rewrites each _file_; the *-a* option causes data to be appended
+instead.
+
+== SOURCE
+
+*/appl/cmd/tee.b*
+
+== SEE ALSO
+
+_cat_(1), _tail_(1)

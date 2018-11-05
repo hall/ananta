@@ -1,0 +1,40 @@
+= grid: register: registers a resource with a known _registry_(4)
+
+
+*grid/register [* _option ..._ *] \{* _command ..._ *}*
+
+
+_Register_ takes a program that serves a namespace using the 9P protocol
+on its standard input and registers it with a known _registery_(4). (See
+_intro_(5) for a description of the protocol.) It then marshals the
+service by listening for incoming connections and exporting the
+namespace across them. _Register_ prints out various status messages to
+_stdout_ in the form which may be read by _grid-monitor_(1).
+
+== OPTIONS
+
+**-u**__ maxusers__::
+  Specifies the maximum number of connections to the resource at any one
+  time. If not given, any number of connections are allowed.
+**-e**__ n__::
+  Tells _register_ to exit after the last connection has gone away. _N_
+  is a threshold value, so that _register_ will not exit upon the last
+  connection going away until the number of incoming connections has
+  reached at least _n._
+**-a**__ 'name=value'__::
+  Specifies the name and value of an attribute to be listed as belonging
+  to the resource when registered with the _registry_(4).
+**-A**__ address__::
+  Allows the user to specify the address for the service to announce on.
+  _Address_ takes the form **tcp!**__machine__**!**__port__
+*-m*::
+  Includes the amount of free main memory as part of the attributes
+  list.
+
+== SOURCE
+
+*/appl/grid/register.b*
+
+== SEE ALSO
+
+_registries_(2), _registry_(4), _grid-localreg_(1)

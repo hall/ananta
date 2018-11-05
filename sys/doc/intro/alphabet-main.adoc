@@ -1,0 +1,101 @@
+= main: operators on the basic Alphabet types
+
+....
+load alphabet
+type /string
+type /fd
+type /wfd
+type /status
+type /cmd
+....
+
+
+_Main_ refers to operators defined _Alphabet_'s (see _sh-alphabet_(1))
+root typeset (*/*).
+
+In the following description of the modules provided, an entry such as:
+
+*echo _string_ -> fd*::
+
+describes a verb *echo*, which takes one argument of type _string_, and
+the result of which is of type *fd*. If the type is not one of those
+described above, it should be taken to be of type _string_.
+
+All types and modules names are taken to be relative to the typeset
+root, */*.
+
+Modules defined within _main_ include:
+
+auth [-v] [-k _keyfile_] [-C _alg_] _wfd_ -> _wfd_::
+  *Auth* authenticates to a server connected to its argument _wfd_, and
+  optionally adds encryption to the stream. If _keyfile_ is given, it
+  gives the filename of a key file (by default
+  **/usr/**__user__*/keyring/default* is used). If _alg_ is given, it
+  specifies the encryption/hash algorithm to push (e.g. *rc4_256/md5*).
+  If the *-v* flag is given, *auth* will print the name of the
+  authenticated user to its diagnostic stream.
+cat [_fd_...] -> _fd_::
+  *Cat* reads all the data from each _fd_ in sequence and writes it to
+  its resulting _fd_.
+create _fd_ _f_ -> _status_::
+  *Create* creates a file named _f_ and writes to it all the data from
+  _fd_. _Status_ will be empty if the writing has completed
+  successfully.
+dial _addr_ -> _wfd_::
+  *Dial* makes a connection to network address _addr_ (see _dial_(2) for
+  the address format), and returns the resulting connection.
+echo [-_n_] _string_ -> _fd_::
+  *Echo* writes its argument _string_ to its resulting _fd_. If the *-n*
+  option is given, no newline will be appended.
+export _dir_ -> _wfd_::
+  *Export* exports the namespace rooted at _dir_ and serves it as a styx
+  service on _wfd_.
+fd _n_ -> _wfd_::
+  *Fd* takes file descriptor _n_, and makes it available for reading
+  and/or writing as _wfd_.
+filter _fd_ _cmd_ _arg_... -> _fd_::
+  *Filter* starts the shell command _cmd_, and pipes through this all
+  the data from its argument _fd_ to its resulting _fd_. The provided
+  __arg__uments are accessible in the shell command as *$**.
+mount [-abc] [-x _aname_] _wfd_ _dir_ -> _status_::
+  *Mount* mounts a connection to a styx server (_wfd_) onto _dir_. The
+  meaning of the *-a*, *-b*, and *-c* flags is the same as for
+  _mount_(1). _Aname_, if given, gives the attach name that will be
+  passed with the mount request.
+
+parse _string_ -> _cmd_::
+  *Parse* parses _string_ as a shell command or alphabet expression, and
+  returns the result.
+print _fd_ _n_ -> _status_::
+  *Print* writes all the data from _fd_ to file descriptor _n_.
+pretty _cmd_ -> _string_::
+  *Pretty* returns a string representation of the alphabet expression
+  _cmd_ which is intended to be easier to read.
+read _f_ -> _fd_::
+  *Read* reads the data from file _f_ and writes it to its resulting
+  _fd_.
+rewrite [-d _dsttype_] _cmd_ _cmd_ -> _cmd_::
+  *Rewrite* rewrites an alphabet expression to its canonical form,
+  applying all auto-conversions, expanding all definitions, expanding
+  pipe notation and checking that all types are compatible. The first
+  _cmd_ argument gives the _alphabet_ expression to be rewritten; the
+  second _cmd_ should contain shell commands acceptable to
+  _sh-alphabet_(1), declaring all the modules used in the expression. If
+  _dsttype_ is given, it specifies the return type of the final
+  expression; auto-conversions will be applied to attain this type, if
+  possible.
+
+unparse _cmd_ -> _string_::
+  *Unparse* is the inverse operation to *parse*: it converts _cmd_ to a
+  string, and returns the result.
+2fd _wfd_ -> _fd_::
+  *2fd* converts the read-write file _wfd_ to the read-only _fd_.
+
+== SOURCE
+
+*/appl/alphabet/alphabet.b* +
+*/appl/alphabet/main/*.b*
+
+== SEE ALSO
+
+_sh-alphabet_(1), _alphabet-main_(2), _sh_(1)

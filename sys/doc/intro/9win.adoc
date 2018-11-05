@@ -1,0 +1,35 @@
+= 9win: create a Plan 9 window within Inferno
+
+[source,subs=quotes]
+*9win* [ -s ] [ *-x width* ] [ *-y height* ] [ _cmd_ [ _arg ..._ ] ]
+
+_9win_ creates a window for a graphical Plan 9 command (default *rio*)
+to run in. If provided, _width_ and _height_ give a desired width and
+height for the new window. _Cmd_ gives the command to run, and _arg_ its
+arguments.
+
+The *-s* option tells _9win_ to run in server mode. Used by _9cpu_(1),
+it exports on its standard input a namespace suitable for a graphical
+Plan 9 program to run within. With this option, no command may be given.
+
+== SOURCE
+
+*/appl/cmd/9win.b*
+
+== SEE ALSO
+
+_9cpu_(1), _import_(4)
+
+== FILES
+
+*/dev/winname* +
+*/dev/mouse* +
+*/dev/cons* +
+*/dev/consctl* +
+Files served by _9win_.
+
+== BUGS
+
+_9win_ does not export a full _rio_ environment, so Plan 9 programs that
+wish to create new windows will not work correctly (unless running
+inside a _rio_ started by _9win_)

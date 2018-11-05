@@ -1,0 +1,37 @@
+= logon: log on to Inferno
+
+
+{empty}[ *wm/wm* ] *wm/logon* [ *-l* ] [ *-n nsfile* ] [ *-u user* ]
+
+
+_Logon_ logs a user in to the Inferno environment. It requires _wm (1)_
+to be started first. If no _user_ name is specified by the *-u* option,
+_logon_ displays a login panel to prompt for one. The user name must
+have a directory **/usr/**__user,__ which will become the current
+directory. (Otherwise, _logon_ will display a diagnostic panel and
+prompt again.) The user name is written to */dev/user* (see _cons_(3)),
+which is the name presented on subsequent attaches to file servers.
+
+Normally, _logon_ expects keyboard input to provide a name, but if the
+*-l* option is given, _logon_ displays a list of the names in */usr*,
+allowing one to be selected using a mouse or touch screen.
+
+Once the current directory has been set, _logon_ creates a new name
+space for the user using the contents of _nsfile_ (default:
+*namespace*), as described in _namespace_(6). It then starts
+_toolbar_(1) to provide the initial application environment.
+
+== FILES
+
+*/dev/user*::
+  Inferno user name
+**/usr/**__user__::
+  _user_'s home directory
+
+== SOURCE
+
+*/appl/wm/logon.b*
+
+== SEE ALSO
+
+_toolbar_(1), _wm_(1), _namespace_(6)

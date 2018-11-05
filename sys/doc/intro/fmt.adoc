@@ -1,0 +1,26 @@
+= fmt: simple text formatter
+
+
+*fmt* [ **-l**__ n__ ] [ **-i**__ n__ ] [ *-j* ] [ _file ..._ ]
+
+
+_Fmt_ copies the given _files_ (standard input by default) to its
+standard output, filling and indenting lines. The options are
+
+**-l**__"__*n*::
+  Output line length is _n_, including indent (default 70).
+**-w**__"__*n*::
+  A synonym for *-l*.
+**-i**__"__*n*::
+  Indent _n_ spaces (default 0).
+*-j*::
+  Do not join short lines: only fold long lines.
+
+Empty lines and initial white space in input lines are preserved. Empty
+lines are inserted between input files.
+
+_Fmt_ is idempotent: it leaves already formatted text unchanged.
+
+== SOURCE
+
+*/appl/cmd/fmt.b*

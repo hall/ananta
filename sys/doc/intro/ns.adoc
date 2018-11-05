@@ -1,0 +1,26 @@
+= ns: display current namespace
+
+
+*ns* [ *-r* ] [ _pid_ ]
+
+
+_Ns_ displays the construction of the namespace of the given _pid_, or
+its own (as inherited) by default. Based on the contents of
+**/prog/**__pid__**/ns**__,__ it prints on standard output a sequence of
+bind and mount commands (see _bind_(1)) that might reconstruct the same
+name space if executed. In practice, mounts of services such as
+_ftpfs_(4) often refer to the names of pipe ends that are now
+inaccessible. Furthermore, if any file involved has been renamed since
+the mount or bind, the original name of the file is shown.
+
+Mounts of file services on a network show the network address as given
+to _dial_(2) instead of the name of the data file for the connection;
+the *-r* option causes _ns_ to show the raw file name instead.
+
+== SOURCE
+
+*/appl/cmd/ns.b*
+
+== SEE ALSO
+
+_bind_(1), _prog_(3), _namespace_(4), _namespace_(6)

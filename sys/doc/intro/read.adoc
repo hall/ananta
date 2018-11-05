@@ -1,0 +1,36 @@
+= read: read from standard input with optional seek
+
+
+*read* [ *-*[*eor*] _offset_ ] [ _count_ ]
+
+
+_Read_ does a single read of _count_ bytes (default: 8192 bytes) from
+the standard input and writes the result to the standard output. If the
+optional _offset_ argument is given, _read_ will first apply
+_sys-seek_(2):
+
+**-o**__ offset__::
+  seek _offset_ bytes from the start of the file
+**-e**__ offset__::
+  seek _offset_ bytes from the end of the file
+**-r**__ offset__::
+  seek _offset_ bytes from the standard input's current file offset
+
+In all cases the file offset changes to reflect the result of the seek,
+and the number of bytes read.
+
+== SOURCE
+
+*/appl/cmd/read.b*
+
+== DIAGNOSTICS
+
+_Read_ prints a diagnostic and returns a non-empty exit status
+
+on an I/O error; it quietly returns status
+
+if the read returns zero bytes (conventionally, end of file).
+
+== SEE ALSO
+
+_cat_(1), _getline_ in _sh-std_(1), _stream_(1), _sys-read_(2)

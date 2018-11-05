@@ -1,0 +1,44 @@
+= passwd: change user password
+
+
+*auth/passwd* [ **-u**__ user__ ] [ **-s**__ signer__ ] [ _keyfile_ ]
+
+
+_Passwd_ changes the secret shared between the invoker and the
+authentication server _signer_ (default: *$SIGNER*). The _signer_ must
+offer the _keysrv_(4) service.
+
+The secret is associated with a remote user name that need not be the
+same as the name of the invoking user on the local system. That remote
+user name is specified by a certificate signed by _signer_, and obtained
+from _keyfile_. _Keyfile_ identifies a file containing a certificate
+(default:
+
+If _keyfile_ is not an absolute pathname, the file used will be
+**/usr/**__user__**/keyring/**__keyfile.__ _User_ by default is the
+invoking user's name (read from */dev/user*), but the *-u* option can
+name another.
+
+_Passwd_ connects to the _signer_, authenticating using the certificate
+in _keyfile_, and checks that the user in the certificate is registered
+there with an existing secret. _Passwd_ then prompts for the (remote)
+user's old secret, to double-check identity, then prompts for a new one,
+which must be confirmed.
+
+Secrets must be at least eight characters long. Try to make them hard to
+guess.
+
+== FILES
+
+*/dev/user*::
+  current user name
+*/mnt/keysrv*::
+  local mount point for connection to remote _keysrv_(4)
+
+== SOURCE
+
+*/appl/cmd/auth/passwd.b*
+
+== SEE ALSO
+
+_keyfs_(4), _keysrv_(4), _changelogin_(8), _logind_(8)

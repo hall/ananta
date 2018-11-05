@@ -1,0 +1,113 @@
+= fc: command-line floating point calculator
+
+
+*fc* [ _base_ ] _expression_ +
+
+
+*Fc* calculates the result of its argument _expression_ and prints the
+result in the format indicated by the optional base argument. _Base_ can
+be one of:
+
+*-d*::
+  Decimal, as produced by the *%g* format of _sys-print_(2). +
+*-x*::
+  Hexadecimal, prefixed with *0x*.
+*-o*::
+  Octal, prefixed with *0*.
+*-b*::
+  Binary, prefixed with *0b*.
+*-B*::
+  As *-b*, but with extra lines to help bit-counting.
+**-r **__radix__::
+  In base _radix_, prefixed with __``radix__**r'',** as understood by
+  Limbo (e.g. *16r3fff*).
+*-c*::
+  As a unicode character, prefixed with *@*.
+
+_Expression_ is in reverse polish notation: each command line argument
+is either an operand (number) or an operator. Operands are pushed on a
+stack; operators pop items from the stack (the number of items depends
+on the operator) and push their result. All operands are converted to
+double precision floating point numbers before being pushed. Integer
+operations convert their operands to big (64-bit) integers. When all
+arguments are exhausted, all the values currently on the stack are
+printed, first-pushed first, in the specified output format.
+
+Operands can be given in any of the formats that _fc_ can print, as
+detailed above.
+
+When an operation is not commutative, the argument values will be taken
+from the stack first-pushed first. Most functions from from
+_math-elem_(2), _math-fp(2)_ are provided. In addition, other provided
+operators include:
+
+*+ - / x*::
+  Representing the four rules. Note the use of *x* rather than ***, to
+  avoid clashes with shell metacharacters. +
+*xx*::
+  To the power. (equivelant to 'pow') +
+*rad deg*::
+  Convert value to or from radians. +
+!::
+  Factorial. +
+*_*::
+  Unary minus. +
+*and or xor not*::
+  Bitwise operations. +
+*shl shr*::
+  Bitwise shift left/right.
+*p*::
+  Print the current top value on the stack. +
+*sum*::
+  Sum all the values currently pushed on the stack. +
+*swap*::
+  Swap the top two stack items. +
+*dup*::
+  Duplicate the top item on the stack. +
+*rep*::
+  Repeatedly execute the last operator until there is only only one item
+  left on the stack. This is only valid for operators that take exactly
+  two arguments.
+
+A few symbolic names for operands are recognised, including *pi* (or
+*π*), *e*, and *macheps*.
+
+== EXAMPLES
+
+fc 22 7 /
+
+....
+	gives 3.1428571429
+....
+
+fc -b 1 2 3 4 sum
+
+....
+	gives 0b00001010
+....
+
+fc 10 0b10 010 0x10 x rep 0xa00 swap -
+
+....
+	gives 0
+....
+
+fc -help
+
+....
+	gives a usage summary, including a list of
+	the names of all the operators.
+....
+
+== SEE ALSO
+
+_calc_(1), _math-fp_(2), _math-elem_(2), _sh-expr_(1)
+
+== DIAGNOSTICS
+
+An error message is displayed if an operator is called on a stack with
+too few elements. This also causes _fc_ to yield a non-null exit status.
+
+== BUGS
+
+The *-B* option will only work for fixed-width fonts.

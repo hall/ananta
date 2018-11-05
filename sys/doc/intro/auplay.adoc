@@ -1,0 +1,67 @@
+= auplay, auhdr, raw2iaf, wav2iaf: basic audio output and conversion
+
+[source,subs=quotes]
+----
+*auplay* _file_ ...
+
+*auhdr* _file_ ...
+
+*raw2iaf* [ _option_ ... ] [ *-o* _output_ ] _input_
+
+*wav2iaf* [ _input_ ]
+
+*wav2iaf*
+----
+
+
+_Auplay_ plays each _file_ in turn on the audio device */dev/audio* (see
+_audio_(3)), setting the device's characteristics in */dev/audioctl* to
+match those of the _file_. It uses _stream_ (see _sys-read_(2)) to
+stream the data to the device at high priority. All files played must be
+in `Inferno audio format', as defined by _audio_(6).
+
+_Auhdr_ writes the header of each Inferno audio _input_ file to the
+standard output. The header describes the data in a form that can be
+written directly to */dev/audioctl* to set the device's characteristics.
+
+_Raw2iaf_ converts the _input_ file, adds an appropriate header to
+describe the data in the Inferno format, and writes the result to the
+_output_ file. The options tell how the bytes in the input file should
+be interpreted:
+
+*-8*::
+  rate is 8000 Hz
+*-1*::
+  rate is 11025 Hz
+*-2*::
+  rate is 22050 Hz
+*-4*::
+  rate is 44100 Hz
+*-m*::
+  mono (one channel)
+*-s*::
+  stereo (two channels)
+*-b*::
+  each sample in each channel is one byte (unsigned)
+*-w*::
+  each sample in each channel is 16-bits (little-endian)
+*-a*::
+  input is a-law encoded
+*-u*::
+  input is μ-law encoded
+*-p*::
+  input is PCM encoded
+
+_Wav2iaf_ reads the _input_ file, which must be in Windows WAV format
+and encoded using PCM, and converts the data to Inferno format on the
+standard output.
+
+== SOURCE
+
+*/appl/cmd/auplay.b* +
+*/appl/cmd/raw2iaf.b* +
+*/appl/cmd/wav2iaf.b*
+
+== SEE ALSO
+
+_sys-read_(2), _audio_(3), _audio_(6)

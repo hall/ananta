@@ -1,0 +1,22 @@
+= logwindow: window that pops up when data becomes available.
+
+
+*wm/logwindow* [_title_] **<**__logfile__
+
+
+_Logwindow_ reads data from its standard input (often a file served by
+_logfile_(4)) and shows it in a text widget. If the window is hidden (it
+is hidden initially), it will reappear when data appears on its standard
+input. If _title_ is given, it will be used as the title of the window.
+
+== SOURCE
+
+*/appl/wm/logwindow.b*
+
+== SEE ALSO
+
+_logfile_(4)
+
+== BUGS
+
+The text buffer grows without bound.

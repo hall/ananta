@@ -1,0 +1,80 @@
+= grid: peer-to-peer data distribution
+
+....
+load alphabet
+typeset /grid
+type /grid/endpoint
+....
+
+*Grid* is a typeset for _alphabet_ (see _sh-alphabet_(1)) which enables
+allows direct interconnection of remote and local processing components.
+It defines one new type, *endpoint*, which represents a place in the
+network to which two parties can connect and exchange data.
+
+In the following descriptions, if a type is not *endpoint* or a type
+defined in the root typeset (see _alphabet-main_(1)), it is assumed to
+be of type */string*.
+
+Modules currently provided within the */grid* typeset include:
+
+farm [-lnkavA] _endpoint_ _addr_ _tasktype_ [_arg_...] -> _endpoint_::
+  *Farm* connects to a grid labour exchange (see _scheduler_(4)) at
+  _addr_, starts a new job of type *workflow*, and passes all the data
+  read from _endpoint_ to be processed by the currently available
+  labour. The data is split into records, each one of which will be
+  processed on a worker node by _tasktype_, with its associated
+  __arg__uments. Other than *-A*, which specifies unauthenticated access
+  to the scheduler, the various options are all passed verbatim to
+  _workflow_: *-l* causes it to split its input on newline-separated
+  records; *-n* specifies that no record separation is necessary on
+  output; *-k* specifies that intermediate data for failed tasks should
+  be kept around; *-a* specifies that intermediate data for all tasks
+  should be kept around, and *-v* specifies that _workflow_ should
+  produce a wordy description of what it is doing.
+local _endpoint_ -> _/fd_::
+  *Local* reads everything from _endpoint_, and writes it to _fd_.
+remote [-a _addr_] _fd_ -> _endpoint_::
+  *Remote* is the inverse of *local*: it reads data from _fd_ and writes
+  it to a newly created endpoint. If *-a* is given, _addr_ specifies the
+  network address of an endpoint server on which to create the new
+  endpoint.
+rexec [-A] _endpoint_ _addr_ _cmd_ -> _endpoint_::
+  *Rexec* connects to a remote execution server at _addr_
+  (unauthenticated if *-A* is specified), and arranges to execute the
+  _alphabet_ expression _cmd_ there. The expression should be compatible
+  with usage *fd -> fd*. Data from the argument _endpoint_ will be piped
+  through this expression, and made available as the resulting
+  _endpoint_ endpoint.
+
+== EXAMPLES
+
+The examples below that a local endpoint is available, and the following
+_alphabet_ declarations:
+
+....
+	load alphabet
+	typeset /grid
+	type /string /endpoint /fd
+	import /grid/local /grid/remote
+	autoconvert fd endpoint remote
+....
+
+Set up a rendering pipeline:
+
+....
+	-{/read /tmp/somedata |
+		remote |
+		rexec tcp!node1!rexec "{(/fd); /filter $1 "{os render_stage1}} |
+		rexec tcp!node2!rexec "{(/fd); /filter $1 "{os render_stage2}} |
+		/create /tmp/somedata.result
+	}
+....
+
+== SOURCE
+
+*/appl/alphabet/grid.b*, */appl/alphabet/gridtypes.b* +
+*/appl/cmd/grid/*.b*
+
+== SEE ALSO
+
+_sh-alphabet_(1), _alphabet-main_(1), _sh_(1)

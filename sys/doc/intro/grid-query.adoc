@@ -1,0 +1,44 @@
+= grid: query: graphical interface to view resources registered with a
+known _registry_(4)
+
+
+*grid/query*
+
+
+_Query_ displays the resources currently registered with a given
+_registry_(4) and allows the user to mount and browse through the
+namespaces they provide.
+
+Resource categories are displayed in the main window, opening any of
+these (by clicking on the '+' next to the name) will reveal the names of
+the individual resources within that category. Each resource has a set
+of attributes which may be viewed at the lowest level of the displayed
+tree. Clicking on a specific resource and clicking the *Mount* button
+that appears will mount that resource (if possible) and display the
+imported namespace in a new window. From this window, the user can then
+browse this namespace as well as opening and running files. A shell
+window may also be opened to allow more complicated tasks to be
+performed.
+
+Clicking *Search* brings up a search window. Here, the current
+_registry_(4) may be searched for a resource containing the specified
+attribute names and values. *Refresh* updates the list of resources in
+the main window in case any have been added or removed.
+
+== SOURCE
+
+*/appl/grid/query.b* +
+*/appl/grid/lib/browse.b* +
+*/appl/grid/lib/srvbrowse.b*
+
+== BUGS
+
+Currently, searching for a resource on a _registry_(4) is only
+implemented in a very simple way. Given the attribute _(name, value)_
+pairs, the search will return all resources whose attributes exactly
+match the specified values. *** may be used to match any attribute value
+but not name.
+
+== SEE ALSO
+
+_grid-localreg_(1), _registries_(2), _registry_(4)

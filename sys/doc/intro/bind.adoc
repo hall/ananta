@@ -1,0 +1,123 @@
+= bind, mount, unmount: change name space
+
+[source,subs=quotes]
+----
+*bind* [ _option ..._ ] _source target_
+
+*mount* [ _option ..._ ] _source target_ [ _spec_ ]
+
+*unmount* [ _source_ ] _target_
+----
+
+
+The _bind_ and _mount_ commands modify the file name space of the
+current process and other processes in the same name space group (see
+_sys-pctl_(2)). For both calls, _target_ is the name of an existing file
+or directory in the current name space where the modification is to be
+made.
+
+For _bind_, _source_ is the name of an existing file or directory in the
+current name space. After a successful _bind_, the file name _target_ is
+an alias for the object originally named by _source_; if the
+modification doesn't hide it, _source_ will also still refer to its
+original file. The evaluation of _source_ (see _sys-intro_(2)) happens
+at the time of the _bind_, not when the binding is later used.
+
+Both _source_ and _target_ files must be of the same type: either both
+directories or both files.
+
+For _mount,_ _source_ can be a shell command, a network address, or a
+file name. If _source_ is surrounded by brace characters (*\{* and *}*),
+it is invoked as a _sh_(1) command and its standard input is mounted (no
+authentication takes place in this case). If _source_ contains an
+exclamation mark (*!*), or there is no file of that name, it is assumed
+to be a network address for a machine acting as a file server. This
+argument should then conform to the conventions described in _dial_(2).
+Otherwise _source_ should be the name of a file that when opened gives a
+connection to a file server, something serving the 9P protocol described
+in _intro_(5), formerly called `Styx'. The optional _spec_ argument to
+_mount_ is passed in the _attach_(5) message and selects amongst
+different file trees offered by the server.
+
+The effects of _bind_ and _mount_ can be undone by _unmount_. If two
+arguments are given to _unmount_, the effect is to undo a _bind_ or
+_mount_ with the same arguments. If only one argument is given,
+everything bound to or mounted on _target_ is unmounted.
+
+By default, _bind_ and _mount_ replace the _target_ file by the new one,
+_source_. Henceforth, an evaluation of the pathname _target_ will be
+translated to the new file. If they are directories (for _mount_, this
+condition is true by definition), _target_ becomes a _union directory_
+consisting of one directory (the _source_ directory).
+
+A union directory unites the contents of the source and target
+directories. If the same name appears in both directories, the name used
+is the one in the directory that is bound before the other. In
+particular, if the directories have subdirectories of the same name,
+only the contents of the subdirectory in the top directory will be seen.
+If the subdirectory contents are themselves to be united, that must be
+done first in a separate _bind_ or _mount_.
+
+Note that the *#* character in the name of a kernel device must be
+quoted when used in a _bind_ or _unmount_ command, or the shell will
+take it as the start of a comment.
+
+Options control aspects of the modification to the name space:
+
+*-b*::
+  Both files must be directories. Add the _source_ directory to the
+  beginning of the union directory represented by the _target_
+  directory.
+*-a*::
+  Both files must be directories. Add the source directory to the end of
+  the union directory represented by the _target_ directory.
+*-c*::
+  This can be used in addition to any of the above to permit creation in
+  a union directory. When a new file is created in a union directory, it
+  is placed in the first element of the union that has been bound or
+  mounted with the *-c* option. If that directory has not got write
+  permission, the create fails.
+*-q*::
+  Exit quietly without printing a diagnostic if the bind or mount fails.
+*-A*::
+  For _mount_ only. Do not authenticate the connection to the server
+  before proceeding with _mount_. Otherwise the connection is
+  authenticated by _security-auth_(2).
+**-C**__ alg__::
+  For _mount_ only, specify the algorithm, _alg_, to be used following
+  authentication for digesting or encryption. See _ssl_(3) for the
+  supported algorithms. The default is *none*: _ssl_(3) is not used
+  after authentication.
+**-k**__ kfile __::
+  For mount only, specify the keyfile to be used when authenticating.
+  The default is **/usr/**__user__**/keyring/default**__.__ See
+  _keyring-auth_(2) for more details. (If the *-9* option is given, this
+  option is interpreted differently: see below.)
+*-9*::
+  For _mount_ only, and only when hosted on Plan 9. _Source_ is a Plan 9
+  file server; use Plan 9's _factotum_ as authentication agent to
+  authenticate the mount. (Note that a Plan 9 file service that is known
+  not to authenticate can be mounted from any Inferno host, by using the
+  *-A* option to suppress Inferno authentication.) The existing Plan 9
+  file servers do not encrypt connections, so the *-C* option is
+  ignored. The value of the *-k* option is added to the key
+  specification for _factotum_(4) for authentication.
+*-P*::
+  When _source_ is a network address, use _styxpersist_(2) to try to
+  simulate a permanent connection, even should the server reboot. Note
+  the caveats on that page.
+*-o*::
+  For _mount_ only, the file server serves the 1995 version of Inferno's
+  Styx protocol, and _mount_ inserts a process that translates to the
+  current version.
+
+== SOURCE
+
+*/appl/cmd/bind.b* +
+*/appl/cmd/mount.b* +
+*/appl/cmd/unmount.b*
+
+== SEE ALSO
+
+_sh_(1), _dial_(2), _keyring-auth_(2), _security-auth_(2),
+_sys-intro_(2), _sys-bind_(2), _intro_(3), _getauthinfo_(8)

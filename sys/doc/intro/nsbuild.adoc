@@ -1,0 +1,30 @@
+= nsbuild: build Inferno namespace
+
+
+*nsbuild* [ *file* ]
+
+
+*Nsbuild* builds a file name space for Inferno. It reads a _file_ (by
+default, a file called *namespace* in the current directory) and
+interprets the name space commands found in that file.
+
+The commands executed by *nsbuild* include *bind* and *mount*. See
+_namespace_(6) for details on the format of the file.
+
+== FILES
+
+*namespace*::
+  The default namespace file.
+
+== SOURCE
+
+*/appl/cmd/nsbuild.b*
+
+== SEE ALSO
+
+_bind_(1), _cd_(1), _newns_(2), _namespace_(6)
+
+== BUGS
+
+The *new* and *fork* operations of _namespace_(6) are ineffective
+because _nsbuild_ runs as a separate process.

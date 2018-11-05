@@ -1,0 +1,189 @@
+= cprof: coverage profiling of limbo programs
+
+
+*cprof* [ *-nfer* ] [ **-m**__ modname__ ] ... [ _cmd arg ..._ ]
+
+*wm/cprof* [ *-efr* ] [ **-m**__ modname__ ] ... [ _cmd arg ..._ ]
+
+
+_Cprof_ is a coverage profiling tool which shows whether lines of limbo
+source have been executed or not. It can also show the number of times a
+line of code has been executed and can accumulate results over a series
+of runs if so desired. The source in question should be compiled with
+the *-g* flag so that the relevant symbol table files exist.
+
+The *-n* option lists the name of the file along with the line number.
+
+The *-f* option shows the number of times source code is executed rather
+than simply indicating coverage.
+
+The *-r* options indicates that the profiling results should be
+recorded. Any profiled dis file of the form <name>.dis will have the raw
+profiling results stored in a file named <name>.prf. If this file
+already existed before the run, the results will be added to this file.
+The profiling results are not shown when this option is given.
+
+The *-m* option lists the module names which are to be profiled. If none
+are given, all the modules loaded by the kernel will be profiled. The
+name may be the actual name of the module or its path name.
+
+The *-e* option profiles the module that is loaded first in any
+following command. In this case there is no need to give a *-m* option
+as this is added automatically.
+
+Any remaining arguments are assumed to specify a command and set of
+arguments to the command. If this is the case, *cprof* will
+automatically start profiling, run the command to completion and then
+stop profiling before either recording the results or showing the
+profile statistics.
+
+If no command is given to profile, then *cprof* will show the profile
+statistics from any existing recorded results in .prf files instead.
+
+*Cprof* discriminates between different sections of code on the same
+line. A limbo for statement, for example, consisting of initialization,
+condition and step all on the same line of source code will be dealt
+with as three separate sections.
+
+*Cprof* displays the profile statistics as a list of the limbo source
+preceded by a line number and an indication of whether the line was
+executed or not. For each section of code on each line, a plus sign
+indicates that it was executed, a minus sign that it was not and a
+question mark indicates that some of the dis instructions associated
+with the section of code were executed but some were not. Lines with no
+associated dis code do not have an indication. Of course, given the *-f*
+option, the number of times each section is executed is shown instead.
+
+_Wm/cprof_ is a graphical coverage profiling tool which shows which
+lines of limbo source have not been executed. It can accumulate results
+over a series of runs if so desired.
+
+The *-r* options indicates that the profiling results should be
+recorded. Any profiled dis file of the form <name>.dis will have the raw
+profiling results stored in a file named <name>.prf. If this file
+already existed before the run, the results will be added to this file.
+
+The *-m* option lists the module names which are to be profiled. If none
+are given, all the modules loaded by the kernel will be profiled. The
+name may be the actual name of the module or its path name.
+
+The *-e* option profiles the module that is loaded first in any
+following command. In this case there is no need to give a *-m* option
+as this is added automatically.
+
+The *-f* option allows a view of the execution profile rather than
+coverage profile. Each source line is preceded by the number of times it
+was executed and the text is coloured according to this: the darker the
+colour the more times the section of code was executed.
+
+Any remaining arguments are assumed to specify a command and set of
+arguments to the command. If this is the case, *wm/cprof* will
+automatically start profiling, run the command to completion and then
+stop profiling before optionally recording the results and showing the
+profile statistics.
+
+If no command is given to profile, then *wm/cprof* will show the profile
+statistics from any existing recorded results in .prf files instead.
+
+*Wm/cprof* displays the profile statistics graphically. When the *-f*
+option is not present, code that has not been executed is shown in white
+against a red background. Code whose corresponding dis instructions have
+not been wholly executed are shown in red against a white background.
+Typically a line of code such as
+
+....
+	x = !x;
+....
+
+might show only partial execution if x has changed value from 1 to 0 but
+not vice-verse.
+
+The top of the text window names the module along with any modules
+before and after it in the list. If a module has 100% coverage this is
+stated as well. To help find unexecuted code, use the find icon in the
+menu bar. To move to the next or go back to any other profiled modules,
+use the arrow icons in the menu bar. The last icon, the reload icon,
+pops up a menu of profiled modules to choose from.
+
+*wm/cprof* calls _cprof_ to do the actual work.
+
+== EXAMPLE
+
+To profile a particular command
+
+....
+cprof /dis/math/sieve 100
+....
+
+To profile the same command but restrict attention to its own module
+(Sieve).
+
+....
+cprof -m Sieve /dis/math/sieve 100
+....
+
+A shorter version of the above:
+
+....
+cprof -e /dis/math/sieve 100
+....
+
+Make 3 runs recording results as we go:
+
+....
+cprof -e -r /dis/math/sieve 100
+cprof -e -r /dis/math/sieve 1000
+cprof -e -r /dis/math/sieve 10000
+....
+
+Now look at the cumulative results:
+
+....
+cprof -m /dis/math/sieve.dis
+....
+
+To profile a particular command:
+
+....
+wm/cprof /dis/math/sieve 100
+....
+
+To profile the same command but restrict attention to its own module
+(Partitions).
+
+....
+wm/cprof -m Sieve /dis/math/sieve 100
+....
+
+A shorter version of the above:
+
+....
+wm/cprof -e /dis/math/sieve 100
+....
+
+Make 3 runs recording results as we go using cprof for simplicity:
+
+....
+cprof -e -r /dis/math/sieve 100
+cprof -e -r /dis/math/sieve 1000
+cprof -e -r /dis/math/sieve 10000
+....
+
+Now look at the cumulative results graphically:
+
+....
+wm/cprof -m /dis/math/sieve.dis
+....
+
+== SOURCE
+
+*/appl/cmd/cprof.b* +
+*/appl/wm/cprof.b*
+
+== SEE ALSO
+
+_mprof_(1), _prof_(1), _prof_(2), _prof_(3)
+
+== BUGS
+
+Neither command can profile compiled limbo programs.

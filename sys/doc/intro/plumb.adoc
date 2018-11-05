@@ -1,0 +1,45 @@
+= plumb: send message to plumber
+
+
+*plumb* [ **-s**__ src__ ] [ **-d**__ dest__ ] [ **-w**__ wdir__ ] [
+**-t**__ type__ ] [ **-a**__ name value__ ] [ *-i* ] _data_ ...
+
+
+_Plumb_ sends a message to the plumber, _plumber_(8), which is normally
+started by _wm_(1)'s start up script.
+
+The options and arguments are used as components of the message. See
+_plumbing_(6) for their interpretation. The options are:
+
+**-s**__ src__::
+  Set the source to _src_ (default: unspecified).
+**-d**__ dest__::
+  Set the destination to _dest_ (default: unspecified).
+**-w**__ wdir__::
+  Set the working directory to _wdir_ (default: current directory as
+  reported by _pwd_(1) or _workdir_(2)).
+**-t**__ type__::
+  Set the type of data to _type_ (default: *text*)
+**-a**__ name value__::
+  Include an attribute `__name__=__value__'; there can be more than one.
+*-i*::
+  Take the _data_ from the standard input not from the argument strings.
+  If an *action* attribute is not otherwise specified, _plumb_ will add
+  an *action=showdata* attribute to the message.
+
+The remaining arguments are sent, separated by spaces, as the _data_ of
+the message. The plumber will apply its rules to the resulting message
+to decide how to route it.
+
+== FILES
+
+*/chan/plumb.input*::
+  _plumber_(8) input channel
+
+== SOURCE
+
+*/appl/cmd/plumb.b*
+
+== SEE ALSO
+
+_plumbmsg_(2), _plumbing_(6), _plumber_(8)

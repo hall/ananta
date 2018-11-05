@@ -1,0 +1,40 @@
+= rcmd: remote command execution
+
+
+*rcmd* [ *-e* _cryptoalg_ ] [ *-x* _exportpath_ ] _host_ [ _cmd_ _arg
+..._ ]
+
+
+_Rcmd_ executes _cmd_ on the given _host_. If no _cmd_ is given, _sh_(1)
+is assumed. The _host_ must have enabled the
+
+service (typically started via _svc_(8)).
+
+For authentication, _rcmd_ will use the certificate in the file
+
+_________________________________________________________
+**/usr/**__username__**/keyring/**__net__**!**__machine__
+_________________________________________________________
+
+if it exists, and otherwise it will use the certificate in
+
+______________________________________________
+**/usr/**__username__**/keyring/default**__.__
+______________________________________________
+
+The *-e* option sets the algorithm _cryptoalg_ to be used following
+authentication for digesting or encryption. See _ssl_(3) for the
+supported algorithms. The default is *none*: _ssl_(3) is not used after
+authentication.
+
+The *-x* option sets the path to be exported as root from the local
+machine (defaults to */* if not specified).
+
+== SOURCE
+
+*/appl/cmd/rcmd.b*
+
+== SEE ALSO
+
+_security-intro_(2), _security-auth_(2), _security-login_(2),
+_getauthinfo_(8), _rstyxd_(8), _svc_(8)

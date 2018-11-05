@@ -1,0 +1,26 @@
+= stream: stream data between source and sink
+
+
+*stream* [*-a*] [*-b* _bufsize_] _file1_ [ _file2_ ]
+
+
+_Stream_ creates a process that uses _stream_ (see _sys-read_(2)) to
+stream data in chunks of at most _bufsize_ bytes (default:
+
+or 8192 bytes) from _file1_ to the standard output. If _file2_ is
+provided, the two files are instead cross-connected by two streaming
+processes: one process streams data from _file1_ to _file2_, and the
+other streams data from _file2_ to _file1_. In all cases, _stream_
+writes data to the destination file in full buffers of _bufsize_ bytes.
+
+_Stream_ waits for all streaming processes to stop before returning,
+unless the *-a* (asynchronous) option is given, which causes it to
+return after spawning the streamers.
+
+== SOURCE
+
+*/appl/cmd/stream.b*
+
+== SEE ALSO
+
+_cat_(1), _sys-read_(2)

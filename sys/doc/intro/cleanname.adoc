@@ -1,0 +1,22 @@
+= cleanname: clean a path name
+
+
+*cleanname* [ **-d**__ dir__ ] _name_ ...
+
+
+_Cleanname_ tidies up each file _name_ it is given and prints the result
+on standard output. It removes redundant slashes and interprets
+
+and
+
+directory names lexically. If the *-d* option is given, each _name_ that
+does not not start with */* or *#* will be prefixed by __dir__**/**
+before processing.
+
+== SOURCE
+
+*/appl/cmd/cleanname.b*
+
+== SEE ALSO
+
+_basename_(1), _pwd_(1), _names_(2)

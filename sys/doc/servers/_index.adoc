@@ -1,0 +1,6 @@
+= servers: introduction to file servers
+
+This section describes programs that serve Styx (see intro(5)), and can therefore be mounted, generating a new part of the name space.
+Some, such as dossrv, thereby make the contents of a foreign file format visible directly to Inferno applications;
+others, such as acme, provide their own services through operations on files in a name space.
+

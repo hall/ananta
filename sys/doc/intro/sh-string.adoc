@@ -1,0 +1,71 @@
+prefix, in, splitl, splitr, drop, take, splitstrl, splitstrr, tolower,
+toupper, len, alen, slice - shell script string manipulation
+
+
+*load string*
+
+*prefix* _pre s_ +
+*in* _c cl_ +
+*$\{splitl* __s cl__**}** +
+*$\{splitr* __s cl__**}** +
+*$\{splitstrl* __s t__**}** +
+*$\{splitstrr* __s t__**}** +
+*$\{take* __s cl__**}** +
+*$\{tolower* __s__**}** +
+*$\{toupper* __s__**}** +
+*$\{len* __s__**}** +
+*$\{alen* __s__**}** +
+*$\{slice* __start end s__**}** +
+*$\{fields* __cl s__**}** +
+*$\{padl* _n_ [ _s_... ]*}* +
+*$\{padr* _n_ [ _s_... ]*}* +
+
+
+_String_ is a loadable module for _sh_(1) that provides a shell-script
+interface to the string manipulation commands found in _string_(2), with
+a couple of other facilities thrown in for good measure. Each of the
+substitution builtins *splitl*, *splitr*, *drop*, *take*, *splitstrl*,
+*splitstrr*, *tolower*, and *toupper* implements the same functionality
+as that provided by the function of the same name in _string_(2). Where
+a function in the _string_(2) module returns a tuple, the equivalent
+builtin yields a two-element list; the others yield a list with a single
+element.
+
+In all _string_ commands, the number of arguments provided must be
+exactly that required by the command so, for instance, giving an
+undefined variable (a zero element list) as an argument will cause a
+*usage* exception to be generated.
+
+The two builtins *prefix* and *in* are again similar to their
+_string_(2) counterparts - their return value is true (an empty string)
+if the equivalent _string_(2) function would be non-zero.
+
+*Len* returns the length of its argument _s_. *Alen* returns the length
+of its argument _s_ when converted to a byte-array. (This will be
+different from the result of *len* when _s_ contains non-ASCII
+characters). *Slice* is similar to the string-slicing operator in Limbo;
+it returns the section of _s_ starting at index _start_ and ending just
+before index _end_. _End_ may be the literal string *end*, in which
+**$\{slice **__start__* end}* is the same as **$\{slice **__start__**
+$\{len **__s__**}}**__.__ Unlike in Limbo, nothing untoward happens if
+an out-of-range slice is taken: any out of range indices are trimmed to
+within the bounds of _s_.
+
+*Fields* is similar to *$\{split}* in _sh_(1), but does not merge field
+separator characters. It splits _s_ into fields separated by characters
+in class _cl_; if there are _n_ characters matching _cl_ inside _s_,
+*fields* will yield __n__+1 items in its result.
+
+*Padl* and *padr* widen the string _s_ to _n_ characters, padding it
+with spaces on the right (for *padl*) or the left (for *padr*) as
+necessary. If _s_ is already at least _n_ characters wide, it is left
+unchanged. If several arguments are given, they are concatenated,
+separated with spaces, before padding takes place.
+
+== SOURCE
+
+*/appl/cmd/sh/string.b*
+
+== SEE ALSO
+
+_string_(2), _sh_(1), _sh-std_(1), _sh-expr_(1)

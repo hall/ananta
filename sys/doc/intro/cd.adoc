@@ -1,0 +1,22 @@
+= cd: change working directory
+
+
+*cd* [ _directory_ ]
+
+
+_Cd_ changes the working directory for the shell and all processes in
+its name space group (see _sys-pctl_(2)) to _directory_. If no argument
+is given, _cd_ attempts to change to **/usr/**__user__ where _user_ is
+the name read from */dev/user*.
+
+== FILES
+
+*/dev/user*
+
+== SOURCE
+
+*/appl/cmd/cd.b*
+
+== SEE ALSO
+
+_pwd_(1), _sys-chdir_(2), _sys-pctl_(2), _cons_(3)

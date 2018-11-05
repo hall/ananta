@@ -1,0 +1,56 @@
+= gettar, lstar, puttar: tar archive utilities
+
+
+*gettar* [ *-k* ] [ *-v* ] [ *-R* ] [ _name_ ... ] +
+*lstar* +
+*puttar* [ _file ..._ ]
+
+
+These commands manage POSIX.1 tar archives in Inferno.
+
+_Gettar_ reads a tar file from standard input and unpacks the contents
+into the current directory tree. By default, _gettar_ converts absolute
+path names, including names starting with
+
+into names relative to the current directory; the *-R* option extracts
+such names as-is. The *-k* option tells _gettar_ to keep existing files
+rather than overwriting them with files from the archive. The *-v*
+option causes _gettar_ to print on standard error the names of files
+extracted. Finally, listing one or more _names_ as arguments will
+extract only those files.
+
+_Lstar_ reads a tar file from standard input and lists the files
+contained therein, one per line, with four space-separated fields giving
+the file name, modification time (in seconds since the epoch), size (in
+bytes), and a constant 0 (the place holder for a checksum). The format
+is the same as that produced by *du -n -t*.
+
+_Puttar_ writes a tar file to standard output that contains each _file_,
+and its substructure if it is a directory. Given no arguments, _puttar_
+instead reads a list of file names from standard input and includes each
+file or directory named; it does not copy directory substructure.
+
+== EXAMPLE
+
+The following commands create a tar file with two files *test.b* and
+*srv.b*:
+
+....
+$ cat tarlist
+test.b
+srv.b
+$ puttar <tarlist >test.tar
+$ lstar <test.tar
+test.b 867178082 1104 0
+srv.b 866042662 3865 0
+....
+
+== SOURCE
+
+*/appl/cmd/gettar.b* +
+*/appl/cmd/lstar.b* +
+*/appl/cmd/puttar.b*
+
+== SEE ALSO
+
+_tarfs_(4)

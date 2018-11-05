@@ -1,0 +1,154 @@
+= mdb: binary file editor
+
+
+*mdb* [ *-w* ] _file_ [ _command_ ]
+
+
+_Mdb_ allows inspection of the contents of _file_. If the *-w* option is
+given, then modification of the contents is also allowed. _Mdb_ accepts
+commands of the form
+
+____________________________________________
+{empty}[_address_] [*,* _count_] [_command_]
+____________________________________________
+
+If a _command_ is given as an argument, then _mdb_ will execute that
+command, otherwise it will read and execute commands from the standard
+input. If _address_ is present then the current position, called `dot',
+is set to _address._ Initially dot is set to 0. _Command_ is repeated
+_count_ times with dot advancing between repetitions. The default count
+is 1. _Address_ and _count_ are expressions.
+
+=== Expressions
+
+Expressions take one of the following forms:
+
+.::
+  The value of dot.
++::
+  The value of dot.
+^::
+  The value of dot.
+"::
+  The value of the last address typed.
+_integer_::
+  A number, decimal by default. A `**0**' prefix causes it to be
+  interpreted as octal; a `**0x**' prefix causes it to be interpreted as
+  hexadecimal.
+**(**__expr__*)*::
+  The value of the expression _expr_.
+
+_Operators_
+
+_________________________________________
+__e1__**+**_e2_::
+  Integer addition.
+__e1__**-**_e2_::
+  Integer subtraction.
+__e1__*****_e2_::
+  Integer multiplication.
+__e1__**%**_e2_::
+  Integer division. (N.B. _not_ modulus).
+__e1__**|**_e2_::
+  Bitwise disjunction.
+__e1__**&**_e2_::
+  Bitwise conjunction.
+_________________________________________
+
+=== Commands
+
+Commands have the following syntax:
+
+**/**__f__::
+  Locations starting at _address_ in _file_ are printed according to the
+  format _f_.
+**?**__f__::
+  Same as `**/**'.
+**=**__f__::
+  The value of _address_ itself is printed according to the format _f_.
+
+A _format_ consists of one or more characters that specify a style of
+printing. Each _format_ fetches some data, prints it, and if the
+_command_ is not `**=**', advances dot by the amount of data fetched.
+All data is assumed to be held in little-endian form (least significant
+byte first).
+
+_____________________________________________________________________________________________________
+*o* Print a two-byte integer in octal.
+
+*O*::
+  Print a four-byte integer in octal.
+*d*::
+  Print a two-byte integer in decimal.
+*D*::
+  Print a four-byte integer in decimal.
+*u*::
+  Print a two-byte integer in unsigned decimal.
+*U*::
+  Print a four-byte integer in unsigned decimal.
+*b*::
+  Print a single byte in hexadecimal.
+*x*::
+  Print a two-byte integer in hexadecimal.
+*X*::
+  Print a four-byte integer in hexadecimal.
+*n*::
+  Prints a newline. No data is fetched.
+*+*::
+  Increments dot by 1. No data is printed.
+*-*::
+  Decrements dot by 1. No data is printed.
+*^*::
+  Increments dot by the size of the last format encountered.
+*c*::
+  Prints a single byte as a character.
+*C*::
+  Prints a single byte as a printable character, converting it to
+  backslash escaped hex if necessary.
+_____________________________________________________________________________________________________
+
+Other commands include:
+
+[*?/*]*w _value_*::
+  Write the two-byte _value_ to the addressed location.
+[*?/*]*W _value_*::
+  Write the four-byte _value_ to the addressed location.
+[*?/*]*i*::
+  Disassemble _count_ instructions starting at _address_ (_dot_ by
+  default).
+**$**__modifier__::
+  _File_ must be a _dis_(6) file. _Modifier_ is one of the following
+  subcommands:
+  +
+  *D* Print the descriptor section.
+  +
+  *h*;;
+    Print the file header.
+  *l*;;
+    Print the links section.
+  *i*;;
+    Print the import section.
+  *d*;;
+    Print the data section.
+  *H*;;
+    Print exception handler tables.
+  *s*;;
+    Print the name of the source file.
+
+== SOURCE
+
+*/appl/cmd/mdb.b*
+
+== SEE ALSO
+
+_dis_(6)
+
+== BUGS
+
+Most of the more useful features of _mdb_'s antecedent _db_ are
+unimplemented.
+
+It is not possible to print strings or UTF-8 characters.
+
+As there is no ``native'' word format in Inferno, the assumption that
+all words are little-endian is hard to justify.

@@ -1,0 +1,60 @@
+= sexprs, islist, els, text, textels, mktext, mklist, mktextlist: parse
+and generate S-expressions
+
+
+*load sexprs*
+
+*getsexprs* _command_ +
+*islist* _sexpr_ +
+*$\{els* __sexpr__**}** +
+*$\{text* __sexpr__**}** +
+*$\{textels* __sexpr__**}** +
+*$\{mktext* __val__**}** +
+*$\{mklist* [ _val_... **]*}* +
+*$\{mktextlist* [ _val_... **]*}* +
+
+
+*Sexprs* is a loadable module for _sh_(1) that provides the facility to
+parse and generate S-expressions (see _sexprs_(2)). The following
+primitives are provided:
+
+*getsexprs*::
+  *Getsexprs* works similiarly to *getlines* in _sh-std_(1). It reads
+  S-expressions from the standard input, and for expression read, it
+  invokes _command_ with *$sexp* set to the text representation of that
+  expression. *Getsexprs* recognises the usual loop *break* and
+  *continue* exceptions.
+**islist **__sexp__::
+  *Islist* yields a nil (true) status if _sexp_, which must be a
+  well-formed S-expression, is a list element.
+**$\{els **__sexp__*}*::
+  If _sexp_ is an S-expression containing a list, then *els* returns a
+  list of the S-expressions it contains. It is an error if _sexp_ is not
+  a valid S-expression.
+**$\{text **__sexp__*}*::
+  If _sexp_ is an S-expression containing a simple element, then *text*
+  returns the value of that element. If _sexp_ is a list, the return
+  value will be an empty string. Note that elements containing binary
+  data will likely be corrupted by conversion to utf-8. It is an error
+  if _sexp_ is not a valid S-expression.
+**$\{textels **sexp*}*::
+  If _sexp_ is an S-expression containing a list, then *textels* returns
+  a list of the text values in that S-expression, converted as with
+  *$\{text}*. It is an error if _sexp_ is not a valid S-expression.
+**$\{mktext **val*}*::
+  *Mktext* returns a text representation of the S-expression containing
+  the simple value _val_.
+*$\{mklist *[sexp...]*}*::
+  *Mklist* returns a text representation of the S-expression list
+  containing its arguments, which must be well-format S-expressions.
+*$\{mktextlist *[val...]*}*::
+  *Mktextlist* returns a text representation of the S-expression list
+  containing one simple element for each _val_.
+
+== SOURCE
+
+*/appl/cmd/sh/sexprs.b*
+
+== SEE ALSO
+
+_sh_(1), _sh-std_(1), _sexprs_(2)

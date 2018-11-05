@@ -1,0 +1,40 @@
+= ps: process (thread) status
+
+
+*bind '#p' /prog*
+
+*ps*
+
+
+_Ps_ prints to the standard output information about all current Inferno
+processes. It looks in */prog* for process status files; normally that
+requires that the _prog_(3) device has previously been bound there (as
+shown above), but it is also possible to import */prog* from a remote
+machine.
+
+Each line of information printed consists of seven columns: the process
+id, the process group id, the owner of the process, cpu time used by the
+process, the run state of the process, the amount of memory used by the
+process, and the name of the module containing the currently running
+function.
+
+== FILES
+
+*/prog/*/status*
+
+== SOURCE
+
+*/appl/cmd/ps.b*
+
+== SEE ALSO
+
+_deb_(1), _kill_(1), _stack_(1), _wm/task_ and _wm/memory_ in
+_wm-misc_(1), _prog_(3)
+
+== BUGS
+
+The amount reported as ``memory used'' does not accurately reflect the
+amount of memory referred to by the process, because the heap is
+shared. +
+The cpu time used is currently shown as zero in most hosted
+implementations.

@@ -1,0 +1,109 @@
+= wm: window manager
+
+
+*wm/wm* [ _command_ [ _arg_... ] ]
+
+
+_Wm_ is an inferno window manager, providing the control mechanism for
+the user to manage to order and position of a dynamic collection of
+application windows. When started, it runs _command_, (by default
+*wm/toolbar*, see _toolbar_(1)) By itself, _wm_ does not provide any
+means for starting new applications; that facility must be provided by
+an auxilliary program, *wm/toolbar* being one such example.
+
+=== Control Interface
+
+_Wm_ provides a control interface to programs running inside it through
+the *Wmcontext* adt that can be obtained from the *Draw->Context* that
+it passes to applications that it starts (see _draw-context_(2)).
+Control messages it understands include:
+
+*start _what_*::
+  Start input on _what_. _What_ can be *ptr* (pointer events), *kbd*
+  (keyboard events) and *control* (window manager control events, see
+  below).
+*key _charval_*::
+  Simulate a key event. _Charval_ is the decimal value of the character
+  that has been pressed. The character will be sent exactly as if it had
+  been typed on the keyboard. This facility is used by _keyboard_(1).
+*!reshape _tag_ _reqid_ _minx_ miny maxx maxy [_how_]*::
+  Reshape or create the window named _tag_. _Reqid_ is ignored;
+  _minx..maxy_ give the desired bounding rectangle of the new window. If
+  _how_ is not given, or is *exact*, then _wm_ will attempt to satisfy
+  the request exactly. Otherwise, _how_ tells _wm_ how to determine the
+  rectangle of the resulting image; it can be one of *place* (choose
+  some appropriate position and size on screen), *onscreen* (modify the
+  requested rectangle only so as to bring it on screen), or *max*
+  (request the maximum available rectangle).
+*delete _tag_*::
+  Delete the window named by _tag_.
+*raise*::
+  Raise all windows for the current context above the others.
+*lower*::
+  Send all windows for the current context to the bottom.
+*!move _tag_ _reqid_ _startx_ _starty_*::
+  Drag window _tag_ interactively. _Reqid_ is ignored. _Startx_ and
+  _starty_ give the location of the pointer when the drag was initiated.
+*!size _tag_ _reqid_*::
+  Interactively resize window _tag_.
+*fixedorigin*::
+  By default, if a window changes position but not size, _wm_ changes
+  the origin of the window without creating a new image. Sending
+  *fixedorigin* caused _wm_ always to create a new image in that case.
+*kbdfocus [_in_]*::
+  If the decimal integer _in_ is non-zero, request the keyboard focus,
+  otherwise lose the keyboard focus.
+
+_Wm_ generates control messages to inform applications of things that
+have happened. These include:
+
+*rect _minx_ miny maxx maxy*::
+  The screen rectangle has changed. _minx..maxy_ gives the new bounding
+  box of the screen.
+*haskbdfocus _in_*::
+  Informs an application of its current keyboard focus state. This
+  message is generated in response to pointer events, and due to
+  *kbdfocus* requests.
+*exit*::
+  The window manager is closing down.
+
+=== Controlling Application
+
+The first application that starts under _wm_ is given the privilege of
+being able to control other applications running under the same _wm_. If
+it sends a *start control* message, then it will also see any control
+requests sent by applications that _wm_ itself does not understand and
+information about applications starting and leaving. _Wm_ accepts
+several other control messages from its controlling application:
+
+*ctl _id_ _msg_*::
+  Send message _msg_ to application _id_.
+*endcontrol*::
+  Relinquish controller status. The next application that starts will
+  get control status. This is used, for instance, to segue smoothly
+  between _logon_(1) and _toolbar_(1).
+
+If the controlling application has started control messages, _wm_ sends
+it the following messages:
+
+*newclient _id_*::
+  A new client has connected, identified by _id_.
+*delclient _id_*::
+  Client _id_ has left.
+*request _id_ _msg_*::
+  Client _id_ sent the request _msg_ to the window manager, which it did
+  not understand. This facility is used, for instance, by _toolbar_(1)
+  to implement the *task* and *untask* requests.
+
+== FILES
+
+*/chan/wmrect*::
+  File holding current screen rectangle.
+
+== SOURCE
+
+*/appl/wm/wm.b*
+
+== SEE ALSO
+
+_toolbar_(1), _logon_(1), _tkclient_(2), _wmclient_(2)

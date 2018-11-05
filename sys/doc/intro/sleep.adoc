@@ -1,0 +1,21 @@
+= sleep, pause: suspend execution for an interval
+
+
+*sleep* _n_
+
+*pause*
+
+
+_Sleep_ suspends its own execution for _n_ seconds before returning.
+
+_Pause_ never returns, and is typically used to stop a command
+interpreter reading any more from the standard input.
+
+== SOURCE
+
+*/appl/cmd/sleep.b* +
+*/appl/cmd/pause.b*
+
+== SEE ALSO
+
+_sys-sleep_(2)

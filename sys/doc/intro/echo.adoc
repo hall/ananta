@@ -1,0 +1,23 @@
+= echo: print arguments
+
+
+*echo* [*-n*] [_arg ..._]
+
+*load echo* +
+*echo* [*-n*] [_arg ..._]
+
+
+_Echo_ writes its arguments separated by blanks and terminated by a
+newline on the standard output. Option *-n* suppresses the newline.
+
+A version of _echo_ can optionally be loaded into the Shell _sh_(1) if
+need be, to make shell scripts a little faster.
+
+== SOURCE
+
+*/appl/cmd/echo.b* +
+*/appl/cmd/sh/echo.b*
+
+== SEE ALSO
+
+_sh_(1)

@@ -1,0 +1,35 @@
+= comm: select or reject lines common to two sorted files
+
+
+*comm* [ *-123* ] _file1 file2_
+
+
+_Comm_ reads lines from _file1_ and _file2_, which are in
+lexicographical order, and produces a three column output: lines only in
+_file1_; lines only in _file2_; and lines in both files. The file name
+
+means the standard input.
+
+Each option digit
+
+or
+
+suppresses printing of the corresponding column.
+
+== EXAMPLE
+
+....
+comm -12 file1 file2
+....
+
+_______________________________________
+Print lines common to two sorted files.
+_______________________________________
+
+== SOURCE
+
+*/appl/cmd/comm.b*
+
+== SEE ALSO
+
+_sort_(1), _cmp_(1), _diff_(1), _uniq_(1)

@@ -1,0 +1,126 @@
+= tk, chan, send, recv, alt: loadable tk module for sh.
+
+
+*load tk*
+
+*chan* _name_... +
+*send* _chan value_ +
+*tk window* _title_ [ _args..._ ] +
+*tk winctl* _winid cmd_ +
+*tk wintitle* _winid title_ +
+*tk namechan* _chan_ [ _name_ ] +
+*tk del* _name_ +
+*tk* _winid tkcmd_ +
+*$\{tk window* _title_ [ _args..._ ] *}* +
+*$\{tk onscreen* _winid_ [ _how_ ] *}* +
+*$\{tk* _winid tkcmd_ *}* +
+*$\{recv* _chan_ *}* +
+*$\{alt* _chan_ ... *}* +
+
+
+*Tk* is a loadable module for _sh_(1) that provides access to Inferno Tk
+graphics and string channels. Most of the builtin commands that it
+defines map closely to primitives within _wmlib_(2) and _tk_(2). Unless
+otherwise stated, if a command requires a _winid_ argument, if no window
+with that id is found, a *bad win* exception is raised. Similarly, a
+reference to an unknown channel name will raise a *bad chan* exception.
+There is no requirement that this module be used in a windowing context:
+although window creation will fail if there is no context, the channel
+communication primitives will work regardless.
+
+*chan*::
+  For each _name_ in turn, *chan* creates a new channel called _name_
+  within the tk module. _Name_ henceforth represents a Limbo *chan* *of*
+  *string* and can be used to send string values between _sh_ processes
+  running in parallel. A _chan_ is also used to receive events arriving
+  from the window manager. It is illegal to create a channel whose name
+  consists entirely of numeric digits.
+*send*::
+  *Send* sends its argument _value_ down the channel _chan_, blocking
+  until a corresponding receive operation takes place on the channel.
+*tk window*::
+  *Tk window* creates a new top-level window with the text of _title_ in
+  the titlebar at the top. Each window created by the tk module is
+  assigned a unique numeric id. This id is printed by this command; to
+  get access to the value of the _winid_ in a script, use *$\{tk
+  window}*. All the remaining arguments are joined together by spaces
+  and passed as the tk options for the window. When a window is created,
+  a corresponding channel of the same name is created. Events from the
+  window manager arrive on this channel, and should be responded to
+  appropriately using *tk winctl*.
+*tk onscreen*::
+  *Tk onscreen* must be called to make window _winid_ visible for the
+  first time, the same as _onscreen_ in _tkclient_(2). _How_ is the same
+  as for that call - if given, it must be one of *place*, *onscreen* or
+  *exact*.
+*tk winctl*::
+  *Tk winctl* is used to communicate requests to the window manager.
+  (see *winctl()* in _wmlib_(2)). If an event arriving on a window's
+  channel is passed to *tk winctl*, a suitable default action will take
+  place. The set of possible actions include:
+  +
+  *exit*;;
+    A request to close the window.
+  *size*;;
+    A request to resize the window.
+  *task*;;
+    A request to miniaturise the window.
+  *move*;;
+    A request to move the window.
+*tk wintitle*::
+  *Tk wintitle* changes the title of the window _winid_ to _title_.
+*tk del*::
+  *Tk del* deletes a channel or a window. If _name_ is the _winid_ of an
+  existing window, then both the window and its associated channel are
+  destroyed. A *del* of a non-existent channel or window is ignored.
+*tk namechan*::
+  *Tk namechan* invokes the Tk module's *namechan()* function to give a
+  tk name to a channel within the tk module. If _name_ is omitted, then
+  the tk name given will be the same as _chan_.
+**tk**__ winid__::
+  If _winid_ is the id of an existing window, the rest of the arguments
+  joined together by spaces and sent as a tk command to be interpreted
+  in that window. If the shell is in interactive mode, then the string
+  returned by tk will be printed. The exit status of *tk* is false if
+  the string returned by tk begins with a bang (*!*) character.
+*$\{tk window}*::
+  *Tk window* is the same as its command counterpart, except that it
+  yields the _winid_ of the newly created window rather than printing
+  it.
+**$\{tk**__ winid__*}*::
+  This command is the same as its command counterpart, except that it
+  yields the return value from the Tk command as its result.
+*$\{recv}*::
+  *Recv* receives a string value from _chan_ and yields that value. It
+  will block until a corresponding send operation takes place on the
+  channel.
+*$\{alt}*::
+  *Alt* waits until a value is available on any of the named __chan__s.
+  It yields a list containing two elements, the name of the channel from
+  which the value was received, and the actual value received.
+
+== EXAMPLE
+
+The following code creates a window and allows normal window manager
+operations on it. Another shell in a new process group is created in
+order to prevent the shell window from disappearing when the tk window
+is deleted.
+
+....
+sh
+load std tk
+pctl newpgrp
+wid=${tk window 'My window'}
+tk onscreen $wid
+tk $wid update
+while {} {tk winctl $wid ${recv $wid}} &
+....
+
+== SOURCE
+
+*/appl/cmd/sh/tk.b*
+
+== SEE ALSO
+
+_sh_(1), _sh-std_(1), _sh-expr_(1), _tkcmd_(1), _tk_(2), _tkclient_(2),
+_wmlib_(2), ``The Tk Reference Manual''

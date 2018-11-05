@@ -1,0 +1,52 @@
+= toolbar: window manager toolbar
+
+
+*wm/toolbar* [ *-s* ] [ *-p* ]
+
+
+_Toolbar_ is designed to be run as the controlling application under an
+instance of _wm_(1). It runs an initialisation shell script, provides a
+menu allowing the user to start new programs. and shows icons
+representing windows that have been hidden.
+
+When _toolbar_ is started, it configures itself by means of the
+*/lib/wmsetup* shell script. _Toolbar_ loads the shell _sh_(1), and
+defines the following shell built-in commands before executing the
+script:
+
+*menu* _title1_ [_title2]_ _command_ +
+Insert an item at the top of the start menu. _Title1_ is the text of the
+item on the main menu. If _title2_ is given then _title1_ is a sub-menu
+with _title2_ as the menu item. _Command_ is executed by the shell
+whenever the item is selected. An item with an empty command is
+displayed as a separator.
+
+*delmenu* +
+Forget all menu items.
+
+The standard */lib/wmsetup* script executes the script
+**/usr/**__username__**/lib/wmsetup**__,__ enabling each user to have
+their own window manager configuration.
+
+Normally _toolbar_ packs a menu button referring to the start menu at
+the left hand side of the tool bar. The *-s* option suppresses that.
+
+_Toolbar_ serves the shared _snarf buffer_ used by cut and paste in
+_wm_(1) applications, except in hosted Inferno where the host's standard
+clipboard system is used instead, via _snarf_(3). If _toolbar_ cannot
+find */chan/snarf* or the *-p* option is given, _toolbar_ will create
+its own snarf buffer, private to the set of applications running under
+the current instance of _wm_(1).
+
+== FILES
+
+*/lib/wmsetup*::
+  Initialisation shell-script.
+
+== SOURCE
+
+*/appl/wm/toolbar.b*
+
+== SEE ALSO
+
+_wm(1),_ _tkclient_(2), _wmclient_(2), _toolbar_(1), _logon_(1).

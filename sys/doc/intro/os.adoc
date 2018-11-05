@@ -1,0 +1,48 @@
+= os: interface to host OS commands (hosted Inferno only)
+
+
+*bind -a '#C' /* +
+*os* [ *-b* ] [ *-m* _mountpoint_ ] [ **-d**__ dir__ ] [ *-n* ] [
+**-N**__ level__ ] _cmd_ [ _arg_... ]
+
+
+_Os_ uses a _cmd_(3) device to execute a command, _cmd_, on a host
+system. If the *-m* option is given, _os_ uses the device at
+_mountpoint_, otherwise it is asssumed to be at */cmd*, and is bound
+into the local namespace if necessary.
+
+The *-d* option causes the command to run in directory _dir_; an error
+results and the command will not run if _dir_ does not exist or is
+inaccessible. The standard output and standard error of the command
+appear on the standard output and standard error streams of the _os_
+command itself. _Os_ copies the standard input to the remote command's
+standard input; redirect _os_'s input to */dev/null* if there is no
+input to the command. _Os_ terminates when _cmd_ does, and its exit
+status reflects the status of _cmd_ (if available).
+
+If the _os_ command is killed or exits (eg, for lack of input and
+output), the host's own process control operations are used to (attempt
+to) kill _cmd_, if it is still running. The *-b* (background) option
+suppresses that behaviour.
+
+The *-n* option causes _cmd_ to run with less than normal priority
+(`nice'). The *-N* option sets low priority to a particular _level_ from
+1 to 3.
+
+== FILES
+
+*/cmd/clone*
+
+== SOURCE
+
+*/appl/cmd/os.b*
+
+== SEE ALSO
+
+_cpu_(1), _rcmd_(1), _cmd_(3)
+
+== DIAGNOSTICS
+
+The exit status of _os_ reflects any error that occurs when starting
+_cmd_ and, if it starts successfully, the status of _os_ is the exit
+status of _cmd_.

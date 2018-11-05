@@ -1,6 +1,5 @@
-image: i386/gcc:6.1
-
 build:
+  image: i386/gcc:6.1
   before_script:
     - ./makemk.sh
     - export PATH=$PWD/arch/linux/386/bin/:$PATH
@@ -9,3 +8,15 @@ build:
     - mk $MKFLAGS mkdirs
     - mk -depg -e -k $MKFLAGS install
     - emu cat /dev/sysctl
+
+pages:
+  image: registry.gitlab.com/pages/hugo:latest
+  script:
+    - cd sys/
+    - hugo
+  artifacts:
+    paths:
+    - public
+  only:
+  - master
+

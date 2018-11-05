@@ -1,0 +1,33 @@
+= tkcmd: enter Tk commands interactively
+
+
+*tkcmd* [ *-iu* ] [ _tkarg_ ]
+
+
+*Tkcmd* allows interactive entry of Tk commands; it is useful for
+testing out features of Tk prior to incorporating them in a Limbo
+program. It accepts two arguments:
+
+*-i*::
+  Force interactive mode. In interactive mode (the default if the
+  standard input is directed at */dev/cons*), a prompt is printed before
+  every tk command entered.
+*-u*::
+  Suppress the automatic tk update command after every entered command.
+
+When _tkcmd_ is started, a new top level window is created; _tkcmd_
+creates a titlebar and handles all the normal window window manager
+interactions. When the window is closed, _tkcmd_ terminates. Each line
+typed to _tkcmd_ is passed directly to the function *Tk->cmd* (see
+_tk_(2)) and executed in the context of the top level window; a Tk
+``update'' command is then issued. Any return value from the command is
+printed. There is one predefined Tk channel, named ``stdout''; anything
+sent down this channel will be printed to the standard output.
+
+== SOURCE
+
+*/appl/cmd/tkcmd.b*
+
+== SEE ALSO
+
+_tk_(2), _intro_(9), _sh-tk_(1)

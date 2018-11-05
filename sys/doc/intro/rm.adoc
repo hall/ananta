@@ -1,0 +1,24 @@
+= rm: remove file(s)
+
+
+*rm* [ *-fr* ] _file ..._
+
+
+_Rm_ removes the specified files or directories. A directory is removed
+only if it is empty (but see the *-r* option). Removal of a file
+requires write permission in its directory, but requires neither read
+nor write permission on the file itself. The options are:
+
+*-f*::
+  Suppress diagnostics
+*-r*::
+  Recursively remove a directory's substructure before removing the
+  directory.
+
+== SOURCE
+
+*/appl/cmd/rm.b*
+
+== SEE ALSO
+
+_tiny_(1), _sys-remove_(2)

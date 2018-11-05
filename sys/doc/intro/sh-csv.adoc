@@ -1,0 +1,39 @@
+= csv, getcsv: parse ``comma-separated values''
+
+
+*load csv*
+
+*getcsv* _command_ +
+*$\{csv* __list__**}** +
+
+
+*Csv* is a loadable module for _sh_(1) that provides the facility to
+parse and generate ``comma-separated value'' lists, a widely used data
+exchange format. Data in this format is usually in the form of a table,
+each row of which contains one or more items, each separated by a comma
+(*,*). Items that contain a comma or a newline are surrounded with
+double-quotes ("). A double-quote within an item is represented by a
+pair of double-quotes. Two primitives are provided:
+
+*getcsv*::
+  *Getcsv* works similiarly to *getlines* in _sh-std_(1). It reads from
+  the standard input, and for every line read, invokes _command_ with
+  *$line* set to the items found on that line (one element per item).
+  *Getcsv* recognises the usual loop *break* and *continue* exceptions.
+*$\{csv}*::
+  *Csv* yields a single element containing all the items in _list_,
+  comma-separated and quoted as necessary.
+
+== SOURCE
+
+*/appl/cmd/sh/csv.b*
+
+== SEE ALSO
+
+_sh_(1), _sh-std_(1)
+
+== BUGS
+
+Empty lines are ambiguous: *csv* treats an empty line as containing a
+single, empty element; there is thus no way of representing a line
+containing no elements at all.

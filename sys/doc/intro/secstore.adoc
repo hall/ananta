@@ -1,0 +1,84 @@
+= secstore: retrieve files from secure store
+
+
+*auth/secstore* [ *-iv* ] [ **-k**__ key__ ] [ **-p**__ pin__ ] [
+**-s**__ address__ ] [ **-u**__ user__ ] [ _op_ [ _file_ ] ... ]
+
+
+_Secstore_ manages files on the eponymous Plan 9 secure storage service.
+It holds a set of files for each of its users. The service is most often
+used to store a file *factotum* containing user credentials in a form
+ready to be loaded into _factotum_(4). _Op_ is one of the following
+operations:
+
+*d*::
+  Delete the given files on the server.
+*p*::
+  Print the contents of each file on standard output. Each line is
+  written separately, so that files of keys will be received correctly
+  when written to _factotum_(4).
+*r*::
+  Replace the contents of files on the server by the contents of the
+  named files, after encrypting them. In each case, the file name on the
+  server is the last component of the local file name (ie, everything
+  after the final `**/**').
+*t*::
+  List a table of contents of _user_'s collection on the the server. By
+  default, only the names are listed, one per line, but given the *-v*
+  option, each line displays name, file size in bytes, date last stored,
+  and SHA-1 hash of the file's contents.
+*x*::
+  Extract the named files into files of the same name in the current
+  directory. By default, they are decrypted (ie, in clear text).
+
+If no _op_ is specified, _secstore_ connects to the server (thus
+checking the connection and the validity of both _key_ and _user_), but
+does nothing with it.
+
+By default, _secstore_ prompts for a secret key to authenticate the user
+and the *secstore* service. The service might be configured to demand an
+extra authentication code, such as a `pin', in which case _secstore_
+will then prompt for that as well. The options are:
+
+*-i*::
+  Read one or two lines from the standard input: the first line contains
+  the secret; the optional second line contains the extra authentication
+  code.
+**-k**__ key__::
+  Use _key_ as the secret to authenticate with the *secstore* service.
+**-p**__ pin__::
+  Supply _pin_ as the extra authentication code if the server demands
+  it.
+**-s**__ address__::
+  Connect to the server at the given network _address_, as defined by
+  _dial_(2), and translated by _cs_(8). The default is
+  *net!$auth!secstore*.
+**-u**__ user__::
+  Authenticate as _user_ (default: the Inferno user name contained in
+  */dev/user*)
+*-v*::
+  Make the output more verbose: display the name announced by the remote
+  server; and use the long form of the table of contents.
+
+== EXAMPLE
+
+Retrieve the *factotum* file and feed the keys therein to _factotum_(4):
+
+....
+auth/secstore p factotum >/mnt/factotum/ctl
+....
+
+== SOURCE
+
+*/appl/cmd/auth/secstore.b*
+
+== SEE ALSO
+
+_crypt_(1), _secstore_(2), _factotum_(4), +
+``Plan 9 Security'', _Plan 9 Programmer's Manual_, Fourth Edition,
+Volume 2, 2003.
+
+== BUGS
+
+Perhaps _secstore_ should allow several *-s* options as a simple way to
+replicate the same files on different servers.

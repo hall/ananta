@@ -1,0 +1,95 @@
+= stack, stackv: examine call stack
+
+
+*bind '#p' /prog* +
+*stack* [ *-v* ] [ *-p* _dispath_ _sblpath_ ]... _pid_ +
+*stackv* [ *-Tlm* ] [ *-r* _maxdepth_ ] [ _pid[._sym_] ...] ..._
+
+
+_Stack_ writes to the standard output a stack trace for process _pid_,
+by decoding the stack traceback data contained in the file
+**/prog/**__pid__**/stack**__.__ The *-v* option causes _stack_ to print
+values of arguments and variables. The output is most useful when the
+Limbo program was compiled with the *-g* option to produce a *.sbl*
+symbol file.
+
+_Stack_ has a built-in list of associations between *dis* directories
+and their associated source directories (e.g. it can automatically map
+from */dis/ls.dis* to */appl/cmd/ls.sbl*). Giving the *-p* option adds a
+new association to the head of this list: if a module path prefix
+matches _dispath_, _stack_ will search for a symbol file in _sblpath_.
+If the environment variable *$sblpath* is set, pairs of items from it
+are added to the association list, as given as *-p* options. The *-p*
+options take precedence over *$sblpath*.
+
+_Stackv_ recursively traverses the symbols it finds, printing values as
+it goes. Repeated identical structure is not shown - only the pointer
+value is printed, followed by *(qv)*. Each argument gives a starting
+point for the traversal, rooted by a process id, _pid_. If an unadorned
+process id is given, all values in all stack frames in the process will
+be printed; adding names specifies the starting point. For instance,
+*123.init.ctxt.display* might specify the *display* field inside the
+*ctxt* adt inside the *init* function inside the process *123*. _Stackv_
+understands the following options:
+
+*-l*::
+  Show source line information with each item.
+*-m*::
+  Show module variables accessible from each stack frame.
+*-T*::
+  Do not show the Limbo types of value encountered.
+**-r**__ maxdepth__::
+  Restrict the maximum traversal depth to _maxdepth_ levels.
+
+== EXAMPLE
+
+Run _stack_ on process with ID 1:
+
+....
+$ stack 1
+unknown fn() Module $Sys PC 742103
+waitfor() shnew.b:105.7, 38
+runpipeline() shnew.b:483.2, 14
+runit() shnew.b:552.3, 29
+init() shnew.b:83.3, 28
+....
+
+The process is executing in the *Sys* module, a call to *sys->read* that
+originated at line 105 (characters 7 to 38) of the *waitfor* function in
+*shnew.b*.
+
+Once again, with the *-v* option to reveal more:
+
+....
+$ stack -v 1
+unknown fn() Module $Sys PC 742103
+waitfor(pid=18) shnew.b:105.7, 38
+        status=[0] ""
+        buf=[64] @b419a4
+        n=-1
+        who=-1
+runpipeline(ctx=nil, pipeline=@b41454) shnew.b:483.2, 14
+        pid=18
+runit(ctx=nil, pipes=nil) shnew.b:552.3, 29
+        pipeline=@b41454
+init(ctxt=nil, argv=nil) shnew.b:83.3, 28
+        buf=[1024] @b40f04
+        n=4
+        arg=@b41634
+        prompt=[21] "$ "
+$
+....
+
+== FILES
+
+**/prog/**__pid__*/stack* +
+**/prog/**__pid__*/status*
+
+== SOURCE
+
+*/appl/cmd/stack.b* +
+*/appl/cmd/stackv.b*
+
+== SEE ALSO
+
+_deb_(1), _ps_(1), _prog_(3), _debug_(2)

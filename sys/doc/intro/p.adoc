@@ -1,0 +1,21 @@
+= p: paginate
+
+
+*p* [ **-**__number__ ] [ _file ..._ ]
+
+
+_P_ copies its standard input, or the named files if given, to its
+standard output, stopping at the end of every page, to wait for a
+newline from the user. The option sets the _number_ of lines on a page
+(default: 22).
+
+While waiting for a newline, _p_ interprets the commands:
+
+*!*::
+  Pass the rest of the line to the shell as a command.
+*q*::
+  Quit.
+
+== SOURCE
+
+*/appl/cmd/p.b*

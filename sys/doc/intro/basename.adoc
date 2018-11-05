@@ -1,0 +1,24 @@
+= basename: strip file name affixes
+
+[source,subs=quotes]
+----
+*basename* [ *-d* ] _string_ [ _suffix_ ]
+----
+
+_Basename_ deletes any prefix ending in slash (*/*) and the _suffix_, if
+present in _string_, from _string_, and prints the result on the
+standard output.
+
+The *-d* option instead prints the directory component, that is,
+_string_ up to but not including the final slash. If the string contains
+no slash, the current directory name
+
+is printed.
+
+== SOURCE
+
+*/appl/cmd/basename.b*
+
+== SEE ALSO
+
+_cleanname_(1), _pwd_(1), _names_(2)

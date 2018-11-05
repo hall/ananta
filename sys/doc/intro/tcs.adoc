@@ -1,0 +1,33 @@
+= tcs: translate character sets
+
+
+*tcs* *-l* [*-v*] [ _csname_ ]
+
+*tcs* [ *-f* _ics_ ] [ *-t* _ocs_ ] [ _file ..._ ]
+
+
+_Tcs_ converts its input from the _ics_ character set encoding into
+Unicode runes and then outputs the data in the encoding of the _ocs_
+character set. The default values of _ics_ and _ocs_ are both *utf8*.
+This is the standard Inferno Unicode text encoding as described by
+_utf_(6). If no files are specified _tcs_ reads from its standard input.
+
+The *-l* option causes _tcs_ to output the list of character sets that
+it understands. The *-v* option causes a more detailed listing to be
+given. Giving a _csname_ argument to the *-l* option causes _tcs_ to
+list the known aliases for that name. The first name in the list is the
+standard (or preferred) name.
+
+== FILES
+
+*/lib/convcs/charsets*::
+  Specifies the supported character set names, their aliases and the
+  implementation of their converters.
+
+== SOURCE
+
+/appl/cmd/tcs.b
+
+== SEE ALSO
+
+_convcs_(2)

@@ -1,0 +1,42 @@
+= mload, munload: namespace separation for shell modules
+
+
+*load mload*
+
+*mload* _name_ [ _path_... ] +
+*munload* _name_ [ _path_... ] +
+
+
+_Mload_ is a loadable module for _sh_(1) that allows the simultaneous
+use of shell modules with potentially clashing command name spaces.
+*Mload* creates a new namespace _name_ and loads each _path_ as a
+builtin module in the same way as *load* (see _sh_(1)). Any commands or
+substitution builtins defined by the modules are accessible by giving
+the command and its arguments as arguments to the _name_ command.
+
+*Munload* unloads a module from the namespace _name_. If no modules
+remain in the namespace, _name_ is undefined as a command.
+
+== EXAMPLE
+
+Load _mpexpr_ in a different namespace from _expr_ (see _sh-expr_(1)):
+
+....
+load expr
+mload mp mpexpr
+echo ${expr 1 2 +}
+echo ${mp expr 2 300 xx}
+....
+
+== SOURCE
+
+*/appl/cmd/sh/mload.b*
+
+== SEE ALSO
+
+_sh_(1),
+
+== BUGS
+
+Because of the way shell modules are implemented, the namespaces are
+global across all processes that share an instance of _mload_.

@@ -1,0 +1,72 @@
+= diff: differential file comparator
+
+
+*diff* [ *-efbwr* ] file1 ... file2
+
+
+_Diff_ tells what lines must be changed in two files to bring them into
+agreement. If one file is a directory, then a file in that directory
+with basename the same as that of the other file is used. If both files
+are directories, similarly named files in the two directories are
+compared by the method of _diff_ for text files and _cmp_(1) otherwise.
+If more than two file names are given, then each argument is compared to
+the last argument as above. The *-r* option causes _diff_ to process
+similarly named subdirectories recursively. The normal output contains
+lines of these forms:
+
+* _n1_ *a* _n3,n4_ +
+_n1,n2_ *d* _n3_ +
+_n1,n2_ *c* _n3,n4_
+
+These lines resemble Plan 9 or Unix _ed_ commands to convert _file1_
+into _file2_. The numbers after the letters pertain to _file2_. In fact,
+by exchanging `a' for `d' and reading backward one may ascertain equally
+how to convert _file2_ into _file1_. As in _ed_, identical pairs where
+_n1_ = _n2_ or _n3_ = _n4_ are abbreviated as a single number.
+
+Following each of these lines come all the lines that are affected in
+the first file flagged by `<', then all the lines that are affected in
+the second file flagged by `>'.
+
+The *-b* option causes trailing blanks (spaces and tabs) to be ignored
+and other strings of blanks to compare equal. The *-w* option causes all
+white-space to be removed from input lines before applying the
+difference algorithm.
+
+The *-e* option produces a script of _a, c_ and _d_ commands for the
+Plan 9 or Unix editor _ed_, which will recreate _file2_ from _file1_.
+The *-f* option produces a similar script, not useful with _ed_, in the
+opposite order. It may, however, be useful as input to a stream-oriented
+post-processor.
+
+Except in rare circumstances, _diff_ finds a smallest sufficient set of
+file differences.
+
+== FILES
+
+*/tmp/diff[12]*
+
+== SOURCE
+
+*/appl/cmd/diff.b*
+
+== DIAGNOSTICS
+
+Exit status is the empty string for no differences,
+
+for some, and
+
+for trouble.
+
+== SEE ALSO
+
+_cmp_(1)
+
+== BUGS
+
+Editing scripts produced under the *-e* or *-f* option are naive about
+creating lines consisting of a single `**.**'. +
+When running _diff_ on directories, the notion of what is a text file is
+open to debate. +
+Nothing directly interprets the _ed_ scripts within the Inferno
+environment.

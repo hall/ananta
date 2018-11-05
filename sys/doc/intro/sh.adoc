@@ -1,0 +1,530 @@
+sh, builtin, exit, load, loaded, local, whatis, quote, run, set, unload,
+unquote - command language
+
+
+*sh* [ *-ilxvn* ] [ *-c command* ] [ _file_ [ _arg ..._ ]
+
+
+_Sh_ is a programmable user level interface (a shell) for Inferno. It
+executes command lines read from a terminal or a file or, with the *-c*
+flag, from _sh_'s argument list. It can also be used to give
+programmable functionality to Limbo modules (see _sh_(2)).
+
+=== Command Lines
+
+A command line is a sequence of commands, separated by ampersands or
+semicolons (*&* or *;*), terminated by a newline. The commands are
+executed in sequence from left to right. _Sh_ does not wait for a
+command followed by *&* to finish executing before starting the
+following command. Whenever a command followed by *&* is executed, its
+process id is assigned to the _sh_ variable *$apid*. Whenever a command
+_not_ followed by *&* exits or is terminated, the _sh_ variable
+*$status* gets the process's wait message (see _prog_(3)); it will be
+the null string if the command was successful.
+
+A number-sign (*#*) and any following characters up to (but not
+including) the next newline are ignored, except in quotation marks.
+
+=== Simple Commands
+
+A simple command is a sequence of arguments interspersed with I/O
+redirections. If the first argument is the name of a _sh_ builtin or it
+is a braced command block (see _Compound Commands_, below), it is
+executed by _sh_. If the first character of the name is a brace (*\{*),
+the shell tries to parse it and execute it as a braced command block; if
+the parsing fails, an exception is raised. Otherwise _sh_ looks for an
+external program to execute.
+
+If the name ends in *.dis*, _sh_ looks for a Dis module of that name;
+otherwise it tries first to find a Dis module of that name with *.dis*
+appended and failing that, it looks for an executable file of the same
+name, which should be a readable, executable script file. If the name
+does not start with a slash (*/*) or dot-slash (*./*), then the name is
+first looked for relative to */dis*, and then relative to the current
+directory. A Dis module will be executed only if it implements the
+*Command* interface (see _sh_(1)); a script file will be executed only
+if it starts with the characters ``**#!**'' followed by the name of a
+file executable under the rules above. In this case the command will be
+executed with any following arguments mentioned in the *#!* header,
+followed by the path of the script file, followed by any arguments
+originally given to the command.
+
+For example, to execute the simple command *ls*, _sh_ will look for one
+of the following things, in order, stopping the search when one is
+found:
+
+____________________________________________________
+1.  a built-in command named ``**ls**''.
+2.  a Dis module named ``**/dis/ls.dis**'',
+3.  an executable script file named ``**/dis/ls**'',
+4.  a Dis module named ``**./ls.dis**'',
+5.  an executable script file named ``**./ls**''.
+____________________________________________________
+
+=== Arguments and Variables
+
+A number of constructions may be used where _sh's_ syntax requires an
+argument to appear. In many cases a construction's value will be a list
+of arguments rather than a single string.
+
+The simplest kind of argument is the unquoted word: a sequence of one or
+more characters none of which is a blank, tab, newline, or any of the
+following:
+
+....
+	# ; & | ^ $ ` ' { } ( ) < > " =
+....
+
+An unquoted word that contains any of the characters *** *?* *[* is a
+pattern for matching against file names. The character *** matches any
+sequence of characters, *?* matches any single character, and
+**[**__class__*]* matches any character in the _class_. If the first
+character of _class_ is *^*, the class is complemented. (As this
+character is special to the shell, it may only be included in a pattern
+if this character is quoted, as long as the leading *[* is not quoted).
+The _class_ may also contain pairs of characters separated by *-*,
+standing for all characters lexically between the two. The character */*
+must appear explicitly in a pattern. A pattern is replaced by a list of
+arguments, one for each path name matched, except that a pattern
+matching no names is not replaced by the empty list, but rather stands
+for itself. Pattern matching is done after all other operations. Thus,
+
+....
+	x=/tmp; echo $x^/*.b
+....
+
+matches */tmp/*.b*, rather than matching *"/*.b* and then prefixing
+*/tmp*.
+
+A quoted word is a sequence of characters surrounded by single quotes
+(*'*). A single quote is represented in a quoted word by a pair of
+quotes (*''*).
+
+Each of the following is an argument.
+
+**(**__arguments__*)* +
+The value of a sequence of arguments enclosed in parentheses is a list
+comprising the members of each element of the sequence. Argument lists
+have no recursive structure, although their syntax may suggest it. The
+following are entirely equivalent:
+
+....
+	echo hi there everybody
+	((echo) (hi there) everybody)
+	echo (hi
+	there
+	everybody
+	)
+....
+
+Newlines within parentheses count as simple white space; they do not
+terminate the command. This can be useful to give some more freedom of
+layout to commands that take several commands as arguments, for instance
+several of the commands defined in _sh-std_(1).
+
+**$**__argument__ +
+The _argument_ after the *$* is the name of a variable whose value is
+substituted. Multiple levels of indirection are possible. Variable
+values are lists of strings. If _argument_ is a number _n_, the value is
+the __n__th element of *$**, unless *$** doesn't have _n_ elements, in
+which case the value is empty. Assignments to variables are described
+under _Assignment ,_ below.
+
+**$#**__argument__ +
+The value is the number of elements in the named variable. A variable
+never assigned a value has zero elements.
+
+$"_argument_ +
+The value is a single string containing the components of the named
+variable separated by spaces. A variable with zero elements yields the
+empty string.
+
+**`\{**__command__*}*
+
+_"\{command}_ +
+_Sh_ executes the _command_ and reads its standard output. If backquote
+(*`*) is used, it is split into a list of arguments, using characters in
+*$ifs* as separators. If *$ifs* is not otherwise set, its value is *'
+\t\n'*. If doublequote (") is used, no tokenization takes place.
+
+__argument__**^**_argument_ +
+The *^* operator concatenates its two operands. If the two operands have
+the same number of components, they are concatenated pairwise. If not,
+then one operand must have one component, and the other must be
+non-empty, and concatenation is distributive.
+
+**$\{**__command__*}* +
+_Command_ must be a simple command with no redirections; its first word
+must be the name of a builtin substitution operator. The operator is
+invoked and its value substituted. See _Built-in Commands_, below, for
+more information on builtins.
+
+**<\{**__command__*}*
+
+**>\{**__command__*}* +
+The _command_ is executed asynchronously with its standard output or
+standard input connected to a pipe. The value of the argument is the
+name of a file referring to the other end of the pipe. This allows the
+construction of non-linear pipelines. For example, the following runs
+two commands *old* and *new* and uses *cmp* to compare their outputs
+
+....
+	cmp <{old} <{new}
+....
+
+=== Free Carets
+
+In most circumstances, _sh_ will insert the *^* operator automatically
+between words that are not separated by white space. Whenever one of *$*
+*'* *`* follows a quoted or unquoted word or an unquoted word follows a
+quoted word with no intervening blanks or tabs, a *^* is inserted
+between the two. If an unquoted word immediately follows a *$* and
+contains a character other than an alphanumeric, underscore, or ***, a
+*^* is inserted before the first such character. Thus
+
+_______________________
+*limbo -$flags $stem.b*
+_______________________
+
+is equivalent to
+
+_________________________
+*limbo -^$flags $stem^.b*
+_________________________
+
+=== Assignment
+
+A command of the form __name__**=**_value_ or __name__**:=**_value_
+assigns _value_ to the environment variable named _name_. _Value_ is
+either a list of arguments or an assignment statement. In the latter
+case _value_ is taken from the value assigned in the assignment
+statement. If *:=* is used, the value is stored in the innermost local
+scope. A local scope is created every time a braced block is entered,
+and destroyed when the block is left. If *=* is used, the value is
+stored in the innermost scope that contains any definition of _name_.
+
+A list of names can also be used in place of _name_, which causes each
+element of _value_ in turn to be assigned the respective variable name
+in the list. The last variable in the list is assigned any elements that
+are left over. If there are more variable names than elements in
+_value_, the remaining elements are assigned the null list. For
+instance, after the assignment:
+
+....
+	(a b c) = one two three four five
+....
+
+*$a* is *one*, *$b* is *two*, and *$c* contains the remaining three
+elements *(three four five)*.
+
+=== I/O Redirections
+
+The sequence **>**__file__ redirects the standard output file (file
+descriptor 1, normally the terminal) to the named _file_; **>>**__file__
+appends standard output to the file. The standard input file (file
+descriptor 0, also normally the terminal) may be redirected from a file
+by the sequence **<**__file__*,* or by the sequence **<>**__file__*,*
+which opens the file for writing as well as reading. Note that if _file_
+is in fact a parsed braced block, the redirection will be treated as
+pipe to the given command - it is identical to the *<\{}* operator
+mentioned above.
+
+Redirections may be applied to a file-descriptor other than standard
+input or output by qualifying the redirection operator with a number in
+square brackets. For example, the diagnostic output (file descriptor 2)
+may be redirected by writing *limbo junk.b >[2] junk*.
+
+A file descriptor may be redirected to an already open descriptor by
+writing **>[**__fd0__**=**__fd1__*]* or **<[**__fd0__**=**__fd1__*].*
+_Fd1_ is a previously opened file descriptor and _fd0_ becomes a new
+copy (in the sense of _sys-dup_(2)) of it.
+
+Redirections are executed from left to right. Therefore, *limbo junk.b
+>/dev/null >[2=1]* and *limbo junk.b >[2=1] >/dev/null* have different
+effects: the first puts standard output in */dev/null* and then puts
+diagnostic output in the same place, where the second directs diagnostic
+output to the terminal and sends standard output to */dev/null*.
+
+=== Compound Commands
+
+A pair of commands separated by a pipe operator (*|*) is a command. The
+standard output of the left command is sent through a pipe to the
+standard input of the right command. The pipe operator may be decorated
+to use different file descriptors. **|[**__fd__*]* connects the output
+end of the pipe to file descriptor _fd_ rather than 1.
+**|[**__fd0__**=**__fd1__*]* connects output to _fd1_ of the left
+command and input to _fd0_ of the right command.
+
+A sequence of commands separated by *&*, *;*, or newline may be grouped
+by surrounding them with braces (*\{}*), elsewhere referred to as a
+_braced block_. A braced block may be used anywhere that a simple word
+is expected. If a simple command is found with a braced block as its
+first word, the variable *$** is set to any following arguments, *$0* is
+set to the block itself, and the commands are executed in sequence. If a
+braced block is passed as an argument, no execution takes place: the
+block is converted to a functionally equivalent string, suitable for
+later re-interpretation by the shell. The null command (*\{}*) has no
+effect and always gives a nil status. For instance the following
+commands all produce the same result:
+
+....
+	echo hello world
+	{echo hello world}
+	'{echo hello world}'
+	{echo $*} hello world
+	sh -c {echo hello world}
+	{$*} {echo hello world}
+	{$*} {{$*} {echo hello world}}
+	"{echo {echo hello world}}
+	'{echo hello' ^ ' world}'
+	x := {echo hello world}; $x
+....
+
+It is important to note that the value of *$** is lost every time a
+braced block is entered, so for instance, the following command prints
+an empty string:
+
+....
+	{{echo $*}} hello world
+....
+
+=== Built-in Commands
+
+The term ``built-in command'', or just ``builtin'', is used somewhat
+loosely in this document to refer to any command that is executed
+directly by the shell; most built-in commands are defined by externally
+loaded modules; there are a few that are not, known as ``internal''
+builtins, listed below.
+
+Given _sh_'s ability to pass compound commands (braced blocks) as
+arguments to other commands, most control-flow functionality that is
+traditionally hard-wired into a shell is in _sh_ implemented by loadable
+modules. See _sh-std_(1), _sh-expr_(1), and _sh-tk_(1) for more details.
+
+There are two classes of built-in commands; the first class, known
+simply as ``builtins'', are used in the same way as normal commands, the
+only difference being that builtins can raise exceptions, while external
+commands cannot, as they are run in a separate process. The second
+class, known as ``builtin substitutions'' can only be used as the first
+word of the command in the *$\{}* operator. The two classes exist in
+different name-spaces: a builtin may do something quite different from a
+builtin substitution of the same name.
+
+In general, normal builtins perform some action or test some condition;
+the return status of a normal builtin usually indicates error status or
+conditional success. The rôle of a substitution builtin is to yield a
+value, (possibly a list) which is substituted directly into place as
+part of the argument list of a command.
+
+**@**__ command ...__ +
+Execute _command_ in a subshell, allowing (for instance) the name-space
+to be forked independently of main shell.
+
+**run**__ file ...__ +
+Execute commands from _file_. *$** is set for the duration to the
+remainder of the argument list following _file_.
+
+**builtin**__ command ...__ +
+Execute _command_ as usual except that any command defined by an
+external module is ignored in favour of the original meaning. This
+command cannot be redefined by an external module.
+
+*exit* +
+Terminate the current process.
+
+**load**__ path...__ +
+*Load* tries to load each of its arguments as a builtin module into
+_sh_. If a module load succeeds, each builtin command defined by that
+module is added to the list of builtin commands. If there was a previous
+definition of the command, it is replaced, with the exception of
+internal _sh_ builtins, which are covered up and reappear when the
+module is unloaded. If a module with the same _path_ has already been
+loaded, _sh_ does not try to load it again. Unless the path begins with
+*/* or *./*, the shell looks in the standard builtins directory
+*/dis/sh* for the module. If a load fails, a *bad module* exception is
+raised. The environment variable *$autoload* can be set to a list of
+Shell modules that each instance of _sh_ should load automatically
+during its initialisation. (More precisely, the modules are loaded when
+a new *Sh->Context* is created: see _sh_(2) for details.)
+
+**unload**__ path...__ +
+*Unload* undoes previous load commands. To succeed, _path_ must be the
+same as that given to a previous invocation of *load*.
+
+*loaded* +
+*Loaded* prints all the builtin commands currently defined, along with
+the name of the module that defined them. Internally defined commands
+are tagged with module *builtin*.
+
+**whatis**__ name ...__ +
+Print the value of each _name_ in a form suitable for input to _sh_. The
+forms are:
+
+______________________________________________________________________________________
+_varname = value..._::
+  _Varname_ is a non-nil environment variable.
+**load **__module__**; **__name__::
+  _Name_ has been defined as a builtin by the externally loaded
+  _module_.
+**load **__module__**; $\{**__name__*}*::
+  _Name_ has been defined as a builtin substitution by the externally
+  loaded _module_.
+**builtin **__name__::
+  _Name_ is defined as a builtin internally by _sh_.
+**$\{**__name__*}*::
+  _Name_ is defined as a builtin substitution internally by the shell.
+_pathname_::
+  The completed pathname of an external file.
+______________________________________________________________________________________
+
+*$\{builtin* _command_
+
+*}* +
+Does for substitution builtin commands what *builtin* does for normal
+commands.
+
+*$\{loaded}* +
+The *loaded* builtin substitution yields a list of the names of all the
+modules currently loaded, as passed to *load*.
+
+**$\{quote**__ list__*}* +
+*Quote* yields a single element list which if reparsed by the shell will
+recreate _list_.
+
+**$\{bquote**__ list__*}* +
+Same as *quote* except that items in _list_ that are known to be
+well-formed command blocks are not quoted.
+
+**$\{unquote**__ arg}__ +
+*Unquote* reverses the operation of *quote*, yielding the original list
+of values. For example, **$\{unquote $\{quote **__list__*}}* yields
+_list_. A list quoted with *bquote* can only be unquoted by parsing.
+
+=== Environment
+
+The _environment_ is a list of strings made available to externally
+executing commands by the *env* module (see _env_(2)). If the *env*
+module does not exist or cannot be loaded, no error will be reported,
+but no variables can be exported to external commands. _Sh_ creates an
+environment entry for each variable whose value is non-empty. This is
+formatted as if it had been run through *$\{quote}*. Note that in order
+for a variable to be exported, its name must conform to the restrictions
+imposed by _env_(3); names that do not will not be exported.
+
+When _sh_ starts executing it reads variable definitions from its
+environment.
+
+Internally, the shell holds a _context_, which holds a stack of
+environment variables, the current execution flags and the list of
+built-in modules. A copy is made whereever parallel access to the
+context might occur. This happens for processes executing in a pipeline,
+processes run asynchronously with *&*, and in any builtin command that
+runs a shell command asynchronously.
+
+=== Exceptions
+
+When _sh_ encounters an error processing its input, an exception is
+raised, and if the *-v* flag is set, an error message is printed to
+standard error. An exception causes processing of the current command to
+terminate and control to be transferred back up the invocation stack. In
+an interactive shell, the central command processing loop catches all
+exceptions and sets *$status* to the name of the exception. Exceptions
+are not propagated between processes. Any command that requires I/O
+redirection is run in a separate process, namely pipes (*|*),
+redirections (*>*, *<*, *>>*, and *<>*), backquote substitution (`, ")
+and background processes (*&*). Exceptions can be raised and rescued
+using the *raise* and *rescue* functions in the standard builtins
+module, *std*. (See _sh-std_(1)). Names of exceptions raised by _sh_
+include:
+
+*parse error*::
+  An error has occurred trying to parse a command.
+*usage*::
+  A builtin has been passed an invalid set of arguments;
+*bad redir*::
+  An error was encountered trying to open files prior to running a
+  process.
+*bad $ arg*::
+  An invalid name was given to the $ or $\{} operator.
+*no pipe*::
+  _Sh_ failed to make a pipe.
+*bad wait read*::
+  An error occurred while waiting for a process to exit.
+*builtin not found*::
+  A substitution builtin was named but not found.
+
+=== Special Variables
+
+The following variables are set or used by _sh_.
+
+*$**::
+  Set to _sh_'s argument list during initialization. Whenever a braced
+  block is executed, the current value is saved and *$** receives the
+  new argument list. The saved value is restored on completion of the
+  *block*.
+*$apid*::
+  Whenever a process is started asynchronously with *&*, *$apid* is set
+  to its process id.
+*$ifs*::
+  The input field separators used in backquote substitutions. If *$ifs*
+  is not set in _sh_'s environment, it is initialized to blank, tab and
+  newline.
+*$prompt*::
+  When _sh_ is run interactively, the first component of *$prompt* is
+  printed before reading each command. The second component is printed
+  whenever a newline is typed and more lines are required to complete
+  the command. If not set in the environment, it is initialized by
+  *prompt=('% ' '')*.
+*$status*::
+  Set to the wait message of the last-executed program, the return
+  status of the last-executed builtin (unless started with *&),* or the
+  name of the last-raised exception, whichever is most recent. When _sh_
+  exits at end-of-file of its input, *$status* is its exit status.
+
+=== Invocation
+
+If _sh_ is started with no arguments it reads commands from standard
+input. Otherwise its first non-flag argument is the name of a file from
+which to read commands (but see *-c* below). Subsequent arguments become
+the initial value of *$**. _Sh_ accepts the following command-line
+flags.
+
+**-c**__ string__::
+  Commands are read from _string_.
+*-i*::
+  If *-i* is present, or _sh_ is given no arguments and its standard
+  input is a terminal, it runs interactively. Commands are prompted for
+  using *$prompt*. This option implies *-v*.
+*-l*::
+  If *-l* is given or the first character of argument zero is *-*, _sh_
+  reads commands from */lib/sh/profile*, if it exists, and then
+  *./lib/profile*, if it exists, before reading its normal input.
+*-n*::
+  Normally, _sh_ forks its namespace on startup; if *-n* is given, this
+  behaviour is suppressed.
+*-v*::
+  Within a non-interactive shell, informational messages printed to
+  standard error are usually disabled; giving the *-v* flag enables
+  them.
+*-x*::
+  Print each simple command to stderr before executing it.
+
+== SOURCE
+
+*/appl/cmd/sh/sh.y*
+
+== SEE ALSO
+
+_sh_(1), _sh-std_(1), _sh-expr_(1), _sh-file2chan_(1), _sh-tk_(1),
+_sh-arg_(1), _sh-regex_(1), _sh-string_(1), _sh-csv_(1), _sh_(2),
+_env_(2)
+
+== BUGS
+
+Due to lack of system support, appending to a file with *>>* will not
+work correctly when there are multiple concurrent writers (but see the
+examples section of _sh-file2chan_(1) for one solution to this).
+
+While it _is_ possible to use the shell as a general purpose programming
+language, it is a very slow one! Intensive tasks are best done in Limbo,
+which is a much safer language to boot.

@@ -1,0 +1,55 @@
+= ebook: Open Ebook browser
+
+
+*ebook/ebook* [ *-m* ] _file_
+
+
+_Ebook_ provides a graphical browser for a set of files in Open eBook
+(OEB) version 1.0.1 format. It takes some care to try to ensure that
+memory usage does not grow proportionally to the size of the book that
+is being viewed. _File_ names either an OEB package file (conventional
+suffix *.opf*) or an OEB document (conventional suffix *.html* or
+*.xml*). The *-m* option causes the window to be created in ``mini''
+size as suitable for display on a 240x320 pixel device.
+
+=== GUI controls
+
+Controls at the top of the window enable the user to move forward and
+backwards by pages through the document. A ``Guide'' menu provides
+access to the guide as found in the ebook package (if there is one). If
+the links in this are followed, or if the reader follows links embedded
+within the document, the up and down arrows enable moving backwards and
+forwards in the ``link history''. Arrows on the keyboard mimic the
+actions of the buttons at the top of the window.
+
+Clicking in the text allows an annotation to made on the text; a text
+window is popped up and any text typed in it will appear in a label
+attached to that text. Annotations are stored in persistent storage and
+will last from view to view of the document.
+
+== FILES
+
+*/lib/ebook/default.css*::
+  Initial stylesheet settings.
+*_document_.index*::
+  Index file for the OEB _document_, one display size only.
+*_document_.annot*::
+  Annotations for the OEB _document_.
+*/lib/ebooks*::
+  Standard place to keep ebooks.
+
+== SOURCE
+
+*/appl/ebook*
+
+== SEE ALSO
+
+_xml_(2), ``The Open eBook Publication Structure 1.0.1''
+
+== BUGS
+
+Does not do floats. +
+Does not do borders & backgrounds properly. +
+Large top-level constructs are not bounded in memory usage. +
+Does not do links to external documents. +
+Does not do fallbacks.

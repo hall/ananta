@@ -1,0 +1,41 @@
+= disdep: print load dependencies for Dis file
+
+
+*disdep* [ *-a* ] [ *-d* ] [ *-o* ] [ *-p* ] [ *-s* ] _file_ ...
+
+
+*Disdep* reads each _file_, which must be a Dis object file, and finds
+all unique strings in it that end in *.dis*. It takes each such string
+as the name of a Dis file, and if the file exists, it does the same for
+it, and so on, recursively. It writes each unique name to the standard
+output. The result is a list of all statically-named Dis files that
+might be referenced by an application, typically as the operand of a
+Limbo *load* operator. Several options change or extend the output:
+
+*-a*::
+  Print all names as they are encountered in the search, including
+  duplicates.
+*-d*::
+  Indent to show the dependency structure.
+*-o*::
+  Show only the immediate (outermost) dependencies of each _file_.
+*-p*::
+  Print the dependency relation as pairs: a file, a space, and the name
+  of a file on which it depends. Only the the first name is printed when
+  a file depends on no other. This format is useful as input to
+  _mk_(10.1) dependency generators, or dependency graphing programs.
+*-s*::
+  Include strings of the form *"$[A-Z].*"* on the assumption they are
+  the names of system modules loaded by the application.
+
+== SOURCE
+
+*/appl/cmd/disdep.b*
+
+== SEE ALSO
+
+_limbo_(1)
+
+== BUGS
+
+It cannot see file names that the program calculates.

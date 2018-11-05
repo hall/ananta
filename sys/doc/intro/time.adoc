@@ -1,0 +1,27 @@
+= time: time command execution
+
+
+*time* _command_ [ _arg ..._ ]
+
+
+_Time_ executes the _command_ with the given arguments, and reports on
+standard error the command's load time, real time for execution, and the
+total, in seconds. The load time is just the time for _time_ itself to
+load _command_; loads done later by the command are included in the real
+time. To time a pipeline, use the *-c* option to _sh_(1):
+
+___________________________
+*time sh -c 'ps | grep Sh'*
+___________________________
+
+== SOURCE
+
+*/appl/cmd/time.b*
+
+== SEE ALSO
+
+_sh_(1), _sys-millisec_(2)
+
+== BUGS
+
+There is no way to measure CPU time (real or virtual) used by a command.

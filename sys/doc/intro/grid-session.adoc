@@ -1,0 +1,94 @@
+= grid: session: graphical interface for configuring tasks using
+_grid-cpu_(4) and _grid-ns_(1) resources
+
+
+*grid/session*
+
+
+_Session_ allows the user to build up a single namespace from various
+different namespace resources and configure a set of commands to be
+executed within this namespace. The execution then takes place on one or
+more selected _grid-cpu_(4) resources.
+
+Once started, _session_ presents a heirarchical view of currently
+registered resources (such as _grid-ns_(1)) that serve name spaces using
+9P. (See _intro_(5) for a description of the protocol.) The top level
+displays the type of resource, for instance **'CPU**resource'*,* whilst
+the second level shows the name of each individual resource. Descending
+futher down the tree will reveal the attributes of the selected
+resource. To mount a resource and see the namespace it exports, click
+mouse button 3 on the resource name. The view will switch to a split
+pane view displaying the resource namespace with directories listed on
+the left and all files in the current directory displayed on the right.
+
+Clicking mouse button 3 on a file or directory will cause it to be added
+to the _command_ or _namespace_ list at the bottom of the window. Mouse
+button 3 is again used on items in either of these lists to display a
+menu containing the name of the resource on which they are located as
+well as the option to remove them. The *Cmd* and *Ns* buttons located at
+the top of the window toggle the view between the selected commands and
+the selected namespace. The *Resources* button returns to the initial
+view containing the currently registered resources and *Refresh* updates
+the list in case any resources have been added or removed.
+
+=== The Command List
+
+This contains a list of all commands to be executed. Any arguments may
+be entered by clicking on the gap after _args_: and typing into the box.
+Commands will be executed in order from top (first) to bottom (last).
+
+=== The Namespace List
+
+This contains a list of all the directories to be imported in order to
+create the local namespace of the selected _grid-cpu_(4) resource(s). By
+default, several directories will be imported from the local machine. To
+select these, click button 3 on *import local namespace* and (un)check
+the directories as required. To toggle this option on and off, click
+button 1 on *import local namespace.* These default directories are
+required by many commands for normal execution so it is recommended that
+they are not disabled unless they are definitely not needed. Importing a
+directory of the same name as one of the default directories will
+automatically overwrite the default. Therefore, it is not necessary to
+disable a default directory if the same name is to be imported from
+elsewhere.
+
+A given directory can only be imported once so it is not possible, for
+example, to import */usr/inferno* from two different machines. _Session_
+will automatically import the directories containing each of the
+selected commands but any others required must be explicitly imported.
+For example: If one of the commands is:
+
+....
+	/usr/inferno/runme.dis -f /appl/lib
+....
+
+_Session_ will import */usr/inferno/* but */appl/lib* would have to be
+specified in the namespace list.
+
+=== Execution
+
+Once the command and namespace lists have been configured, click *Ok* on
+the _Session_ window. This will bring up the _grid-query_(1) window
+containing a list of the available _grid-cpu_(4) resources. To select
+one or more of these for execution, click on the name with button 3 and
+it will be added to the list. If a specific _grid-cpu_(4) resource is
+not required, click button 3 on *CPU resource* and select the number you
+require by clicking on the number following the list entry and dragging
+the mouse up or down.
+
+Once the required _grid-cpu_(4) resources have been selected, click *Ok*
+and execution will commence.
+
+== SOURCE
+
+*/appl/grid/session.b* +
+*/appl/grid/ns.b* +
+*/appl/grid/monitor.b* +
+*/appl/grid/query.b* +
+*/appl/grid/lib/browse.b* +
+*/appl/grid/lib/srvbrowse.b*
+
+== SEE ALSO
+
+_grid-query_(1), _registries_(2) _grid-ns_(1), _grid-cpu_(4),
+_registry_(4)

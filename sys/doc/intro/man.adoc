@@ -1,0 +1,102 @@
+= man, wm/man, man2html, man2txt, lookman, sig: print or find manual
+pages
+
+
+*man* [ *-b* ] [ *-n* ] [ *-p* ] [ *-S* ] [ *-w* ] [ _section ..._ ]
+_title ..._ +
+*man -f* _file ..._ +
+*wm/man* [ _section ..._ ] _title ..._ +
+*wm/man -f* _file ..._ +
+*man2html* [ **-h**__ header__ ] [ **-i**__ initial__ ] [ **-t**__
+trailer__ ] _file_ [ _section_ ] +
+*man2txt* [ *-p* _width_ ] [ _file ..._ ] +
+*lookman* [ *-f* ] _keyword ..._
+
+*sig* _function ..._
+
+
+Both _man_ and **wm/**__man__ locate entries in this manual and display
+them. The pages for entries named _title_ within each specified
+_section_ are displayed. If no sections are specified, matching pages
+from all sections are printed. Sections are given by number.
+
+The *-f* option to _man_ and _wm/man_ prevent lookup in the manual
+index. Instead, the remaining arguments are treated as filenames. _Man_
+processes each file in turn. _Wm/man_ adds each file to its page history
+and displays the first document in the list.
+
+The _man_ command prints the manual pages as formatted plain text to
+standard output. Manual pages are written using Plan9 _troff -man_
+macros for their markup and so some detail is lost in conversion to
+plain text. **Wm/**__man__ displays the pages in a graphical Wm window,
+providing a more faithful reproduction of the intended layout.
+
+_Man_ also accepts the following options:
+
+*-b*::
+  Print the pages and send them to _plumber_(1) for display in an
+  editor.
+*-n*::
+  Use _man2txt_ to format the pages (default).
+*-p*::
+  Display the pages using _wm/man_.
+*-S*::
+  Do not search the manual indices for the names: only print pages whose
+  file names match the _titles_.
+*-w*::
+  Print the names of the man page source files instead of formatting
+  them.
+
+_Man2html_ converts *troff -man* macro markup to an approximation in
+HTML on standard output. Only one file is processed at a time. It is
+assumed the input _file_ is a manual page, in the given _section_
+(default: 1). The optional _header_ string replaces the default header
+*<HTML><HEAD>*. The optional _initial_ text will appear immediately
+after *<BODY>*. The optional _trailer_ string replaces the default
+trailer *</BODY></HTML>*.
+
+_Man2txt_ converts *troff -man* macro markup to plain text. Each file is
+processed separately. If no arguments are given, text from standard
+input is processed. The converted text is written to standard output.
+The *-p* option to _man2txt_ specifies the page width in characters.
+
+_Lookman_ finds the manual pages, in any section, that contain all of
+the _keywords_ given as arguments, and prints _man_ commands and manual
+references for them, one per line. In a _wm-sh_(1) window, any of the
+_man_ commands can be selected with mouse button 2 and sent as a
+command; a manual reference can simply be _plumb_(1)'d using mouse
+button 3. The *-f* option causes _lookman_ just to list the file names.
+
+_Sig_ prints the type signature - parameters and return types - of each
+_function_ found in section 2 of this manual.
+
+== FILES
+
+*/man/?/**::
+  Source files of manual pages.
+*/man/1/man*::
+  The source file for this manual page.
+*/man/?/INDEX*::
+  Used by _man_ and **wm/**__man__ to locate the source file containing
+  a particular title.
+*/man/index*::
+  The _lookman_ index.
+
+== SOURCE
+
+*/appl/wm/man.b* +
+*/dis/man* _sh_(1) script +
+*/appl/cmd/man2txt.b* +
+*/dis/lookman* _sh_(1) script +
+*/dis/sig* _sh_(1) script +
+*/appl/lib/parseman.b*
+
+== SEE ALSO
+
+_wm_(1)
+
+== BUGS
+
+_Man2txt_ only knows about _troff -man_ macros. Other troff macro
+packages or output from preprocessors such as _pic_ or _tbl_ will not be
+presented correctly.

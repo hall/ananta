@@ -1,0 +1,33 @@
+= asm, disdump: Dis assembler, Dis disassembler
+
+[source,subs=quotes]
+----
+*asm* [*-l*] _file_ +
+*disdump* _file_...
+----
+
+_Asm_ reads one Dis assembly language _file_ and translates it into
+instructions for the Dis virtual machine. The output is written to a
+file whose name is created by taking the last element of the input file,
+stripping any extension, and appending *.dis* For example, the output
+file for *abc* would be *abc.dis*; the output file for *dir/def.s*,
+would be *def.dis*.
+
+The assembler has one option:
+
+*-l*::
+  Generate a listing, showing the generated object code.
+
+_Disdump_ prints to the standard output the Dis virtual machine
+instructions in each of its Dis _file_ arguments.
+
+== SOURCE
+
+*/appl/cmd/asm* +
+*/appl/cmd/disdump.b*
+
+== SEE ALSO
+
+_emu_(1), _limbo_(1)
+
+``The Dis Virtual Machine'' in Volume 2.

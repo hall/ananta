@@ -1,0 +1,24 @@
+= telnet: make a remote telnet connection
+
+
+*telnet* _machine_
+
+
+*Telnet* uses the Telnet protocol to talk to a remote _machine_,
+addressed using any form acceptable to _dial_(2):
+__net__**!**__host__**!**_port_ in general. The default _net_ is *tcp*,
+and the default _port_ is 23, the standard Telnet login port.
+
+_Telnet_ connects to the given _machine_ and interprets the Telnet
+protocol. It reads data from its standard input and sends it to the
+remote machine, and copies to the standard output the data it receives
+from the remote machine.
+
+== SOURCE
+
+*/appl/cmd/telnet.b*
+
+== SEE ALSO
+
+_cpu_(1) +
+``Telnet protocol specification'', RFC854 (1 May 1983) and related RFCs.

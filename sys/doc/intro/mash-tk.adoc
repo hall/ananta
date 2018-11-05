@@ -1,0 +1,123 @@
+= mash-tk: control visual elements of mash window
+
+
+*load tk* +
+*tk clear* +
+*tk def button* _name value_ +
+*tk def ibutton* _name value image_ +
+*tk def menu* _name_ +
+*tk def item* _menu name value_ +
+*tk dialog* _title mesg default label ..._ +
+*tk dump [* _name ..._ *]* +
+*tk env* +
+*tk file* _title dir pattern ..._ +
+*tk geom* +
+*tk layout [* _name ..._ *]* +
+*tk notice* _message_ +
+*tk sel* +
+*tk sget* +
+*tk sput* _string_ +
+*tk string* _mesg_ +
+*tk taskbar* _string_ +
+*tk text* +
+
+
+_Tk_ is a loadable builtin for _mash._ It provides a set of primitives
+for customizing a _mash_ window and building fairly sophisticated
+graphical functions. It is currently implemented as a single command
+with a variety of subcommands. For the _tk_ command to work, _mash_ must
+have been started using *wm/wmmash*. In the following descriptions,
+references to return values indicate strings put on a command's standard
+output.
+
+=== Creating a Menu Bar
+
+The *def* subcommand is used to define graphical pushbuttons and menus.
+The *def button* and *def ibutton* commands are used to define
+pushbuttons labelled with text or graphical icons, respectively. The
+_name_ parameter is used to label buttons, and to layout both buttons
+and ibuttons. _Value_ is a command to be executed when the button is
+clicked, and must be quoted if it contains white space. _Image_ is the
+name of a bitmap file; it is looked for in */icon/tk*, unless the name
+begins with
+
+which suppresses prepending */icon/tk*. +
+*Def menu* is used to name and label menu buttons, and *def item*
+specifies items within the corresponding pulldown menus. In *def item*,
+_menu_ is a name supplied on a *def menu* subcommand, _name_ is the
+label for this menu item, and _value_ is a command to execute when this
+menu item is selected. All the items in a menu are simple command
+buttons; there is no provision for any other kind of control, or for
+cascading menus. +
+The *layout* subcommand creates and makes visible a menu bar, using
+menus and buttons defined with *def* subcommands. The current
+components, if any, are removed first, so layout with no parameters just
+removes all the current buttons and menus from the _mash_ window. The
+components are laid out from left to right, in the order presented in
+the *layout* subcommand. A copy of the current _mash_ environment is
+made, and commands executed as a result of clicking buttons or selecting
+menu items are executed in that environment. For example, variables will
+have the values they had when the layout was done. +
+The *env* subcommand can be used to make a new copy of the environment
+for use by button or menu actions.
+
+=== Displaying Popup Widgets
+
+The *notice* subcommand pops up a window containing _message_ and a
+single button to dismiss the window. The icon displayed in the window is
+*/icons/tk/error*. No value is returned by *notice*. +
+The *dialog* subcommand is more complex; _title_ is used to name the
+window, and multiple buttons labelled according to the *label*
+parameter(s) are provided. _Default_ is the number of the button which
+is the default choice. The leftmost button is numbered 0. When the user
+selects one of the buttons, the dialog box is popped down and the number
+of the button selected is returned. +
+The *file* subcommand pops up a standard Inferno file selection box.
+_Dir_ specifies the initial directory to display, and pattern specifies
+which non-directory files to include in the list of files. If the Cancel
+button in the file dialog is clicked, no value is returned. If a file is
+selected and the Exit button is clicked, the full pathname of the file
+is returned, complete with final */* if the file is a directory. Double
+clicking on a non-directory file in the list will likewise return that
+file's path. Double clicking on a directory in the list will display the
+contents of that directory. +
+The *string* subcommand pops up a small window with _mesg_ as the label
+of a text field. Characters typed into the text field, up to but not
+including ENTER, are returned.
+
+=== Dealing With the Selection
+
+ +
+The *sel* subcommand returns whatever is currently selected. When typing
+into the shell's window, nothing is selected, so nothing is returned.
+However, if invoked via a pushbutton and there is a selection, it is
+returned. +
+The *sput* subcommand puts _string_ into the snarf buffer maintained by
+the window manager, and the *sget* subcommand retrieves and returns the
+current contents of the snarf buffer. This provides a way to pass text
+between the shell and other applications. The Snarf and Paste buttons on
+the popup menu associated with mouse button two can also be used to do
+this.
+
+=== Miscellaneous Tk Subcommands
+
+The *taskbar* subcommand lets you put _string_ in the title bar of the
+_mash_ window. The old value is returned. +
+The *text* subcommand returns the contents of the _mash_ window. +
+The *clear* subcommand removes all text from the window. +
+The *dump* subcommand returns the _mash-tk_ commands needed to define
+the buttons and menus currently defined, and to recreate the currently
+visible set of buttons and menus, or, if *dump* has parameters, the
+commands needed to define the buttons and menus named by the
+parameters. +
+The *geom* subcommand returns the position of the upper left corner of
+the _mash_ window relative to the upper left corner of the Inferno
+screen.
+
+== SOURCE
+
+*/appl/cmd/mash/tk.b*
+
+== SEE ALSO
+
+_mash_(1)

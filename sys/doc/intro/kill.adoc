@@ -1,0 +1,42 @@
+= kill, broke: terminate process(es)
+
+
+*kill* [ *-g* ] [ _pid ..._ ] [ _module ..._ ]
+
+*broke* [ _user_ ]
+
+
+_Kill_ terminates each process (for a numeric process ID _pid_) or
+process running a given _module_ (for a non-numeric module name), by
+writing a
+
+message to the corresponding process's control file in _prog_(3). The
+*-g* option causes _kill_ to write a
+
+message instead, killing all processes in the given process's process
+group (see _sys-pctl_(2)). Processes running a _module_ are identified
+by their
+
+file, and the process ID of each such process is printed on standard
+output.
+
+A process that incurs an exception (eg, array bounds check) is normally
+suspended in the `broken' state to allow debugging. _Broke_ finds all
+such processes owned by _user_ (default: the current user), and prints
+_sh (1)_ commands to kill them. The commands can be piped to the shell
+or selectively run, releasing back to the system any resources owned by
+those processes.
+
+== FILES
+
+**/prog/**__pid__*/ctl*::
+**/prog/**__pid__*/status*::
+
+== SOURCE
+
+*/appl/cmd/kill.b* +
+*/dis/broke*
+
+== SEE ALSO
+
+_ps_(1), _prog_(3)

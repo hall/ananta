@@ -1,0 +1,57 @@
+= monitor: graphical display for viewing resource use.
+
+
+_command_ *| grid/srv/monitor* _interface_ *[* _wintitle_ *]*
+
+
+_Monitor_ is designed to work with resources that deal with incoming
+connections (such as _grid-register_(1)) to visually display the
+connections to a specific resource. _Interface_ sets the style of
+interface, this can be 1 or 2. Interface 1 is the simplest, displaying
+only a list of connections to the resource. Interface 2 is slightly more
+complex, allowing extra data to be displayed for each connection. While
+interface 1 shows all the connections at any one time, interface 2
+displays a selection of 'slots' which have buttons that light up to
+signify a connection. Clicking on a lit button will display any data
+given about that connection in the main window. _Wintitle_ optionally
+sets the title of the _monitor_ window. _Command_ must write status
+messages to _stdout_ which are then read and displayed (if appropriate)
+by _monitor_. _Monitor_ reads on _stdin_ and accepts the following
+input:
+
+=== Interface 1
+
+**add**__ addr__::
+  display a connection from address _addr_
+**del**__ addr__::
+  remove a connection from address _addr_
+
+=== Interface 2
+
+**data set**__ id__** \{**__ data__* }*::
+  set and display the string _data_ in slot _id_.
+**data set**__ id__* finished*::
+  clear slot _id_
+
+=== Common
+
+**setup maxusers**__ n__::
+  set display to fit a maximum of _n_ connections. -1 signifies
+  unlimited connections.
+**starting**__ pid__::
+  add _pid_ to a list of pids whose process group is to be killed if the
+  user closes _monitor._
+**error**__ errstr__::
+  print out the error string _errstr_ to the console.
+*exit*::
+  close down _monitor_ and kill all processes in the current group.
+
+Input messages of any other form will simply be ignored.
+
+== SOURCE
+
+*/appl/grid/srv/monitor.b* +
+
+== SEE ALSO
+
+_grid-register_(1), _ns_(1), _cpu_(4)

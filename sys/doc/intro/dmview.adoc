@@ -1,0 +1,28 @@
+= dmview, dmwm: view remote displays
+
+
+*wm/dmview* _address_
+
+*wm/dmwm* [ **-p**__ port__ ]
+
+
+_Dmwm_ is run in place of the usual Inferno window manager _wm_(1), to
+allow the display's contents to be viewed elsewhere. _Dmwm_ waits for
+incoming viewing requests on the given TCP/IP _port_ (default: 9998). On
+each connection attempt, _dmwm_ prompts the user to accept or reject the
+request for a remote view.
+
+_Dmview_ opens a connection to an instance of _dmwm_ at the given
+network _address_ and, if the remote user accepts the connection, opens
+a new window on _dmview_'s own display that contains a replica of the
+remote display.
+
+== SOURCE
+
+*/appl/wm/drawmux/dmview.b* +
+*/appl/wm/drawmux/dmwm.b* +
+*/appl/wm/drawmux/drawmux.b*
+
+== SEE ALSO
+
+_drawmux_(2)

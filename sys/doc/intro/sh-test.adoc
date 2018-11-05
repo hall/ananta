@@ -1,0 +1,38 @@
+= report: shell module for test reporting.
+
+
+*load test*
+
+ +
+*report* _severity verbosity message[...]_ +
+
+
+*Its* is a loadable module for _sh_(1) that provides a simple error
+reporting facility for tests which can be run by _itest_(1)_._ It
+provides one command, *report*, which is used by a test to report a
+message with specified severity and verbosity. _Severity_ must be one of
+INF, WRN, ERR or FTL for Information, warnings, errors and fatal errors
+respectively. _Verbosity_ is an integer between 0 and 9. For informatory
+messages (severity INF), the message will only be displayed if the
+current verbosity level is greater than or equal to _verbosity._
+
+== EXAMPLE
+
+....
+#!/dis/sh
+
+load std test
+
+echo 1 > /tmp/a
+echo 2 >/tmp/b
+report INF 5 testing cmp command
+if {cmp /tmp/a /tmp/b} {
+	report ERR 0 'cmp failed - reported different files as the same'
+}{
+	report INF 6 'cmp ok - reported different files as different'
+}
+....
+
+== SEE ALSO
+
+_itest_(1)

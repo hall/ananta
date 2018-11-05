@@ -1,0 +1,33 @@
+= calendar: calendar and diary
+
+[source,subs=quotes]
+----
+*wm/calendar* [ __mntdir__|_datafile_ ] +
+----
+
+*Calendar* is a simple calendar and diary program. Its optional argument
+specifies either a directory on which has been mounted a _rawdbfs_ (see
+_dbfs_(4)) filesystem, or a file in which to store schedule entries
+(which must already exist). In the latter case, _calendar_ starts up an
+instance of _rawdbfs_ to serve the file. The default argument to
+_calendar_ is */mnt/schedule*. If two instances of calendar are using
+the same datafile, care should be taken to run _rawdbfs_ _before_
+running the _calendar_ programs, otherwise the data file will be
+corrupted.
+
+== EXAMPLE
+
+Start _calendar_ using *$home/cal* for the data entries:
+
+....
+	rawdbfs $home/cal /mnt/schedule
+	wm/calendar
+....
+
+== SOURCE
+
+*/appl/wm/calendar.b*
+
+== SEE ALSO
+
+_dbfs_(4)

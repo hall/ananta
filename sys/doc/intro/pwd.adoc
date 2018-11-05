@@ -1,0 +1,18 @@
+= pwd: print working directory
+
+
+pwd
+
+
+_Pwd_ prints the path name of the working (current) directory. It is
+guaranteed to return the same path that was used to enter the directory.
+Note that if meanwhile the name space has changed, or directories in the
+path have been renamed, the path name may no longer be valid.
+
+== SOURCE
+
+*/appl/cmd/pwd.b*
+
+== SEE ALSO
+
+_cd_(1), _bind_(1), _sys-fd2path_(2), _workdir_(2)

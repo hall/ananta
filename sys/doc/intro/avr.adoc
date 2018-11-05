@@ -1,0 +1,29 @@
+= avr: Atmel AVR support
+
+[source,subs=quotes]
+----
+*avr/burn* [*-e*] [*-r*] [ **-d **__device__ ] _file.srec_
+----
+
+Currently there is just one Inferno application to support Atmel AVRs
+but others should appear.
+
+_Burn_ initialises or verifies the contents of an Atmel ATmega128 AVR.
+The programming board must be connected to a serial port (see _eia_(3)),
+*/dev/eia0* by default. _File.srec_ is a file containing the desired
+flash contents in Motorola S-record format, as produced by _ms2_(10.1).
+By default, _burn_ erases the AVR chip (both flash and EEPROM), then
+loads the flash with the contents of _file.srec_. The *-e* option stops
+_burn_ from erasing first, allowing additional code or data to be loaded
+(but only into an already-erased region). If the *-r* option is given,
+_burn_ instead compares the contents of the AVR with the data in
+_file.srec_. _Burn_ supports the MIB510 programming board from Crossbow
+Technology Inc.
+
+== SOURCE
+
+*/appl/cmd/avr/burn.b*
+
+== SEE ALSO
+
+_eia_(3), _ms2_(10.1)

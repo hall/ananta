@@ -1,0 +1,42 @@
+= du: disk usage
+
+
+du**"**[*-anstu*] [ **-b**__ blocksize__ ] [_file ..._]
+
+
+_Du_ writes to standard output the total size of files specified as
+arguments. Directories are recursively tallied. A summary line is
+produced for each argument _file_ and subdirectory. If no filenames are
+provided, the command operates on the current directory.
+
+Output sums are rounded up to the nearest 1k unit (1024 bytes). By
+default, storage is assumed to be quantised in units of 1024 bytes. The
+*-b* option sets a different _blocksize_ for quantisation, optionally
+suffixed by *k* for units of kilobytes; output is still in 1k units.
+
+_Du_ accepts the following options:
+
+*-a*::
+  Output usage information for all subordinate files, not just
+  directories.
+*-n*::
+  Output just the filenames (but see the *-t* option below); implies
+  *-a*.
+*-s*::
+  Print only the summary line for each _file_.
+*-t*::
+  Display the last-modified time for each file, not its size; when used
+  with the *-n* option, outputs the filename, modification time (seconds
+  since the epoch), size (in bytes), and checksum. The checksum field is
+  always 0; it is a place-holder for a value computed by another command
+  in a pipeline.
+*-u*::
+  Display the last-accessed time for each file, not its size.
+
+== SOURCE
+
+*/appl/cmd/du.b*
+
+== SEE ALSO
+
+_sh_(1), _sys-stat_(2)

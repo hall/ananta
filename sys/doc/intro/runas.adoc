@@ -1,0 +1,17 @@
+= runas: run command as another user
+
+
+*runas* _user_ _cmd_ [ _arg_... ]
+
+
+_Runas_ writes _user_ to /dev/user and invokes _cmd_ with the given
+arguments. The command is only invoked if setting of the user name
+succeeds.
+
+== SOURCE
+
+*/appl/cmd/runas.b*
+
+== SEE ALSO
+
+_cons_(3),

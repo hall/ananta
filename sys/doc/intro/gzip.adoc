@@ -1,0 +1,30 @@
+= gzip, gunzip: compression and decompression utilities
+
+
+*gzip* [ *-v* ] [ **-**__level__ ] [ _file_... ] +
+*gunzip* [ _file_... ]
+
+
+*Gzip* and *gunzip* perform data compression and decompression
+compatible with the Unix _gzip_ file format, which uses a hybrid
+Lempel-Ziv 1977 and Huffman compression algorithm called `deflate'. If
+no arguments are given *gzip* compresses each _file_ replacing it by a
+file of the same name with the a *.gz* suffix appended. If no files are
+given, standard input and standard output are used. _Level_ is a single
+decimal digit between 1 and 9; higher numbers give better compression.
+The default _level_ is 6. The *-v* option causes *gzip* to report the
+compression ratio of each file that it compresses.
+
+*Gunzip* performs the opposite operation to *gzip*; each _file_ (which
+must have a *.gz* suffix) is uncompressed, and replaced by a file of the
+same name with the *.gz* suffix removed. If no files are given, standard
+input and standard output are used.
+
+== SOURCE
+
+*/appl/cmd/gzip.b* +
+*/appl/cmd/gunzip.b*
+
+== SEE ALSO
+
+_filter_(2), _filter-deflate_(2)

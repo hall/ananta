@@ -1,0 +1,17 @@
+= netkey: calculate response to authentication challenge
+
+
+*netkey*
+
+
+_Netkey_ calculates a response to a challenge made by a system to
+authenticate a user, based on a shared secret (password), using the same
+algorithm as a SecureNet device. It reads and writes */dev/cons*. It
+prompts once for the secret (echo is turned off). It then repeatedly
+prompts for a remote system's challenge, and once given it, calculates
+and prints the corresponding response. It exits on an empty challenge or
+end of file.
+
+== SOURCE
+
+*/appl/cmd/netkey.b*

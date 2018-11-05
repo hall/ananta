@@ -1,0 +1,50 @@
+= crypt, aescbc: data encryption
+
+
+*crypt* [ *-d* ] [ **-a**__ alg[/_alg_]__ ] [ **-f**__ keyfile__ ] [
+**-k**__ key__ ] [ *-?* ]
+
+*auth/aescbc* [ *-d* ] [ *-e* ] [ **-f**__ keyfile__ ] [ **-k**__ key__
+]
+
+
+_Crypt_ reads a data stream from its standard input and writes it
+encrypted to standard output, preceded by a header that gives details of
+the algorithm used. If the *-d* option is given, _crypt_ decrypts the
+standard input instead, writing the clear text on standard output. The
+options are:
+
+**-a**__ alg...__::
+  Specifies one or two algorithms, for encryption and/or digests. The
+  algorithms are those supported by _ssl_(3). If two algorithms are
+  given, they should be separated by a slash (*/*) or space, following
+  the conventions of _ssl_(3).
+**-f**__ keyfile__::
+  Read the encryption key from the given file, which obviously should be
+  carefully protected. Trailing newlines are ignored.
+**-k**__ key__::
+  Use _key_ as the encryption key.
+*-?*::
+  Print a list of the available encryption and digest algorithms.
+
+If the secret _key_ is not otherwise supplied, _crypt_ prompts for it on
+*/dev/cons*. There is no need to give algorithms when decrypting,
+because they are taken from the header. The default algorithm is
+*md5/ideacbc*. It might be necessary to change that when using _crypt_
+for commercial purposes, as noted in _keyring-crypt_(2).
+
+_Aescbc_ encrypts and decrypts using AES (Rijndael) in cypher block
+chaining (CBC) mode. It uses input and output formats compatible with
+Plan 9's _aescbc_ command; it also accepts input in the format used by
+_keyfs_(4) and Plan 9's _secstore_. The *-e* option causes it to
+encrypt; the *-d* option to decrypt. The other options are just as for
+_crypt_.
+
+== SOURCE
+
+*/appl/cmd/crypt.b* +
+*/appl/cmd/auth/aescbc.b*
+
+== SEE ALSO
+
+_ssl_(3), _keyfs_(4)

@@ -1,0 +1,18 @@
+= fortune: sample lines from a file
+
+
+*fortune* [ _file_ ]
+
+
+_Fortune_ prints a one-line aphorism chosen at random. If a _file_ is
+specified, the saying is taken from that file; otherwise it is selected
+from */lib/games/fortunes*.
+
+== FILES
+
+*/lib/games/fortunes* +
+*/lib/games/fortunes.index* fast lookup table, maintained automatically
+
+== SOURCE
+
+*/appl/cmd/fortune.b*

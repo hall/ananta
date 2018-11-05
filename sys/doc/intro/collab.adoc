@@ -1,0 +1,45 @@
+= collab: connect: connect to collaborative files and services
+
+
+*collab/connect* [ **-C**__ alg__ ] [ **-k**__ keyfile__ ] [ *-v* ] [
+_netaddress_ [ _localdir_ ] ]
+
+
+_Connect_ dials network address _netaddr_ (default: *net!$collab!9999*),
+which should be served by an instance of _collabsrv_(8), and mounts the
+resulting connection on */n/remote*; it then binds */n/remote/collab* on
+_localdir_ (default: */n/ftree/collab*).
+
+The resulting hierarchy under */n/remote* is determined by the site
+configuration, but usually includes the directory */n/remote/services*,
+which gives access to the server side of collaborative activities, as
+described in _collabsrv_(8), and the directory */n/remote/collab*, which
+contains the file hierarchy that contains all collaborative resources
+offered to a client device.
+
+If an instance of _wm-ftree_(1) is running in the same name space, then
+after mounting the connection and adjusting the name space, _connect_
+tells it that the name space has changed, so any displayed view of it
+can be updated.
+
+_Connect_ accepts the following options:
+
+**-C**__ alg__::
+  Specify the algorithm, _alg_, to be used following authentication for
+  digesting or encryption. See _ssl_(3) for the supported algorithms.
+  The default is *none*: _ssl_(3) is not used after authentication.
+**-k**__ kfile __::
+  Specify the keyfile to be used when authenticating. The default is
+  **/usr/**__user__**/keyring/**__netaddr__*,* if that exists, and
+  otherwise **/usr/**__user__**/keyring/default**__.__ See
+  _keyring-auth_(2) for more details.
+*-v*::
+  Causes _connect_ to chat about its actions on standard output.
+
+== SOURCE
+
+*/appl/collab/connect.b*
+
+== SEE ALSO
+
+_collabsrv_(8)

@@ -1,0 +1,36 @@
+= grep: pattern matching
+
+
+*grep* [ *-lnviLs* ] _pattern_ [ _file_... ]
+
+
+*Grep* prints lines from each _file_ that match the _pattern_, a regular
+expression as defined in _regex_(2). If no files are given, standard
+input is used. If more than one file is given, each line of output is
+preceded by the name of the file it was found in. The options are:
+
+*-l*::
+  Print only the name of each file that contains a match.
+*-L*::
+  Print the name of each file that does not contain a match.
+*-n*::
+  Precede each line of output with its line number.
+*-v*::
+  Print only lines that do not match _pattern_.
+*-i*::
+  Pattern matching is case insensitive (roman letters only).
+*-s*::
+  Do not print anything; yield only the exit status.
+
+== SOURCE
+
+*/appl/cmd/grep.b*
+
+== SEE ALSO
+
+_regex_(2)
+
+== DIAGNOSTICS
+
+_Grep_ returns a non-nil exit status if no matches have been made, or if
+an error has occurred.

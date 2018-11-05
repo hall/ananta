@@ -1,0 +1,526 @@
+= Image: pictures and drawing
+
+    include   "draw.m";
+    draw := load Draw Draw->PATH;
+
+    # compositing operators
+    SinD:   con 1<<3;
+    DinS:   con 1<<2;
+    SoutD:  con 1<<1;
+    DoutS:  con 1<<0;
+
+    S:      con SinD|SoutD;
+    SoverD: con SinD|SoutD|DoutS;
+    SatopD: con SinD|DoutS;
+    SxorD:  con SoutD|DoutS;
+
+    D:      con DinS|DoutS;
+    DoverS: con DinS|DoutS|SoutD;
+    DatopS: con DinS|SoutD;
+    DxorS:  con DoutS|SoutD;
+
+    Clear:  con 0;
+
+    Image: adt
+    {
+        r:          Rect;
+        clipr:      Rect;
+        chans:      Chans;
+        depth:      int;
+        repl:       int;
+    
+        display:    ref Display;
+        screen:     ref Screen;
+        
+        draw:       fn(dst: self ref Image, r: Rect, src: ref Image,
+                       mask: ref Image, p: Point);
+        drawop:       fn(dst: self ref Image, r: Rect, src: ref Image,
+                       mask: ref Image, p: Point, op: int);
+        gendraw:    fn(dst: self ref Image, r: Rect, src: ref Image,
+                       p0: Point, mask: ref Image, p1: Point);
+        gendrawop:    fn(dst: self ref Image, r: Rect, src: ref Image,
+                       p0: Point, mask: ref Image, p1: Point, op: int);
+        line:       fn(dst: self ref Image, p0,p1: Point,
+                       end0,end1,thick: int,
+                       src: ref Image, sp: Point);
+        lineop:       fn(dst: self ref Image, p0,p1: Point,
+                       end0,end1,thick: int,
+                       src: ref Image, sp: Point, op: int);
+        poly:       fn(dst: self ref Image, p: array of Point,
+                       end0,end1,thick: int,
+                       src: ref Image, sp: Point);
+        polyop:       fn(dst: self ref Image, p: array of Point,
+                       end0,end1,thick: int,
+                       src: ref Image, sp: Point, op: int);
+        bezspline:  fn(dst: self ref Image, p: array of Point,
+                       end0,end1,thick: int,
+                       src: ref Image, sp: Point);
+        bezsplineop:  fn(dst: self ref Image, p: array of Point,
+                       end0,end1,thick: int,
+                       src: ref Image, sp: Point, op: int);
+        fillpoly:   fn(dst: self ref Image, p: array of Point,
+                       wind: int, src: ref Image, sp: Point);
+        fillpolyop:   fn(dst: self ref Image, p: array of Point,
+                       wind: int, src: ref Image, sp: Point, op: int);
+        fillbezspline: fn(dst: self ref Image, p: array of Point,
+                       wind: int, src: ref Image, sp: Point);
+        fillbezsplineop: fn(dst: self ref Image, p: array of Point,
+                       wind: int, src: ref Image, sp: Point, op: int);
+        ellipse:    fn(dst: self ref Image, c: Point, a, b,
+                       thick: int, src: ref Image, sp: Point);
+        ellipseop:    fn(dst: self ref Image, c: Point, a, b,
+                       thick: int, src: ref Image, sp: Point, op: int);
+        fillellipse:fn(dst: self ref Image, c: Point, a, b: int,
+                       src: ref Image, sp: Point);
+        fillellipseop:fn(dst: self ref Image, c: Point, a, b: int,
+                       src: ref Image, sp: Point, op: int);
+        arc:        fn(dst: self ref Image, c: Point, a, b, thick: int,
+                       src: ref Image, sp: Point, alpha, phi: int);
+        arcop:      fn(dst: self ref Image, c: Point, a, b, thick: int,
+                       src: ref Image, sp: Point,
+                       alpha, phi: int, op: int);
+        fillarc:    fn(dst: self ref Image, c: Point, a, b: int,
+                       src: ref Image, sp: Point, alpha, phi: int);
+        fillarcop:  fn(dst: self ref Image, c: Point, a, b: int,
+                       src: ref Image, sp: Point,
+                       alpha, phi: int, op: int);
+        bezier:     fn(dst: self ref Image, a,b,c,d: Point,
+                       end0,end1,thick: int,
+                       src: ref Image, sp: Point);
+        bezierop:     fn(dst: self ref Image, a,b,c,d: Point,
+                       end0,end1,thick: int,
+                       src: ref Image, sp: Point, op: int);
+        fillbezier: fn(dst: self ref Image, a,b,c,d: Point, wind:int,
+                       src: ref Image, sp: Point);
+        fillbezierop: fn(dst: self ref Image, a,b,c,d: Point, wind:int,
+                       src: ref Image, sp: Point, op: int);
+        arrow:      fn(a,b,c: int): int;
+        text:       fn(dst: self ref Image, p: Point, src: ref Image,
+                       sp: Point, font: ref Font, str: string): Point;
+        textop:       fn(dst: self ref Image, p: Point, src: ref Image,
+                       sp: Point, font: ref Font, str: string,
+                       op: int): Point;
+        textbg:     fn(dst: self ref Image, p: Point, src: ref Image,
+                       sp: Point, font: ref Font, str: string,
+                       bg: ref Image, bgp: Point): Point;
+        textbgop:     fn(dst: self ref Image, p: Point, src: ref Image,
+                       sp: Point, font: ref Font, str: string,
+                       bg: ref Image, bgp: Point, op: int): Point;
+        border:     fn(dst: self ref Image, r: Rect, i: int,
+                       src: ref Image, sp: Point);
+        borderop:     fn(dst: self ref Image, r: Rect, i: int,
+                       src: ref Image, sp: Point, op: int);
+    
+        readpixels: fn(src: self ref Image, r: Rect,
+                       data: array of byte): int;
+        writepixels:fn(dst: self ref Image, r: Rect,
+                       data: array of byte): int;
+        name:       fn(im: self ref Image, s: string, in: int): int;
+        top:        fn(win: self ref Image);
+        bottom:     fn(win: self ref Image);
+        flush:      fn(win: self ref Image, func: int);
+        origin:     fn(win: self ref Image, log, scr: Point): int;
+    };
+    
+The  Image  type defines rectangular pictures and the methods
+to draw upon them; it is also the building block  for  higher
+level  objects  such  as windows and fonts.  In particular, a
+window is represented as an Image; no special  operators  are
+needed  to  draw  on a window.  Off-screen images can have an
+alpha channel, which gives  each  pixel  an  opacity  factor,
+which  in  turn  allows  non-rectangular images to be defined
+(ie, pixels made fully transparent by the  alpha  channel  do
+not appear when the image is displayed).  Many drawing opera‐
+tions allow images to  be  shaped,  or  partial  transparency
+added,  by using the alpha channel of another image as a mask
+(also called a `matte').  There are two  functions  in  Image
+for  each such operation.  One has an op suffix, and takes an
+explicit image compositing operator: S, D,  SinD,...,  SoverD
+and  so  on.   (See the Porter-Duff paper mentioned below for
+the meaning of each operation.)  The other function  (without
+the  op  suffix)  provides  as its default operation the most
+common operation, SoverD, by which the source  image,  within
+its matte, is drawn over the destination image.
+
+An  Image  has  a  pixel  channel  structure  as described in
+colour(6), represented by a value of the Chans  adt,  defined
+in  draw-display(2).   The  channel  structure of an image is
+fixed when the image is allocated.
+
+Image has the following components:
+
+display   Tells on which display the image resides.
+
+screen    If the image is a window on  a  Screen  (see  draw-
+          screen(2)),  this field refers to that screen; oth‐
+          erwise it is nil.
+
+r         The coordinates of the rectangle in the  plane  for
+          which  the  Image  has  defined  pixel  values.  It
+          should not be modified after the image is created.
+
+clipr     The clipping rectangle:  operations  that  read  or
+          write  the  image  will  not  access pixels outside
+          clipr.  Frequently, clipr is the same  as  Image.r,
+          but it may differ; see in particular the discussion
+          of Image.repl.  The clipping region may be modified
+          dynamically.
+
+chans     The pixel channel structure of the image; the value
+          should not be modified after the image is created.
+
+depth     The number of bits per pixel in the picture: it  is
+          simply  a convenience since it is necessarily equal
+          to chans.depth(), and it  should  not  be  modified
+          after the image is created.
+
+repl      A  boolean  value  specifying  whether the image is
+          tiled to cover the plane when used as a source  for
+          a drawing operation.  If Image.repl is zero, opera‐
+          tions are restricted to the intersection of Image.r
+          and  Image.clipr.   If  Image.repl  is set, Image.r
+          defines the tile to be replicated  and  Image.clipr
+          defines  the  portion  of  the plane covered by the
+          tiling, in other words, Image.r  is  replicated  to
+          cover   Image.clipr;  in  such  cases  Image.r  and
+          Image.clipr are independent.
+
+          For example, a replicated image with Image.r set to
+          ((0, 0), (1, 1))    and    Image.clipr    set    to
+          ((0, 0), (100, 100)),  with  the  single  pixel  of
+          Image.r  set  to  blue,  behaves  identically to an
+          image with Image.r  and  Image.clipr  both  set  to
+          ((0, 0), (100, 100))  and  all  pixels set to blue.
+          However, the first image requires far less  memory.
+          The  replication  flag  may be modified dynamically
+          along with the clipping rectangle.
+
+dst.draw(r, src, mask, p)
+
+dst.drawop(r, src, mask, p, op)
+          Draw is the standard drawing function.  Only  those
+          pixels   within   the  intersection  of  dst.r  and
+          dst.clipr will be affected; draw ignores  dst.repl.
+          The  operation  proceeds  as  follows  (this  is  a
+          description of the behavior,  not  the  implementa‐
+          tion):
+
+          1.     If  repl  is  set  in src or mask, replicate
+                 their contents to fill  their  clip  rectan‐
+                 gles.
+
+          2.     Translate  src and mask so p is aligned with
+                 r.min.
+
+          3.     Set r to the intersection of r and dst.r.
+
+          4.     Intersect r with src.clipr.  If src.repl  is
+                 false, also intersect r with src.r.
+
+          5.     Intersect  r  with mask.clipr.  If mask.repl
+                 is false, also intersect r with mask.r.
+
+          6.     For each location  in  r,  combine  the  dst
+                 pixel using the alpha value corresponding to
+                 the mask pixel.  If the mask has an explicit
+                 alpha channel, the alpha value corresponding
+                 to the mask pixel  is  simply  that  pixel's
+                 alpha  channel.   Otherwise, the alpha value
+                 is the  NTSC  greyscale  equivalent  of  the
+                 colour  value, with white meaning opaque and
+                 black transparent.
+
+          In terms of the  Porter-Duff  compositing  algebra,
+          draw  replaces  the  dst  pixels with (src in mask)
+          over dst.  Drawop is almost identical, but  applies
+          the compositing operation op instead: (src in mask)
+          op dst.
+
+          The various pixel channel formats involved need not
+          be identical.  If the channels involved are smaller
+          than 8-bits, they will be promoted before the  cal‐
+          culation  by replicating the extant bits; after the
+          calculation, they will be truncated to their proper
+          sizes.   For draw and gendraw only, if mask is nil,
+          no mask is used.
+
+dst.gendraw(r, src, p0, mask, p1)
+
+dst.gendrawop(r, src, p0, mask, p1, op)
+          Similar to draw() except that it aligns the  source
+          and  mask  differently: src is aligned so p0 corre‐
+          sponds to r.min and mask is aligned  so  p1  corre‐
+          sponds  to  r.min.   For  most purposes with simple
+          masks and source images, draw  is  sufficient,  but
+          gendraw  is  the  general  operator and the one the
+          other drawing primitives are built upon.
+
+dst.line(p0, p1, end0, end1, thick, src, sp)
+
+dst.lineop(p0, p1, end0, end1, thick, src, sp, op)
+          Line draws in dst a line of width 1+2*thick  pixels
+          joining  points p0 and p1.  The line is drawn using
+          pixels from the src image  aligned  so  sp  in  the
+          source  corresponds  to p0 in the destination.  The
+          line touches both p0 and  p1,  and  end0  and  end1
+          specify  how  the  ends  of  the  line  are  drawn.
+          Draw->Endsquare terminates the line perpendicularly
+          to  the  direction  of  the line; a thick line with
+          Endsquare  on  both  ends  will  be  a   rectangle.
+          Draw->Enddisc terminates the line by drawing a disc
+          of diameter 1+2*thick centered on  the  end  point.
+          Draw->Endarrow  terminates  the line with an arrow‐
+          head whose  tip  touches  the  endpoint.   See  the
+          description of arrow for more information.
+
+          Line and the other geometrical operators are equiv‐
+          alent to calls to gendraw using a mask produced  by
+          the geometric procedure.
+
+dst.poly(p, end0, end1, thick, src, sp)
+
+dst.polyop(p, end0, end1, thick, src, sp, op)
+          Poly draws a general polygon; it is equivalent to a
+          series of calls to line joining adjacent points  in
+          the array of Points p.  The ends of the polygon are
+          specified as in line; interior lines are terminated
+          with  Enddisc  to make smooth joins.  The source is
+          aligned so sp corresponds to p[0].
+
+dst.bezspline(p, end0, end1, thick, src, sp)
+
+dst.bezsplineop(p, end0, end1, thick, src, sp, op)
+          Bezspline takes the  same  arguments  as  poly  but
+          draws  a  quadratic  B-spline  (despite  its  name)
+          rather than a  polygon.   If  the  first  and  last
+          points  in p are equal, the spline has periodic end
+          conditions.
+
+dst.fillpoly(p, wind, src, sp)
+
+dst.fillpolyop(p, wind, src, sp, op)
+          Fillpoly is like poly but fills  in  the  resulting
+          polygon  rather  than  outlining it.  The source is
+          aligned so sp corresponds  to  p[0].   The  winding
+          rule parameter wind resolves ambiguities about what
+          to fill if the polygon  is  self-intersecting.   If
+          wind  is  ~0,  a pixel is inside the polygon if the
+          polygon's winding number about the  point  is  non-
+          zero.  If wind is 1, a pixel is inside if the wind‐
+          ing number is odd.  Complementary values (0 or  ~1)
+          cause  outside pixels to be filled.  The meaning of
+          other values is undefined.  The polygon  is  closed
+          with a line if necessary.
+
+dst.fillbezspline(p, wind, src, sp)
+
+dst.fillbezsplineop(p, wind, src, sp, op)
+          Fillbezspline  is  like fillpoly but fills the qua‐
+          dratic B-spline rather than the polygon outlined by
+          p.  The spline is closed with a line if necessary.
+
+dst.ellipse(c, a, b, thick, src, sp)
+
+dst.ellipseop(c, a, b, thick, src, sp, op)
+          Ellipse  draws in dst an ellipse centered on c with
+          horizontal and vertical  semiaxes  a  and  b.   The
+          source  is aligned so sp in src corresponds to c in
+          dst.   The  ellipse   is   drawn   with   thickness
+          1+2*thick.
+
+dst.fillellipse(c, a, b, src, sp)
+
+dst.fillellipseop(c, a, b, src, sp, op)
+          Fillellipse  is  like ellipse but fills the ellipse
+          rather than outlining it.
+
+dst.arc(c, a, b, thick, src, sp, alpha, phi)
+
+dst.arcop(c, a, b, thick, src, sp, alpha, phi, op)
+          Arc is like ellipse, but draws only that portion of
+          the  ellipse  starting at angle alpha and extending
+          through an angle of phi.  The angles  are  measured
+          in  degrees  counterclockwise  from  the positive x
+          axis.
+
+dst.fillarc(c, a, b, src, sp, alpha, phi)
+
+dst.fillarcop(c, a, b, src, sp, alpha, phi, op)
+          Fillarc is like arc, but fills the sector with  the
+          source color.
+
+dst.bezier(a, b, c, d, end0, end1, thick, src, sp)
+
+dst.bezierop(a, b, c, d, end0, end1, thick, src, sp, op)
+          Bezier  draws  the  cubic  Bezier  curve defined by
+          Points a, b, c, and d.  The end styles  are  deter‐
+          mined  by end0 and end1; the thickness of the curve
+          is 1+2*thick.  The source is aligned so sp  in  src
+          corresponds to a in dst.
+
+dst.fillbezier(a, b, c, d, wind, src, sp)
+
+dst.fillbezierop(a, b, c, d, wind, src, sp, op)
+          Fillbezier is to bezier as fillpoly is to poly.
+
+arrow(a, b, c)
+          Arrow is a function to describe general arrowheads;
+          its result is passed as  end  parameters  to  line,
+          poly,  etc.   If  all three parameters are zero, it
+          produces the default arrowhead, otherwise,  a  sets
+          the  distance  along  line  from end of the regular
+          line to tip, b sets the distance  along  line  from
+          the  barb  to the tip, and c sets the distance per‐
+          pendicular to the line from edge of line to the tip
+          of the barb, all in pixels.
+
+dst.border(r, i, src, sp)
+
+dst.borderop(r, i, src, sp, op)
+          Border  draws  in  dst an outline of rectangle r in
+          the given src colour.  The outline has width i;  if
+          positive,  the  border  goes  inside the rectangle;
+          negative, outside.  The source  is  aligned  so  sp
+          corresponds to r.min.
+
+dst.text(p, src, sp, font, str)
+
+dst.textop(p, src, sp, font, str, op)
+
+dst.textbg(p, src, sp, font, str, bg, bgp)
+
+dst.textbgop(p, src, sp, font, str, bg, bgp, op)
+          Text  draws  in  dst  characters  specified  by the
+          string str and font font; it  is  equivalent  to  a
+          series  of  calls  to  gendraw using source src and
+          masks determined by the character shapes.  The text
+          is  positioned with the left of the first character
+          at p.x and the top of the line of text at p.y.  The
+          source  is positioned so sp in src corresponds to p
+          in dst.  Text returns a Point that is the  position
+          of  the  next  character that would be drawn if the
+          string were longer.
+
+          For characters with undefined or zero-width  images
+          in the font, the character at font position 0 (NUL)
+          is drawn.
+
+          Text draws the text leaving the background  intact.
+          Textbg  draws  the  background colour bg behind the
+          characters, with the alignment specified  by  point
+          bgp; it is otherwise the same as text.
+
+src.readpixels(r, data)
+          Readpixels  fills  the  data array with pixels from
+          the specified rectangle of the src image.  The pix‐
+          els  are  presented  one horizontal line at a time,
+          starting with the top-left pixel of r.   Each  scan
+          line  starts  with a new byte in the array, leaving
+          the last byte of the previous line partially empty,
+          if necessary.  Pixels are packed as tightly as pos‐
+          sible within  data,  regardless  of  the  rectangle
+          being  extracted.   Bytes  are  filled from most to
+          least significant bit order, as  the  x  coordinate
+          increases, aligned so x=0 would appear as the left‐
+          most pixel of its byte.  Thus,  for  a  1-bit  deep
+          greyscale  image,  the pixel at x offset 165 within
+          the rectangle will be in  a  data  byte  with  mask
+          value  16r04  regardless  of the overall rectangle:
+          165 mod 8 equals 5, and  16r80 >> 5  equals  16r04.
+          It  is  an  error  to call readpixels with an array
+          that is too small to hold the  rectangle's  pixels.
+          The  return  value  is  the number of bytes copied.
+          The arrangement of pixels in  arrays  of  bytes  is
+          described in image(6).
+
+dst.writepixels(r, data)
+          Writepixels copies pixel values from the data array
+          to the specified rectangle in the dst  image.   The
+          format  of the data is that produced by readpixels.
+          The return value is the number of bytes copied.  It
+          is  an error to call writepixels with an array that
+          is too small to fill the rectangle.
+
+im.name(s,in)
+          Publish the image im on its display under  name  s,
+          if  in is non-zero; otherwise, s must be an already
+          published name and it is  withdrawn  from  publica‐
+          tion.   A  published  image  can be retrieved using
+          Display.namedimage  (see  draw-display(2)).    This
+          function returns -1 on error, typically because the
+          name is already in use (for in non-zero),  or  does
+          not exist (for in zero).
+
+win.top() If  the  image win is a window, top pulls it to the
+          ``top'' of the stack of windows on its Screen, per‐
+          haps  obscuring other images.  If win is not a win‐
+          dow, top has no effect.
+
+win.bottom()
+          If the image win is a window, bottom  pulls  it  to
+          the  ``bottom''  of  the  stack  of  windows on its
+          Screen, perhaps obscuring it.  If win is not a win‐
+          dow, bottom has no effect.
+
+image.flush(flag)
+          The  connection  to  a display has a buffer used to
+          gather graphics requests generated by calls to  the
+          draw  library.  By default, the library flushes the
+          buffer at the conclusion of any call  that  affects
+          the  visible  display image itself.  The flush rou‐
+          tine allows finer  control  of  buffer  management.
+          The  flag has three possible values: Flushoff turns
+          off all automatic  flushing  caused  by  writes  to
+          image,  typically  a  window  or  the display image
+          itself (buffers may still be written when they fill
+          or when other objects on the display are modified);
+          Flushnow causes the buffer to  be  flushed  immedi‐
+          ately; and Flushon restores the default behaviour.
+
+win.origin(log, scr)
+          When  a window is created (see draw-screen(2)), the
+          coordinate system within the window is identical to
+          that  of  the  screen: the upper left corner of the
+          window rectangle is its physical  location  on  the
+          display, not for example (0, 0).  This symmetry may
+          be broken, however: origin allows  control  of  the
+          location of the window on the display and the coor‐
+          dinate system used by programs drawing on the  win‐
+          dow.   The first argument, log, sets the upper left
+          corner of the logical (in-window) coordinate system
+          without  changing the position of the window on the
+          screen.  The second argument, scr, sets  the  upper
+          left corner of physical (on-screen) coordinate sys‐
+          tem, that is, the window's location on the display,
+          without  changing  the  internal coordinate system.
+          Therefore, changing scr without changing log  moves
+          the window without requiring the client using it to
+          be notified of the  change;  changing  log  without
+          changing  scr allows the client to set up a private
+          coordinate system regardless of the window's  loca‐
+          tion.   It is permissible for values of scr to move
+          some or all  of  the  window  off  screen.   Origin
+          returns  -1 if the image is not a window or, in the
+          case of changes to scr, if there  are  insufficient
+          resources  available  to move the window; otherwise
+          it returns 1.
+
+== source
+/libdraw
+
+== see ALSO
+draw-intro(2), draw-display(2), draw-point(2),  draw-rect(2),
+draw-screen(2), colour(6), image(6), font(6) utf(6)
+
+T. Porter, T. Duff.  ``Compositing Digital Images'', Computer Graphics (Proc. SIGGRAPH), 18:3, pp. 253-259, 1984.
+
+== diagnostics
+These functions raise exceptions if argument images are  nil,
+except  for draw and gendraw where the mask image is optional
+and may be nil.
+
+== bugs
+Anti-aliased characters can be drawn by defining a font  with
+multiple  bits per pixel, but there are no anti-aliasing geo‐
+metric primitives.
+

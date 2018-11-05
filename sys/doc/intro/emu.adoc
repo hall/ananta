@@ -1,0 +1,135 @@
+= emu: Inferno emulator (hosted Inferno)
+
+
+*emu* [ **-g**__ Xsize x Ysize__ ] [ **-c**__n__ ] [ **-d**__ daemon__ ]
+[*-s*] [ **-p**__ pool=maxsize__ ] [ **-f**__ font__ ] [ **-r**__
+rootpath__ ] [*-7*] [ -C** channel** ] [ -S ] [ *-v* ] [ _cmd_ [_ arg
+... _] ]
+
+
+_Emu_ provides the Inferno emulation environment, otherwise known as
+`hosted Inferno'. The emulator runs as an application under the
+machine's native operating system, and provides system services and a
+Dis virtual machine for Inferno applications.
+
+_Emu_ starts an Inferno initialisation program */dis/emuinit.dis*, whose
+path name is interpreted in the Inferno file name space, not in the
+native operating system's name space. It in turn invokes the shell
+*/dis/sh.dis* by default or the optional _cmd_ and its arguments. If the
+*-d* option is specified, _emu_ instead invokes *daemon*, turning the
+_emu_ instance into an Inferno service process on the network, running
+the given _daemon_ service or services.
+
+The emulator supports the following options:
+
+**-c**__n__::
+  Unless specified otherwise by the module (see *wm/rt* in
+  _wm-misc_(1)), _emu_ uses an interpreter to execute Dis instructions.
+  Setting _n_ to 1 (the default value is 0) makes the default behaviour
+  to compile Dis into native instructions when a module is loaded,
+  resulting in faster execution but larger run-time size. Setting _n_ to
+  values larger than 1 enables increasingly detailed traces of the
+  compiler.
+**-d**__ daemon__::
+  Run _emu_ as a server, invoking _daemon_ instead of
+  */dis/emuinit.dis*, and disabling input from *cons* (see _cons_(3)).
+**-g**__Xsize__**x**__Ysize__::
+  Define screen width and height in pixels. The default values are
+  640x480 and the minimum values are 64x48. Values smaller than the
+  minimum or greater than the available display size are ignored.
+**-f**__font__::
+  Specify the default font for the *tk* module. The path is interpreted
+  in the Inferno name space. If unspecified, the *font* variable has
+  value */fonts/lucm/unicode.9.font*.
+**-r**__rootpath__::
+  Specify the host system directory that _emu_ will serve as its root.
+  The default value is */usr/inferno* on most systems, but *\inferno* on
+  Windows.
+*-s*::
+  Specify how the emulator deals with traps reported by the operating
+  system. By default, they suspend execution of the offending thread
+  within the virtual machine abstraction. The *-s* option causes _emu_
+  itself to trap, permitting debugging of the broken host operating
+  system process that results when a trap occurs. (This is intended to
+  allow debugging of _emu_, not Inferno applications.)
+**-p**__pool__**=**__maxsize__::
+  Specify the maximum size in bytes of the named memory allocation pool.
+  The pools are:
+  +
+  *main*;;
+    the general malloc arena
+  *heap*;;
+    the Dis virtual machine heap
+  *image*;;
+    image storage for the display
+*-7*::
+  When host graphics is provided by X11, request a 7-bit colour map; use
+  this option only if X11 refused to allow _emu_ to configure the normal
+  (default) 8-bit Inferno colour map.
+*-C channel*::
+  Use the given _channel_ for the display, if possible. See _image_(6)
+  for the full range of channel descriptors. For example, *k8* gives 8
+  bit greyscale, and *x8r8g8b8* gives 24 bit colour on a PC. The set of
+  channels supported is platform-dependent.
+*-S*::
+  Force stylus input behaviour for Tk mouse events: motion events are
+  received only when a button is down (just as a stylus produces no
+  events until it touches the screen). This option only affects the
+  behaviour of Tk mouse events, it does not affect the behaviour of
+  */dev/pointer* as described in _cons_(3).
+*-v*::
+  Print version data: edition and revision date.
+
+Options may also be set in the host operating system's environment
+variable *EMU*; they are overridden by options supplied on the command
+line.
+
+_Emu_ finds the host system directory that will serve as its Inferno
+root directory as the last value found as follows: it is the value
+built-in to the executable, by default; or the value of the host
+system's environment variable *INFERNO*; or the value of the environment
+variable *ROOT*; or the value of a *-r* option in the environment
+variable *EMU*; or the _rootpath_ set by a *-r* option to the _emu_
+command itself.
+
+_Emu_ sets several Inferno environment variables:
+
+*cputype*::
+  host processor architecture: *386* (for any x86), *arm*, *mips*,
+  *power* (any Power or PowerPC), *sparc*, and *spim* (little-endian
+  MIPS).
+*emuargs*::
+  arguments with which _emu_ was invoked
+*emuhost*::
+  host operating system type, such as: *FreeBSD*, *Irix*, *Linux*,
+  *MacOSX*, *NetBSD*, *Nt* (used for Windows generally), *OpenBSD*,
+  *Plan9*, *Solaris* and *Unixware*.
+*emuroot*::
+  name of directory in host file system that acts as Inferno's root
+  directory
+*emuwdir*::
+  name in host file system of directory where _emu_ was invoked
+
+== EXAMPLE
+
+To start *wm/logon* directly:
+
+....
+EMU='-g800x600 -c1'
+emu /dis/wm/wm.dis wm/logon -u inferno
+....
+
+== FILES
+
+*/dis/emuinit.dis*::
+  The default initialisation program.
+*/dis/sh.dis*::
+  The default Inferno shell.
+
+== SOURCE
+
+*/emu*
+
+== SEE ALSO
+
+_limbo_(1), _wm-misc_(1)

@@ -1,0 +1,33 @@
+= sendmail: send mail messages
+
+
+*sendmail* [ _recipient ..._ ]
+
+
+*Sendmail* sends mail to each _recipient_ named as an argument. It reads
+its standard input to get the text of the message. If no _recipient_ is
+named, the recipient(s) will be taken from the message header.
+
+The mail message is scanned for lines beginning
+
+and
+
+ +
+If no `from' line is found, the sender is assumed to be the current
+user. The recipient(s) of the message can be mentioned as arguments or
+in a list of names in a
+
+line but not as both. If the sender's name is unqualified (is just a
+user name), _sendmail_ appends the value of the environment variable
+
+*Sendmail* delivers the mail using the module _smtp_(2), which connects
+to a mail server running the Simple Mail Transport Protocol (SMTP),
+using the symbolic host name *$MAILSERVER* (see _db_(6)).
+
+== SOURCE
+
+*/appl/cmd/sendmail.b*
+
+== SEE ALSO
+
+_smtp_(2), _db_(6)

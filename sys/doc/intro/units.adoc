@@ -1,0 +1,83 @@
+= units: conversion program
+
+
+*units* [ *-v* ] [ _file_ ]
+
+
+_Units_ converts quantities expressed in various standard scales to
+their equivalents in other scales. It works interactively in this
+fashion:
+
+....
+you have: inch
+you want: cm
+    * 2.54
+	/ 0.3937008
+....
+
+A quantity is specified as a multiplicative combination of units and
+floating point numbers. Operators have the following precedence:
+
+....
++ -	add and subtract
+* / × ÷	multiply and divide
+catenation	multiply
+² ³ ^	exponentiation
+|	divide
+( ... )	grouping
+....
+
+Most familiar units, abbreviations, and metric prefixes are recognized,
+together with a generous leavening of exotica and a few constants of
+nature including:
+
+....
+pi,π	ratio of circumference to diameter
+c	speed of light  
+e	charge on an electron 
+g	acceleration of gravity  
+force	same as g  
+mole	Avogadro's number   
+water	pressure head per unit height of water    
+au	astronomical unit   
+....
+
+The
+
+is a unit of mass. Compound names are run together, e.g.
+
+British units that differ from their US counterparts are prefixed thus:
+
+Currency is denoted
+
+etc.
+
+The complete list of units can be found in */lib/units*. A _file_
+argument to _units_ specifies a file to be used instead of */lib/units.*
+The *-v* flag causes _units_ to print its entire database.
+
+== EXAMPLE
+
+....
+you have: 15 pounds force/in²
+you want: atm
+	* 1.020689
+	/ 0.9797299
+....
+
+== FILES
+
+*/lib/units*
+
+== SOURCE
+
+*/appl/cmd/units.y* +
+*/appl/cmd/units.b*
+
+== BUGS
+
+Since _units_ does only multiplicative scale changes, it can convert
+Kelvin to Rankine but not Centigrade to Fahrenheit, except that the
+latter is handled as a special case. +
+Currency conversions are only as accurate as the last time someone
+updated */lib/units*.

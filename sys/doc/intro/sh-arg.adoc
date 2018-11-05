@@ -1,0 +1,88 @@
+= arg: shell command-line argument parsing
+
+
+*load arg* +
+*arg* [ _opts command_ ]... *-* _args_
+
+
+_Arg_ is a loadable module for _sh_(1) that parses command-line
+arguments in the same form as _arg_(2). It accepts a list of (_opts_,
+_command_) pairs, where each character in _opts_ is an acceptable
+option, and _command_ is a shell command to be run if any character in
+_opts_ is found. Any trailing plus (*+*) characters in _opts_ cause
+_arg_ to extract the same number of arguments associated with the option
+before running _command_.
+
+For the duration of _command_, the environment variable *$opt* will be
+set to the option that has been found, and *$arg* will be set to the
+option's arguments (if the correct number of arguments have been
+extracted; otherwise a message will be printed, and a *usage* exception
+raised). The option character asterisk (***) matches any option letter
+(this must be quoted, to avoid the usual special interpretation by the
+shell). Only one command will be run for any option found; if there is
+no matching option letter, then a default error message will be printed,
+and a *usage* exception raised.
+
+The list of option specifications is terminated with a single minus
+(*-*); the arguments to be parsed follow this. When the argument parsing
+has finished the environment variable *$** is set to the remaining list
+of arguments.
+
+== EXAMPLE
+
+The following shell script, *script*, takes options *b*, *c* and *f*,
+where *f* takes a file name argument.
+
+....
+#!/dis/sh
+load arg
+bflag := cflag := 0
+file  := ()
+args  := $*
+(arg 
+    bc  {$opt^flag = 1}
+    f+  {file=$arg}
+    r++++ {rect=$arg}
+    '*' {echo unknown option $opt}
+    - $args
+)
+echo $0 $bflag $cflag $file
+echo rect $rect
+echo arguments are $*
+....
+
+When invoked as follows:
+
+________________________________________
+*script -bc -r 0 10 50 100 -ffile a b c*
+________________________________________
+
+the output is:
+
+....
+./script 1 1 file
+rect 0 10 50 100
+arguments are a b c
+....
+
+and when invoked by:
+
+_____________________________
+*script -b -f file -z -- -bc*
+_____________________________
+
+the output is:
+
+....
+unknown option z
+./script 1 0 file
+arguments are -bc
+....
+
+== SOURCE
+
+*/appl/cmd/sh/arg.b*
+
+== SEE ALSO
+
+_sh_(1), _arg_(2), _sh-std_(1)

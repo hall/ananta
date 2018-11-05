@@ -60,5 +60,5 @@ Documentation is at {docpath}[].
 
 == about
 
-https://gitlab.com/hall/inf[`{name}`] is licensed under the [GNU GPLv3](LICENSE).
+https://gitlab.com/hall/inf[`{name}`] is licensed under the link:LICENSE[GNU GPLv3].
 

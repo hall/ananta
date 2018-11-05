@@ -12,7 +12,7 @@ build:
 pages:
   image: asciidoctor/docker-asciidoctor
   before_script:
-    - apk add hugo
+    - curl -sL https://github.com/gohugoio/hugo/releases/download/v0.50/hugo_0.50_Linux-64bit.tar.gz | tar xz -C /bin/
   script:
     - cd sys/
     - hugo

@@ -2,6 +2,7 @@ baseURL      = "https://inf.bryton.io/"
 languageCode = "en-us"
 title        = "inf"
 contentDir   = "docs"
+layoutDir    = "sys/layouts"
 PygmentsCodeFences = true
 PygmentsCodeFencesGuessSyntax = true
 [params]

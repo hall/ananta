@@ -10,7 +10,7 @@ build:
     - emu cat /dev/sysctl
 
 pages:
-  image: registry.gitlab.com/pages/hugo:latest
+  image: rraghur/hugo-asciidoctor
   script:
     - cd sys/
     - hugo

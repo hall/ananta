@@ -1,7 +1,7 @@
-baseURL = "https://inf.bryton.io/"
+baseURL      = "https://inf.bryton.io/"
 languageCode = "en-us"
-title = "inf"
-contentDir = "doc"
+title        = "inf"
+contentDir   = "docs"
 PygmentsCodeFences = true
 PygmentsCodeFencesGuessSyntax = true
 [params]
@@ -10,19 +10,13 @@ tagline = "a distributed, virtualizable operating system"
 #main   = "#5d4d7a"
 #accent = "#212026"
 #link   = ""
-[menu]
-[[menu.main]]
-identifier = "intro"
-weight = 10
-[[menu.main]]
-identifier = "manual"
-weight = 20
-[[menu.left]]
-name = "portal"
-url = "https://inf.com"
-[[menu.left]]
-name = "source"
-url = "https://gitlab.com/hall/inf"
+#[menu]
+#[[menu.left]]
+#name = "portal"
+#url = "https://inf.com"
+#[[menu.left]]
+#name = "source"
+#url = "https://gitlab.com/hall/inf"
 #[[menu.right]]
 #name = "portal"
 #url = "https://inf.com/hall/inf"

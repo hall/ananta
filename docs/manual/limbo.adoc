@@ -174,7 +174,7 @@ Inside the quotes the following escape sequences represent special characters:
 \v::        vertical tabulation (VT)
 \f::        form feed (FF)
 \r::        carriage return (CR)
-\u_dddd_::  Unicode character named by 4 hexadecimal digits
+\u<dddd>::  Unicode character named by 4 hexadecimal digits
 \0::        NUL
 
 Character constants have type `int`.

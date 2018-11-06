@@ -1,0 +1,51 @@
+= auth: authentication using station-to-station protocol
+
+
+The following protocol, based on the Station-to-Station protocol, is
+used for mutual authentication of two parties, each possessing a
+certificate from the same certifying authority (CA).
+
+In the description below:
+
+_alpha_::
+  is a Diffie-Hellman base used system wide
+_p_::
+  is a Diffie-Hellman modulus used system wide
+_Rx_::
+  is a random number of the same order as _p_.
+**PK**__x__::
+  the public key of _x_
+**SK**__x__::
+  the private key of _x_
+**CERT**__x__::
+  the public key of _x_ signed by the certifying authority
+**sig**__n__**(**__x__*)*::
+  represents _x_ signed with _n_'s private key
+
+In the following, the parties are labelled 0 and 1.
+
+Each sends its public key and certificate to the other together with a
+computation _alpha**r0 mod p_ (_alpha**r1 mod p_) based on the
+Diffie-Hellman parameters contained in the certificate:
+
+....
+0 → 1  alpha**r0 mod p, CERTu0, PKu0
+1 → 0  alpha**r1 mod p, CERTu1, PKu1
+....
+
+Each can now use the CA's public key and the certificate received to
+check that each has the other's public key.
+
+Finally, each user signs values known to both that each can then verify:
+
+....
+0 → 1  sig0(alpha**r0 mod p, alpha**r1 mod p)
+1 → 0  sig1(alpha**r0 mod p, alpha**r1 mod p)
+....
+
+At this point 0 and 1 can calculate the shared secret *alpha**(r0*r1)*,
+and can use it to encrypt later communications.
+
+== SEE ALSO
+
+_keyring-auth_(2), _keytext_(6), _login_(6)

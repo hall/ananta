@@ -1,0 +1,34 @@
+= touchcal: touch screen calibration
+
+== SYNOPSIS
+
+*touchcal*
+
+
+_Touchcal_ draws a cross-hair in each corner of the screen in turn
+(clockwise from the lower left hand corner), and waits each time for the
+user to touch the centre of the cross-hair with the stylus. It then
+prompts with a final cross-hair in the centre of the screen, and waits
+once more for the user to touch its centre with the stylus. The process
+is repeated until _touchcal_ can calculate a transformation matrix that
+consistently maps the touch panel to screen coordinates. It then writes
+corresponding calibration commands for _touch_(3) on its standard
+output, which can be saved in a file on the device, perhaps provided in
+NVRAM by _tinyfs_(3) or a file system in _ftl_(3).
+
+_Touchcal_ can be used both inside and outside the _wm_(1) environment,
+allowing calibration when the system is initialised, and whilst the
+window system is running.
+
+== FILES
+
+*/dev/touchctl*::
+  reset or read existing settings
+
+== SOURCE
+
+*/appl/cmd/touchcal.b*
+
+== SEE ALSO
+
+_touch_(3)

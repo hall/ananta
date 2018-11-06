@@ -1,0 +1,142 @@
+= ndb: network data base
+
+== SYNOPSIS
+
+*/lib/ndb/local* +
+*/lib/ndb/inferno* +
+*/lib/ndb/dns* +
+*/lib/ndb/common*
+
+
+Network configuration data is stored in one or more files in the
+directory */lib/ndb*, in the attribute data base format defined by
+_attrdb_(6). Most applications that use it start with */lib/ndb/local*
+by default. That can refer (using a *database* entry) to other files
+that form part of the same logical database. They are stored in distinct
+files to allow different configurations to avoid duplicating data by
+sharing some common content. For example, */lib/ndb/common* associates
+service names with port numbers for Internet protocols, and
+*/lib/ndb/inferno* provides the Inferno-specific port mapping. A
+database is automatically reread if any component file has changed since
+it was last read (based on its modification time).
+
+A network database gives particular meaning to the following attributes:
+
+*auth*::
+  name or address of authentication server
+*bootf*::
+  name of the file to send to a device on request when booting
+*dns*::
+  name or address of DNS resolver (see also the *ns* attribute below)
+*dnsdomain*::
+  domain in which the local host lives (used to qualify unqualified
+  names)
+*dom*::
+  Internet domain name (host or DNS zone)
+*ether*::
+  Ethernet address in the form accepted by _ether_(2)
+*fs*::
+  name or address of file server
+*il*::
+  IL service name
+*infernosite*::
+  empty-valued attribute that labels default site parameters
+*ip*::
+  Internet address
+*ipgw*::
+  name or address of Internet gateway
+*ipmask*::
+  Internet network mask
+*ipnet*::
+  network or subnetwork name
+*ipv4proto*::
+  IPv4 protocol number (see also *protocol*)
+*mx*::
+  mail exchanger
+*ns*::
+  name of a DNS name server for an associated *dom*
+*port*::
+  port number for a service
+*protocol*::
+  protocol name
+*soa*::
+  start of area (value is empty if locally authoritative, or
+  `**delegated**' if another server is authoritative)
+*sys*::
+  system name (short local name for a host)
+*tcp*::
+  TCP service name
+*udp*::
+  UDP service name
+
+Internet addresses and masks can be written in any form accepted by
+_Ip_(2). Network applications might use other attributes of their own,
+which they document on their own pages.
+
+_Cs (8)_ interprets a host name of the form **$**__server__ as referring
+to the set of names and addresses that are values of the attribute
+_server_ in the network data base. Attributes in general use include
+some of those above, and the following:
+
+*FILESERVER*::
+  older name for file server *fs* file server
+*pop3*::
+  mail reading service using the POP3 protocol
+*PROXY*::
+  firewall proxy for _ftpfs_(4)
+*SIGNER*::
+  Inferno authentication server running _logind_(8) and/or _signer_(8)
+*smtp*::
+  mail delivery gateway using the SMTP protocol
+
+Other such symbolic server names are mentioned in the manual pages for
+associated applications.
+
+_Dns_(8) interprets *dns* and *dnsdomain* values in any *infernosite*
+entry, and *dom*, *ip*, and *ns* values more generally. When resolving a
+domain name, _dns_ looks first in this data base to see if there is a
+*dom* entry for the name, and if so, whether there is either an
+associated *ns* attribute giving a name server to ask, or an *ip*
+attribute giving the name's IP address. Failing that, it works up the
+name hierarchy looking for name servers to ask. Failing that, it looks
+for a *dnsdomain* entry with *dns* attributes listing other resolvers to
+ask. Bootstrap data is commonly stored in */lib/ndb/dns*; by default it
+defines the root name servers:
+
+....
+dom=    # root
+	ns=a.root-servers.net
+	ns=b.root-servers.net
+	...
+dom=a.root-servers.net ip=198.41.0.4
+dom=b.root-servers.net ip=128.9.0.107
+	...
+....
+
+== EXAMPLE
+
+Specify the site's default DNS domain name and resolvers for _dns_(8),
+and a collection of symbolic service names for _cs_(8):
+
+....
+infernosite=
+	dnsdomain=vitanuova.com
+	dns=200.1.1.11
+	dns=158.152.1.58
+	dns=158.152.1.43
+	SIGNER=doppio
+	FILESERVER=doppio
+	smtp=doppio
+	pop3=doppio
+	PROXY=doppio
+	GAMES=vivido
+	IRMSERVER=vivido
+....
+
+== FILES
+
+*/lib/ndb/**
+
+== SEE ALSO
+
+_attrdb_(2), _attrdb_(6), _bootpd_(8), _cs_(8), _dns_(8)

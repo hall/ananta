@@ -1,0 +1,22 @@
+= fpgaload: configure FPGA
+
+== SYNOPSIS
+
+*auxi/fpgaload* [ **-c**__ clk__ ] _file.rbf_
+
+
+_Fpgaload_ configures the directly-attached Altera Flex6000 FPGA on the
+Bright Star Engineering ip-Engine. It enables the FPGA and output of the
+external system clocks, then loads the FPGA with the contents of
+_file.rbf_ which should be in the `raw binary format' produced for
+example by the Altera tools. After successful configuration, the BCLK is
+set to _clk_ MHz; _clk_ must be a divisor of the ip-Engine's system
+clock (currently 48 MHz).
+
+== SOURCE
+
+*/appl/cmd/auxi/fpgaload.b*
+
+== SEE ALSO
+
+_fpga_(3)

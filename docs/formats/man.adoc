@@ -1,0 +1,149 @@
+= man: manual page format
+
+
+The Inferno manual pages are stored as text files in a format originally
+defined for use with the Unix and Plan 9 _troff_ command, when used with
+the _man_ macro package. Within Inferno, the format is interpreted by
+the programs of _man_(1).
+
+Except in
+
+and
+
+requests, any text argument denoted _t_ in the request summary may be
+zero to six words. Quotes " ... " may be used to include blanks in a
+`word'. If _t_ is empty, the special treatment is applied to the next
+text input line (the next line that doesn't begin with dot). In this
+way, for example, *.I* may be used to italicize a line of more than 6
+words, or *.SM* followed by *.B* to make small letters in `bold' font.
+
+A prevailing indent distance is remembered between successive indented
+paragraphs, and is reset to default value upon reaching a non-indented
+paragraph. Default units for indents _i_ are ens.
+
+The fonts are
+
+*R*::
+  roman, the main font, preferred for diagnostics
+
+*I*::
+  italic, preferred for parameters, short names of commands, names of
+  manual pages, and naked function names
+*B*::
+  `bold', actually the constant width font, preferred for examples, file
+  names, declarations, keywords, names of *struct* members, and literals
+  (numbers are rarely literals)
+*L*::
+  also the constant width font. For graphical display and printing,
+  **L**=*B*; when converted to plain text, the arguments of the macros
+  *.L*, *.LR*, and *.RL* are printed in quotes; preferred only where
+  quotes really help (e.g. lower-case literals and punctuation).
+
+Type font and size are reset to default values before each paragraph,
+and after processing font- or size-setting macros.
+
+The _man_ format admits equations and tables in the style of Unix _eqn_
+(equation setting) and _tbl_ (table layout) preprocessors, but do not
+support arguments on *.EQ* and *.TS* macros.
+
+These strings are predefined by _man_:
+
+*\*R*::
+  Trademark symbol +
+
+*\*S*::
+  Change to default type size.
+
+== FILES
+
+*/man/*/**::
+  Source files of manual pages.
+
+== SEE ALSO
+
+_man_(1)
+
+== REQUESTS
+
+ +
+
+Request Cause If no Explanation
+
+Break Argument
+
+.B _t_ no __t__=n.t.l.* Text _t_ is `bold'.
+
+.BI _t_ no __t__=n.t.l. Join words of _t_ alternating bold and italic.
+
+.BR _t_ no __t__=n.t.l. Join words of _t_ alternating bold and Roman.
+
+.DT no Restore default tabs.
+
+.EE yes End displayed example
+
+.EX yes Begin displayed example
+
+.HP _i_ yes __i__=p.i.* Set prevailing indent to _i_. Begin paragraph
+with hanging indent.
+
+.I _t_ no __t__=n.t.l. Text _t_ is italic.
+
+.IB _t_ no __t__=n.t.l. Join words of _t_ alternating italic and bold.
+
+.IP _x i_ yes __x__="" Same as .TP with tag _x_.
+
+.IR _t_ no __t__=n.t.l. Join words of _t_ alternating italic and Roman.
+
+.L _t_ no __t__=n.t.l. Text _t_ is literal.
+
+.LP yes Same as .PP.
+
+.LR _t_ no Join 2 words of _t_ alternating literal and Roman.
+
+.PD _d_ no __d__=.4v Interparagraph distance is _d_.
+
+.PP yes Begin paragraph. Set prevailing indent to default.
+
+.RE yes End of relative indent. Set prevailing indent to amount of
+starting .RS.
+
+.RI _t_ no __t__=n.t.l. Join words of _t_ alternating Roman and italic.
+
+.RL _t_ no Join 2 or 3 words of _t_ alternating Roman and literal.
+
+.RS _i_ yes __i__=p.i. Start relative indent, move left margin in
+distance _i_. Set prevailing indent to default for nested indents.
+
+.SH _t_ yes __t__="" Subhead; reset paragraph distance.
+
+.SM _t_ no __t__=n.t.l. Text _t_ is small.
+
+.SS _t_ no __t__="" Secondary subhead.
+
+.TF _s_ yes Prevailing indent is wide as string _s_ in font *L*;
+paragraph distance is 0.
+
+.TH _n c x_ yes Begin page named _n_ of chapter _c;_ _x_ is extra
+commentary, e.g. `local', for page head. Set prevailing indent and tabs
+to default.
+
+.TP _i_ yes __i__=p.i. Set prevailing indent to _i_. Restore default
+indent if __i__=0. Begin indented paragraph with hanging tag given by
+next text line. If tag doesn't fit, place it on separate line.
+
+.1C yes Equalize columns and return to 1-column output
+
+.2C yes Start 2-column nofill output
+
+* n.t.l. = next text line; p.i. = prevailing indent
+
+== BUGS
+
+There's no way to include literal double quote marks *"* in
+font-alternation macros, such as
+
+ +
+There is no direct way to suppress column widows in 2-column output; the
+column lengths may be adjusted by inserting
+
+requests before the closing

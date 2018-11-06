@@ -1,0 +1,59 @@
+= changelogin, convpasswd: create/update the password file
+
+== SYNOPSIS
+
+**auth/changelogin**__ name__
+
+*auth/convpasswd* [ *-f* ] [ *-v* ] [ **-m**__ keydir__ ] [ _pwfile_ ]
+
+
+_Changelogin_ helps to administer a password file */keydb/keys* (see
+_keys_(6)), a requirement of `signer' servers (see _logind_(8),
+_signer_(8), and *svc/auth* in _svc_(8)). _Changelogin_ can only be used
+on the signing host itself, after _keyfs_(4) has been started (eg, by
+*svc/auth*) to make the entries visible in the name space.
+
+If a password file entry for _name_ exists, it is modified; otherwise, a
+new entry is created. The user is prompted for the following items:
+
+password::
+  A string at least 8 characters in length. The SHA-1 digest of the
+  entered string is stored in the password file. See _keyring-sha1_(2).
+  By default, the password for an existing entry is unchanged.
+expiration date::
+  An expiration time in the format _DDMMYYYY_. The user input is checked
+  for valid day, month, and year; moreover, the new date must be later
+  than the current time. By default, the current value, if any, is
+  unchanged for an existing entry and one year from the current time for
+  a new entry.
+
+free form info::
+  Arbitrary administrative information.
+
+Note that the password expiration date is also used as the default
+expiration date for any certificate later produced; see
+_getauthinfo_(8).
+
+_Convpasswd_ converts a Third Edition password file to the _keys_(6)
+file used by the current Edition of the system. It reads password
+entries from _pwfile_, */keydb/password* by default, and writes
+corresponding entries into a name space served by _keyfs_(4), mounted at
+_keydir_, */mnt/keys* by default. It copies passwords and expiry times.
+The `free form' administrative data is discarded. If _keydir_ already
+has got an entry for a user, it is left as-is, unless the *-f* option is
+given to force _convpasswd_ to copy across the entry in _pwfile ._ The
+*-v* option causes _convpasswd_ to print each user name after it
+successfully installs it.
+
+== FILES
+
+*/keydb/keys*::
+
+== SOURCE
+
+*/appl/cmd/auth/changelogin.b*
+
+== SEE ALSO
+
+_passwd_(1), _keyfs_(4), _keysrv_(4), _keys_(6), _logind_(8),
+_signer_(8), _svc_(8)

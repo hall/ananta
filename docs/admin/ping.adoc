@@ -1,0 +1,48 @@
+= ping: probe the Internet
+
+== SYNOPSIS
+
+*ip/ping* [*-alq*] [ **-i**__ interval__ ] [ **-s**__ size__ ] [
+**-n**__ nping__ ] _destination_
+
+
+_Ping_ sends ICMP echo requests to a network _destination_ (which has
+the syntax accepted by _dial_(2)). The target host, if up, should send a
+corresponding reply. By default, one line is printed for each reply,
+containing the sequence number (starting at 0) of the message it
+answers, the round trip time for that reply, the average round trip time
+so far, and the `time to live' value from the reply packet.
+
+The options are:
+
+*-a*::
+  include source and destination IP addresses in the output
+**-i**__ interval__::
+  send requests with the given _interval_ between messages, in
+  milliseconds (default: 1 second)
+*-l*::
+  list only lost messages
+**-n**__ nping__::
+  send _nping_ messages in all (default: 32)
+*-q*::
+  suppress per-packet output, giving summary data only
+**-s**__ size__::
+  send request packets of the given _size_ in bytes (default: 64,
+  minimum 32)
+
+== SOURCE
+
+*/appl/cmd/ip/ping.b*
+
+== SEE ALSO
+
+_dial_(2), _ip_(3)
+
+== DIAGNOSTICS
+
+_Ping_ yields an error status if any request had no corresponding reply.
+
+== BUGS
+
+Works only on native Inferno and when hosted on Plan 9, owing to the
+lack of access to ICMP on other hosted systems.

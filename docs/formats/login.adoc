@@ -1,0 +1,84 @@
+= login: key exchange protocol
+
+
+The following encrypted key exchange protocol is used between a client
+such as *login* in _security-login_(2), and a certificate signing
+process such as _logind_(8), to justify the latter's issuing a
+certificate that can later be presented to an Inferno service to
+establish credentials.
+
+A shared secret must previously be agreed between user and certifying
+authority (CA). It is used by the protocol to establish a secure channel
+between user and CA.
+
+In the description below:
+
+_ivec_::
+  is an 8 byte random number (`initialisation vector') chosen for this
+  conversation.
+_sha_::
+  is the 20 byte secure hash (SHA-1) of the password
+_key_::
+  is an 8 byte secret formed as follows:
+
+....
+
+
+key[0] = ivec[0]^sha[0]^sha[8]^sha[16]
+key[1] = ivec[1]^sha[1]^sha[9]^sha[17]
+....
+
+...
+
+....
+key[5] = ivec[5]^sha[5]^sha[13];
+key[6] = ivec[6]^sha[6]^sha[14];
+key[7] = ivec[7]^sha[7]^sha[15];
+....
+
+_alpha_::
+  is a Diffie-Hellman base used system wide
+_p_::
+  is a Diffie-Hellman modulus used system wide
+_key(m)_::
+  is _m_ encrypted using the RC4 algorithm with _key_.
+_Rx_::
+  is a random number of the same order as _p_.
+_secret_::
+  is the Diffie-Hellman secret _alpha**(r0*r1) mod p_.
+
+The protocol follows. ``user→CA xxx'' means that the user sends the
+message ``xxx'' to the certifying authority. Any party can send an error
+instead of a message at any point to terminate the protocol.
+
+....
+user→CA	name
+CA→user	ACK
+
+user→CA	ivec
+CA→user	key(alpha**r0 mod p), alpha, p
+
+user→CA	alpha**r1 mod p
+CA→user	CA's public key, SHA(CA's public key + secret)
+
+user→CA	user's public key, SHA(user's public key + secret)
+CA→user	user's public key certificate
+....
+
+The complexity of this protocol is intended to shield the password. To
+start a clear text attack against the password, one needs to first
+attack the Diffie-Hellman exponential to determine _alpha**r0 mod p_. A
+possible weakness is that the encrypted quantity is base64 encoded,
+constraining the possible values of each byte. This could aid a brute
+force attack.
+
+_Alpha_ and _p_ are sent unprotected, though the user code does a few
+sanity checks on the values it receives. This is another likely point of
+attack. We should like to know about any.
+
+The role of _ivec_ is to foil any replay attacks by someone spoofing the
+CA though this is probably overkill.
+
+== SEE ALSO
+
+_security-intro_(2), _security-login_(2), _logind_(8), _signer_(8)

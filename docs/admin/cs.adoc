@@ -1,0 +1,122 @@
+= cs, csquery: connection server
+
+== SYNOPSYS
+
+*ndb/cs* [ **-f**__ database__ ] [ *-v* ] [ **-x**__ net__ ]
+
+*ndb/csquery* [ *-x* _net_ ] [ *-s* _server_ ] [ _address_ ... ]
+
+
+_Cs_ spawns a process that serves a single file */net/cs*, in the
+current name space, answering requests by client processes to translate
+symbolic network and service names into instructions for connecting to
+the given service. It is normally accessed indirectly by calls to
+_dial_(2).
+
+The network data is taken from the network database files, described in
+_ndb_(6). By default, it is */lib/ndb/local* but the *-f* option can
+specify a different one.
+
+Each write to */net/cs* makes a query, expressed in one of two forms.
+The first form is a network address of the same form as the _addr_
+parameter to _dial_: __network__**!**__netaddr__**!**_service_ where
+_service_ and _network_ are optional for some networks. The write
+returns an error if the address cannot be translated. Otherwise, the
+file offset should be reset to 0 using _sys-seek_(2) and each subsequent
+read will return either end-of-file (if there are no further
+translations), or a single line containing a translation of the form:
+
+_____________________________________________________
+**/net/**__proto__**/clone**__ address__**!**__port__
+_____________________________________________________
+
+The first field is the name of the _clone_ file for a network protocol
+or interface. To make a connection or announce a service, open that
+file, and write the text in the second field preceded by *connect* or
+*announce* as required. (All this activity is normally encapsulated in a
+call to _dial_(2).) _Cs_ produces a translation for each network and for
+each network address on which a symbolic _netaddr_ is found. When
+announcing a service, _netaddr_ can be *** to represent any local
+interface, and the resulting recipes read from */net/cs* will not
+include an __address__**!** part.
+
+_Cs_ interprets a _netaddr_ of the form **$**__server__ specially: it
+looks for an attribute _server_ in the database in the entry for the
+current host, then in the entry for each network that contains it (if
+specified), and finally in a site-wide entry labelled with the attribute
+*infernosite*. If found, the value of the attribute replaces the
+_netaddr_ before further translation.
+
+In the second form of query, the text written contains space-separated
+attribute/value pairs following an initial
+
+_____________________________________________________
+*!* __attr1__**=**_val1_ [ __attr2__**=**_val2_ ... ]
+_____________________________________________________
+
+_Cs_ looks for an _ndb_(6) entry that contains attribute/value pairs
+matching those in the query. Any value but _val1_ may be `*****', to
+signify that the entry must contain the given attribute but with any
+value. As before, the write returns an error if no entry matches.
+Otherwise, each subsequent read returns the whole of the next matching
+entry, in _ndb_(6) form.
+
+The file */net/cs* persists until it is removed or unmounted from
+*/net*, or the _cs_ process is killed (see _kill_(1)). The *-v* option
+causes _cs_ to print each translation request and results (if any) on
+standard error. The *-x* option gives an alternative mount point for
+_cs_, when there is more than one network stack (see _ip_(3)). It causes
+it _cs_ to serve __net__**/cs** instead of */net/cs*.
+
+_Cs_ is normally started once, after _dns_(8) if used, but before most
+other applications including the various listeners described in
+_svc_(8). If another instance of _cs_(8) is started on the same mount
+point, the file it serves replaces the earlier one if permissions allow.
+(On Plan 9, Plan 9's native connection service will be used by default
+if Inferno's _cs_ is not started.)
+
+_Csquery_ queries the given _server_ (default: */net/cs*) for a
+translation of each _address_ and prints the results, one per line. If
+no _address_ is given, _csquery_ prompts for address(es) to translate
+which it reads from the standard input, printing the results of each
+translation on the standard output. The *-x* option gives an alternative
+mount point for _cs_, when there is more than one network stack (see
+_ip_(3)).
+
+_Cs_ uses _ndb_(6) to map protocol and service names to Internet port
+numbers. When running hosted, if entries are not in _ndb_(6), _cs_
+applies the built-in _srv_(2), if available, to have the host system try
+the translation. Consequently, entries in _ndb_(6) take precedence over
+the host's system-wide configuration. (This is helpful for adding
+symbolic names for Inferno services without requiring administrative
+privileges on the host system.)
+
+== EXAMPLE
+
+Check the translation of the symbolic name *$signer*:
+
+....
+ndb/csquery
+> net!$signer!inflogin
+/net/tcp/clone 200.1.1.67!6673
+....
+
+== FILES
+
+*#scs**::
+  service directory
+*/net/cs*::
+  connection service
+*/net/dns*::
+  domain name service
+*/lib/ndb/local*::
+  map from symbolic service names to servers
+
+== SOURCE
+
+*/appl/cmd/ndb/cs.b* +
+*/appl/cmd/ndb/csquery.b*
+
+== SEE ALSO
+
+_dial_(2), _ndb_(6), _dns_(8)

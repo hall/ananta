@@ -1,0 +1,83 @@
+= dns, dnsquery: domain name service
+
+== SYNOPSIS
+
+*ndb/dns* [ **-f**__ dnsfile__ ] [ *-h* ] [ *-r* ] [ **-x**__ net__ ]
+
+*ndb/dnsquery* [ **-x**__ net__ ] [ **-s**__ server__ ] [ _address ..._
+]
+
+
+_Dns_ is an Internet Domain Name Service (DNS) resolver. By default it
+serves a file */net/dns*, that clients such as _cs_(8) write and read to
+retrieve network data associated with domain names and Internet
+addresses. The *-f* option specifies the network database that contains
+the local DNS data (default: */lib/ndb/local*). The *-x* option
+specifies an alternative mount point for the network (default: */net*).
+When Inferno is running hosted, _dns_ normally uses the host's own DNS
+resolver first (via _srv_(2)), before searching the DNS itself; that way
+domain names can be used in Inferno with minimal configuration. The *-h*
+option stops _dns_ from using the host data. In the absence of local
+data, by default _dns_ consults the external DNS directly using some
+bootstrap data, but if *-r* is specified and local resolvers are given
+in the configuration file, _dns_(6), _dns_ will query them first for all
+addresses, before resorting to external DNS servers.
+
+_Dnsquery_ queries the given _server_ (default: */net/dns*) for a
+translation of each _address_ and prints the results, one per line. If
+no _address_ is given, _dnsquery_ prompts for something to find in the
+DNS, one per line on the standard input, of the form:
+
+....
+name [attribute]
+....
+
+where _name_ is the label of something in the DNS, and _attribute_ is
+one of its attributes from the list below:
+
+*all*::
+  all data currently known locally for _name_
+cname::
+  name for which _name_ is an alias
+hinfo::
+  host and operating system type
+*ip*::
+  for an IP address when _name_ is a domain name
+*mx*::
+  mail exchanger
+*ns*::
+  for a list of name servers
+*ptr*::
+  for the domain name when _name_ is an Internet address
+*soa*::
+  statement-of-authority
+
+_Dnsquery_ queries the _server_ for that name/attribute combination and
+prints the results, one per line. If an _attribute_ is not given,
+_dnsquery_ uses *ip* if _name_ looks like a domain name, and *ptr* if it
+looks like an Internet address.
+
+== FILES
+
+*#sdns**::
+  service directory
+*/net/dns*::
+  domain name service
+*/lib/ndb/local*::
+  network database
+*/lib/ndb/dns*::
+  DNS bootstrap data
+
+== SOURCE
+
+*/appl/cmd/ndb/dns.b* +
+*/appl/cmd/ndb/dnsquery.b*
+
+== SEE ALSO
+
+_dns_(6), _cs_(8)
+
+== BUGS
+
+_Dns_ does not yet offer an external DNS server, mainly for lack of a
+suitable database for local zone data.

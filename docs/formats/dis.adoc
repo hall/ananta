@@ -1,0 +1,371 @@
+= dis: Dis object file
+
+
+A Dis object file contains the executable form of a single module, and
+conventionally uses the file suffix *.dis*.
+
+The following names are used in the description of the file encoding.
+
+_byte_::
+  An unsigned 8-bit byte.
+_word_::
+  A 32-bit integer value represented in exactly 4 bytes.
+_long_::
+  A 64-bit integer value represented in exactly 8 bytes.
+_operand_::
+  An integer stored in a compact variable-length encoding selected by
+  the two most significant bits as follows:
+  +
+....
+0x	signed 7 bits, 1 byte
+
+
+10	signed 14 bits, 2 bytes
+
+
+11	signed 30 bits, 4 bytes
+....
+_string_::
+  A variable length sequence of bytes terminated by a zero byte. Names
+  thus represented are in _utf_(6) format.
+
+All integers are encoded in two's complement format, most significant
+byte first.
+
+Every object file has a header followed by five sections containing
+code, data, and several sorts of descriptors:
+
+________________________________________________________________________
+_header code-section type-section data-section module-name link-section_
+________________________________________________________________________
+
+Each section is described in turn below.
+
+== Header
+
+The header contains a magic number, a digital signature, a flag word,
+sizes of the other sections, and a description of the entry point. It
+has the following format:
+
+....
+header:
+	magic signature" opt  runflag stack-extent
+		code-size data-size type-size link-size entry-pc entry-type
+magic, runflag:
+	operand
+stack-extent, code-size, data-size, type-size, link-size:
+	operand
+entry-pc, entry-type:
+	operand
+....
+
+The magic number is defined as 819248 (symbolically *XMAGIC*), for
+modules that have not been signed cryptographically, and 923426
+(symbolically *SMAGIC*), for modules that contain a signature. The
+symbolic names *XMAGIC* and *SMAGIC* are defined by the C include file
+*/include/isa.h* and by the Limbo module _dis_(2).
+
+The _signature_ is present only if the magic number is *SMAGIC*. It has
+the form:
+
+....
+signature:
+	length signature-data
+length:
+	operand
+signature-data:
+	byte ...
+....
+
+A digital signature is defined by a length, followed by an array of
+bytes of that length that contain the signature in some unspecified
+format. Data within the signature should identify the signing authority,
+algorithm, and data to be signed.
+
+_Runflag_ is a bit mask that selects various execution options for a Dis
+module. The flags currently defined are:
+
+_________________________________________________________________________________________________________________________________________________________________________________________________________
+*MUSTCOMPILE* (1<<0)::
+  The module must be compiled into native instructions for execution
+  (using a just-in-time compiler); if the implementation cannot do that,
+  the *load* instruction should given an error.
+*DONTCOMPILE* (1<<1)::
+  The module should not be compiled into native instructions, when that
+  is the default for the runtime environment, but should be interpreted.
+  This flag may be set to allow debugging or to save memory.
+*SHAREMP* (1<<2)::
+  Each instance of the module should use the same module data for all
+  instances of the module. There is no implicit synchronisation between
+  threads using the shared data.
+*HASLDT* (1<<4)::
+  The dis file contains a separate import section. On older versions of
+  the system, this section was within the data section.
+*HASEXCEPT* (1<<5)::
+  The dis file contains an exception handler section.
+_________________________________________________________________________________________________________________________________________________________________________________________________________
+
+_Stack-extent_, if non-zero, gives the number of bytes by which the
+thread stack of this module should be extended in the event that
+procedure calls exhaust the allocated stack. While stack extension is
+transparent to programs, increasing this value may improve the
+efficiency of execution at the expense of using more memory.
+
+_Code-size_, _type-size_ and _link-size_ give the number of entries
+(instructions, type descriptors, linkage directives) in the
+corresponding sections.
+
+_Data-size_ is the size in bytes of the module's global data area (not
+the number of items in _data-section_).
+
+_Entry-pc_ is an integer index into the instruction stream that is the
+default entry point for this module. It should point to the first
+instruction of a function. Instructions are numbered from a program
+counter value of zero.
+
+_Entry-type_ is the index of the type descriptor in the type section
+that corresponds to the function entry point set by _entry-pc_.
+
+== Code Section
+
+The code section describes a sequence of instructions for the virtual
+machine. There are _code-size_ instructions. An instruction is encoded
+as follows:
+
+....
+instruction:
+	opcode address-mode middle-data" opt  source-data" opt  dest-data" opt 
+opcode, address-mode:
+	byte
+middle-data:
+	operand
+source-data, dest-data:
+	operand operand" opt 
+....
+
+The one byte _opcode_ specifies the instruction to execute; opcodes are
+defined by the virtual machine specification.
+
+The _address-mode_ byte specifies the addressing mode of each of the
+three operands: middle, source and destination. The source and
+destination operands are encoded by three bits and the middle operand by
+two bits. The bits are packed as follows:
+
+....
+bit  7  6  5  4  3  2  1  0
+    m1 m0 s2 s1 s0 d2 d1 d0
+....
+
+The following definitions are used in the description of addressing
+modes:
+
+____________________________________________
+*OP*::
+  30 bit integer operand
+
+*SO*::
+  16 bit unsigned small offset from register
+*SI*::
+  16 bit signed immediate value
+*LO*::
+  30 bit signed large offset from register
+____________________________________________
+
+The middle operand is encoded as follows:
+
+_______________________________
+**00 **__none__::
+  no middle operand
+*01 $SI*::
+  small immediate
+*10 SO(FP)*::
+  small offset indirect from FP
+*11 SO(MP)*::
+  small offset indirect from MP
+_______________________________
+
+The _middle-data_ field is present only if the middle operand specifier
+of the _address-mode_ is not `none'. If the field is present it is
+encoded as an _operand_.
+
+The source and destination operands are encoded as follows:
+
+_________________________
+*000 LO(MP)*::
+  offset indirect from MP
+*001 LO(FP)*::
+  offset indirect from FP
+*010 $OP*::
+  30 bit immediate
+**011 **___none___::
+  no operand
+*100 SO(SO(MP))*::
+  double indirect from MP
+*101 SO(SO(FP))*::
+  double indirect from FP
+*110*::
+  _reserved_
+*111*::
+  _reserved_
+_________________________
+
+The _source-data_ and _dest-data_ fields are present only when the
+corresponding _address-mode_ field is not `none'. For offset indirect
+and immediate modes the field contains a single _operand_ value. For
+double indirect modes the values are encoded as two _operands_: the
+first is the register indirect offset, and the second is the final
+indirect offset. The offsets for double indirect addressing cannot be
+larger than 16 bits.
+
+== Type Section
+
+The type section contains _type-size_ type descriptors describing the
+layout of pointers within data types. The format of each descriptor is:
+
+....
+type-descriptor:
+	desc-number memsize mapsize map
+desc-number, memsize, mapsize:
+	operand
+map:
+	byte ...
+....
+
+The _desc-number_ is a small integer index used to identify the
+descriptor to instructions such as *new*. _Memsize_ is the size in bytes
+of the memory described by this type.
+
+The _mapsize_ field gives the size in bytes of the following _map_
+array. _Map_ is an array of bytes representing a bit map where each bit
+corresponds to a word in memory. The most significant bit corresponds to
+the lowest address. For each bit in the map, the word at the
+corresponding offset in the type is a pointer iff the bit is set to 1.
+
+== Data Section
+
+The data section encodes the contents of the data segment for the
+module, addressed by *MP* at run-time. The section contains a sequence
+of items of the following form:
+
+....
+data-item:
+	code count" opt  offset data-value ...
+code:
+	byte
+count, offset:
+	operand
+....
+
+Each item contains an _offset_ into the section, followed by one or more
+data values in a machine-independent encoding. As each value is placed
+in the data segment, the offset is incremented by the size of the datum.
+
+The _code_ byte has two 4-bit fields. The bottom 4 bits of _code_ gives
+the number of _data-values_ if there are between 1 and 15; if there are
+more than 15, the low-order field is zero, and a following _operand_
+gives the count.
+
+The top 4 bits of _code_ encode the type of each _data-value_ in the
+item, which determines its encoding. The defined values are:
+
+_______________________________________________________________
+*0001*::
+  8 bit bytes
+*0010*::
+  32 bit integers, one _word_ each
+*0011*::
+  string value encoded by _utf_(6) in _count_ bytes
+*0100*::
+  real values in IEEE754 canonical representation, 8 bytes each
+*0101*::
+  Array, represented by two _words_ giving type and length
+*0110*::
+  Set base for data items: one _word_ giving an array index
+*0111*::
+  Restore base for data items: no operands
+*1000*::
+  64 bit big, 8 bytes each
+_______________________________________________________________
+
+The loader maintains a current base address and a stack of addresses.
+Each item's value is stored at the address formed by adding the current
+offset to the current base address. That address initially is the base
+of the module's data segment. The `set base' operation immediately
+follows an `array' _data-item_. It stacks the current base address and
+sets the current base address to the address of the array element
+selected by its operand. The `restore base' operation sets the current
+base address to the address on the top of the stack, and pops the stack.
+
+== Module name
+
+The module name immediately follows the data section. It contains the
+name of the module implemented by the object file, as a sequence of
+bytes in UTF encoding, terminated by a zero byte.
+
+== Link Section
+
+The link section contains an array of _link-size_ external linkage
+items, listing the functions exported by this module. Each
+variable-length item contains the following:
+
+....
+link-item:
+	pc desc sig fn-name
+pc, desc:
+	operand
+sig:
+	word
+fn-name:
+	string
+....
+
+_Fn-name_ is the name of an exported function. Adt member functions
+appear with their full names: the member name qualified by the adt name,
+in the form __adt-name__**.**_member-name,_ for instance *Iobuf.gets*.
+
+_Pc_ is the instruction number of its entry point. _Desc_ is an index
+value that selects a type descriptor in the type section, which gives
+the type of the function's stack frame. _Sig_ is an integer hash of the
+type signature of the function, used in type checking.
+
+== Import Section
+
+The optional import section lists all those functions imported from
+other modules. This allows type checking at load time. The size of the
+section in bytes is given at the start in operand form. For each module
+imported there is a list of functions imported from that module. For
+each function, its type signature (a word) is followed by a 0 terminated
+list of bytes representing its name.
+
+== Handler Section
+
+The final optional section lists all exception handlers declared in the
+module. The number of such handlers is given at the start of the section
+in operand form. For each one, its format is:
+
+....
+handler:
+	offset pc1 pc2 desc nlab exc-tab
+offset, pc1, pc2, desc, nlab:
+	operand
+exc-tab:
+	exc-name pc ... exc-name pc pc
+exc-name:
+	string
+pc:
+	operand
+....
+
+Each handler specifies the frame offset of its exception structure, the
+range of pc values it covers (from pc1 up to but not including pc2), the
+type descriptor of any memory that needs destroying by the handler (or
+-1 if none), the number of exceptions in the handler and then the
+exception table itself. The latter consists of a list of exception names
+and the corresponding pc to jump to when this exception is raised. This
+is then followed by the pc to jump to in any wildcard (*) case or -1 if
+this is not applicable.
+
+== SEE ALSO
+
+_asm_(1), _dis_(2), _sbl_(6) +
+``The Dis Virtual Machine Specification'', Volume 2

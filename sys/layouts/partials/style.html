@@ -159,7 +159,7 @@ a:hover { text-decoration: underline; }
   background-color: transparent;
   font-size: 145.5%;
   font-weight: bold;
-  margin: 2em 0 0 0;
+  margin: 1em 0 0 0;
   padding: 0.5ex 0 0.5ex 0.6ex;
   border-bottom: 2px solid rgb(0,102,204);
 }
@@ -191,10 +191,6 @@ dl {
 dt {
   font-weight: bold;
   margin: 0 0 0 0;
-  padding: 0;
-}
-dd {
-  margin: 0 0 2em 2em;
   padding: 0;
 }
 .hdlist2 > p {
@@ -246,6 +242,7 @@ div:not(.hdlist) > table tr:nth-child(2n), th {
 }
 .hdlist1 {
   font-weight: bold;
+  padding-right: 50px;
 }
 hr {
   border-width: 0px 0px 0.1em 0px;
@@ -284,6 +281,10 @@ code, pre {
   word-wrap: normal;
   background-color: rgba(27,31,35,.05);
   font-size: 85%;
+}
+
+:not(.highlight) > code {
+  padding: 1px 2px;
 }
 
 

@@ -1,0 +1,24 @@
+= manufacture: command to emulate set-top-box-id in ROM
+
+== SYNOPSIS
+
+**manufacture**__box-id__
+
+
+_Manufacture_ initialises the file */nvfs/ID* with the string _box-id_.
+The file emulates the serial number that the manufacturer of a real set
+top box would normally burn into ROM (see also *rtcid* in _rtc_(3)). The
+_box-id_ is used by _register_(8).
+
+== FILES
+
+*/nvfs/ID*::
+*/nvfs/default*::
+
+== SOURCE
+
+*/appl/cmd/manufacture.b*
+
+== SEE ALSO
+
+_register_(8)

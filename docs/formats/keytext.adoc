@@ -1,0 +1,103 @@
+= keytext: textual form of Inferno public/private keys
+
+
+_Keyring-certtostr_(2) defines a set of functions that convert between
+textual forms of the elements of the Inferno public-key authentication
+system and their internal data types. The textual form is used for key
+storage and as the transport format for the authentication protocol
+_auth_(6). In storage and transport each encoded value is encapsulated
+by the record-oriented encoding defined in _keyring-getmsg_(2). The
+format represents public and private keys, and signer's certificates. In
+this context a _certificate_ is a time-limited cryptographically signed
+hash of some other value (usually a public key) and contains neither
+that value nor the signer's key, which is assumed to be available
+elsewhere.
+
+All values are represented by a sequence of newline-separated text
+fields. The type of any given value is determined by its context. Each
+type of value has a common prefix that includes an algorithm identifier,
+followed by a sequence of algorithm-dependent fields:
+
+....
+authinfo ::= signer-public-key certificate !private-key big-alpha big-p
+
+
+certificate ::= sigalg hashalg signer-name exp-time *-sig
+
+
+sigalg ::= 
+rsa | 
+dsa | 
+elgamal
+
+
+hashalg ::= 
+sha1 | 
+md5
+
+
+*-key ::= sigalg owner-name ...
+
+rsa-public-key ::= 
+rsa
+owner-name
+big-n big-ek
+
+
+rsa-private-key ::= 
+rsa
+owner-name
+big-n big-ek
+
+
+ !big-dk !big-p !big-q !big-kp !big-kq !big-c2
+
+
+dsa-public-key ::= 
+dsa
+owner-name
+big-p big-q big-alpha big-key
+
+
+dsa-private-key ::= 
+dsa
+owner-name
+big-p big-q big-alpha big-key !big-secret
+
+rsa-sig ::= big-val
+
+
+dsa-sig ::= big-r big-s
+
+
+elgamal-sig ::= big-r big-s
+....
+
+Each value labelled as `__big-__' is an unsigned multiple-precision
+integer from _keyring-ipint_(2), represented as a sequence of bytes with
+in big-endian order, as produced by *IPint->iptobytes* with an extra
+leading zero byte added if the top bit of the first byte is set, and
+then encoded in base-64 (as by _encoding_(2)). Each value labelled
+`__-name__' is _utf (6)_ text not containing a newline; it is
+interpreted by an application and need not be a name. The expiry time
+_exp-time_ is represented in decimal as seconds from the Epoch (1
+January 1970 00:00 GMT); if it is zero, no expiry time is set. A label
+prefixed by `**!**' marks a value that should be considered secret.
+
+The hash of a key is computed over its textual encoding according to the
+syntax above. A certificate's signature value is produced by digitally
+signing using _sigalg_ the hash (using _hashalg_) of the concatenation
+of the value to be authenticated, the _signer-name_ in _utf_(6), a
+single space, and the _exp-time_ in decimal (with no leading zeroes).
+When checking a signature, comparisons are done with values in internal
+multiple-precision form (ie, as **IPint**s), not in base-64 form.
+
+== SEE ALSO
+
+_keyring-certtostr_(2), _keyring-getmsg_(2), _factotum_(4), _keys_(6),
+_getauthinfo_(8)
+
+== BUGS
+
+The byte-array encoding of *IPint* should not require the leading zero;
+it does so for compatibility with old keys.

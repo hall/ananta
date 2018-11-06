@@ -1,0 +1,51 @@
+= register: command to register set-top-box identity with signer
+
+== SYNOPSIS
+
+*mux/register* [ _signer_ ]
+
+
+_Register_ is intended for use on a set top box (or similar device). It
+connects to _signer_, a machine configured to sign certificates, and
+obtains an authenticated certificate based on the contents of
+
+(the set top box ID in non-volatile memory). The certificate is saved in
+the file
+
+for later use. If no _signer_ is named explicitly, the *$SIGNER* named
+in _db_(6) is used instead.
+
+There are several phases to obtaining the certificate.
+
+1.  The register command interacts with _signer_(8) on the signing host
+to construct the certificate. This certificate is `blinded' by a random
+bit mask, sent back to _register_ which displays it in textual or
+graphical form to the user.
+2.  The user running _register_ must use an independent, secure
+mechanism (for example, an untapped telephone call) to communicate with
+a human agent at the site acting as _signer_. That agent runs _verify_
+(see _signer_(8)) to display the same `blinded' certificate that was
+shown to _register_'s user at the client. Once the agent is convinced
+that the `blinded' certificate has been delivered to the correct party,
+the agent tells _verify_ to accept the identity of the caller.
+3.  _Register_ then connects to the _countersigner_ process (see
+_signer_(8)) to obtain the bitmask needed to `unblind' the previously
+received certificate. This step can only validly be performed after the
+successful completion of _verify_ on the _signer._
+
+== FILES
+
+*/nvfs/ID*::
+  File emulating set top box-id in ROM.
+*/nvfs/default*::
+  Repository of authenticated certificate.
+*/services/cs/db*::
+  Default definition of `signer' host.
+
+== SOURCE
+
+*/appl/mux/register.b*
+
+== SEE ALSO
+
+_db_(6), _manufacture_(8), _signer_(8)

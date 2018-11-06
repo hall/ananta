@@ -1,0 +1,86 @@
+= bootpd, tftpd: Internet booting
+
+== SYNOPSIS
+
+*ip/bootpd* [ *-dsq* ] [ **-f**__ dbfile__ ] [ **-x**__ network__ ]
+
+*ip/tftpd* [*-dr*] [ **-p**__ port__ ] [ **-h**__ homedir__ ] [ **-x**__
+network__ ]
+
+
+_Bootpd_ listens for Internet BOOTP requests and broadcasts a suitable
+reply to each request that matches an entry in the network database
+_dbfile_ (default: */lib/ndb/local*). The BOOTP protocol is typically
+used by a remote system as it boots, to obtain its Internet address and
+other configuration data such as the addresses of servers (see for
+instance the *bootp* file in _ip_(3)).
+
+_Dbfile_ is in _ndb_(6) format, as interpreted by _attrdb_(2). _Bootpd_
+uses the following attributes:
+
+*auth*::
+  authentication server name or address
+*bootf*::
+  name of the client's boot file
+*dom*::
+  fully-qualified domain name
+*ether*::
+  hardware (MAC) address; only Ethernet is supported
+*fs*::
+  file server name or address
+*ip*::
+  client's Internet address
+*ipgw*::
+  gateway from client's subnet (IP address)
+*ipmask*::
+  subnet mask
+*ipnet*::
+  network name
+*sys*::
+  system name (client identifier)
+
+_Bootpd_ replies to an incoming request only if its hardware address
+matches the value of the *ether* attribute of an entry in _dbfile ._ If
+found, the reply contains all the other requested data that is contained
+in the entry; if an item is missing, it is sought in the entries for
+successively higher networks (described by *ipnet* entries) that contain
+the requesting system's address. The `vendor specific' part of the reply
+conveys the file server and authentication server addresses to Inferno
+clients. Before answering a request, _bootpd_ rereads _dbfile_ if it has
+changed since last read.
+
+The *-s* option causes _bootpd_ to sniff the network for BOOTP traffic
+and print it, but not reply. The *-d* option prints debugging
+information; giving it twice prints even more. The *-x* option tells
+_bootpd_ to use a _network_ other than */net*. Currently _bootpd_ prints
+a message to standard output each time it replies; the *-q* option keeps
+it quiet.
+
+_Tftpd_ is mainly used to send kernels and configuration files to
+machines booting from the network. It listens for incoming TFTP file
+transfer requests on the given UDP _port_ (default: 69) and responds by
+sending or receiving a file as requested. _Homedir_ is the current
+directory for transfers, */services/tftpd* by default, and requests that
+use a relative path name refer to files in or below that directory. If
+the *-r* option is given, absolute path names are also restricted to
+_homedir_. _Tftpd_ runs as *none* (the least privileged user) and can
+send only files with general read permission, or write files that are
+generally writable. Normally _tftpd_ uses the network directory */net*,
+but another can be specified with the *-x* option. The *-d* option
+prints a debugging trace on standard output.
+
+== FILES
+
+*/lib/ndb/local*::
+  network configuration file
+*/services/tftpd*::
+  default directory for relative pathnames
+
+== SOURCE
+
+*/appl/cmd/ip/bootpd.b* +
+*/appl/cmd/ip/tftpd.b*
+
+== SEE ALSO
+
+_attrdb_(2), _ip_(3), _ndb_(6), _cs_(8), _dns_(8)

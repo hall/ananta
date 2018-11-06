@@ -1,0 +1,76 @@
+= signer, verify, countersigner: set-top box authentication
+
+== SYNOPSIS
+
+*auth/signer*
+
+**auth/verify**__ set-top-box-id__
+
+*auth/countersigner*
+
+
+_Signer_ and _countersigner_ listen for requests on the service ports
+*infsigner* and *infcsigner*, respectively. They are typically run via
+_svc_(8) on a machine acting as authentication server for a network.
+_Verify_ is invoked on the same server, after _signer_ but before
+_countersigner_, following an independent check of a caller's
+credentials.
+
+_Signer_ constructs an authentication certificate from the signer's key
+(in */keydb/signerkey*) and information from the requesting client,
+including the set top box ID. The signer's key can be created using
+_createsignerkey_(8), but if the key does not yet exist, _signer_
+creates and initialises */keydb/signerkey* itself, with an owner name of
+
+_Signer_ `blinds' the certificate by XOR-ing it with a random bit mask,
+then sends the result to the requesting client. The client machine's
+user uses that information to establish identity with a human agent on
+the signing machine. _Signer_ also saves the both the `blinded' and
+`unblinded' result from the input in
+**/keydb/signed/**__set-top-box-id__ for _verify_ (see below).
+
+_Verify_ is run on the signing server by the agency running the
+authentication server, in response to a call from a remote user who has
+invoked _register_(8) or an equivalent. _Verify_ checks a caller's
+identity using information from the file
+**/keydb/signed/**__set-top-box-id__ created by _signer_. The file
+contains the previously crafted authentication certificate and the
+`blinded' version of the certificate that was sent to the requesting
+client.
+
+_Verify_ displays the `blinded' version textually or graphically, as
+appropriate, so that it can be compared to that reported by the
+set-top-box owner over a secure independent mechanism (for example,
+telephone). If the operator of _verify_ is convinced of the identity of
+the caller, the operator should accept when prompted by _verify_.
+_Verify_ then writes the authentication certificate to
+**/keydb/countersigned/**__set-top-box-id,__ as input for
+_countersigner_ (see _signer_(8)).
+
+_Note:_ if the operator of _verify_ accepts the identity, the
+set-top-box owner should be requested to answer `yes' to the prompt
+displayed by _register_(8). The order of acceptance-first on the signer,
+then on the client-is essential, to produce the countersigned
+certificate before invoking _countersigner_ to read it.
+
+_Countersigner_ sends the blinding data in
+**/keydb/countersigned/**__set-top-box-id__ to the requesting client.
+
+== FILES
+
+*/keydb/signerkey*::
+  Secret key of the `signer' host.
+**/keydb/signed/**__set-top-box-id__::
+  Repository of `blinded' and clear certificates.
+**/keydb/countersigned/**__set-top-box-id__::
+  Repository of `unblinded' certificates.
+
+== SOURCE
+
+*/appl/cmd/auth/signer.b* +
+*/appl/cmd/auth/verify.b* +
+*/appl/cmd/auth/countersigner.b*
+
+== SEE ALSO
+
+_createsignerkey_(8), _register_(8), _svc_(8)

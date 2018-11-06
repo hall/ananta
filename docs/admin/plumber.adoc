@@ -1,0 +1,48 @@
+= plumber: plumber for interapplication message routing
+
+== SYNOPSIS
+
+*plumber* [ *-v* ] [ *-w* ] [ **-c**__ wmchan__ ] [ _rulefile_ ... ]
+
+
+_Plumber_ provides high-level message-passing between applications. In a
+plumbed environment, applications can receive messages on an input port,
+which is given a logical name. Messages are not sent directly between
+applications but are routed via the plumber, following user-specified
+rules.
+
+_Plumber_ is typically started by _wm_(1)'s startup script. It reads
+each _rulefile_ (default: **/usr/**__user__**/lib/plumbing**__)__ in
+turn. Each file has the form described in _plumbing_(6); the rules
+direct the routing of each message _plumber_ receives. _Plumber_ then
+lurks in the background with its mate, awaiting plumbing requests sent
+by _plumbmsg_(2), by windowing applications in response to events such
+as button clicks or drag-and-drop, or by _plumb_(1).
+
+When a message arrives, _plumber_ applies the rules to decide how to
+route it. It forwards the message to the selected application's input
+port, starting it if necessary. If no rule applies (or some other error
+occurs), _plumber_ returns an error to the message's sender. The *-v*
+option causes _plumber_ to log the contents of messages it receives, to
+help debug plumbing rules and applications.
+
+_Plumber_ normally starts applications directly. For use on devices that
+have specialised window managers, not _wm_(1), the *-w* option causes
+_plumber_ to start applications indirectly, by sending a message to a
+window manager listening on */chan/wm*, allowing the window manager to
+track every application started. The *-c* option can select an
+alternative _wmchan_ to */chan/wm*.
+
+== FILES
+
+**/usr/**__user__*/lib/plumbing*::
+  default plumbing rules for _user_
+
+== SOURCE
+
+*/appl/cmd/plumber.b* +
+*/appl/lib/plumbing.b*
+
+== SEE ALSO
+
+_plumb_(1), _wm_(1), _plumbmsg_(2), _plumbing_(6)

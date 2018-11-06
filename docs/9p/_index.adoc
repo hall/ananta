@@ -1,4 +1,4 @@
-= 9p intro: introduction to the file protocol 9P
+= 9p: introduction to the file protocol 9P
 
     #include <lib9.h>
     #include <styx.h>

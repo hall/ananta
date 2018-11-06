@@ -1,0 +1,48 @@
+= rip: routing information protocol
+
+== SYNOPSIS
+
+*ip/rip* [*-2*] [*-b*] [*-d*] [*-n*] [ **-x**__ mntpt__ ] [ _net_ ... ]
+*&*
+
+
+_Rip_ implements the Internet RIP routing protocol described by RFC1058
+and RFC2453. It watches the network and makes appropriate changes to the
+machine's Internet routing table (see *iproute* in _ip_(3)), based on
+routing packets broadcast by gateways on the network. _Rip_ is only used
+when a single default gateway is inadequate, typically because a machine
+sits on a network directly connected to several others, having no common
+gateway or router. On networks where there is just one gateway, it is
+usually simpler and more efficient to configure that statically using
+_ndb_(6) or dynamically using DHCP/BOOTP, rather than running _rip_.
+
+_Rip_ serves the network on _mntpt_ (default: */net*). When it starts,
+_rip_ learns its own interfaces and directly attached networks by
+reading __mntpt__**/ipifc**_,_ and notes any routes currently in
+__mntpt__**/iproute**_._
+
+By default, _rip_ neither broadcasts routes nor replies to requests for
+its route table. If the *-b* option is given, _rip_ periodically
+broadcasts changes to its routing table to each of its interfaces. If at
+least one explicit _net_ address is given, the broadcasts are restricted
+to just the interfaces listed (and *-b* is implied).
+
+The *-d* option causes _routed_ to record changes it makes to the
+routing tables. This can be helpful when locating misleading
+announcements from rogue gateways. A second *-d* will include detailed
+information about every packet. The *-n* option tells _rip_ not to
+change the local routing table, but only say what changes it would have
+made.
+
+_Rip_ understands both version1 and version 2 of the protocol, and
+interprets updates from gateways appropriately. By default, it transmits
+updates using version 1; if the *-2* option is given, it uses version 2
+instead, which is preferable when the network has subnets.
+
+== SOURCE
+
+*/appl/cmd/ip/rip.b*
+
+== SEE ALSO
+
+_ip_(3), _ndb_(6)

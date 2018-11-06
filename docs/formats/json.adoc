@@ -1,0 +1,50 @@
+= json: javascript object notation
+
+
+_JSON_ is a textual data transport encoding for a small collection of
+basic and structured values: *null*, booleans, numbers, strings, arrays,
+and objects (property/value list). It is a subset of JavaScript
+(ECMAScript). _Json_(2) describes a Limbo module that can read and write
+streams of JSON-encoded data.
+
+The encoding syntax and its interpretation is defined by Internet
+RFC4627, but is briefly summarised here:
+
+....
+text	::=	array | object
+
+value	::=	 null | true | false | number | string | array | object
+
+object	::=	'{' [pair (',' pair)*] '}'
+pair	::=	string ':' value
+
+array	::=	'[' [value (',' value)*] ']'
+
+number	::=	int frac? exp?
+int	::=	'-'? [0-9] | [1-9][0-9]+
+frac	::=	'.' [0-9]+
+exp	::=	[eE][-+]? [0-9]+
+
+string	::=	'"' char* '"'
+char	::=	[^\x00-\x1F"\\] |
+		 '\"' | '\/' | '\b' | '\f' | '\n' | '\r' | '\t' |
+		'\u' hex hex hex hex
+hex	::=	[0-9a-fA-F]
+....
+
+A sequence of blank, tab, newline or carriage-return characters (`white
+space') can appear before or after opening and closing brackets and
+braces, colons and commas, and is ignored. The *null* represents a null
+value of any type. The _strings_ in the _pairs_ of an _object_ are
+intended to represent member names, and should be unique within that
+object. Note that array and object denotations can be empty. Also note
+that the RFC wants applications to exchange a _text_ (ie, object or
+array) not an arbitrary _value_.
+
+== SEE ALSO
+
+_json_(2), _sexprs_(6), _ubfa_(6) +
+ +
+D Crockford, ``The application/json Media Type for JavaScript Object
+Notation (JSON)'', _RFC4627_. +
+*http://www.json.org/*

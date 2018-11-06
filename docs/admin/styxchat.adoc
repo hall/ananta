@@ -1,0 +1,115 @@
+= styxchat: exchange 9P (Styx) messages with a server or client
+
+== SYNOPSIS
+
+*styxchat* [ -m__ messagesize__ ] [ *-s* ] [ *-v* ] [ *-n* ] [
+_destination_ ]
+
+
+_Styxchat_ exchanges messages with a 9P service. (9P was previously
+called `Styx' when used by Inferno, hence the command's name.) See
+_intro_(5) for the protocol definition. It makes a connection to a given
+_destination_, (or waits for a connection on _destination,_ if the *-s*
+option is specified), then reads a textual representation of 9P
+T-messages from the standard input and writes them on the connection,
+with a copy on standard output, simultaneously reading 9P R-messages
+from the connection and printing a representation of them on standard
+output. Each message is represented by one line on the standard output
+in the form of a literal of either *Tmsg* or *Rmsg* types defined in
+_styx_(2). The *-v* option causes a second line to be written for
+*Rmsg.Read* and *Tmsg.Write* that shows the data transmitted, as text or
+binary as appropriate; if *-v* appears a second time, a third line is
+written that shows the text equivalent of apparently binary data (useful
+to see text that is surrounded by binary data).
+
+By default, _destination_ is the name of a file, typically one end of a
+named pipe. The *-n* option causes _destination_ to be interpreted as a
+network address, as accepted by _dial_(2) (or _listen_ with *-s*). If
+_destination_ is not provided, *styxchat* reads and writes 9P messages
+on its standard input, using */dev/cons* where it would usually use its
+standard input and output.
+
+Each line of standard input has the form:
+
+___________________________________________________
+ +
+**Tversion**__ messagesize version__ +
+**Tauth**__ afid uname aname__ +
+**Tflush**__ oldtag__ +
+**Tattach**__ fid afid uname aname__ +
+**Twalk**__ fid newfid [ name ... ]__ +
+**Topen**__ fid mode__ +
+**Tcreate**__ fid name perm mode__ +
+**Tread**__ fid offset count__ +
+**Twrite**__ fid offset data__ +
+**Tclunk**__ fid__ +
+**Tremove**__ fid__ +
+**Tstat**__ fid__ +
+**Twstat**__ fid name uid gid mode mtime length__ +
+**nexttag**__ [ tag ]__ +
+*dump*
+___________________________________________________
+
+The input is interpreted as space-separated fields using the quoting
+conventions of _sh_(1), allowing fields to contain spaces. Empty lines
+and lines beginning with *#* are ignored. The first field on each line
+is normally the name of a T-message. Subsequent fields provide parameter
+values for the corresponding message. Integers are given in the format
+accepted for integers by the Limbo compiler (e.g. *16rffff*): a _tag_ is
+16 bits, _offset_ and _length_ are 64 bits, and all others are 32-bit
+integers. If the an integer parameter field contains *~0*, it is taken
+to be the `all ones' value of appropriate size for that parameter; this
+is particularly useful with *Twstat*, where that value represents `no
+change'. In the ``mode'' field of a qid, letters can be given,
+representing mode bits: *d* for *QTDIR*, *l* for *QTEXCL*, *a* for
+*QTAPPEND*, and *u* for *QTAUTH*. In an *Rstat* message, the qid mode
+bits are copied into the *Rstat* mode field in the appropriate place.
+
+Following the _sh_(1) quoting rules, an empty string is represented by a
+field containing ''. The _data_ field is sent as its UTF-8
+representation as an array of bytes. The value for _fid_ can be *nofid*
+(or *NOFID*) to represent the `no fid' value in the protocol. The _tag_
+for each message is automatically supplied by _styxchat_, starting from
+1, and incremented with each successful message transmission. The
+*nexttag* command will cause subsequent tags to start from _tag_; if
+none is given, it will print the next tag value. The _tag_ may be
+*notag* to represent the `no tag' value (*16rFFFF*).
+
+The *dump* command has the same effect as a *-v* option, allowing data
+display to be enabled later.
+
+By default, _styxchat_ sends a 9P client's T-messages and prints a
+server's R-messages. The *-s* option causes it to present a server's
+view: it prints the T-messages from 9P clients, and sends R-messages as
+it reads a textual representation of them from standard input:
+
+_________________________________________________________________
+ +
+**Rversion**__ tag messagesize version__ +
+**Rauth**__ tag aqid__ +
+**Rflush**__ tag__ +
+**Rerror**__ tag ename__ +
+**Rattach**__ tag qid__ +
+**Rwalk**__ tag qid ...__ +
+**Ropen**__ tag qid iounit__ +
+**Rcreate**__ tag qid iounit__ +
+**Rread**__ tag data__ +
+**Rwrite**__ tag count__ +
+**Rclunk**__ tag__ +
+**Rremove**__ tag__ +
+**Rstat**__ tag qid mode atime mtime length name uid gid muid__ +
+**Rwstat**__ tag__ +
+*dump*
+_________________________________________________________________
+
+The input conventions are as above, except that tags are required. A
+_qid_ is a single field of the form _path_._vers_[._type_], where the
+three values are decimal integers.
+
+== SOURCE
+
+*/appl/cmd/styxchat.b*
+
+== SEE ALSO
+
+_styx_(2), _intro_(5), _styxmon_(8)

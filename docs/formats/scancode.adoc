@@ -1,0 +1,26 @@
+= scancode: known formats of scan codes
+
+
+The *scancode* interface of _cons_(3) provides access to scan codes of
+the primary keyboard. There are as many scan code formats as keyboards.
+Here are some common ones.
+
+== Microsoft Windows™ Virtual Key
+
+The identifier is *emu_win32vk*, and each scan code is encoded in the
+two byte format specified in _cons(3)_. This format is used by the
+Microsoft Windows™ implementation of _emu_(1E), and each scan code is a
+_Virtual Key_. See the appropriate Microsoft documentation for the
+meaning of the codes.
+
+== X11
+
+The identifier is *emu_x11*, and each scan code is encoded in the single
+byte format specified in _cons(3)_. This format is used by the various
+Unix/X11 implementations of _emu_(1E), and each scan code is an X11
+_keycode_. See the appropriate X11 documentation for the meaning of the
+codes.
+
+== SEE ALSO
+
+_cons_(3)

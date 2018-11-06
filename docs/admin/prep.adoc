@@ -1,0 +1,314 @@
+= prep, fdisk, format, mbr: prepare hard and floppy diskettes, flashes
+
+== SYNOPSIS
+
+*disk/prep* [ *-bcfnprw* ] [ *-a* _name_ ]... [ *-s* _sectorsize_ ]
+_plan9partition_
+
+*disk/fdisk* [ *-abfprw* ] [ *-s* _sectorsize_ ] _disk_
+
+*disk/format* [ *-dfvx* ] [ *-b* _bootblock_ ] [ *-c* _csize_ ] [ *-l*
+_label_ ] [ *-r* _nresrv_ ] [ *-t* _type_ ] _disk_ [ _file_... ]
+
+*disk/mbr* [ *-9* ] [ *-m* _mbrfile_ ]
+
+
+A partition table is stored on a hard disk to specify the division of
+the physical disk into a set of logical units. On PCs, the partition
+table is stored at the end of the master boot record of the disk.
+Partitions of type *0x39* are Plan 9 partitions. Inferno uses the same
+type and follows other Plan 9 conventions described here. The names of
+PC partitions are chosen by convention from the type: *dos*, *plan9*,
+etc. Second and subsequent partitions of the same type on a given disk
+are given unique names by appending a number (or a period and a number
+if the name already ends in a number).
+
+Plan 9 partitions (and Plan 9 disks on non-PCs) are themselves divided,
+using a textual partition table, called the Plan 9 partition table, in
+the second sector of the partition (the first is left for
+architecture-specific boot data, such as PC boot blocks). Inferno again
+uses the same conventions. The table is a sequence of lines of the
+format **part**__ name start end__*,* where _start_ and _end_ name the
+starting and ending sector. Sector 0 is the first sector of the Plan 9
+partition or disk, regardless of its position in a larger disk.
+Partition extents do not contain the ending sector, so a partition from
+0 to 5 and a partition from 5 to 10 do not overlap.
+
+The Plan 9 partition often contains a number of conventionally named
+subpartitions. Only *9fat*, *fs* and *nvram* are currently used by
+Inferno, but the others are included for reference. They include:
+
+*9fat*::
+  A small FAT file system used to hold configuration information (such
+  as *plan9.ini* and *plan9.nvr*) and kernels. This typically begins in
+  the first sector of the partition, and contains the partition table as
+  a ``reserved'' sector. See the discussion of the *-r* option to
+  _format_.
+*arenas*::
+  A Plan 9 _venti_ arenas partition.
+*cache*::
+  A Plan 9 _cfs_ file system cache.
+*fossil*::
+  A Plan 9 _fossil_ file system.
+*fs*::
+  A _kfs_(4) file system.
+*fscfg*::
+  A one-sector partition used to store a _ds_(3) configuration.
+*isect*::
+  A Plan 9 _venti_ index section.
+*nvram*::
+  A one-sector partition used to simulate non-volatile RAM on PCs.
+*other*::
+  A non-archived Plan 9 _fossil_ file system.
+*swap*::
+  A Plan 9 swap partition.
+
+_Fdisk_ edits the PC partition table and is usually invoked with a disk
+like */dev/sdC0/data* as its argument, while _prep_ edits the Plan 9
+partition table and is usually invoked with a disk partition like
+*/dev/sdC0/plan9* as its argument. _Fdisk_ works in units of disk
+``cylinders'': the cylinder size in bytes is printed when _fdisk_
+starts. _Prep_ works in units of disk sectors, which are almost always
+512 bytes. _Fdisk_ and _prep_ share most of their options:
+
+*-a*::
+  Automatically partition the disk. _Fdisk_ will create a Plan 9
+  partition in the largest unused area on the disk, doing nothing if a
+  Plan 9 partition already exists. If no other partition on the disk is
+  marked active (i.e. marked as the boot partition), _fdisk_ will mark
+  the new partition active. _Prep_'s *-a* flag takes the name of a
+  partition to create. (See the list above for partition names.) It can
+  be repeated to specify a list of partitions to create. If the disk is
+  currently unpartitioned, _prep_ will create the named partitions on
+  the disk, attempting to use the entire disk in a sensible manner. The
+  partition names must be from the list given above.
+*-b*::
+  Start with a blank disk, ignoring any extant partition table.
+*-p*::
+  Print a sequence of commands that when sent to the disk device's *ctl*
+  file will bring the partition table information kept by the _sd_(3)
+  driver up to date. Then exit. _Prep_ will check to see if it is being
+  called with a disk partition (rather than an entire disk) as its
+  argument; if so, it will translate the printed sectors by the
+  partition's offset within the disk. Since _fdisk_ operates on a table
+  of unnamed partitions, it assigns names based on the partition type
+  (e.g., *plan9*, *dos*, *ntfs*, *linux*, *linuxswap*) and resolves
+  collisions by appending a numbered suffix. (e.g., *dos*, *dos1*,
+  *dos2*).
+*-r*::
+  In the absence of the *-p* and *-w* flags, _prep_ and _fdisk_ enter an
+  interactive partition editor; the *-r* flag runs the editor in
+  read-only mode.
+**-s**__ sectorsize__::
+  Specify the disk's sector size. In the absence of this flag, _prep_
+  and _fdisk_ look for a disk *ctl* file and read it to find the disk's
+  sector size. If the *ctl* file cannot be found, a message is printed
+  and a sector size of 512 bytes is assumed.
+*-w*::
+  Write the partition table to the disk and exit. This is useful when
+  used in conjunction with *-a* or *-b*.
+
+If neither the *-p* flag nor the *-w* flag is given, _prep_ and _fdisk_
+enter an interactive partition editor that operates on named partitions.
+The PC partition table distinguishes between primary partitions, which
+can be listed in the boot sector at the beginning of the disk, and
+secondary (or extended) partitions, arbitrarily many of which may be
+chained together in place of a primary partition. Primary partitions are
+named **p**__n__, secondary partitions **s**__n__. The number of primary
+partitions plus number of contiguous chains of secondary partitions
+cannot exceed four.
+
+The commands are as follows. In the descriptions, read ``sector'' as
+``cylinder'' when using _fdisk_.
+
+*a _name_ [ _start_ [ _end_ ] ]*::
+  Create a partition named _name_ starting at sector offset _start_ and
+  ending at offset _end_. The new partition will not be created if it
+  overlaps an extant partition. If _start_ or _end_ are omitted, _prep_
+  and _fdisk_ will prompt for them. In _fdisk_, the newly created
+  partition has type ``**PLAN9**;'' to set a different type, use the *t*
+  command (q.v.). _Start_ and _end_ may be expressions using the
+  operators *+*, *-*, ***, and */*, numeric constants, and the
+  pseudovariables *.* and *$*. At the start of the program, *.* is set
+  to zero; each time a partition is created, it is set to the end sector
+  of the new partition. It can also be explicitly set using the *.*
+  command. When evaluating _start_, *$* is set to one past the last disk
+  sector. When evaluating _end_, *$* is set to the maximum value that
+  _end_ can take on without running off the disk or into another
+  partition. Finally, the expression __n__**%** evaluates to
+  (__n__×_disksize_)/100. As an example, *a* *.* *.+20%* creates a new
+  partition starting at *.* that takes up a fifth of the disk, and *a*
+  *1000* *$* creates a new partition starting at sector 1000 and
+  extending as far as possible.
+*. _newdot_*::
+  Set the value of the variable *.* to _newdot_, which is an arithmetic
+  expression as described in the discussion of the *a* command.
+**d**__ name__::
+  Delete the named partition.
+*h*::
+  Print a help message listing command synopses.
+*p*::
+  Print the disk partition table. Unpartitioned regions are also listed.
+  The table consists of a number of lines containing partition name,
+  beginning and ending sectors, and total size. A *'* is prefixed to the
+  names of partitions whose entries have been modified but not written
+  to disk. _Fdisk_ adds to the end of each line a textual partition
+  type, and places a *** next to the name of the active partition (see
+  the *A* command below).
+*P*::
+  Print the partition table in the format accepted by the disk's *ctl*
+  file, which is also the format of the output of the *-p* option.
+*w*::
+  Write the partition table to disk. _Prep_ will also inform the kernel
+  of the changed partition table. The write will fail if any programs
+  have any of the disk's partitions open. If the write fails (for this
+  or any other reason), _prep_ and _fdisk_ will attempt to restore the
+  partition table to its former state.
+*q*::
+  Quit the program. If the partition table has been modified but not
+  written, a warning is printed. Typing *q* again will quit the program.
+
+_Fdisk_ also has the following commands.
+
+**A**__"__*name*::
+  Set the named partition active. The active partition is the one whose
+  boot block is used when booting a PC from disk.
+*e*::
+  Print the names of empty slots in the partition table, i.e., the valid
+  names to use when creating a new partition.
+**t**__"__**[**__type__*]*::
+  Set the partition type. If it is not given, _fdisk_ will display a
+  list of choices and then prompt for it.
+
+_Format_ prepares for use the floppy diskette or hard disk partition in
+the file named _disk_, for example */dev/fd0disk* or */dev/sdC0/9fat*.
+The options are:
+
+*-f*::
+  Do not physically format the disc. Used to install a FAT file system
+  on a previously formatted disc. If _disk_ is not a floppy device, this
+  flag is a no-op.
+*-t*::
+  specify a density and type of disk to be prepared. The possible
+  _types_ are:
+  +
+  *3½DD*;;
+    3½" double density, 737280 bytes
+  *3½HD*;;
+    3½" high density, 1474560 bytes
+  *5¼DD*;;
+    5¼" double density, 368640 bytes
+  *5¼HD*;;
+    5¼" high density, 1146880 bytes
+  *hard*;;
+    fixed disk
+  +
+  The default when _disk_ is a floppy drive is the highest possible on
+  the device. When _disk_ is a regular file, the default is *3½HD*. When
+  _disk_ is an _sd_(3) device, the default is *hard*.
+*-d*::
+  initialize a FAT file system on the _disk_.
+*-b*::
+  use the contents of _bootblock_ as a bootstrap block to be installed
+  in sector 0.
+
+The remaining options have effect only when *-d* is specified:
+
+*-c*::
+  use a FAT cluster size of _csize_ sectors when creating the FAT.
+*-l*::
+  add a _label_ when creating the FAT file system.
+*-r*::
+  mark the first _nresrv_ sectors of the partition as ``reserved''.
+  Since the first sector always contains the FAT parameter block, this
+  really marks the _nresrv_-1 sectors starting at sector 1 as
+  ``reserved''. When formatting the *9fat* partition, *-r* *2* should be
+  used to jump over the partition table sector.
+
+Again under *-d*, any _files_ listed are added, in order, to the root
+directory of the FAT file system. The files are contiguously allocated.
+If a file is named *9load*, it will be created with the *SYSTEM*
+attribute set so that _dossrv_(4) keeps it contiguous when modifying it.
+
+_Format_ checks for a number of common mistakes; in particular, it will
+refuse to format a *9fat* partition unless *-r* is specified with
+_nresrv_ larger than two. It also refuses to format a raw _sd_(3)
+partition that begins at offset zero in the disk. (The beginning of the
+disk should contain an _fdisk_ partition table with master boot record,
+not a FAT file system or boot block.) Both checks are disabled by the
+*-x* option. The *-v* option prints debugging information.
+
+The file */Inferno/386/pbs* is an example of a suitable _bfile_ to make
+the disk a boot disk. It gets loaded by the BIOS at 0x7C00, reads the
+root directory into address 0x7E00, and looks at the first root
+directory entry. If that file is called *9LOAD*, it uses single sector
+reads to load the file into address 0x10000 and then jumps to the loaded
+file image. The file */Inferno/386/pbslba* is similar, but because it
+uses LBA addressing (not supported by all BIOSes), it can access more
+than the first 8.5GB of the disk.
+
+_Mbr_ installs a new boot block in sector 0 (the master boot record) of
+a disk such as */dev/sdC0/data*. This boot block should not be confused
+with the boot block used by _format_, which goes in sector 0 of a
+partition. Typically, the boot block in the master boot record scans the
+PC partition table to find an active partition and then executes the
+boot block for that partition. The partition boot block then loads a
+bootstrap program such as _9load_(10.8), which then loads the operating
+system. If MS-DOS or Windows 9[58] is already installed on your hard
+disk, the master boot record already has a suitable boot block.
+Otherwise, */Inferno/386/mbr* is an appropriate _mbrfile_. It detects
+and uses LBA addressing when available from the BIOS (the same could not
+be done in the case of *pbs* due to space considerations). If the
+_mbrfile_ is not specified, a boot block is installed that prints a
+message explaining that the disk is not bootable. The *-9* option
+initialises the partition table to consist of one *plan9* partition
+which spans the entire disc starting at the end of the first track.
+
+== EXAMPLES
+
+Initialize the kernel disk driver with the partition information from
+the FAT boot sectors. If Plan 9 partitions exist, pass that partition
+information as well.
+
+....
+for(disk in /dev/sd??) {
+	if(ftest -f $disk/data && ftest -f $disk/ctl){
+		disk/fdisk -p $disk/data >$disk/ctl
+	}
+	for(part in $disk/plan9*){
+		if(ftest -f $part){
+			disk/prep -p $part >$disk/ctl
+		}
+	}
+}
+....
+
+Create a boot floppy on a previously formatted diskette:
+
+....
+disk/format -b /Inferno/386/pbs -df /dev/fd0disk /Inferno/386/9load /tmp/plan9.ini
+....
+
+Initialize the blank hard disk */dev/sdC0/data*.
+
+....
+disk/mbr -m /Inferno/386/mbr /dev/sdC0/data
+disk/fdisk -baw /dev/sdC0/data
+disk/prep -bw -a^(9fat fs) /dev/sdC0/plan9
+disk/format -b /Inferno/386/pbslba -d -r 2 /dev/sdC0/9fat 9load 9pcdisk plan9.ini
+....
+
+== SOURCE
+
+*/appl/cmd/disk/prep* +
+*/appl/cmd/disk/format.b* +
+*/os/boot/pc*
+
+== SEE ALSO
+
+_floppy_(3), _sd_(3), _9load_(10.8), _plan9.ini_(10.8)
+
+== BUGS
+
+_Format_ can create FAT12 and FAT16 file systems, but not FAT32 file
+systems. The boot block can only read from FAT12 and FAT16 file systems.

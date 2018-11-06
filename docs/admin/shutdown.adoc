@@ -1,0 +1,25 @@
+= shutdown: shut down system/emulator
+
+== SYNOPSIS
+
+*shutdown* *-h*
+
+*shutdown* *-r*
+
+
+_Shutdown_ halts (*-h*) or restarts (*-r*) _emu_(1) or a native kernel.
+If restarted, _emu_(1) will be given the same options as were given it
+when it started.
+
+== FILES
+
+*/dev/sysctl*
+
+== SOURCE
+
+*/dis/shutdown*::
+  _sh_(1) script
+
+== SEE ALSO
+
+_cons_(3)

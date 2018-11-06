@@ -1,0 +1,38 @@
+= ftl: Flash Translation Layer formatter
+
+== SYNOPSIS
+
+*disk/ftl* _flashsize_ _secsize_ _kfsfile_ _output_
+
+
+_Ftl_ reads a file system image in _kfs_(3) format from _kfsfile_ and
+adds the data structures needed to make it a valid image for the Flash
+Translation Layer driver _ftl_(3). The result is written to the _output_
+file, which can be copied to initialise the flash memory of a suitable
+device (see _flash_(3)).
+
+The other arguments describe the characteristics of the flash memory:
+
+_flashsize_::
+  The size in bytes of the flash memory to which _output_ will be
+  copied; exactly _flashsize_ bytes will be written to _output_.
+_secsize_::
+  The effective erase unit (sector) size in bytes of the flash memory,
+  as seen by the processor, having allowed for bus width. For example, a
+  bank of flash formed from byte-wide flash chips, each with 16kbyte
+  sectors, wired across a 4 byte bus, might have an effective erase unit
+  size of 64kbytes.
+
+The _kfsfile_ must not be larger than the size (length) of the *ftldata*
+file provided by _ftl_(3) for the target flash device or partition.
+(That size is invariably less than the size of the raw flash, owing to
+the overhead of FTL data structures and a reserve pool of 5% to reduce
+the number of erase cycles; see _ftl_(3)).
+
+== SOURCE
+
+*/appl/cmd/disk/ftl.b*
+
+== SEE ALSO
+
+_flash_(3), _ftl_(3), _kfs_(3)

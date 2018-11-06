@@ -1,0 +1,157 @@
+= sexprs: symbolic expressions
+
+
+S-expressions (`symbolic expressions') provide a way for programs to
+store and exchange tree-structured text and binary data. The Limbo
+module _sexprs_(2) provides the variant defined by Rivest in Internet
+Draft
+
+(4 May 1997), as used for instance by the Simple Public Key
+Infrastructure (SPKI). It provides a `canonical' form of S-expression,
+and an `advanced' form for display. They can convey binary data directly
+and efficiently, unlike some other schemes such as XML. The two forms
+are closely related and all can be read or written by _sexprs_(2),
+including a variant sometimes used for transport on links that are not
+8-bit safe.
+
+An S-expression is either a sequence of bytes (a byte _string_), or a
+parenthesised list of smaller S-expressions. All forms start with the
+fundamental rules below, in extended BNF:
+
+....
+sexpr	::=	string | list
+list	::=	'(' sexpr* ')'
+....
+
+They give the recursive structure. The various representations
+ultimately differ only in how the byte string is represented and whether
+white space such as blanks or newlines can appear.
+
+Furthermore, the definition of _string_ is also common to all forms:
+
+....
+string	::=	display? simple-string
+display	::=	'[' simple-string ']'
+....
+
+The optional bracketed _display_ string provides information on how to
+present the associated byte string to a user. (``It has no other
+function. Many of the MIME types work here.'') Although supported by
+_sexprs_(2), it is largely unused by Inferno applications and is usually
+left out. The canonical and advanced forms differ in their definitions
+of _simple-string_. They always denote sequences of 8-bit bytes, but
+with different syntax (encodings). Two _strings_ are equal iff their
+_simple-strings_ encode the same byte strings (for both data and
+_display_).
+
+_Canonical_ form must be used when exchanging S-expressions between
+computers, and when digitally signing an expression. It is defined by
+the complete set of rules below:
+
+....
+sexpr	::=	string | list
+list	::=	'(' sexpr* ')'
+string	::=	display? simple-string
+display	::=	'[' simple-string ']'
+simple-string	::=	raw
+raw	::=	nbytes ':' byte*
+nbytes	::=	[1-9][0-9]+ |  0
+....
+
+Its _simple-string_ is a raw byte string. The primitive _byte_
+represents an 8-bit byte. The length of every byte string is given
+explicitly by a preceding decimal value _nbytes_ (with no leading
+zeroes). There is no white space. It is `canonical' because it is
+uniquely defined for each S-expression. It is efficient to parse even on
+small computers.
+
+_Advanced_ form is more elaborate, and has two main differences: not all
+byte strings need an explicit length, and binary data can be represented
+in printable form, either using hexadecimal or base 64 encodings, or
+using quoted strings (with escape sequences similar to those of Limbo or
+C). Unquoted text is called a _token_, and is restricted by the standard
+to a specific alphabet: it must contain only letters, digits, or
+characters from the set
+
+and must not start with a digit. The latter restriction is imposed to
+allow byte counts to be distinguished from tokens without lookahead, but
+has the consequence that decimal numbers must be quoted, as must
+non-ASCII characters in _utf_(6) encoding. Upper- and lower-case letters
+are distinct. The advanced transport syntax is defined by the complete
+set of rules below:
+
+....
+sexpr	::=	string | list
+list	::=	'(' ( sexpr | whitespace )* ')'
+string	::=	display? simple-string
+display	::=	'[' simple-string ']'
+simple-string	::=	raw | token | base-64 | hexadecimal |  quoted-string
+raw	::=	nbytes ':' byte*
+nbytes	::=	[1-9][0-9]+ |  0
+token	::=	token-start token-char*
+base-64	::=	decimal? '|' ( base-64-char | whitespace )* '|'
+hexadecimal	::=	'#' ( hex-digit | whitespace )* '#'
+quoted-string	::=	nbytes? quoted-string-body  
+quoted-string-body	::=	'"' byte* '"'
+token-start	::=	[-./_:*+=a-zA-Z]
+token-char	::=	token-start | [0-9]
+hex-digit	::=	[0-9a-fA-F]
+base-64-char	::=	[a-zA-Z0-9+/=]
+....
+
+_Whitespace_ is any sequence of blank, tab, newline or carriage-return
+characters; note that it can appear only at the places shown. The
+_bytes_ in a _quoted-string-body_ are interpreted according to the
+quoting rules for Limbo (or C). That is, the bytes are enclosed in
+quotes, and may contain the escape sequences for the following
+characters: backspace (*\b*), form-feed (*\f*), newline (*\n*),
+carriage-return (*\r*), tab (*\t*), and vertical tab (*\v*), octal
+escape **\**__ooo__ (all three digits must be given), hexadecimal escape
+**\x**__hh__ (both digits must be given), *\\* for backslash, *\'* for
+single quote, and and \" to include a quote in a string. Note that a
+quoted string can have an optional _nbytes_, but it gives the length of
+the byte string resulting _after_ interpreting character escapes.
+
+Both canonical and advanced forms can contain binary data verbatim.
+Sometimes that is troublesome for storage or transport. At the lexical
+level any _sexpr_ can therefore be replaced by the following:
+
+....
+'{' ( base-64-char | whitespace )* '}'
+....
+
+where the text between the braces is the base-64 encoding of the _sexpr_
+expressed in canonical or advanced form. The S-expression parser will
+replace the sequence by its decoded, and resume parsing at the start of
+that byte string. Note the difference in syntax and interpretation from
+rule _base-64_ above, which encodes a _simple-string_, not an _sexpr_.
+
+== EXAMPLES
+
+The following S-expression is in canonical form:
+
+....
+(12:hello world!(5:inner0:))
+....
+
+It is a list of two elements: the string *hello world!*, and another
+list also with two elements, the string *inner* and an empty string. All
+the bytes in the example are printable characters, but they could have
+been arbitrary binary values.
+
+The following is an S-expression in advanced form:
+
+....
+(hello-world
+    (* "3" "5.6")
+    (best-of-3 (5:inner0:)))
+....
+
+Note that advanced form contains canonical form as a subset; here it is
+used for the innermost list.
+
+== SEE ALSO
+
+_sexprs_(2), _json_(6), _ubfa_(6)
+
+ - R. Rivest, ``S-expressions'', Network Working Group Internet Draft (4 May 1997), reproduced in */lib/sexp*.

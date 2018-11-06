@@ -1,0 +1,36 @@
+= users: kfs file server user list format
+
+
+The permanent file server _kfs_(4) maintains a private list of users and
+groups, in */adm/users* by convention. Each line in the file has the
+format
+
+_________________________________________________
+__num__**:**__name__**:**__leader__**:_members_**
+_________________________________________________
+
+where _num_ is a decimal integer, _name_ and _leader_ are printable
+strings excluding the characters
+
+and
+
+and _members_ is a comma-separated list of such strings. Such a line
+defines a user and a group with the given _name_; the group has a group
+leader given by _leader_ and group members given by the user names in
+_members_. The _leader_ field may be empty, in which case any group
+member is a group leader. The _members_ field may be empty.
+
+Lines beginning with
+
+are ignored.
+
+The _num_ in a line is a number used internally by a file server; there
+should be no duplicate __num__s in the file. A negative _num_ is
+special: a user with a negative _num_ cannot attach to the file server.
+The file */adm/users* itself is owned by user _adm_, having a negative
+_num_, and write protected to others, so it can only be changed via
+console commands.
+
+== SEE ALSO
+
+_kfs_(4), _intro_(5), _stat_(5), _kfscmd_(8)

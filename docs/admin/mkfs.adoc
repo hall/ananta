@@ -1,0 +1,114 @@
+= mkfs, mkext: archive or update a file system
+
+== SYNOPSIS
+
+*disk/mkfs* [*-aprvxS*] [*-d* _dest_] [*-n* _name_] [*-s* _source_]
+[*-u* _users_] [*-z* _n_] [*-G* _group_] [*-U* _user_] _proto ..._
+
+*disk/mkext* [*-d* _name_] [*-f*] [*-h*] [*-T*] [*-u*] [*-v*] [ _file
+..._ ]
+
+
+_Mkfs_ copies files from the file tree _source_ (default */*) to a *kfs*
+file system (see _kfs_(4)) assumed to be mounted on _dest_ (default:
+*/n/kfs*). The _proto_ files are read, and any files specified in them
+that are out of date are copied to _dest_. See _proto_(6) for the
+description of file system prototype files.
+
+_Mkfs_ by default copies only those files that are out of date. Such a
+file is first copied into a temporary file in the appropriate
+destination directory and then moved to the destination file. Files in
+the _kfs_ file system that are not specified in the _proto_ file are not
+updated and not removed.
+
+The options to _mkfs_ are:
+
+*-a*::
+  Instead of writing to a *kfs* file system, write an archive file to
+  standard output, suitable for _mkext_. All files in _proto_ are
+  archived, not just those out of date.
+*-x*::
+  For use with *-a*, this option writes a list of file names, dates, and
+  sizes to standard output rather than producing an archive file.
+**-n**__ name__::
+  Use **kfs.**__name__*.cmd* as the name of the command file for the
+  _kfs_(4) assumed to be mounted on _dest_.
+*-p*::
+  Update the permissions of a file even if it is up to date.
+*-r*::
+  Copy all files.
+**-s**__ source__::
+  Copy from files rooted at the tree _source_.
+**-u**__ users__::
+  Before copying any other file, copy file _users_ into
+  __dest__**/adm/users**_,_ and if the *-n* option was given, also issue
+  the _kfs_(4) command *users* to update _kfs_'s own user list.
+*-v*::
+  Print the names of all of the files as they are copied.
+**-z**__ n__::
+  Copy files assuming _kfs_ is using a block size of _n_ bytes (default
+  1024). If a block contains only 0-valued bytes, it is not copied.
+*-S*::
+  For use with the *-d* option, make owner and group of each file copied
+  match the original.
+**-G**__ group__::
+  Force all files copied to have the given _group_.
+**-U**__ user__::
+  Force all files copied to be owned by the given _user_.
+
+_Mkext_ unpacks an archive created by the *-a* option of _mkfs_, read
+from the standard input. If one or more files are specified on the
+command line, only those files are unpacked. If a _file_ is a directory,
+all files and subdirectories of that directory are also unpacked. When a
+file is unpacked, the entire path is created if it does not exist. If no
+files are specified, the entire archive is unpacked; in this case,
+missing intermediate directories are not created. The options are:
+
+**-d**__ dir__::
+  Treat _dir_ (default
+
+as the root directory when unpacking the archive.
+
+*-h*::
+  Print headers for the files on standard output instead of unpacking
+  the files.
+*-T*::
+  Restore the modification times of the files.
+*-u*::
+  Set the owners of the files created to correspond to those in the
+  archive and restore the modification times of the files.
+*-v*::
+  Print the names and sizes of files as they are extracted.
+
+== EXAMPLES
+
+Make an archive to establish a new file system (assuming that the output
+file *arch* is not referenced by *proto*):
+
+....
+bind '#U' /n/local
+disk/mkfs -a -s /n/local proto > arch
+....
+
+Unpack that archive on another machine:
+
+....
+mount tcp!server /n/remote
+disk/mkext -u -d /n/remote < arch
+....
+
+== FILES
+
+*/lib/proto*::
+  directory of prototype files.
+*/lib/proto/all*::
+  contains a single + (archive any directory structure)
+
+== SOURCE
+
+*/appl/cmd/disk/mkfs.b* +
+*/appl/cmd/disk/mkext.b*
+
+== SEE ALSO
+
+_fs_(1), _kfs_(4), _proto_(6), _kfscmd_(8)

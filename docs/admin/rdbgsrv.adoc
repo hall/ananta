@@ -1,0 +1,37 @@
+= rdbgsrv: remote debug server
+
+== SYNOPSIS
+
+*bind -b '#t' /dev*
+
+*auxi/rdbgsrv* [ **-d**__n__ ] [ **-s**__baud__ ] [ **-f**__dev__ ]
+_mountpoint_
+
+
+_Rdbgsrv_ interposes itself between _dev_ (default: */dev/eia0*) and
+_mountpoint_ to convey 9P messages via the serial port to and from a 9P
+server program running on a board running native Inferno. The *-f*
+option specifies the serial device; the default is */dev/eia0*. The *-s*
+option sets the line speed; the default is 38400 baud. The *-d* option
+selects debugging options by a bit mask: 1, print trace of 9P message
+types; 2, print actual 9P message contents.
+
+The monitor program on the board must be started first. _Rdbgsrv_ writes
+the two byte message *go*, and keeps reading the device until it sees
+the reply *ok*. It then attempts to mount the exported name space, and
+copies 9P messages to and from the device.
+
+Once _rdbgsrv_ is running, any device files provided by the program will
+be visible at _mountpoint_.
+
+== SOURCE
+
+*/appl/auxi/rdbgsrv.b*
+
+== SEE ALSO
+
+_styxchat_(8)
+
+== BUGS
+
+No error recovery is applied, let alone error correction.

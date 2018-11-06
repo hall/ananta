@@ -1,0 +1,38 @@
+= logind: login daemon
+
+== SYNOPSIS
+
+*auth/logind*
+
+
+_Logind_ is normally started by _svc_(8) to service requests on the
+*inflogin* TCP/IP port, to provide a `signing' service (identity
+authentication) for a network. Ultimately, the client receives a
+certificate that can be used to establish its identity with any host
+that is willing to honour certificates from the certificate's signer.
+
+The signer constructs the certificate from the contents of the signer's
+key file */keydb/signerkey*, typically created by _createsignerkey_(8),
+and the ID string and password supplied by the client (which are used to
+access _keyfs_(4) to check identity).
+
+The protocol involves an exchange of information between the client and
+server, as summarised in _login_(6). The client side of this exchange
+can be managed by the *Login* module; see _security-login_(2).
+
+Client and server communicate over the Secure Socket Layer device
+_ssl_(3).
+
+== FILES
+
+*/keydb/keys*::
+*/keydb/signerkey*::
+
+== SOURCE
+
+*/appl/cmd/auth/logind.b*
+
+== SEE ALSO
+
+_security-login_(2), _ssl_(3), _keyfs_(4), _keys_(6), _changelogin_(8),
+_createsignerkey_(8), _svc_(8)

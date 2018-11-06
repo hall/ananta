@@ -1,0 +1,77 @@
+= httpd, echo, stats: HTTP server
+
+== SYNOPSIS
+
+*svc/httpd/httpd* [ **-a**__ addr__ ] [ **-c**__ cachesize__ ] [ *-D* ]
+
+**svc/httpd/echo**__ meth vers uri search__
+
+**svc/httpd/stats**__ meth vers uri search__
+
+
+_Httpd_ is a simple HTTP daemon, serving version 1.0 of the HTTP
+protocol. It listens for incoming calls on a given _address_ (default:
+*tcp!*!80*). It serves content rooted at
+
+in its name space.
+
+The _httpd_ program supports only the
+
+and
+
+methods of the HTTP protocol. The
+
+(default
+
+and
+
+(default
+
+of a file are determined by looking for suffixes of the file name in
+*/services/http/http.suff*.
+
+If the requested URI begins with */magic/*, _httpd_ loads the module
+associated with the remaining part of the URI. Take care to configure
+the name space sensibly. Simple servers _echo_ and _stats_ are provided
+(see below).
+
+_Httpd_ has the following options:
+
+**-a**__ address__::
+  Listen for calls on the given _address_, expressed using the syntax of
+  _dial_(2).
+**-c**__ cachesize__::
+  Set the size of the daemon's cache to _cachesize_ kilobytes. The
+  default is a five megabyte cache.
+*-D*::
+  Debugging information is written to the file
+  */services/httpd/httpd.debug*.
+
+_Echo_ is a trivial server that just returns the method, URI, any
+search, and the headers sent by the client.
+
+_Stats_ is an equally simple server that queries the cache and returns
+information to the user about pages stored in the cache.
+
+More complex services can be written to _httpd_'s private interface. The
+file *httpd.m* (in */appl/svc/httpd*) defines constants and adts used by
+_httpd_. The file *cgi.m* defines the module
+
+which is the interface for programs called using the URI */magic/*.
+
+== FILES
+
+*/services/httpd/root*::
+  Root of the served web content.
+*/services/httpd/httpd.debug*::
+  Logfile for debugging information.
+*/services/httpd/httpd.log*::
+  _httpd_ logfile.
+*/services/httpd/httpd.rewrite*::
+  File to redirect specific URI requests.
+*/services/httpd/httpd.suff*::
+  File of recognizable suffixes and their content type.
+
+== SOURCE
+
+*/appl/svc/httpd*

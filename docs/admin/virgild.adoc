@@ -1,0 +1,42 @@
+= virgild: connection service for remote clients
+
+== SYNOPSIS
+
+*ndb/cs* +
+*ip/virgild*
+
+
+_Virgild_ receives requests for name service on UDP/IP port *virgil*,
+defined as 2202 by _services_(6), and hard-coded in _virgil_(2). Each
+request has the form:
+
+_____________________________
+__userid__**?**_machine-name_
+_____________________________
+
+_Virgild_ translates the _machine-name_ using the local connection
+server (see _cs_(8)), and sends a response of the following form to the
+requesting client:
+
+_____________________________________________________
+__userid__**?**__machine-name__**=**_network-address_
+_____________________________________________________
+
+If the _machine-name_ cannot be translated, _virgild_ makes no response;
+unless another server replies, the client's request will time out.
+
+_Virgild_ requires that _cs_(8) be running before it is started.
+
+== SOURCE
+
+*/appl/cmd/ip/virgild.b*
+
+== SEE ALSO
+
+_rcmd_(1), _cs_(8)
+
+== BUGS
+
+The _userid_ part is currently unused but must still be included. +
+_Virgild_ is single threaded: a delay in translating a name for one
+client will delay response to any subsequent clients.

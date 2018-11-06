@@ -1,0 +1,137 @@
+= applylog, updatelog: log-based updates
+
+== SYNOPSIS
+
+*install/applylog* [ *-c* ] [ *-e* ] [ *-n* ] [ *-s* ] [ *-u* ] [ *-g* ]
+[ *-v* ] [ **-T**__ timefile__ ] _clientlog_ _clientroot_ _serverroot_ [
+_path_ ... ]
+
+*install/updatelog* [ **-p**__ proto__ ] [ **-r**__ root__ ] [ **-t**__
+now gen__ ] [ *-c* ] [ **-x**__ path__ ] _log_ [ _path_ ... ]
+
+
+These two commands allow distribution of updates (eg, to the Inferno
+tree) based on a log of changes since a previous update. Notionally, one
+_server_ system is the primary for a set of files, and one or more
+_client_ systems maintain replicas of that set, although in some
+applications server and client might be the same machine.
+
+_Applylog_ is run on a client, to update the file tree rooted at
+_clientroot_. The server's version of the tree is rooted at _serverroot_
+on the client, typically by being mounted there (see _bind_(1)).
+_Applylog_ takes the current state of the replica from the entries in
+_clientlog_, and applies a set of changes represented by log entries
+read from its standard input. Those entries are provided by the server.
+Each change is examined to see whether the file to which it applies is
+in the expected state. If so, the change is applied without comment;
+otherwise, there is a conflict caused by a local change to the replica
+tree independently from the primary. By default, _applylog_ diagnoses
+the conflict and does not apply the change. It accepts the following
+options:
+
+*-c*::
+  Resolve inconsistencies in favour of the client: leave the replica as
+  is.
+*-e*::
+  Exit with an error status on any error, including inconsistency
+  between client and server.
+*-n*::
+  Print on standard output a list of changes that would be made, and
+  list any conflicts, but do not change the tree or update the log.
+*-s*::
+  Resolve inconsistencies in favour of the server: make the replica
+  match the server's state.
+*-u*::
+  Make file ownership in the replica match that on the server.
+*-g*::
+  Make group ownership in the replica match that on the server.
+*-v*::
+  Print a summary of each log entry as it is examined.
+**-T**__ timefile__::
+  Read a time and sequence number from _timefile_ and apply only log
+  entries with stamps greater than that. On successful completion, if
+  the *-n* option is not given, update the _timefile_ with the stamp of
+  the last log entry processed successfully.
+
+The scope of an update in a tree can be restricted to a particular set
+of _paths_ listed on the command line. They should all be relative path
+names.
+
+_Updatelog_ is run on a server to produce a sequence of log entries
+representing changes to the primary tree since a previous log was
+produced. It can also be run on a client to see how its replica state
+differs from that recorded in a log. It accepts the following options:
+
+**-p**__ proto__::
+  Use _proto_ as the prototype for the file system, as described by
+  _proto_(6) (default: */lib/proto/all*).
+**-r**__ root__::
+  The replica is rooted at _root_ (default: the current directory, *.*).
+**-t**__ now gen__::
+  Make log entries use time _now_ and initial sequence number _gen_. The
+  defaults are the current time and 0.
+*-c*::
+  Produce output only for content and metadata changes, not additions or
+  deletions.
+**-x**__ path__::
+  Exclude _path_ and its subtrees from consideration.
+
+By default, _updatelog_ produces log entries describing changes,
+additions and deletions to all files in _root_ but the scope can be
+limited by giving a different _proto_, explicitly listing trees to
+consider as _paths_ on the command line, and by giving one or more *-x*
+options to exclude particular paths, in any desired combination.
+
+=== Log file format
+
+A log file is a text file with one line representing each change to the
+tree. Each line has the form:
+
+_______________________________________________________________________
+_time gen verb path serverpath mode uid gid mtime length_ [ _sum_ ... ]
+_______________________________________________________________________
+
+where:
+
+________________________________________________________________________________________________________________________________________________________________________________________________
+_time, gen_::
+  are decimal numbers that order the sequence of requests: _time_ is
+  typically the time in seconds of the epoch at which the entry was
+  made; _gen_ is a monotonically increasing sequence number
+
+_verb_::
+  is an action:
+  +
+  *a*;;
+    add file _path_
+  *c*;;
+    change the contents of file _path_
+  *d*;;
+    delete _path_
+  *m*;;
+    change the metadata (permissions, ownership) for _path_
+
+_path_::
+  the name of the file on the client
+_serverpath_::
+  the name of the file on the server with the contents for _path_, or
+  simply
+
+when the server and client file names are the same
+
+_mode, uid, gid, length, mtime_::
+  the resulting metadata (except for *d* where the metadata is that for
+  the file to be deleted)
+_sum_::
+  is the MD5 checksum of the file's contents
+________________________________________________________________________________________________________________________________________________________________________________________________
+
+== SOURCE
+
+*/appl/cmd/install/applylog.b* +
+*/appl/cmd/install/logs.b* +
+*/appl/cmd/install/updatelog.b*
+
+== SEE ALSO
+
+_fs_(1), _kfs_(4), _proto_(6)

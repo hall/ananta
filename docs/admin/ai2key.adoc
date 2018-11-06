@@ -1,0 +1,148 @@
+= ai2key, dsagen, rsagen: generate and reformat public keys
+
+== SYNOPSIS
+
+*ai2key* [ **-t**__ tag__ ] _keyfile_ ...
+
+*dsagen* [ **-t**__ tag__ ]
+
+*rsagen* [ **-b**__ nbits__ ] [ **-t**__ tag__ ]
+
+
+_Factotum_(4) represents public keys as lists of attribute-value pairs,
+each key on a single line prefixed with the string *key*.
+
+_Ai2key_ converts the original Inferno representation of authentication
+data, in the format defined for *authinfo* by _keytext_(6), to an
+attribute-value format accepted by _factotum_(4) for the *infauth*
+authentication protocol. For each _keyfile_ it writes a single line on
+standard output, containing the following fields:
+
+....
+key proto=infauth
+[
+tag
+]
+sigalg=pkalg-hashalg
+[
+dom=host
+]
+server=host
+[
+service=svc
+]
+user=name
+signer=name
+pk=pk
+!sk=sk
+spk=pk
+cert=cert
+dh-alpha=hex
+dh-p=hex
+....
+
+where
+
+_________________________________________________________________________________________________
+_pkalg_::
+  is *dsa*, *elgamal* or *rsa*
+
+_hashalg_::
+  is *md5* or *sha1* +
+
+*user*::
+  is the user name associated with the key, as vouched for by the
+  supporting certificate *cert* +
+
+*signer*::
+  is the user name associated with the key that signed the certificate +
+
+*pk*::
+  is the user's public key +
+
+*!sk*::
+  is the user's private (secret) key +
+
+*spk*::
+  is the signer's public key +
+
+*cert*::
+  is the _certificate_ +
+
+*dh-alpha*, *dh-p*::
+  are the Diffie-Hellman parameters shared by the user and file servers.
+_________________________________________________________________________________________________
+
+The key is tagged by one or more of *dom*, *server* and *service*,
+derived from the file name _keyfile_. The server is `*****' if _keyfile_
+is *default*. Otherwise _keyfile_ has the form
+
+_______________________________________________
+{empty}[ __net__**!** ] _host_ [ **!**__srv__ ]
+_______________________________________________
+
+and *server* and *service* are set accordingly; *dom* is set if _host_
+looks like a domain name. Key and certificate values have the form
+defined in _keytext_(6); _hex_ is a large number in hexadecimal.
+
+_Dsagen_ prints a randomly-generated DSA private key using the
+NIST-recommended algorithm. If _tag_ text is specified, it is printed
+after the *proto* attribute-value pair. Typically, _tag_ is a sequence
+of attribute-value comments describing the key. A DSA key has the
+following attributes
+
+__________________________________
+*p*::
+  prime public modulus
+
+*q*::
+  prime group order; divides *p*-1
+*alpha*::
+  group generator
+*key*::
+  **alpha**^*!secret* mod *p*
+*!secret*::
+  the secret exponent
+__________________________________
+
+_Rsagen_ prints a randomly generated RSA private key whose *n* has
+exactly _nbits_ (default 1024) significant bits. The key has the
+following attributes:
+
+__________________________________________________________________________
+*size*::
+  the number of significant bits in *n*
+
+*ek*::
+  the encryption exponent
+*n*::
+  the product of *!p* and *!q*
+*!dk*::
+  the decryption exponent
+*!p*::
+  a large prime
+*!q*::
+  another large prime
+*"!kp, !kq, !c2*::
+  parameters derived from the other attributes, cached to speed
+  decryption
+__________________________________________________________________________
+
+All the numbers in _dsagen_ and _rsagen_ output are in hexadecimal
+except RSA's *size*, which is decimal. A public key omits the attributes
+beginning with
+
+A key may have other attributes as well, for example a *service*
+attribute identifying how this key is typically used, but to these
+utilities such attributes are merely comments. They can be provided in a
+_tag_ argument.
+
+== SOURCE
+
+*/appl/cmd/auth/ai2key.b* +
+*/appl/cmd/auth/dsagen.b* +
+*/appl/cmd/auth/rsagen.b*
+
+== SEE ALSO
+
+_factotum_(4)

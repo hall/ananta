@@ -1,0 +1,78 @@
+= svc: auth, net, registry, rstyx, styx: start Inferno network services
+
+== SYNOPSIS
+
+*svc/net* +
+*svc/auth* [ *-n* ] +
+*svc/registry* +
+*svc/rstyx* +
+*svc/styx*
+
+
+The directory */dis/svc* contains several _sh_(1) scripts to start
+network listeners (see _listen_(1)) that give remote hosts access to
+specific Inferno services on the current host. The scripts can be edited
+to suit (or configure themselves to suit) the requirements of a
+particular site.
+
+A host that is not an authentication server and wishes to start the
+usual network services can simply invoke *svc/net*, which runs all the
+others _except_ authentication. Authentication servers should normally
+run *svc/auth* instead, to start local name and authentication services,
+and a listener for each authentication service but _not_ file service or
+remote execution.
+
+_Auth_ must be run (only) on a host that is to act as an authentication
+server, providing signing and other authentication services to itself
+and the network. The *-n* flag tells it not to start _keyfs_(4), perhaps
+because it has been started already. The files */keydb/signerkey*,
+created by _createsignerkey_(8), and */keydb/keys*, managed by
+_changelogin_(8), must exist. If so, _auth_ starts _keyfs_(4), which
+prompts for the password that protects */keydb/keys*, the file of
+secrets shared with registered users. If the key file is empty, the
+confirmed password will be used in future to encrypt and decrypt the
+file; otherwise the password must match the one used to encrypt the key
+file. If the password is valid, listeners are started for _keysrv_(4),
+to allow passwords to be changed remotely, _logind_(8), to provide
+signed certificates, and _signer_(8). Note that although an
+authentication server must be present to run _getauthinfo_(8) to obtain
+credentials to access another service, once those have been issued, the
+recipient can subsequently present them (if still valid) to access that
+service without further involvement by the service (ie, it need not then
+be running). See _changelogin_(8) for the user registration program,
+which can be used once _auth_ has started.
+
+_Registry_ starts the dynamic service registry (see _registry_(4)) if it
+is not already running, putting it at the conventional location for the
+local registry, */mnt/registry*. Initial (static) service descriptions
+are taken from */lib/ndb/registry* if it exists. It then starts a
+listener to give other hosts access to the registry as a 9P service at
+*tcp!*!registry*, normally port 6675.
+
+_Rstyx_ listens for incoming calls to the *rstyx* service, and invokes
+_rstyxd_(8) to deal with each one.
+
+_Styx_ listens for incoming calls to the *styx* service, and for each
+one, authenticates the caller, then calls _export_(4) to export the
+current root.
+
+== FILES
+
+*/keydb/keys*::
+  encrypted file containing user secrets
+*/keydb/signerkey*::
+  private key of authentication server
+
+== SOURCE
+
+*/appl/svc/auth.sh* +
+*/appl/svc/net.sh* +
+*/appl/svc/registry.sh* +
+*/appl/svc/rstyx.sh* +
+*/appl/svc/styx.sh*
+
+== SEE ALSO
+
+_listen_(1), _export_(4), _keyfs_(4), _keysrv_(4), _registry_(4),
+_changelogin_(8), _createsignerkey_(8), _cs_(8), _dns_(8), _logind_(8),
+_rstyxd_(8), _signer_(8)

@@ -1,0 +1,39 @@
+= translate: translation dictionary
+
+== SYNOPSIS
+
+**/locale/dict/**__app__ +
+**/locale/**__locale__**/dict/**__app__
+
+
+A dictionary file provides translation text that applications can access
+using _translate_(2). Each is a Unicode file containing a set of
+translations, one per line, each line having the following syntax:
+
+....
+"source-text" [ (note-text) ] [ ="target-text"  ] 
+....
+
+which defines _target-text_ as the translation for _source-text ._ A
+missing translation clause defines the identity translation. The
+optional _note-text_ qualifies the context of the _source-text_, when
+the same phrase in the source language might translate to different
+phrases in the target language, or to distinguish a particular context
+in the program (eg, particular menus): For example:
+
+....
+"Times"(newspaper) = "La Republicca"
+"Times"(timetable) = "L'orario"
+"ABC"(keypad) = "abc"
+....
+
+Empty lines and lines beginning with *#* are ignored. The quoted strings
+can contain the Limbo escape sequences *\n* (newline), *\t* (tab), *\r*
+(carriage return), and *\\* (backslash).
+
+The default locale is set by binding one or more specific locales onto
+*/locale/dict*.
+
+== FILES
+
+*/locale/*/dict/**

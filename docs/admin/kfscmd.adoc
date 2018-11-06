@@ -1,0 +1,84 @@
+= kfscmd: kfs administration
+
+== SYNOPSIS
+
+*disk/kfscmd* [*-n* _name_] _cmd_ ...
+
+
+_Kfscmd_ issues commands to a _kfs_(4) server that was started with the
+*-n* option to create a control file. _Kfscmd_'s own *-n* option names
+the file system to which the _cmd_ applies; it is *main* by default.
+
+The known commands are described below. Note that some commands are
+multiple words (eg, *check* and its flags) and should be quoted to
+appear as a single argument to _sh_(1).
+
+*allow*::
+  Turn permission checking off (to simplify administration). Equivalent
+  to the *-P* and *-W* options to _kfs_(4).
+*allowoff*::
+
+*disallow*::
+  Turn permission checking on (again).
+
+*halt*::
+  write all changed blocks and stop the file system.
+*help*::
+  print the list of commands.
+**rename **__file name__::
+  Change the name of _file_ to _name_.
+**newuser **__user__::
+  Add _user_ to */adm/users* and make the standard directories needed
+  for booting.
+**remove **__file__::
+  Remove _file_ and place its blocks on the free list.
+**clri **__file__::
+  Remove _file_ but do not place the blocks on the free list. This
+  command can be used to remove files that have duplicated blocks. The
+  non-duplicate blocks can be retrieved by checking the file system with
+  option *f* (see below).
+**create**__ file owner group mode __*[adl]*::
+  Create the file. Owner and group are users in */adm/users* and mode is
+  an octal number. If present,
+
+creates an append only file,
+
+creates a directory, and
+
+creates a file that is exclusive-use.
+
+*sync*::
+  write to disk all of the dirty blocks in the memory cache.
+*users*::
+  Reinitialise authentication information by reading */adm/users*.
+*check [cdfpPqrtw]*::
+  Check the file system and print summary information. The options are
+
+______________________________________________________________
+*c*::
+  fix bad tags and clear the contents of the block.
+*d*::
+  delete redundant references to a block.
+*f*::
+  rebuild the list of free blocks.
+*p*::
+  print the names of directories as they are checked.
+*P*::
+  print the names of all files as they are checked.
+*q*::
+  quiet mode: report errors, but suppress summary information.
+*r*::
+  read all of the data blocks and check the tags.
+*t*::
+  fix bad tags.
+*w*::
+  write all of the blocks that are touched.
+______________________________________________________________
+
+== SOURCE
+
+*/appl/cmd/disk/kfscmd.b*
+
+== SEE ALSO
+
+_sd_(3), _kfs_(4), _mkfs_(8)

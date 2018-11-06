@@ -1,0 +1,78 @@
+= UTF, Unicode, ASCII, rune: character set and format
+
+
+The Inferno character set and representation are based on the Unicode
+Standard and on the ISO multibyte
+
+encoding (Universal Character Set Transformation Format, 8 bits wide).
+The Unicode Standard represents its characters in 21 bits;
+
+represents such values in an 8-bit byte stream. Throughout this manual,
+
+is shortened to
+
+Internally, programs store individual Unicode characters as 32-bit
+integers, of which only 21 bits are currently used. Documentation often
+refers to them as `runes', following Plan 9. However, any external
+manifestation of textual information, in files or at the interface
+between programs, uses the machine-independent, byte-stream encoding
+called
+
+is designed so the 7-bit
+
+set (values hexadecimal 00 to 7F), appear only as themselves in the
+encoding. Characters with values above 7F appear as sequences of two or
+more bytes with values only from 80 to FF.
+
+The
+
+encoding of the Unicode Standard is backward compatible with
+
+: programs presented only with
+
+work on Inferno even if not written to deal with
+
+, as do programs that deal with uninterpreted byte streams. However,
+programs that perform semantic processing on characters must convert
+from
+
+to runes in order to work properly with non-
+
+input. Normally, all necessary conversions are done by the Limbo
+compiler and execution envirnoment, when converting between *array of
+byte* and *string ,* but sometimes more is needed, such as when a
+program receives
+
+input one byte at a time; see _sys-byte2char_(2) for routines to handle
+such processing.
+
+Letting numbers be binary, a rune x is converted to a multibyte
+
+sequence as follows:
+
+{empty}01. x in [000000.00000000.0bbbbbbb] → 0bbbbbbb +
+10. x in [000000.00000bbb.bbbbbbbb] → 110bbbbb, 10bbbbbb +
+11. x in [000000.bbbbbbbb.bbbbbbbb] → 1110bbbb, 10bbbbbb, 10bbbbbb +
+100. x in [bbbbbb.bbbbbbbb.bbbbbbbb] → 1110bbbb, 10bbbbbb, 10bbbbbb,
+10bbbbbb +
+
+Conversion 01 provides a one-byte sequence that spans the
+
+character set in a compatible way. Conversions 10, 11 and 100 represent
+higher-valued characters as sequences of two, three or four bytes with
+the high bit set. Inferno does not support the 5 and 6 byte sequences
+proposed by X-Open. When there are multiple ways to encode a value, for
+example rune 0, the shortest encoding is used.
+
+In the inverse mapping, any sequence except those described above is
+incorrect and is converted to the rune hexadecimal FFFD.
+
+== FILES
+
+*/lib/unicode*::
+  table of characters and descriptions, suitable for _look_(1).
+
+== SEE ALSO
+
+_ascii_(1), _tcs_(1), _sys-byte2char_(2), _keyboard_(6), _The Unicode
+Standard_.

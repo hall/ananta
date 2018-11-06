@@ -3,6 +3,21 @@
 _inf_ is designed for simplicity;
 to do so, the system makes a few (as of yet) uncommon choices to provide a beautiful and clean machine.
 
+
+
+[horizontal]
+link:intro[]   :: commonly-used commands
+link:modules[] :: Limbo modules, including Inferno's system calls
+link:devices[] :: kernel devices (accessed by `bind`)
+link:servers[] :: file services (accessed by `mount`)
+link:9p[]      :: the Styx file service protocol
+link:formats[] :: file formats and system conventions
+link:misc[]    :: databases and database access modules
+link:admin[]   :: administrative modules and system services
+link:tk[]      :: the reference for Inferno's Tk variant, Limbo/Tk
+link:imp[]     :: the build environment and device driver implementation
+
+
 == unix differences
 
 The system notes several differences from many standard unix-based facilities;
@@ -16,3 +31,6 @@ some of the major ones follow.
 == windows differences
 
     all of them
+
+
+

@@ -1,0 +1,1122 @@
+= Installing the Inferno Software
+
+Inferno can run as either a native operating system, in the usual way,
+or as a _hosted_ virtual operating system, running as an application
+on another operating system. This paper explains how to install Inferno
+from the distribution media to a hosted environment and how to configure
+the system for basic networking.
+
+Inferno can run as a hosted virtual operating system on top of Plan 9,
+Unix or Windows. In this paper, the term _Unix_ is used to cover all
+supported variants, currently FreeBSD, Linux, HP/UX, Irix and Solaris,
+and the term _Windows_ covers Microsoft Windows (98, Me, Nt, 2000, and
+XP). (Windows 98 might first require installation of the Unicode layer
+update from Microsoft.)
+
+*1. Preparation*
+
+You should ensure at least 150 Mbytes of free space on the filesystem.
+The installation program will copy files from the distribution CD to a
+directory on the filesystem called the _inferno_ _ _root_ directory. You
+can choose the location of this directory. If you are installing to a
+multiuser filesystem outside your control a subdirectory of your home
+directory might be most sensible. If you plan to share the Inferno
+system with other users then common choices for _inferno_ _ _root_
+are/usr/infernoon Unix and Plan 9 systems, and c:Windows systems. Where
+these appear in examples in this paper you should substitute your own
+_inferno_root_ directory.
+
+* Step 1a: Choose the _inferno_root_ directory.
+
+Ensure that the user who will run the installation program has
+appropriate filesystem permissions to create the _inferno_root_
+directory and files and subdirectories beneath it.
+
+*2. Copying Files*
+
+On all platforms the files will be owned by the user doing the
+installation, except for installation onto a FAT file system (eg, on
+Windows), where the files appear to be owned byEveryonebecause FAT does
+not record ownership.
+
+....
+" Step 2a: Insert the distribution CD into the CD drive.
+....
+
+On Unix and Plan 9, mount the CD to a suitable location on the
+filesystem, call this location _cd_ _ _path_. On Windows, note the drive
+letter of the CD, call this drive letter _cd_ _ _drive_. The files will
+be copied by an Inferno hosted installation program which runs directly
+from the CD. The directory/installon the CD contains an installation
+program for each supported platforma shell script for Unix and Plan 9
+and an exe- cutable for Windows. The Plan 9 install script is
+calledPlan9.rcand determines the CPU type from the environment
+variablecputype. The Unix install scripts all have names of the form
+_host_ _ _os_ - _host_ _ _arch_ .sh where _host_ _ _os_ will be one
+of:FreeBSD,Linux, orSolarisand _host_ _ _arch_ will be one of: 386
+,mips,power orsparc. Most platforms offer just the one obvious
+combination. The Windows installation program is calledsetup.exe; it is
+used on all varieties of Windows. The next step describes how to begin
+the installa- tion by running the program that corresponds to your host
+system.
+
+....
+" Step 2b: Run the installation script.
+....
+
+The installation program will copy files from the CD to the filesystem.
+The Windows installation program will also create registry entries and
+add an Inferno item to the Windows _start_ menu. On Plan 9, run
+
+....
+rc cd _ path /install/Plan9.rc inferno _ root
+....
+
+Where _inferno_ _ _root_ is the path to the chosen Inferno root
+directory. The CPU architecture will be inferred from the environment
+variablecputype. On Unix, run
+
+....
+sh cd _ path /install/ host-os - host _ arch .sh inferno _ root
+....
+
+Where _host_ _ _os_ is the Unix variant name
+(FreeBSD,Irix,LinuxorSolaris). _host_ _ _arch_ is the CPU type (eg, 386
+), and _inferno_ _ _root_ is the path to the chosen Inferno directory.
+On Windows, run
+
+....
+cd _ drive :\install\setup.exe
+....
+
+The Windows installation program will ask you to choose the location of
+the installation directory on the hard disk.
+
+On all platforms, a copy of Inferno on the CD will install from various
+installation packages on the CD to the _inferno_ _ _root_ subtree on the
+filesystem. On any platform it installs support for all.
+
+Inferno is now installed, but it needs to be configured for your site.
+The process acts as a quick tour of parts of the system. The main tasks
+are to add local parameters to the network data base, and to set up the
+authentication system. If you are going to run Inferno standalone, for
+instance to experiment with Limbo and the file serving interface, most
+of what follows can be deferred indefinitely. It is still worthwhile
+skim- ming through it, because the first few sections tell how to start
+up Inferno with correct parameters (eg, root directory and graphics
+resolution). (A configuration program that runs under the window system
+would be more convenient, and fairly easy to do, but that has not yet
+been done.)
+
+*3. Running Inferno*
+
+Inferno host executables are all kept in a single directory
+corresponding to the combination of host operat- ing system and CPU
+architecturethe Infernobindirectory.
+
+....
+inferno _ root / host _ os / host _ arch /bin
+....
+
+(On Windows the path might need/of course.) That directory can be added
+to the search path of the host system’s command interpreter, and that
+process will be described first, although as discussed later one can use
+a script instead and that is sometimes more convenient. (Of course, the
+script will still need to refer to that directory.)
+
+_Plan 9:_ Plan 9 users should add a line to theirlib/profilefile that
+binds this directory after their/bin directory.
+
+....
+bind -a /usr/inferno/Plan9/$cputype/bin /bin
+....
+
+The bind is done after the existing _bin_ directory to avoid hiding the
+existing Plan 9 compilers. If, at a later stage, you build either the
+hosted or native Inferno kernels for ARM or StrongARM you should ensure
+that the Inferno compilers are used rather than the Plan 9 compilers,
+since they differ in the implementation of floating-point instructions
+(the Plan 9 ARM suite uses a byte order that is more plausible than the
+order ARM dictates but therefore wrong). That difference is likely to be
+resolved at some point but it has not yet been done.
+
+_Windows:_ The _host_ _ _os_ is alwaysNt(even for Windows 98, 2000 or
+XP) and _host_ _ _arch_ is always 386 and the installation program will
+create an entry on the _start menu_ to invoke Inferno. For Unix systems
+or Windows systems in which Inferno will be started from a command
+shell, the environment variablePATHshould be set to include the
+Infernobindirectory. For Windows 95 and Windows 98 this should be done
+in the .batfile by adding a line like
+
+....
+PATH=c:\inferno\Nt\386\bin;%PATH%
+....
+
+You will need to reboot Windows to have the system reread the.batfile.
+For Windows NT and Windows 2000 modify thePathenvironment variable
+through _Control Panel -_ > _System -_ > _Environment_.
+
+If you are using an MKS or Cygwin Unix-like shell environment, you might
+instead set:
+
+....
+PATH="c:/inferno/Nt/386/bin;$PATH"
+....
+
+and export it if necessary.
+
+_Unix:_ For Unix systems, forshderivatives, the environment
+variablePATHshould be set to include the Infernobindirectory. This might
+be done in your.profilefile by adding a line like
+
+....
+PATH="/usr/inferno/Linux/386/bin:$PATH"
+....
+
+Don’t forget to ensure thatPATHis exported. You may need to log out and
+back in again for the changes to take effect.
+
+....
+" Step 3a: Start Inferno.
+....
+
+Hosted inferno is run by invoking an executable called _emu_.
+
+On Windows, select the Inferno option from the _start menu_. This will
+invoke _emu_ with appropriate argu- ments to find its files in _inferno_
+_ _root_. If you need to change any of the options passed to _emu_ when
+invoked from the _start menu_ you need to do this by clicking the right
+mouse button on the Windows task bar and choosing _Properties -_ >
+_Start Menu Programs -_ > _Advanced_ to modify the shortcut used for
+Inferno. For Unix and Plan 9, you will need to tell _emu_ where to find
+the Inferno file tree by passing it the-r _rootpath_ com- mand line
+option. For example
+
+....
+emu -r/usr/john/inferno
+....
+
+Without the-roption it will look for the file tree in/usr/infernoon Plan
+9 and Unix and, when invoked from the command line on WIndows, the
+default isthe current drive. (The Windows start menu by contrast has
+already been set to use the right directory by the installation
+software.)
+
+When using graphics, _emu_ will use a window with a resolution of 640 x
+480 pixels by default. To use a larger resolution you will need to pass
+_emu_ an option-g _Xsize_ x _Ysize_ on the command line. So, for
+example, to invoke _emu_ as above but with a resolution of 1024 x 768
+pixels the full command line would be
+
+....
+emu -r/usr/john/inferno -g1024x
+....
+
+When invoked in this way _emu_ displays a command window running the
+Inferno shell/dis/sh.dis. To avoid typing the command line options each
+time you invoke _emu_ you can store them in the environment
+variableEMUwhich is interrogated when _emu_ is started and might as well
+be set along side thePATHenvi- ronment variable if the same
+configuration options are to be used on each invocation.
+
+....
+set EMU="-rd:\Documents and Settings\john\inferno -g1024x768"
+....
+
+for Windows.
+
+....
+EMU=(-r/usr/john/inferno -g1024x768)
+....
+
+for Plan 9, and
+
+....
+EMU="-r/usr/john/inferno -g1024x768"
+....
+
+for Unix. An alternative to using theEMUenvironment variable is to place
+the correct invocation in a script file (or batch file, for Windows) and
+invoke that instead of running _emu_ directly. It is important to note
+that for Windows the-roption also serves to indicate both the drive and
+directory on to which the software has been installed. Without a drive
+letter the system will assume the current drive and will fail if the
+user changes to an alternative drive. Once the environment variables or
+scripts are set up, as described above, invoking plain
+
+....
+emu
+....
+
+or the appropriate script file, should result in it starting up
+Inferno’s command interpreter _sh_ (1), which prompts with a semicolon:
+
+....
+;
+....
+
+You can add a further option-c1to start up _emu_ in a mode in which the
+system compiles a module’s Dis operations to native machine instructions
+when a module is loaded. (See the _emu_ (1) manual page.) In _com- pile_
+mode programs that do significant computation will run much faster.
+Whether in compiled or inter- preted mode you should now have a
+functional hosted Inferno system. When Inferno starts the initial
+/dis/sh.disit reads commands from the file/lib/sh/profilebefore becoming
+interactive. See the manual pages for the shell _sh_ (1) to learn more
+about tailoring the initial environment.
+
+The semicolon is the default shell prompt. From this command window you
+should be able to see the installed Inferno files and directories
+
+....
+lc /
+....
+
+The command _lc_ presents the contents of its directory argument in
+columnar fashion to standard output in the command window.
+
+....
+; lc /
+FreeBSD/ Unixware/ icons/ libkern/ man/ prof/
+Hp/ acme/ include/ libkeyring/ mkconfig prog/
+Inferno/ appl/ keydb/ libmath/ mkfile services/
+Irix/ asm/ legal/ libmemdraw/ mkfiles/ tmp/
+LICENCE chan/ lib/ libmemlayer/ mnt/ tools/
+Linux/ dev/ lib9/ libtk/ module/ usr/
+MacOSX/ dis/ libbio/ licencedb/ n/ utils/
+NOTICE doc/ libcrypt/ limbo/ net/ wrap/
+Nt/ emu/ libdraw/ locale/ nvfs/
+Plan9/ env/ libfreetype/ mail/ o/
+Solaris/ fonts/ libinterp/ makemk.sh os/
+;
+....
+
+Only the files and directories in and below the _inferno_ _ _root_
+directory on the host filesystem are immediately visible to an Inferno
+process; these files are made visible in the root of the Inferno file
+namespace. If you wish to import or export files from and to the host
+filesystem you will need to use tools on your host to move them in or
+out of the Inferno visible portion of your host filesystem (see the
+manual pages _os_ (1) and _cmd_ (3) for an interface to host commands).
+(We plan to make such access direct, but the details are still being
+worked out.) From this point onwards in this paper all file paths not
+qualified with _inferno_ _ _root_ are assumed to be in the Inferno
+namespace. Files created in the host filesystem will be created with the
+user id of the user that started _emu_ and on Unix systems with that
+user’s group id.
+
+*4. Setting the site’s time zone*
+
+Time zone settings are defined by files in the directory/locale. The
+setting affects only how the time is displayed; the internal
+representation does not vary. For instance, the file/locale/GMTdefines
+Green- wich Mean Time,/locale/GB-Eiredefines time zones for Great
+Britain and the Irish Republic (GMT and British Summer Time),
+and/locale/US_Easterndefines United States Eastern Standard Time and
+East- ern Daylight Time. The time zone settings used by applications are
+read (by _daytime_ (2)) from the file /locale/timezone, which is
+initially a copy of/locale/GB-Eire. If displaying time as the time in
+London is adequate, you need change nothing. To set a different time
+zone for the whole site, copy the appropriate time zone file
+into/locale/timezone:
+
+....
+cp /locale/US_Eastern /locale/timezone
+....
+
+To set a different time zone for a user or window, _bind_ (1) the file
+containing the time zone setting over /locale/timezone, either in the
+user’s profile or in a name space description file:
+
+....
+bind /locale/US_Eastern /locale/timezone
+....
+
+*5. Running the Window Manager* _wm_
+
+Graphical Inferno programs normally run under the window manager _wm_
+(1). Inferno has a simple editor, _wm/edit_ , that can be used to edit
+the inferno configuration files. The `power environment' for editing and
+program development is _acme_ (1), but rather that throwing you in at
+the deep end, we shall stick to the sim- pler one for now. If you
+already know Acme from Plan 9, however, or perhaps Wily from Unix, feel
+free to use Inferno’s _acme_ instead of _edit_.
+
+....
+" Step 5a: Start the window manager.
+....
+
+Invoke _wm_ by typing
+
+....
+wm/wm
+....
+
+You should see a new window open with a blue-grey background and a small
+_Vita Nuova_ logo in the bot- tom left hand corner. Click on the logo
+with mouse button 1 to reveal a small menu. Selecting the _Edit_ entry
+will start _wm/edit_. In common with most _wm_ programs the editor has
+three small buttons in a line at its top right hand corner. Clicking on
+the X button, the rightmost button, will close the program down. The
+left- most of the three buttons will allow the window to be
+resizedafter clicking it drag the window from a point near to either
+one of its edges or one of its corners. The middle button will minimise
+the window, cre- ating an entry for it in the application bar along the
+bottom of the main _wm_ window. You can restore a min- imised window by
+clicking on its entry in the application bar. The initial _wm_
+configuration is determined by the contents of the shell
+script/lib/wmsetup(see _toolbar_ (1) and _sh_ (1)).
+
+....
+" Step 5b: Open a shell window.
+....
+
+Choose the _shell_ option from the menu to open up a shell window. The
+configuration of Inferno will be done from this shell window.
+
+*6. Manual Pages*
+
+Manual pages for all of the system commands are available from a shell
+window. Use the _man_ or _wm/man_ commands. For example,
+
+....
+man wm
+....
+
+will give information about _wm_. And
+
+....
+man man
+....
+
+will give information about using _man_. _Wm/man_ makes use of the Tk
+text widget to produce slightly more attractive output than the plain
+command _man_. Here, and in other Inferno documentation you will see
+ref- erences to manual page entries of the form _command_ ( _section_ ).
+You can display the manual page for the command by running
+
+....
+man command
+....
+
+or
+
+....
+man section command
+....
+
+if the manual page appears in more than one section.
+
+*7. Initial Namespace*
+
+The initial Inferno namespace is built by placing the root device ’#/’
+(see _root_ (3)) at the root of the names- pace and binding
+
+a.  the host filesystem device ’#U’ (see _fs_ (3)) containing the
+_inferno_ _ _root_ subtree of the host filesystem at the root of the
+Inferno filesystem,
+b.  the console device ’#c’ (see _cons_ (3)) in/dev,
+c.  the prog device ’#p’ (see _prog_ (3)) onto/prog,
+d.  the IP device ’#I’ (see _ip_ (3)) in/net, and
+e.  the environment device ’#e’ (see _env_ (3)) at/dev/env.
+
+You can see the sequence of commands required to construct the current
+namespace by running
+
+....
+ns
+....
+
+*8. Inferno’s network*
+
+If you are just going to use Inferno for local Limbo programming, and
+not use its networking interface, you can skip to the section `‘Adding
+new users'’ at the end of this document. You can always come back to
+this step later.
+
+To use IP networking, the IP device _ip_ (3)) must have been bound
+into/net. Typing
+
+....
+ls -l /net
+....
+
+(see _ls_ (1)) should result in something like
+
+....
+--rw-rw-r-- I 0 network john 0 May 31 07:11 /net/arp
+--rw-rw-r-- I 0 network john 0 May 31 07:11 /net/ndb
+d-r-xr-xr-x I 0 network john 0 May 31 07:11 /net/tcp
+d-r-xr-xr-x I 0 network john 0 May 31 07:11 /net/udp
+....
+
+There might be many more names on some systems.
+
+A system running Inferno, whether native or hosted, can by agreement
+attach to any or all resources that are in the name space of another
+Inferno system (or even its own). That requires:
+
+" the importing system must know where to find them
+
+" the exporting system must agree to export them
+
+" the two systems must authenticate the access (not all resources will
+be permitted to all systems or users)
+
+" the conversation can be encrypted to keep it safe from prying eyes and
+interference
+
+On an Inferno network, there is usually one secure machine that acts as
+authentication server. All other sys- tems variously play the rôles of
+server and client as required: any system can import some resources (or
+none) and export others (or none), simultaneously, and differently in
+different name spaces. In following sections, we shall write as though
+there were three distinct machines: authentication server (signer);
+server (exporting resources); and client (importing resources). With
+Inferno, you can achieve a similar effect on a single machine by
+starting up distinct instances of _emu_ instead. That is the easiest way
+to become familiar with the process (and also avoids having to install
+the system on several machines to start). It is still worth- while
+setting up a secured authentication server later, especially if you are
+using Windows on a FAT file system where the host system’s file
+protections are limited.
+
+We shall now configure Inferno to allow each of the functions listed
+above:
+
+" change the network database to tell where to find local network
+resources
+
+" set up the authentication system, specifically the authentication
+server or `signer'
+
+" start network services (two distinct sets: one for the authentication
+services and the other for all other network services)
+
+*9. Network database files*
+
+In both hosted and native modes, Inferno uses a collection of text files
+of a particular form to store all details of network and service
+configuration. When running hosted, Inferno typically gets most of its
+data from the host operating system, and the database contains mainly
+Inferno-specific data.
+
+The file/lib/ndb/localis the root of the collection of network database
+files. The format is defined by _ndb_ (6), but essentially it is a
+collection of groups of attribute/value pairs of the form _attribute_ =
+_value_. Attribute names and most values are case-sensitive.
+
+Related attribute/value pairs are grouped into database `entries'. An
+entry can span one or more lines: the first line starts with a non-blank
+character, and any subsequent lines in that entry start with white space
+(blank or tab).
+
+*9.1. Site parameters*
+
+The version of/lib/ndb/localat time of writing looks like this:
+
+....
+database=
+file=/lib/ndb/local
+file=/lib/ndb/dns
+file=/lib/ndb/inferno
+file=/lib/ndb/common
+....
+
+....
+infernosite=
+#dnsdomain=your.domain.com
+#dns=1.2.3.4 # resolver
+SIGNER=your_Inferno_signer_here
+FILESERVER=your_Inferno_fileserver_here
+smtp=your_smtpserver_here
+pop3=your_pop3server_here
+registry=your_registry_server
+....
+
+The individual files forming the data base are listed in order in
+thedatabaseentry. They can be ignored for the moment. The entry
+labelledinfernosite=defines a mapping from symbolic host names of the
+form$ _service_ to a host name, domain name, or a numeric Internet
+address. For instance, an application that needs an authentication
+service will refer to$SIGNERand an Inferno naming service will translate
+that at run-time to the appropriate network name for that environment.
+Consequently, the entries above need to be customised for a given site.
+(The items that are commented out are not needed when the host’s own DNS
+resolver is used instead of Inferno’s own _dns_ (8).) For example,
+ourinfernositeentry in thelocal file might look something like this
+
+....
+infernosite=
+dnsdomain=vitanuova.com
+dns=200.1.1.11 # resolver
+SIGNER=doppio
+FILESERVER=doppio
+smtp=doppio
+pop3=doppio
+registry=doppio
+....
+
+wheredoppiois the host name of a machine that is offering the given
+services to Inferno, and200.1.1. is the Internet address of a local DNS
+resolver.
+
+....
+" Step 9a: Enter defaults for your site
+....
+
+The only important names initially are:
+
+SIGNER the host or domain name, or address of the machine that will act
+as signer
+
+registry the name or address of a machine that provides the local
+dynamic service _registry_ (4)
+
+FILESERVER the primary file server (actually needed only by clients with
+no storage of their own)
+
+All others are used by specific applications such as _acme_ (1) mail or
+_ftpfs_ (4).
+
+If you are using a single machine for signer and server/client, put its
+name in those three entries.
+
+*9.2. Connection server* _cs_ *(8) and name translation*
+
+The connection server _cs_ (8) uses the network database and other data
+(such as that provided by the host system and the Internet DNS servers)
+to translate symbolic network names and services into instructions for
+connecting to a given service. In hosted mode, network and service names
+are passed through to the host for conversion to numeric IP addresses
+and port numbers. If the host is unable to convert a service name the
+connection server will attempt to convert the name using mappings of
+service and protocol names to Inter- net port numbers in the
+file/lib/ndb/inferno:
+
+....
+tcp=infgamelogin port=6660 # inferno games login service
+tcp=styx port=6666 # main file service
+tcp=mpeg port=6667 # mpeg stream
+tcp=rstyx port=6668 # remote invocation
+tcp=infdb port=6669 # database server
+tcp=infweb port=6670 # inferno web server
+tcp=infsigner port=6671 # inferno signing services
+tcp=infcsigner port=6672 # inferno countersigner
+tcp=inflogin port=6673 # inferno credential service
+tcp=infsds port=6674 # software download
+tcp=registry port=6675 # registry(4)
+udp=virgil port=2202 # naming service
+....
+
+For the moment, leave that file as it is. You will only need to modify
+this file if in future you add new statically-configured services to
+Inferno. (Services that come and go dynamically might use _registry_ (4)
+instead, a registry manager that allows a service to be found using a
+description of it.)
+
+*10. Configuring a Signer*
+
+Before an Inferno machine can authenticate establish a secure connection
+to an Inferno service on another machine, each system needs to obtain a
+certificate from a common signer. We talk here as though there is only
+one `signer' per site but in fact there can be application- or
+group-specific ones. For instance, a version of the Inferno games server
+automatically starts its own signing service to keep the identities and
+keys used for game service separate from those of the primary system,
+allowing users to set up their own gaming groups without fuss. To use
+authenticated connections for the primary file services we need to set
+up a signer to generate certificates for users (see _createsignerkey_
+(8) and _logind_ (8)).
+
+Choose an Inferno machine to become the signer. If this is the first or
+only Inferno machine on your net- work then make this machine the
+signer. (It is more realistic if you start up a separate copy of _emu_
+and
+
+'''''
+
+The authentication system will shortly expand to a rôle-based one
+allowing a chain of certificates to be used, from several signers, with
+delegation etc.
+
+leave it in `console' mode without starting the window system.) You can
+always move the function else- where later.
+
+....
+" Step 10a: Empty the secret file of secrets.
+....
+
+The authentication server verifies a user’s identity by checking that
+the user knows a shared secret. (In fact the secret is not used
+directly, but instead a scrambled value that was derived from it.) The
+file /keydb/keysholds those secrets; it is encrypted using a secret
+password or phrase known only to the manager of the authentication
+server. Having just installed Inferno, the file should exist and be
+readable only by you (or the user as which the authentication service
+will run). On the signer machine, type
+
+....
+ls -l /keydb/keys
+....
+
+You should see something like:
+
+....
+--rw------- M 7772 yourname inf 0 Jun 12 03:08 /keydb/keys
+....
+
+You should see something like the above. If the file does not exist or
+is not empty or has the wrong mode, use:
+
+....
+cp /dev/null /keydb/keys; chmod 600 /keydb/keys
+....
+
+to set it right.
+
+....
+" Step 10b: Generate a signer key.
+....
+
+Next on the signer machine, run
+
+....
+auth/createsignerkey name
+....
+
+In place of _name_ enter the network name of the signer. A
+fully-qualified domain name of a host or individ- ual is fine. This
+value will appear as the signer name in each certificate generated by
+the signer. _Createsign- erkey_ creates public and private keys that are
+used by the signer when generating certificates. They are stored
+in/keydb/signerkey; check that it has permissions that limit access to
+the user that will run the authentication services:
+
+....
+; ls -l /keydb/signerkey
+--rw------- M 32685 secrets inf 1010 Jul 07 2000 /keydb/signerkey
+....
+
+Use _chmod_ (1) to set the mode to read/write only for the owner if
+necessary:
+
+....
+chmod 600 /keydb/signerkey
+....
+
+....
+" Step 10c: Start the authentication network services
+....
+
+Still at the signer console, type
+
+....
+svc/auth
+....
+
+That script (see _svc_ (8)) will check that
+the/keydb/keysand/keydb/signerkeyfiles exist, and then start the program
+_keyfs_ (4), which manages thekeysfile. It will prompt for the password
+(pass phrase) you wish to use to protect thekeysfile, now and on
+subsequent runs:
+
+....
+; svc/auth
+Key:
+Confirm key:
+....
+
+It prompts twice to confirm it. If successfully confirmed, it will then
+start the network services used by Inferno to authenticate local and
+remote users and hosts. (If confirmation fails, retry by runningsvc/auth
+again.)
+
+You can check that they are running by typing:
+
+....
+ps
+....
+
+which should show something like the following:
+
+....
+1 1 john release 74K Sh[$Sys]
+3 2 john alt 15K Cs
+10 9 john recv 25K Keyfs
+11 9 john release 44K Styx[$Sys]
+12 9 john recv 25K Keyfs
+14 1 john alt 8K Listen
+16 1 john release 8K Listen[$Sys]
+18 1 john alt 9K Listen
+20 1 john release 9K Listen[$Sys]
+22 1 john alt 9K Listen
+24 1 john release 9K Listen[$Sys]
+26 1 john alt 8K Listen
+28 1 john release 8K Listen[$Sys]
+29 1 john ready 73K Ps[$Sys]
+....
+
+There should beKeyfsandListenprocesses.
+
+....
+" Step 10d: Enter user names and secrets.
+....
+
+For each user to be authenticated by the signer run
+
+....
+auth/changelogin username
+....
+
+You will be prompted to supply a secret (ie, password or pass phrase)
+and expiration date. The expiration date will be used as the maximum
+expiration date of authentication certificates granted to that user.
+_Changelogin_ (see _changelogin_ (8)) accesses the name space generated
+by _keyfs_ (4), which has just been started above bysvc/auth. A user can
+later change the stored secret using the _passwd_ (1) command. For the
+signer to generate a certificate there must be at least one entry in the
+password file. If you are not sure at this stage of the names of the
+users that you want to authenticate then create an entry for the
+userinferno and yourself.
+
+*11. Establishing a Secure Connection*
+
+To establish a secure connection between two Inferno machines, each
+needs to present a public key with a certificate signed by a common
+signer. We shall make two public/private key sets, one for the server
+and one for a client (they differ only in where they are stored). We
+shall do the server first, because the usual network services require
+the server possess some keys before they can start. We shall then start
+those ser- vices, and finally sort out the client.
+
+....
+" Step 11a: Start the connection service.
+....
+
+The server still needs to make contact with the signer, so we need to
+start the basic connection service _cs_ (8). If you are using the same
+instance of _emu_ in which you invokedsvc/authabove, you should skip
+this step. To check, you should see a new file in the/netdirectory
+calledcs. Run the command
+
+....
+ls /net
+....
+
+You should see at least the following names in the output:
+
+....
+/net/cs
+/net/ndb
+/net/tcp
+/net/udp
+....
+
+Otherwise, type
+
+....
+ndb/cs
+....
+
+That starts _cs_ (8). Try thels /netagain to check that thecsfile has
+appeared.
+
+....
+" Step 11b: Generate a server key set.
+....
+
+On the server machine (or in the `server' window), use _getauthinfo_ (8)
+to obtain a certificate and save it in a file nameddefaultby running
+
+....
+getauthinfo default
+....
+
+_Getauthinfo_ will prompt for the address of your signer (you can often
+just use its host name or even localhost) and for a remote username and
+password combination. _Getauthinfo_ will connect to the _inflogin_
+
+service on the signer and authenticate you against its user and password
+database,/keydb/keys, using the username and password that you entered
+above. Answeryesto the question that asks if you want to save the
+certificate in a file. _Getauthinfo_ will save a certificate in the
+file/usr/ _user_ /keyring/defaultwhere _user_ is the name in/dev/user.
+
+*12. Network Services*
+
+As mentioned above, in a full Inferno network the authentication
+services will usually be run on a secured machine of their own (the
+signer), and the ordinary network services such as file service are not
+run on a signer. If you are, however, using one machine for all
+functions, you can get the right effect by starting another instance of
+_emu_ , to act as an Inferno host that is not a signer. This one will
+run the services of a pri- mary file server and the site _registry_ (4).
+
+Commands described in _svc_ (8) start listeners for various local
+network services. (The commands are actu- ally shell scripts.) As we saw
+above,svc/authstarts the services on a signer.
+
+Here we shall start the usual set of services.
+
+....
+" Step 12a: Start the network listener services.
+....
+
+Type
+
+....
+svc/net
+....
+
+Various network services will (should!) now be running. To confirm this
+type
+
+....
+ps
+....
+
+which should show something like the following:
+
+....
+; ps
+1 1 inferno release 74K Sh[$Sys]
+7 6 inferno alt 15K Cs
+13 1 inferno recv 15K Registry
+14 1 inferno release 44K Styx[$Sys]
+15 1 inferno recv 15K Registry
+17 1 inferno alt 8K Listen
+19 1 inferno release 8K Listen[$Sys]
+22 1 inferno alt 8K Listen
+24 1 inferno release 8K Listen[$Sys]
+25 1 inferno ready 74K Ps[$Sys]
+....
+
+There should be a fewListenprocesses and perhaps aRegistry.
+
+You can also try
+
+....
+netstat
+....
+
+_Netstat_ prints information about network connections. You should see
+several lines of output, each one describing an announced TCP or UDP
+service. Depending upon the contents of the network configuration files
+we included on the CD, you might see output something like this:
+
+....
+tcp/1 Announced inferno 200.1.1.89!6668 ::!
+tcp/2 Announced inferno 200.1.1.89!6666 ::!
+tcp/3 Announced inferno 200.1.1.89!6675 ::!
+....
+
+Each line corresponds to a network connection: the connection name, the
+name of the user running the server, the address of the local end of the
+connection, the address of the remote end of the connection, and the
+connection status. The connection name is actually the protocol and
+conversation directory in/net. The connection addresses are all of the
+form _host_! _port_ for these IP based services, and the remote
+addresses are not filled in because they all represent listening
+services that are in theAnnouncedstate. In this exam- ple the third line
+shows a TCP service listening on port 6675.
+Examining/lib/ndb/infernowithgrep (see _grep_ (1)) shows that the
+listener on port 6675 is the Inferno registry service
+
+....
+grep 6675 /lib/ndb/inferno
+....
+
+gives
+
+....
+tcp=registry port=6675 # default registry
+....
+
+Now the server is ready but we need a client.
+
+Either use a third machine or (more likely at first) simply start
+another _emu_ instance in a new window. Start its connection server,
+again by typing
+
+....
+ndb/cs
+....
+
+The connection server is fundamental to the Inferno network. Once
+networking is set up, when subse- quently starting up a client you
+should start _cs_ before starting the window system. Note that if you
+are run- ning the Inferno instance as a server, or combined server and
+client, thesvc/netthat starts the network services automatically starts
+_cs_ , and you need not do so explicitly.
+
+....
+" Step 12b: Generate a client certificate.
+....
+
+Obtain a certificate for the client in the same way as on the server. We
+shall obtain a certificate for use with a specific server by storing it
+in a file whose name exactly matches the network address of the server
+
+....
+getauthinfo tcp! hostname
+....
+
+Use the current machine’s _hostname_. _Getauthinfo_ stores the
+certificate in the file /usr/ _user_ /keyring/ _keyname_ where _user_ is
+the name in/dev/userand _keyname_ is the argument given to
+_getauthinfo_. Again, answeryesto the question that asks if you want to
+save the certificate in a file.
+
+Now that both client and server have a certificate obtained from the
+same signer it is possible to establish a secure connection between
+them. Note that getting keys and certificates with _getauthinfo_ is
+normally done just once (or at most once per server when thedefaultkey
+is not used). In short, all the work done up to now need not be
+repeated. After this, provided the keys were saved to a keyring file, as
+many authenti- cated connections can be made as desired until the
+certificate expires (which by default is whenever the password entry was
+set to expire). Also note that the certificates for different machines
+can have different signers, and one can even use different certificates
+for the same machine when the remote user name is to differ (the-foption
+of _getauthinfo_ can then be useful to force an appropriate keyring
+name).
+
+....
+" Step 12c: Make an authenticated connection.
+....
+
+The scriptsvc/neton the server started fundamental name services and
+also a Styx file service. That can also be started separately
+usingsvc/styx. In either case the namespace that is served is the one in
+which the command was invoked. Now you can test the service.
+
+Confirm that/n/remoteis an empty directory by typing
+
+....
+lc /n/remote
+....
+
+You can now mount the server’s name space onto the client’s
+directory/n/remoteby typing
+
+....
+mount serveraddr /n/remote
+....
+
+Where _serveraddr_ is the IP address of the server or a name that the
+host can resolve to the IP address of the server. Now
+
+....
+lc /n/remote
+....
+
+should reveal the files and directories in the namespace being served by
+the server. Those files are now also visible in the namespace of your
+shell. You will notice that these changes only affect the shell in which
+you ran the _mount_ commandother windows are unaffected. You can
+create, remove or modify files and direc- tories in and
+under/n/remotemuch as you can any other file or directory in your
+namespace. In fact, in general, a process does not need to know whether
+a file actually resides locally or remotely. You can unmount the mounted
+directory with _unmount_. Type
+
+....
+unmount /n/remote
+....
+
+You can confirm that it has gone by running
+
+....
+ls /n/remote
+....
+
+All connections made by Inferno are authenticated. The default
+connection made by _mount_ is authenticated but uses neither encryption
+nor secure digests. You can pass an argument to _mount_ to specify a
+more secure connection: its-Coption gives it a hashing and an encryption
+algorithm to be applied to the connection.
+
+....
+" Step 12d: Make a secure authenticated connection.
+....
+
+For example,
+
+....
+mount -C sha1/rc4_256 serveraddr /n/remote
+....
+
+makes an authenticated connection to the machine given by _serveraddr_ ,
+then engages SHA1 hashing for mes- sage digesting and 256-bit RC4 for
+encryption.
+
+It mounts the namespace served by _serveraddr_ ’s Styx service on the
+local Inferno directory/n/remote.
+
+*13. Adding new users*
+
+Every inferno process has an associated _user name_. At boot time the
+user name is set equal to your login name on the host operating system.
+The user name is used by _wm/logon_ to select the home directory, and by
+other programs like _mount_ when it searches for certificates. (It can
+also control permission for file access on the local system in native
+Inferno and some hosted Inferno configurations.) When you attach to a
+server on another system the user name in the authenticating certificate
+can be used by the remote file service to set the user name
+appropriately there.
+
+To create a new user, copy the directory/usr/infernointo/usr/
+_username_. If the user is to have access to services on the network,
+make an authentication server entry using _changelogin_ (8). The user
+can change the stored secret using _passwd_ (1), if desired. Having
+logged in for the first time, the user should generate a default
+public/private key set using _getauthinfo_ (8). (The authentication
+services must be running some- where.)
+
+The _wm_ window manager program _wm/logon_ allows a user to login to the
+local Inferno system as an Inferno user (different from the host user
+name). Its use is shown next.
+
+....
+" Step 13a: Re-start Inferno.
+....
+
+You should now close down any instances of _emu_ that you are currently
+running. The quickest way to do this is to type _control-c_ in the emu
+window in which you ran _wm/wm_. Start a new _emu_ , as before, by
+either running
+
+....
+emu
+....
+
+or by choosing the appropriate entry from your start menu on Windows
+machines. This time, start network services
+
+....
+svc/net
+....
+
+and then run
+
+....
+wm/wm wm/logon
+....
+
+and log in as user _inferno_. When you log in, _wm/logon_ will change
+directory to/usr/infernoand then write the nameinfernoto/dev/user. If
+the file/usr/inferno/namespaceexists it will be used to construct a new
+namespace for the user based on the commands that it contains (see
+_newns_ (2)).
+
+*14. What next*
+
+You should now have a fully functional Inferno system. You will need to
+have a three button mouse to use _acme_ , _wm_ , or _plumbing_.
+
+To learn more you could start with the manual pages for: _intro_ (1),
+_emu_ (1), _wm_ (1), _wm-misc_ (1), _sh_ (1), _acme_ (1), and _limbo_
+(1) and also the papers in sections 1, 2 and 3 of Volume 2 of _The
+Inferno Programmer’s Manual_. _____________________ The details are
+system-dependent and currently subject to change.

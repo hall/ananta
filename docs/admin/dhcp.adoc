@@ -1,0 +1,73 @@
+= dhcp: configure network interface details using DHCP
+
+== SYNOPSIS
+
+*ip/dhcp* [ *-bdmpr* ] [ **-g**__ gateway__ ] [ **-h**__ hostname__ ] [
+**-x**__"__*net* ] _ifcdir_ [ _localip_ [ _localmask_ ]]
+
+
+_Dhcp_ uses the Dynamic Host Configuration Protocol (DHCP) to configure
+the _ip_(3) interface represented by _ifcdir_ (eg, */net/ipifc/1*). The
+interface must have a device already bound to it. _Dhcp_ uses the MAC
+address of that device in its requests.
+
+_Dhcp_ broadcasts a DHCP request for an address and various network
+parameters. It takes the first acceptable offer, sets the interface to
+that address, and writes the address and parameter values, in _ndb_(6)
+format, to */net/ndb*, where _cs_(8), _dns_(8) and others will find
+them. If the address is provided with a limited lease, _dhcp_ itself
+returns, but it leaves a process in the background that periodically
+renews the lease (or requests a new address if the lease is not
+renewed).
+
+If _localip_ is given, _dhcp_ attempts to reacquire that address. If
+successful, it configures the interface with that address (and mask if
+supplied), maintaining any lease as before. If it cannot reacquire the
+address, it broadcasts a request for a new address, as above.
+
+The options are:
+
+*-b*::
+  Use plain BOOTP without the DHCP options
+*-d*::
+  Enable debugging output on standard output
+**-g**__ gateway__::
+  Suggest _gateway_ as the default gateway (the server might change it)
+**-h**__ hostname__::
+  Use _hostname_ as the current host's name in DHCP messages
+*-m*::
+  Monitor the DHCP status and print a summary on standard output
+  whenever it changes
+*-n*::
+  Do not configure the interface
+*-p*::
+  Print the resulting configuration on standard output
+*-r*::
+  Retry DHCP periodically until it succeeds
+**-x**__ net__::
+  Use mount point _net_ to access the network, and write the results to
+  __net__**/ndb** (default: */net*)
+
+== EXAMPLE
+
+Allocate a new interface, bind an ether device to it, and configure it
+with _dhcp_:
+
+....
+x=`{cat /net/ipifc/clone}
+echo bind ether /net/ether0 >/net/ipifc/$x/ctl &&
+ip/dhcp /net/ipifc/$x
+....
+
+== SOURCE
+
+*/appl/cmd/ip/dhcp.b*
+
+== SEE ALSO
+
+_ip_(3), _ndb_(6), _cs_(8), _dns_(8)
+
+== DIAGNOSTICS
+
+_Dhcp_ returns an error status if it receives no acceptable reply,
+unless the *-r* option is given to force retries.

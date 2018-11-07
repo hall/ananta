@@ -6,6 +6,7 @@ to do so, the system makes a few (as of yet) uncommon choices to provide a beaut
 
 
 [horizontal]
+link:manual[]  :: long-form articles of system components
 link:intro[]   :: commonly-used commands
 link:modules[] :: Limbo modules, including Inferno's system calls
 link:devices[] :: kernel devices (accessed by `bind`)

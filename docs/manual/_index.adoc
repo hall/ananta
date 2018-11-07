@@ -1,37 +1,31 @@
 = The Inferno Operating System
+:source-highlighter: pygments
+:source-language: limbo
 
 
 Inferno's definitive strength lies in its portability and versatility across several dimensions:
 
 processors::
-    Currently running on Intel, Sparc, MIPS, ARM, HP-PA, and PowerPC architectures
-    and readily portable to others.
+    Currently running on Intel, Sparc, MIPS, ARM, HP-PA, and PowerPC architectures and readily portable to others.
 
 environments::
     Runs as an application under Windows NT/95, Unix (Irix, Solaris, FreeBSD, Linux, AIX, HP/UX) and Plan 9.
     In all of these environments, Inferno applications see an identical interface.
 
 design::
-    Aided by the communications facilities of the run-time system,
-    applications may be split easily (and even dynamically) between
-    client and server.
+    Aided by the communications facilities of the run-time system, applications may be split easily (and even dynamically) between client and server.
 
 hardware::
-    Useful applications can be run stand-alone on machines with as little as 1 MB of memory,
-    and memory-mapping hardware is not required.
+    Useful applications can be run stand-alone on machines with as little as 1 MB of memory, and memory-mapping hardware is not required.
 
 applications::
-    Inferno applications are written in the type-safe language Limbo,
-    whose binary representation is identical over all platforms.
+    Inferno applications are written in the type-safe language Limbo, whose binary representation is identical over all platforms.
 
 adaptability::
-    applications may, depending on the hardware or other resources available,
-    load different program modules to perform a specific function.
+    applications may, depending on the hardware or other resources available, load different program modules to perform a specific function.
 
 Underlying the design of Inferno is a model of the diversity of applications it intends to stimulate.
-Inferno aims to unite many services (telephony, www, cable, ...)
-that are dispersed over many protocols (modems, ISDN, ATM, internet, ...)
-with a robust and secure underlayment.
+Inferno aims to unite many services (telephony, www, cable, ...) that are dispersed over many protocols (modems, ISDN, ATM, internet, ...) with a robust and secure underlayment.
 
 
 == Inferno interfaces
@@ -391,7 +385,7 @@ top to identify it and hold the buttons to move and delete the window.
 
 == The Source
 
-Here is the complete Limbo source for our version of `view` , annotated
+Here is the complete Limbo source for our version of `view`, annotated
 with line numbers for easy reference (Limbo, of course, does not use
 line numbers).  Subsequent sections explain the workings of the program.
 Although the program is too large to absorb as a first example without
@@ -402,127 +396,128 @@ languages <<pascal>>.  Limbo borrows features from a number of languages (e.g.,
 tuples on lines 45 and 48) and introduces a few new ones (e.g. explicit
 module loading on lines 90 and 92).
 
+[source,limbo,linenums]
+----
+implement View;
+include "sys.m";
+   sys: Sys;
+include "draw.m";
+   draw: Draw;
+   Rect, Display, Image: import draw;
+include "bufio.m";
+include "imagefile.m";
+include "tk.m";
+   tk: Tk;
+include   "wmlib.m";
+   wmlib: Wmlib;
+include "string.m";
+   str: String;
 
-     1  implement View;
-     2  include "sys.m";
-     3     sys: Sys;
-     4  include "draw.m";
-     5     draw: Draw;
-     6     Rect, Display, Image: import draw;
-     7  include "bufio.m";
-     8  include "imagefile.m";
-     9  include "tk.m";
-    10     tk: Tk;
-    11  include   "wmlib.m";
-    12     wmlib: Wmlib;
-    13  include "string.m";
-    14     str: String;
-    15  View: module
-    16  {
-    17     init: fn(ctxt: ref Draw->Context,
-                    argv: list of string);
-    18  };
-    19  init(ctxt: ref Draw->Context,
-             argv: list of string)
-    20  {
-    21     sys   = load Sys Sys->PATH;
-    22     draw  = load Draw Draw->PATH;
-    23     tk    = load Tk Tk->PATH;
-    24     wmlib = load Wmlib Wmlib->PATH;
-    25     str   = load String String->PATH;
-    26     wmlib->init();
-    27     imageremap := load Imageremap
-                              Imageremap->PATH;
-    28     bufio := load Bufio Bufio->PATH;
-    29     argv = tl argv;
-    30     if(argv != nil
-             && str->prefix("-x ", hd argv))
-    31        argv = tl argv;
-    32     viewer := 0;
-    33     while(argv != nil){
-    34        file := hd argv;
-    35        argv = tl argv;
-    36        im := ctxt.display.open(file);
-    37        if(im == nil){
-    38           idec := filetype(file);
-    39           if(idec == nil)
-    40              continue;
-    41           fd := bufio->open(file,
-                              Bufio->OREAD);
-    42           if(fd == nil)
-    43              continue;
-    44           idec->init(bufio);
-    45           (ri, err) := idec->read(fd);
-    46           if(ri == nil)
-    47              continue;
-    48           (im, err) = imageremap->remap(
-                          ri, ctxt.display, 1);
-    49           if(im == nil)
-    50              continue;
-    51        }
-    52        spawn view(ctxt, im, file,
-                         viewer++);
-    53     }
-    54  }
-    55  view(ctxt: ref Draw->Context,
-             im: ref Image, file: string,
-             viewer: int)
-    56  {
-    57     corner := string(25+20*(viewer%5));
-    58     (nil, file) = str->splitr(file, "/");
-    59     (t, menubut) := wmlib->titlebar(ctxt.screen,
-                " -x "+corner+" -y "+corner+
-                " -bd 2 -relief raised",
-                 "View: "+file, Wmlib->Hide);
-    60     event := chan of string;
-    61     tk->namechan(t, event, "event");
-    62     tk->cmd(t, "frame .im -height " +
-                      string im.r.dy() +
-                      " -width " +
-                      string im.r.dx());
-    63     tk->cmd(t, "bind . <Configure> "+
-                      "{send event resize}");
-    64     tk->cmd(t, "bind . <Map> "+
-                      "{send event resize}");
-    65     tk->cmd(t, "pack .im -side bottom"+
-                      " -fill both -expand 1");
-    66     tk->cmd(t, "update");
-    67     t.image.draw(posn(t), im, ctxt.display.ones, im.r.min);
-    68     for(;;) alt{
-    69     menu := <-menubut =>
-    70        if(menu == "exit")
-    71           return;
-    72        wmlib->titlectl(t, menu);
-    73     <-event =>
-    74        t.image.draw(posn(t), im,
-                  ctxt.display.ones, im.r.min);
-    75     }
-    76  }
-    77  posn(t: ref Tk->Toplevel): Rect
-    78  {
-    79     minx := int tk->cmd(t,
-                       ".im cget -actx");
-    80     miny := int tk->cmd(t,
-                       ".im cget -acty");
-    81     maxx := minx + int tk->cmd(t,
-                       ".im cget -actwidth");
-    82     maxy := miny + int tk->cmd(t,
-                       ".im cget -actheight");
-    83     return ((minx, miny), (maxx, maxy));
-    84  }
-    85  filetype(file: string): RImagefile
-    86  {
-    87     if(len file>4
-             && file[len file-4:]==".gif")
-    88        r := load RImagefile
-                       RImagefile->READGIFPATH;
-    89     if(len file>4
-             && file[len file-4:]==".jpg")
-    90        r = load RImagefile
-                       RImagefile->READJPGPATH;
-    91     return r;
-    92  }
-    
+View: module {
+   init: fn(ctxt: ref Draw->Context, argv: list of string);
+};
+
+init (ctxt: ref Draw->Context, argv: list of string) {
+
+   sys   = load Sys    Sys->PATH;
+   draw  = load Draw   Draw->PATH;
+   tk    = load Tk     Tk->PATH;
+   wmlib = load Wmlib  Wmlib->PATH;
+   str   = load String String->PATH;
+   wmlib->init();
+
+   imageremap := load Imageremap Imageremap->PATH;
+   bufio := load Bufio           Bufio->PATH;
+   argv = tl argv;
+
+   if (argv != nil && str->prefix("-x ", hd argv))
+      argv = tl argv;
+
+   viewer := 0;
+
+   while (argv != nil) {
+      file := hd argv;
+      argv  = tl argv;
+      im   := ctxt.display.open(file);
+
+      if (im == nil) {
+         idec := filetype(file);
+
+         if (idec == nil)
+            continue;
+
+         fd := bufio->open(file, Bufio->OREAD);
+
+         if (fd == nil)
+            continue;
+
+         idec->init(bufio);
+         (ri, err) := idec->read(fd);
+
+         if (ri == nil)
+            continue;
+
+         (im, err) = imageremap->remap(ri, ctxt.display, 1);
+
+         if (im == nil)
+            continue;
+      }
+      spawn view(ctxt, im, file, viewer++);
+   }
+}
+
+view (ctxt: ref Draw->Context, im: ref Image, file: string, viewer: int) {
+
+   corner := string(25+20*(viewer%5));
+   (nil, file) = str->splitr(file, "/");
+   (t, menubut) := wmlib->titlebar(ctxt.screen,
+        " -x "+corner+" -y "+corner+
+        " -bd 2 -relief raised",
+         "View: "+file, Wmlib->Hide);
+
+   event := chan of string;
+   tk->namechan(t, event, "event");
+   tk->cmd(t, "frame .im -height " +
+              string im.r.dy() +
+              " -width " +
+              string im.r.dx());
+   tk->cmd(t, "bind . <Configure> "+
+              "{send event resize}");
+   tk->cmd(t, "bind . <Map> "+
+              "{send event resize}");
+   tk->cmd(t, "pack .im -side bottom"+
+              " -fill both -expand 1");
+   tk->cmd(t, "update");
+   t.image.draw(posn(t), im, ctxt.display.ones, im.r.min);
+   for(;;) alt{
+   menu := <-menubut =>
+      if (menu == "exit")
+         return;
+      wmlib->titlectl(t, menu);
+   <-event =>
+      t.image.draw(posn(t), im,
+          ctxt.display.ones, im.r.min);
+   }
+}
+
+posn (t: ref Tk->Toplevel): Rect {
+   minx :=        int tk->cmd(t, ".im cget -actx");
+   miny :=        int tk->cmd(t, ".im cget -acty");
+   maxx := minx + int tk->cmd(t, ".im cget -actwidth");
+   maxy := miny + int tk->cmd(t, ".im cget -actheight");
+   return ((minx, miny), (maxx, maxy));
+}
+
+filetype (file: string): RImagefile {
+   if (len file>4 && file[len file-4:]==".gif")
+      r := load RImagefile RImagefile->READGIFPATH;
+
+   if (len file>4 && file[len file-4:]==".jpg")
+      r = load RImagefile RImagefile->READJPGPATH;
+
+   return r;
+}
+----    
     
 == Modules
 
@@ -558,24 +553,27 @@ identified on lines 2-14.  Each module's interface is stored in a public
 of the `View` program.  For example, here is an excerpt from the include
 file `sys.m`:
 
-    Sys: module
-    {
-       PATH:	con	"$Sys";
-    
-       FD: adt   # File descriptor
-       {
-          fd:   int;
-       };
-    
-       OREAD:   con 0;
-       OWRITE:  con 1;
-       ORDWR:   con 2;
-    
-       open:   fn(s: string, mode: int): ref FD;
-       print:  fn(s: string, *): int;
-       read:   fn(fd: ref FD, buf: array of byte, n: int): int;
-       write:  fn(fd: ref FD, buf: array of byte, n: int): int;
-    };
+[source]
+----
+Sys: module
+{
+   PATH:	con	"$Sys";
+
+   FD: adt   # File descriptor
+   {
+      fd:   int;
+   };
+
+   OREAD:   con 0;
+   OWRITE:  con 1;
+   ORDWR:   con 2;
+
+   open:   fn(s: string, mode: int): ref FD;
+   print:  fn(s: string, *): int;
+   read:   fn(fd: ref FD, buf: array of byte, n: int): int;
+   write:  fn(fd: ref FD, buf: array of byte, n: int): int;
+};
+----
 
 This defines a module type, called `Sys` , that has functions with
 familiar names like `open` and `print` , constants like `OREAD` to specify
@@ -593,20 +591,21 @@ statement, calls to methods of these types would require explicit mention
 of the module providing the implementation.
 
 Unlike most module languages, which resolve unbound references to
-modules automatically, Limbo requires explicit `loading' of module
+modules automatically, Limbo requires explicit 'loading' of module
 implementations.  Although this requires more bookkeeping, it allows a
 program to have fine control over the loading (and unloading) of modules,
 an important property in the small-memory systems in which Inferno is
 intended to run.  Also, it allows easy garbage collection of unused
 modules and allows multiple implementations to serve a single interface,
-a style of programming we will exploit in `View` .
+a style of programming we will exploit in `View`.
 
 Declaring a module variable such as `sys` is not sufficient to access a
 module; an implementation must also be loaded and bound to the variable.
 Lines 21-25 load the implementations of the standard modules used by
 `View` .  The `load` operator, for example
 
-    sys = load Sys Sys->PATH;
+[source]
+sys = load Sys Sys->PATH;
 
 takes a type (`Sys`), the file name of the implementation (`Sys->PATH`),
 and loads it into memory.  If the implementation matches the specified
@@ -626,12 +625,13 @@ modules, but add a new wrinkle: they also _declare_ and _initialize_
 the module variables storing the reference.  Limbo declarations have
 the general form
 
-    _var_: _type_ = _value_;
+[source,subs=quotes]
+_var_: _type_ = _value_;
 
-If the type is missing, it is taken to be the type of the value, so
-for example,
+If the type is missing, it is taken to be the type of the value, so for example,
 
-    bufio := load Bufio Bufio->PATH;
+[source]
+bufio := load Bufio Bufio->PATH;
 
 on line 28 declares a variable of type `Bufio` and initializes it to
 the result of the `load` expression.
@@ -656,7 +656,8 @@ the next file name and line 35 updates the list.
 
 Line 36 is the first method call we have seen:
 
-    im := ctxt.display.open(file);
+[source]
+im := ctxt.display.open(file);
 
 The parameter `ctxt` is an `adt` that contains all the relevant
 information for the program to access its graphics environment.
@@ -707,16 +708,19 @@ module anew every time it is called, which is clearly inefficient.
 It's easy to do better, though: just store the module in a global,
 as in this fragment:
 
-    readjpg: RImagefile;
-    filetype(...)...
-    {
-       if(isjpg()){
-          if(readjpg == nil)
-             readjpg = load RImagefile
-                RImagefile->READJPGPATH;
-          return readjpg;
-       }
-    }
+[source]
+----
+readjpg: RImagefile;
+filetype(...)...
+{
+   if(isjpg()){
+      if(readjpg == nil)
+         readjpg = load RImagefile
+            RImagefile->READJPGPATH;
+      return readjpg;
+   }
+}
+----
 
 The program can form its own policies on loading and unloading modules
 based on time/space or other tradeoffs; the system does not impose
@@ -729,7 +733,8 @@ instance of the buffered I/O module being used (if we were caching decoder
 modules, this call to `init` would be done only when the decoder is first
 loaded.)  Finally, the Limbo-characteristic line 45 reads in the file:
 
-    (ri, err) := idec->read(fd);
+[source]
+(ri, err) := idec->read(fd);
 
 The `read` method of the decoder does the hard job of cracking the
 image format, which is beyond the scope of this paper.  The result is
@@ -861,7 +866,8 @@ style of programming.
 The payoff occurs on line 67, which steps outside the Tk model to draw
 the image `im` directly on the window:
 
-    t.image.draw(posn(t), im, ctxt.display.ones, im.r.min);
+[source]
+t.image.draw(posn(t), im, ctxt.display.ones, im.r.min);
 
 `Posn` calculates where on the screen the image is to go.  The `draw`
 method is the fundamental graphics operation in Inferno, whose design

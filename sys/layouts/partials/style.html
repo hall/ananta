@@ -3,6 +3,7 @@ body {
   font-family: Helvetica, Verdana, Arial, 'Liberation Sans', FreeSans, sans-serif;
   margin: 0;
   padding: 0;
+  background-color: white;
 }
 
 .tableblock {
@@ -47,6 +48,15 @@ a:hover { text-decoration: underline; }
   font-style: italic;
   margin-left: 1em;
 }
+@media only screen and (max-width: 600px) {
+  #headerSubTitle {
+    display: none;
+  }
+  #main-copy {
+    margin: 0 !important;
+  }
+}
+
 
 .headerTitle a { color: #b2b2b2; }
 .headerTitle a:hover { text-decoration: none; }
@@ -65,7 +75,7 @@ a:hover { text-decoration: underline; }
   font-weight: bold;
   margin: 0;
   padding: 0 0.75ex 0 0.5ex;
-}  
+}
 
 .superHeader .highlight, .subHeader .highlight {
   color: rgb(253,160,91);
@@ -77,10 +87,11 @@ a:hover { text-decoration: underline; }
  * Side
  */
 #side-bar {
-  width: 15em;
   float: left;
   clear: left;
   border-right: 1px solid #ddd;
+  background-color: white;
+  margin-right: 1em;
 }
 
 #side-bar ul {
@@ -121,9 +132,6 @@ a:hover { text-decoration: underline; }
   text-decoration: none;
 }
 
-#side-bar div {
-  background-color: white;
-}
 
 /*
  * Main Copy
@@ -131,7 +139,7 @@ a:hover { text-decoration: underline; }
 #main-copy {
   line-height: 1.3;
   text-align: justify;
-  margin: 0em 15em 0 15em;
+  margin: 0em 15vw;
   padding: 0.5mm 5mm 5mm 5mm;
 
   min-height: 70%;
@@ -263,6 +271,10 @@ acronym, .titleTip {
 blockquote {
   border-left: 2px solid #7590db;
   font-style: italic;
+  padding-left: 1em;
+}
+.attribution {
+  text-align: right;
 }
 
 .doNotDisplay { display: none; }

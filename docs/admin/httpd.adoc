@@ -11,24 +11,12 @@
 
 _Httpd_ is a simple HTTP daemon, serving version 1.0 of the HTTP
 protocol. It listens for incoming calls on a given _address_ (default:
-*tcp!*!80*). It serves content rooted at
+*tcp!*!80*). It serves content rooted at `/services/httpd/root` in its name space.
 
-in its name space.
-
-The _httpd_ program supports only the
-
-and
-
-methods of the HTTP protocol. The
-
-(default
-
-and
-
-(default
-
-of a file are determined by looking for suffixes of the file name in
-*/services/http/http.suff*.
+The _httpd_ program supports only the `GET` and `HEAD` methods of the HTTP protocol.
+The `Content-type` (default `application/octet-stream`) and `Content-encoding`
+(default `binary`) of a file are determined by looking for suffixes of the file
+name in */services/http/http.suff*.
 
 If the requested URI begins with */magic/*, _httpd_ loads the module
 associated with the remaining part of the URI. Take care to configure

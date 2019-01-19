@@ -1,8 +1,6 @@
 = introduction
 
-_inf_ is designed for simplicity;
-to do so, the system makes a few (as of yet) uncommon choices to provide a beautiful and clean machine.
-
+_inf_ is designed for simplicity, built for the cloud.
 
 
 [horizontal]
@@ -28,10 +26,3 @@ some of the major ones follow.
  - utilities are more strictly single purpose (e.g., without a thousand options, arguments, or flags)
  - strings are not NUL terminated (in fact, the NUL character is invalid in a string)
  - no superuser account
-
-== windows differences
-
-    all of them
-
-
-

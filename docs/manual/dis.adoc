@@ -2,8 +2,6 @@
 Phil Winterbottom; Rob Pike
 
 
-== introduction
-
 The Dis virtual machine provides the execution environment for programs
 running under the Inferno operating system. The virtual machine models a
 CISC-like, three operand, memory-to-memory architecture. Code can either
@@ -32,13 +30,13 @@ or special-purpose silicon.
 === Dis, the Inferno Virtual Machine
 
 In early 1995, we set out to apply the ideas of the Plan 9 operating
-system [1] to a wider range of devices and networks.  The resulting
-system, Inferno [2], is a small operating system and execution environment
+system <<plan9>> to a wider range of devices and networks.  The resulting
+system, Inferno <<inferno>>, is a small operating system and execution environment
 that supports application portability across a wide variety of processors
 and operating systems.  Unaware of the contemporary work to establish Java
-[3] from the technology of the Oak project, we independently concluded
+<<java>> from the technology of the Oak project, we independently concluded
 that a virtual machine (VM) was a necessary component of such a system
-[4].  Because of improvements in processor speed and the feasibility of
+<<pascal>>.  Because of improvements in processor speed and the feasibility of
 on-the-fly compilers, a VM can execute quickly enough to be economically
 viable.
 
@@ -114,15 +112,15 @@ Consider the code to execute
 An SM would execute this by a code burst such as this, which we have
 annotated with its memory traffic using _L_ for load and _S_ for store:
 
-    push  a      # \fILS\fP
-    push  b      # \fILS\fP
-    add          # \fILLS\fP
-    store c      # \fILS\fP
+    push  a      # LS
+    push  b      # LS
+    add          # LLS
+    store c      # LS
 
 The corresponding MM code burst would be the plain three-operand
 instruction
 
-    add   a,b,c  # \fILLS\fP
+    add   a,b,c  # LLS
 
 When interpreting, the extra memory traffic of the SM is masked by the
 time saved by not decoding any operand fields.   The operand fields
@@ -1562,13 +1560,14 @@ The Limbo compiler can optionally produce a separate symbol table file.
 Its format is defined in the entry _sbl_(6) of [1].
 
 
+[bibliography]
 == References
 
- - 1. _Inferno Programmer's Manual_ (Third Edition), Volume 1 (`the manual'), Vita Nuova Holdings Limited, June 2000.
- - 2. P Winterbottom and R Pike, _The Design of the Inferno Virtual Machine_, reprinted in this volume.
- - R. Pike, D. Presotto, S. Dorward, B. Flandrena, K. Thompson, H. Trickey, and P. Winterbottom. ``Plan 9 from Bell Labs'', _"J._ Computing Systems" 8:3, Summer 1995, pp. 221-254.
- - Dorward, S., et al., ``Inferno'', _"IEEE_ Compcon 97 Proceedings" , 1997.
- - Arnold, K. and Gosling, J., _"The_ Java Programming Language" , Addison-Wesley, 1996.
- - Nori, K. V., Ammann, U., Nabeli, H. H., and Jacobi, Ch.,  ``Pascal P Implementation notes'', in Barron, D. W. (ed.), _"Pascal\-The_ Language and its Implementation" , Wiley, 1981, pp. 125-170.
+ - [[[plan9]]] R. Pike, D. Presotto, S. Dorward, B. Flandrena, K. Thompson, H. Trickey, and P. Winterbottom. ``Plan 9 from Bell Labs'', _"J._ Computing Systems" 8:3, Summer 1995, pp. 221-254.
+ - [[[manual]]] 1. _Inferno Programmer's Manual_ (Third Edition), Volume 1 (`the manual'), Vita Nuova Holdings Limited, June 2000.
+ - [[[dis]]] 2. P Winterbottom and R Pike, _The Design of the Inferno Virtual Machine_, reprinted in this volume.
+ - [[[inferno]]] Dorward, S., et al., ``Inferno'', _"IEEE_ Compcon 97 Proceedings" , 1997.
+ - [[[java]]] Arnold, K. and Gosling, J., _"The_ Java Programming Language" , Addison-Wesley, 1996.
+ - [[[pascal]]] Nori, K. V., Ammann, U., Nabeli, H. H., and Jacobi, Ch.,  ``Pascal P Implementation notes'', in Barron, D. W. (ed.), _"Pascal\-The_ Language and its Implementation" , Wiley, 1981, pp. 125-170.
  - Ditzel, D. R. and McLellan, R., ``Register Allocation for Free: The C Machine Stack Cache'', _"Proc._ of Symp. on Arch. Supp. for Prog. Lang. and Op. Sys." , March, 1982, pp. 48-56.
  - Case, B., ``Implementing the Java Virtual Machine'', _"Microprocessor_ Report" , March 25, 1996, pp. 12-17.

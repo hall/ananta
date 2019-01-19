@@ -7,21 +7,15 @@ The Plan 9 protocol 9P makes resources visible as file hierarchies.
 
 NOTE: this is based on version 9P2000
 
-An server is an agent that provides one or more hier‐
-archical file systems — file trees — that may be accessed  by
-processes.  A server responds to requests by clients
-to navigate the hierarchy, and to create, remove,  read,  and
-write files. The prototypical server is a separate machine
-that stores large numbers of user files on  permanent  media.
-Another  possibility  for  a server is to synthesize files on
-demand, perhaps  based  on  information  on  data  structures
-inside the kernel; the prog(3) kernel device is a part of the
-Inferno kernel that does this.  User programs can also act as
-servers.   One  easy way is to serve a set of files using the
-sys-file2chan(2) interface.  More complex Limbo file  service
-applications  can use styx(2) to handle the protocol messages
-directly, or use styxservers(2)  to  provide  a  higher-level
-framework for file serving.
+A server is an agent that provides one or more hierarchical file systems — file trees — that may be accessed by processes.
+A server responds to requests by clients to navigate the hierarchy, and to create, remove, read, and write files.
+The prototypical server is a separate machine that stores large numbers of user files on permanent media.
+Another possibility for a server is to synthesize files on demand, perhaps based on information on data structures inside the kernel;
+the prog(3) kernel device is a part of the Inferno kernel that does this.
+User programs can also act as servers.
+One easy way is to serve a set of files using the sys-file2chan(2) interface.
+More complex Limbo file service applications can use styx(2) to handle the protocol messages directly,
+or use styxservers(2) to provide a higher-level framework for file serving.
 
 A  connection  to  a  server is a bidirectional communication
 path from the client to the server.  There may  be  a  single

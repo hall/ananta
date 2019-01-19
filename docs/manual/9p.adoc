@@ -185,7 +185,8 @@ As an example, access to a TCP/IP network in Inferno and Plan 9 systems
 appears as a piece of a file system, with (abbreviated) structure as
 follows[PrWi93]:
 
-    /net/
+----
+/net/
 	dns/
 	tcp/
 		clone
@@ -196,7 +197,7 @@ follows[PrWi93]:
 			data
 			listen
 		1/
-			...		
+			...
 		...
 	ether0/
 		0/
@@ -206,17 +207,18 @@ follows[PrWi93]:
 		1/
 			...
 	...
+----
 
 This represents a file system structure in which one can name, read,
-and write `files' with names like `/net/dns` , `/net/tcp/clone` ,
+and write 'files' with names like `/net/dns` , `/net/tcp/clone` ,
 `/net/tcp/0/ctl` and so on; there are directories of files `/net/tcp` and
-`/net/ether0` .  On the machine that actually has the network interface,
+`/net/ether0`.  On the machine that actually has the network interface,
 all of these things that look like files are constructed by the kernel
 drivers that maintain the TCP/IP stack; they are not real files on a disk.
 Operations on the `files' turn into operations sent to the device drivers.
 
 Suppose an application wishes to establish a connection over TCP/IP
-to `www.bell-labs.com` .  The first task is to translate the domain
+to `www.bell-labs.com`.  The first task is to translate the domain
 name `www.bell-labs.com` to a numerical internet address; this is a
 complicated process, generally involving communicating with local and
 remote Domain Name Servers.  In the Styx model, this is done by opening
@@ -512,4 +514,3 @@ Technical Journal" , Vol. 3, No. 4, October-December 1998, pp. 86-102.
 [Welc94] B. Welch, ``A Comparison of Three Distributed File System
 Architectures: Vnode, Sprite, and Plan 9'', _"Computing_ Systems" ,
 Vol. 7, No. 2, pp. 175-199 (1994).  .nr PS +1 .nr VS +1
-

@@ -61,7 +61,7 @@ operating system. The Inferno applications themselves would run either
 on the client or server machines, or both.
 
 
-== External Environment of Inferno Applications
+== external environment of Inferno applications
 
 The purpose of most Inferno applications is to present information
 or media to the user; thus applications must locate the information
@@ -74,14 +74,11 @@ resources to these applications.
 
 The design has three principles.
 
- .  All resources are named and accessed like files in a forest of
-    hierarchical file systems.
+ .  All resources are named and accessed like files in a forest of hierarchical file systems.
 
- .  The disjoint resource hierarchies provided by different services are
-    joined together into a single private hierarchical _name space_.
+ .  The disjoint resource hierarchies provided by different services are joined together into a single private hierarchical _name space_.
 
- .  A communication protocol, called _Styx_ , is applied uniformly
-    to access these resources, whether local or remote.
+ .  A communication protocol, called _Styx_, is applied uniformly to access these resources, whether local or remote.
 
 In practice, most applications see a fixed set of files organized as
 a directory tree. Some of the files contain ordinary data, but others
@@ -89,7 +86,7 @@ represent more active resources. Devices are represented as files, and
 device drivers (such as a modem, an MPEG decoder, a network interface,
 or the TV screen) attached to a particular hardware box present
 themselves as small directories. These directories typically containing
-two files, `data` and `ctl` , which respectively perform actual device
+two files, `data` and `ctl`, which respectively perform actual device
 input/output and control operations. System services also live behind
 file names. For example, an Internet domain name server might be attached
 to an agreed-upon name (say `/net/dns`); after writing to this file a
@@ -116,7 +113,7 @@ transport layer; it is readily carried over TCP/IP, PPP, ATM or various
 modem transport protocols.
 
 
-== Internal Environment of Inferno Applications
+== internal environment of Inferno applications
 
 Inferno applications are written in a new language called Limbo <<limbo>>,
 which was designed specifically for the Inferno environment. Its syntax
@@ -198,7 +195,7 @@ toolkit <<tk>>, with a Limbo interface. A `Math` module encapsulates the
 procedures for numerical programming.
 
 
-== The Environment of the Inferno System
+== the environment of the Inferno system
 
 Inferno creates a standard environment for applications. Identical
 application programs can run under any instance of this environment, even
@@ -222,7 +219,7 @@ Inferno is, to the extent possible, written in standard C and most of its
 components are independent of the many operating systems that can host it.
 
 
-== Security in Inferno
+== security in Inferno
 
 Inferno provides security of communication, resource control, and system
 integrity.
@@ -263,7 +260,7 @@ to authenticate or encrypt; thereafter, all use of the resource is
 automatically protected.
 
 
-== Security mechanisms
+== security mechanisms
 
 Authentication and digital signatures are performed using public key
 cryptography.  Public keys are certified by Inferno-based or other
@@ -302,30 +299,30 @@ are provided for Limbo programs to sign and verify signatures.
 Generally authentication is performed using public key cryptography.
 Parties register by having their public keys signed by the certifying
 authority (CA).  The signature covers a secure hash (SHA, MD4, or MD5)
-of the name of the party, his public key, and an expiration time.
+of the name of the party, their public key, and an expiration time.
 The signature, which contains the name of the signer, along with the
-signed information, is termed a _certificate_ .
+signed information, is termed a _certificate_.
 
 When parties communicate, they use the Station to Station protocol <<acrypt>>
 to establish the identities of the two parties and to create a mutually
 known secret.  This STS protocol uses the Diffie-Hellman algorithm <<dh>>
 to create this shared secret.  The protocol is protected against replay
 attacks by choosing new random parameters for each conversation.  It is
-secured against `man in the middle' attacks by having the parties exchange
+secured against 'man in the middle' attacks by having the parties exchange
 certificates and then digitally signing key parts of the protocol.
 To masquerade as another party an attacker would have to be able to
 forge that party's signature.
 
 
-== Line Security
+== line security
 
 A network conversation can be secured against modification alone or
-against both modification and snooping.  To secure against modification,
+against both modification and snooping. To secure against modification,
 Inferno can append a secure MD5 or SHA hash (called a digest),
 
     hash(secret, message, messageid)
 
-to each message.  _Messageid_ is a 32 bit number that starts at 0 and is
+to each message. _Messageid_ is a 32 bit number that starts at 0 and is
 incremented by one for each message sent.  Thus messages can be neither
 changed, removed, reordered or inserted into the stream without knowing
 the secret or breaking the secure hash algorithm.
@@ -334,12 +331,11 @@ To secure against snooping, Inferno supports encryption of the complete
 conversation using either RC4 or DES with either DES chain block coding
 (DESCBC) and electronic code book (DESECB).
 
-Inferno uses the same encapsulation format as Netscape's Secure Sockets
-Layer <<ssl>>.  It is possible to encapsulate a  message stream in multiple
-encapsulations to provide varying degrees of security.
+Inferno uses the SSL <<ssl>> encapsulation format.
+It is possible to encapsulate a  message stream in multiple encapsulations to provide varying degrees of security.
 
 
-== Random Numbers
+== random numbers
 
 The strength of cryptographic algorithms depends in part on strength of
 the random numbers used for choosing keys, Diffie-Hellman parameters,
@@ -353,14 +349,14 @@ tested on a number of architectures using self correlation, random walk,
 and repeatability tests.
 
 
-== Introduction to Limbo
+== introduction to Limbo
 
 Limbo is the application programming language for the Inferno operating
 system.  Although Limbo looks syntactically like C, it has a number
 of features that make it easier to use, safer, and more suited to
 the heterogeneous, networked Inferno environment: a rich set of basic
 types, strong typing, garbage collection, concurrency, communications,
-and modules.  Limbo may be interpreted or compiled `just in time' for
+and modules.  Limbo may be interpreted or compiled 'just in time' for
 efficient, portable execution.
 
 This paper introduces the language by studying an example of a complete,
@@ -369,21 +365,21 @@ well as aspects of concurrency, graphics, module loading, and other
 features of Limbo and Inferno.
 
 
-== The problem
+== the problem
 
 Our example program is a stripped-down version of the Inferno <<disarc>> program
-`view` , which displays graphical image files on the screen, one per
+`view`, which displays graphical image files on the screen, one per
 window.  This version sacrifices some functionality, generality, and
 error-checking but performs the basic job.  The files may be in either
-GIF<<gif1,gif2>> or JPEG <<jpeg>> format and must be converted before display,
+GIF <<gif1>>,<<gif2>> or JPEG <<jpeg>> format and must be converted before display,
 or they may already be in the Inferno standard format that needs no
-conversion.  `View` `sniffs' each file to determine what processing it
+conversion.  `View` 'sniffs' each file to determine what processing it
 requires, maps the colors if necessary, creates a new window, and copies
 the converted image to it.  Each window is given a title bar across the
 top to identify it and hold the buttons to move and delete the window.
 
 
-== The Source
+== the Source
 
 Here is the complete Limbo source for our version of `view`, annotated
 with line numbers for easy reference (Limbo, of course, does not use
@@ -393,8 +389,8 @@ some assistance, it's worth skimming before moving to the next section,
 to get an idea of the style of the language.  Control syntax derives
 from C <<ansic>>, while declaration syntax comes from the Pascal family of
 languages <<pascal>>.  Limbo borrows features from a number of languages (e.g.,
-tuples on lines 45 and 48) and introduces a few new ones (e.g. explicit
-module loading on lines 90 and 92).
+tuples on lines 55 and 60) and introduces a few new ones (e.g. explicit
+module loading on lines 113 and 116).
 
 [source,limbo,linenums]
 ----
@@ -408,7 +404,7 @@ include "bufio.m";
 include "imagefile.m";
 include "tk.m";
    tk: Tk;
-include   "wmlib.m";
+include "wmlib.m";
    wmlib: Wmlib;
 include "string.m";
    str: String;
@@ -427,7 +423,7 @@ init (ctxt: ref Draw->Context, argv: list of string) {
    wmlib->init();
 
    imageremap := load Imageremap Imageremap->PATH;
-   bufio := load Bufio           Bufio->PATH;
+   bufio := load Bufio Bufio->PATH;
    argv = tl argv;
 
    if (argv != nil && str->prefix("-x ", hd argv))
@@ -519,14 +515,14 @@ filetype (file: string): RImagefile {
 }
 ----    
     
-== Modules
+== modules
 
 Limbo programs are composed of modules that are loaded and linked
 at run-time.  Each Limbo source file is the implementation of a single
-module; here line 1 states this file implements a module called `View`
-, whose declaration appears in the `module` declaration on lines 15-18.
+module; here line 1 states this file implements a module called `View`,
+whose declaration appears in the `module` declaration on lines 16-18.
 The declaration states that the module has one publicly visible element,
-the function `init` .  Other functions and variables defined in the file
+the function `init`.  Other functions and variables defined in the file
 will be compiled into the module but only accessible internally.
 
 The function `init` has a type signature (argument and return types)
@@ -540,7 +536,7 @@ at the Inferno command prompt to view all the JPEG files in a directory.
 This interface is all that is required for the module to be callable
 from the shell; all programs are constructed from modules, and some
 modules are directly callable by the shell because of their type.
-In fact the shell invokes `View` by loading it and calling `init` ,
+In fact the shell invokes `View` by loading it and calling `init`,
 not for example through the services of a system `exec` function as in
 a traditional operating system.
 
@@ -557,7 +553,7 @@ file `sys.m`:
 ----
 Sys: module
 {
-   PATH:	con	"$Sys";
+   PATH: con "$Sys";
 
    FD: adt   # File descriptor
    {
@@ -575,18 +571,18 @@ Sys: module
 };
 ----
 
-This defines a module type, called `Sys` , that has functions with
-familiar names like `open` and `print` , constants like `OREAD` to specify
-the mode for opening a file, an aggregate type `adt` ) ( called `FD` ,
+This defines a module type, called `Sys`, that has functions with
+familiar names like `open` and `print`, constants like `OREAD` to specify
+the mode for opening a file, an aggregate type (`adt`) called `FD`,
 returned by `open` , and a constant string called `PATH` .
 
 After including the definition of each module, `View` declares variables
-to access the module.  Line 3, for example, declares the variable
-`sys` to have type `Sys` ; it will be used to hold a reference to the
+to access the module. Line 3, for example, declares the variable
+`sys` to have type `Sys`; it will be used to hold a reference to the
 implementation of the module.  Line 6 imports a number of types from the
 `draw` (graphics) module to simplify their use; this line states that
 the implementation of these types is by default to be that provided by
-the module referenced by the variable `draw` .  Without such an `import`
+the module referenced by the variable `draw`.  Without such an `import`
 statement, calls to methods of these types would require explicit mention
 of the module providing the implementation.
 
@@ -601,8 +597,8 @@ a style of programming we will exploit in `View`.
 
 Declaring a module variable such as `sys` is not sufficient to access a
 module; an implementation must also be loaded and bound to the variable.
-Lines 21-25 load the implementations of the standard modules used by
-`View` .  The `load` operator, for example
+Lines 22-26 load the implementations of the standard modules used by
+`View`.  The `load` operator, for example
 
 [source]
 sys = load Sys Sys->PATH;
@@ -615,11 +611,11 @@ an error.  Conventionally, the `PATH` constant defined by a module names
 the default implementation.  Because `Sys` is a built-in module provided
 by the system, it has a special form of name; other modules' `PATH`
 variables name files containing actual code.  For example, `Wmlib->PATH`
-is \f5"/dis/lib/wmlib.dis"\fP.  Note, though, that the name of the
+is `/dis/lib/wmlib.dis`.  Note, though, that the name of the
 implementation of the module in a `load` statement can be any string.
 
-Line 26 initializes the `wmlib` module by invoking its `init` function
-(unrelated to the `init` of `View` ).  Note the use of the `->` operator
+Line 27 initializes the `wmlib` module by invoking its `init` function
+(unrelated to the `init` of `View`).  Note the use of the `->` operator
 to access the member function of the module.  The next two lines load
 modules, but add a new wrinkle: they also _declare_ and _initialize_
 the module variables storing the reference.  Limbo declarations have
@@ -633,15 +629,15 @@ If the type is missing, it is taken to be the type of the value, so for example,
 [source]
 bufio := load Bufio Bufio->PATH;
 
-on line 28 declares a variable of type `Bufio` and initializes it to
+on line 30 declares a variable of type `Bufio` and initializes it to
 the result of the `load` expression.
 
 
-== The main loop
+== the main loop
 
-The `init` function takes two parameters, a graphics context, `ctxt` ,
-for the program and a list of command-line argument strings, `argv` .
-`Argv` is a `list` `of` `string` ; strings are a built-in type in
+The `init` function takes two parameters, a graphics context, `ctxt`,
+for the program and a list of command-line argument strings, `argv`.
+`Argv` is a `list of string`; strings are a built-in type in
 Limbo and lists are a built-in form of constructor.  Lists have several
 operations defined: `hd` (head) returns the first element in the list,
 `tl` (tail) the remainder after the head, and `len` (length) the number
@@ -661,20 +657,20 @@ im := ctxt.display.open(file);
 
 The parameter `ctxt` is an `adt` that contains all the relevant
 information for the program to access its graphics environment.
-One of its elements, called `display` , represents the connection to
+One of its elements, called `display`, represents the connection to
 the frame buffer on which the program may write.  The `adt` `display`
 (whose type is imported on line 6) has a member function `open` that
 reads a named image file into the memory associated with the frame buffer,
 returning a reference to the new image. (In X <<x>> terminology, `display`
 represents a connection to the server and `open` reads a pixmap from a
-file and instantiates it on that server.)
+file and instantiates it on that server).
 
 The `display.open` method succeeds only if the file exists and is in
 the standard Inferno image format.  If it fails, it will return `nil`
 and lines 38-50 will attempt to convert the file into the right form.
 
 
-== Decoding the file
+== decoding the file
 
 Line 38 calls `filetype` to determine what format the file has.
 The simple version here, on lines 85-92, just looks at the file suffix
@@ -688,15 +684,15 @@ type `RImagefile` .  However, unlike the other modules we have looked at,
 `filetype` returns the implementation of `RImagefile` that decodes
 GIFs; if it is a JPEG file, `filetype` returns an implementation that
 decodes JPEGs.  In either case, the `read` method has the same interface.
-Since reference variables like `r` are implicitly initialized to `nil`
-, that is what `filetype` will return if it does not recognize the
+Since reference variables like `r` are implicitly initialized to `nil`,
+that is what `filetype` will return if it does not recognize the
 image format.
 
 Thus, `filetype` accepts a file name and returns the implementation of
 a module to decode it.
 
-A couple of other points about `filetype` .  First, the expression
-`"file[len` file-4:]" is a _"slice"_ of the string `file` ; it creates
+A couple of other points about `filetype`.  First, the expression
+`file[len file-4:]` is a _slice_ of the string `file`; it creates
 a string holding the last four characters of the file name.  The colon
 separates the starting and ending indices of the slice; the missing
 second index defaults to the end of the string.  As with lists, `len`
@@ -731,34 +727,34 @@ discovered, line 41 opens the file for I/O using the buffered I/O package.
 Line 44 calls the `init` function of the decoder module, passing it the
 instance of the buffered I/O module being used (if we were caching decoder
 modules, this call to `init` would be done only when the decoder is first
-loaded.)  Finally, the Limbo-characteristic line 45 reads in the file:
+loaded).  Finally, the Limbo-characteristic line 45 reads in the file:
 
 [source]
 (ri, err) := idec->read(fd);
 
 The `read` method of the decoder does the hard job of cracking the
 image format, which is beyond the scope of this paper.  The result is
-a _"tuple"_ : a pair of values.  The first element of the pair is the
+a _tuple_: a pair of values.  The first element of the pair is the
 image, while the second is an error string.  If all goes well, the `err`
-will be `nil` ; if there is a problem, however, `err` may be printed by
+will be `nil`; if there is a problem, however, `err` may be printed by
 the application to report what went wrong.  The interesting property
 of this style of error reporting, common to Limbo programs, is that
 an error can be returned even if the decoding was successful (that is,
-even if `ri` is non- `nil` ).  For example, the error may be recoverable,
+even if `ri` is non-`nil`).  For example, the error may be recoverable,
 in which case it is worth returning the result but also worth reporting
 that an error did occur, leaving the application to decide whether to
-display the error or ignore it.  `View` "\ " ( ignores it, for brevity.)
+display the error or ignore it (`View` ignores it, for brevity).
 
 In a similar manner, line 48 remaps the colors from the incoming colormap
 associated with the file to the standard Inferno color map.  The result
 is an image ready to be displayed.
 
 
-== Creating a process
+== creating a process
 
 By line 52 in the main loop, we have an image ready in the variable `im`
 and use the Limbo primitive `spawn` to create a new process to display
-that image on the screen.  `Spawn` operates on a function call, creating
+that image on the screen. `Spawn` operates on a function call, creating
 a new process to execute that function.  The process doing the spawning,
 here the main loop, continues immediately, while the new process begins
 execution in the specified function with the specified parameters.
@@ -767,12 +763,12 @@ the graphics context, the image to display, the file name, and a unique
 identification number used in placing the windows.
 
 The new process shares with the calling process all variables except
-the stack.  Shared memory can therefore be used to communicate between
+the stack. Shared memory can therefore be used to communicate between
 them; for synchronization, a more sophisticated mechanism is needed,
 a subject we will cover in the section on communications.
 
 
-== Starting Tk
+== starting Tk
 
 The function `view` uses the Inferno Tk graphics toolkit (a
 re-implementation for Limbo of Ousterhout's Tcl/Tk toolkit [18]) to place
@@ -792,13 +788,13 @@ the control flow, arithmetic, and so on written in Limbo.
 A good introduction to the style is the function `posn` on lines 77-84.
 The calls to `tk->cmd` evaluate the textual command in the context defined
 by the `Tk->Toplevel` variable `t` (created on line 57 and passed to
-`posn` ); the result is a decimal integer, converted to binary by
+`posn`); the result is a decimal integer, converted to binary by
 the explicit `int` conversion.  On line 83, all the coordinates of the
 rectangle are known, and the function returns a nested tuple defining the
 rectangular position of the `.im` component of the Toplevel.  This tuple
 is automatically promoted to the `Rect` type by the return statement.
 
-Back in function `view` , line 58 uses a function from the higher-level
+Back in function `view`, line 58 uses a function from the higher-level
 `String` module to strip off the basename of the file name, for use in
 the banner of the window.  Note that one component of the tuple is nil;
 the value of this component is discarded.  Line 58 calls the window
@@ -807,29 +803,31 @@ window The arguments are `ctxt.screen` , a data structure representing
 the window stack on the frame buffer, a string specifying the size and
 properties of the new window, the window's label, and the set of control
 buttons required.  The `+` operator on strings performs concatenation.
-The window is labelled \f5"View"\fP and the file basename, with a
-control button to hide the window.  Titlebars always include a control
-button to dismiss the window.  (The size and properties argument is more
-commonly nil or the empty string, leaving the choice of position and
-style to the window manager.)  The first value in the tuple returned by
-`wmlib->titlebar` is a reference to a `top-level' widget\-a window\-upon
+The window is labelled "View" and the file basename, with a
+control button to hide the window. Titlebars always include a control
+button to dismiss the window.
+
+NOTE: The size and properties argument is more commonly nil or the empty string,
+leaving the choice of position and style to the window manager.
+
+The first value in the tuple returned by
+`wmlib->titlebar` is a reference to a 'top-level' widget -- a window -- upon
 which the program will assemble its display.
 
 
-== Communications
+== communications
 
 The second value in the tuple returned from `wmlib->titlebar` is
-a built-in Limbo type called a channel `chan` "" ( is the keyword).
+a built-in Limbo type called a channel (`chan` is the keyword).
 A channel is a communications mechanism in the manner of Hoare's CSP <<csp>>.
 Two processes that wish to communicate do so using a shared channel; data
 sent on the channel by one process may be received by another process.
-The communication is _"synchronous"_ : both processes must be ready to
+The communication is _synchronous_: both processes must be ready to
 communicate before the data changes hands, and if one is not ready the
 other blocks until it is.  Channels are a feature of the Limbo language:
-they have a declared type `chan` "" ( `of` `int` , `chan` `of` `list` `of`
-`string` , etc.) and only data of the correct type may be sent.  There is
-no restriction on what may be sent; one may even send a channel on a
-channel.  Channels therefore serve both to communicate and to synchronize.
+they have a declared type (`chan of int`, `chan of list of string`, etc.) and only data of the correct type may be sent.
+There is no restriction on what may be sent; one may even send a channel on a
+channel. Channels therefore serve both to communicate and to synchronize.
 
 Channels are used throughout Inferno to provide interfaces to system
 functions.  The threading and communications primitives in Limbo are not
@@ -837,31 +835,31 @@ designed to implement efficient multicomputer algorithms, but rather
 to provide an elegant way to build active interfaces to devices and
 other programs.
 
-One example is the `menubut` channel returned by `wmlib->titlebar` , a
+One example is the `menubut` channel returned by `wmlib->titlebar`, a
 channel of textual commands sent by the window manager.  The expression
 on line 69,
 
     menu := <-menubut
 
 receives the next message on the channel and assigns it to the variable
-menu.  The communications operator, `<-` , receives a datum when prefixed
+menu.  The communications operator, `<-`, receives a datum when prefixed
 to channel and transmits a datum when combined with an assignment operator
-(e.g.  `channel<-=2` ).  This use of menubut appears inside an `alt`
+(e.g.  `channel<-=2`).  This use of menubut appears inside an `alt`
 (alternation) statement, a construct we'll discuss later.
 
-Lines 60 and 61 create and register a new channel, `event` , to be
+Lines 60 and 61 create and register a new channel, `event`, to be
 used by the Tk module to report user interface events.  Lines 62-66 use
 simple Tk operations to make the window in which the image may be drawn.
 Lines 63 and 64 bind events within this window to messages to be sent
-on the channel `event` .  For example, line 63 defines that when the
+on the channel `event`.  For example, line 63 defines that when the
 configuration of the window is changed, presumably by actions of the
-window manager, the string \f5"resize"\fP is to be transmitted on
+window manager, the string "resize" is to be transmitted on
 `event` for interpretation by the application.  This translation of
 events into messages on explicit channels is fundamental to the Limbo
 style of programming.
 
 
-== Displaying the image
+== displaying the image
 
 The payoff occurs on line 67, which steps outside the Tk model to draw
 the image `im` directly on the window:
@@ -872,22 +870,22 @@ t.image.draw(posn(t), im, ctxt.display.ones, im.r.min);
 `Posn` calculates where on the screen the image is to go.  The `draw`
 method is the fundamental graphics operation in Inferno, whose design
 is outside our scope here.  In this statement, it just copies the
-pixels from `im` to the window's own image, `t.image` ; the argument
+pixels from `im` to the window's own image, `t.image`; the argument
 `ctxt.display.ones` is a mask that selects every pixel.
 
 
-Multi-way communications
+=== multi-way communications
 
 Once the image is on the screen, `view` waits for any changes in the
 status of the window.  Two things may happen: either the buttons on the
-title bar may be used, in which case a message will appear on `menubut`
-, or a configuration or mapping operation will apply to the window,
-in which case a message will appear on `event` .
+title bar may be used, in which case a message will appear on `menubut`,
+or a configuration or mapping operation will apply to the window,
+in which case a message will appear on `event`.
 
 The Limbo `alt` statement provides control when more than one
 communication may proceed.  Analogous to a `case` statement, the `alt`
 evaluates a set of expressions and executes the statements associated
-with the correct expression.   Unlike a `case` , though, the expressions
+with the correct expression.   Unlike a `case`, though, the expressions
 in an `alt` must each be a communication, and the `alt` will execute the
 statements associated with the communication that can first proceed.
 If none can proceed, the `alt` waits until one can; if more than one
@@ -895,18 +893,18 @@ can proceed, it chooses one randomly.
 
 Thus the loop on lines 68-75 processes messages received by the two
 classes of actions.  When the window is moved or resized, line 73 will
-receive a \f5"resize"\fP message due to the bindings on lines 63 and 64.
+receive a "resize" message due to the bindings on lines 63 and 64.
 The message is discarded but the action of receiving it triggers the
 repainting of the newly placed window on line 74.  Similarly, messages
-triggered by buttons on the title bar send a message on `menubut` ,
-and the value of that is examined to see if it is \f5"exit"\fP, which
+triggered by buttons on the title bar send a message on `menubut`,
+and the value of that is examined to see if it is "exit", which
 should be handled locally, or anything else, which can be passed on to
 the underlying library.
 
 
-== Cleanup
+== cleanup
 
-If the exit button is pushed, line 71 will return from `view` .  Since
+If the exit button is pushed, line 71 will return from `view`.  Since
 `view` was the top-level function in this process, the process will exit,
 freeing all its resources.  All memory, open file descriptors, windows,
 and other resources held by the process will be garbage collected when
@@ -942,25 +940,25 @@ This paper is adapted from the original by Sean Dorward, Rob Pike, David Leo Pre
 [bibliography]
 == references
 
-- [[[plan9,1]]] R. Pike, D. Presotto, S. Dorward, B. Flandrena, K. Thompson, H. Trickey, and P. Winterbottom. 'Plan 9 from Bell Labs', _J. Computing Systems_ 8:3, Summer 1995, pp. 221-254.
-- [[[limbo,2]]] S. Dorward, R. Pike, and P. Winterbottom.  'Programming in Limbo', _IEEE Compcon 97 Proceedings_, 1997.
-- J. K. Ousterhout. _Tcl_ and the Tk Toolkit_, Addison-Wesley, 1994.
-- [[[pubkey,4]]] T. Elgamal, 'A Public-Key Cryptosystem and a Signature Scheme Based on Discrete Logarithms', _Advances in Cryptography: Proceedings of CRYPTO 84,_ Springer Verlag, 1985, pp. 10-18
-- [[[acrypt,5]]] B. Schneier,  'Applied Cryptography',  Wiley, 1996, p. 516
-- [[[dh,6]]] D. Stinson, 'Cryptography, Theory and Practice', _CRC Press_, 1996, p. 271
-- [[[ssl,7]]] K. Hickman and T. Elgamal, 'The SSL Protocol (V3.0)', _IETF Internet-draft_
+- [[[plan9]]] R. Pike, D. Presotto, S. Dorward, B. Flandrena, K. Thompson, H. Trickey, and P. Winterbottom. 'Plan 9 from Bell Labs', _J. Computing Systems_ 8:3, Summer 1995, pp. 221-254.
+- [[[limbo]]] S. Dorward, R. Pike, and P. Winterbottom.  'Programming in Limbo', _IEEE Compcon 97 Proceedings_, 1997.
+- [[[tcl]]] J. K. Ousterhout. _Tcl_ and the Tk Toolkit_, Addison-Wesley, 1994.
+- [[[pubkey]]] T. Elgamal, 'A Public-Key Cryptosystem and a Signature Scheme Based on Discrete Logarithms', _Advances in Cryptography: Proceedings of CRYPTO 84,_ Springer Verlag, 1985, pp. 10-18
+- [[[acrypt]]] B. Schneier,  'Applied Cryptography',  Wiley, 1996, p. 516
+- [[[dh]]] D. Stinson, 'Cryptography, Theory and Practice', _CRC Press_, 1996, p. 271
+- [[[ssl]]] K. Hickman and T. Elgamal, 'The SSL Protocol (V3.0)', _IETF Internet-draft_
 - S. M. Bellovin and M. Merritt, 'Encrypted Key Exchange: Password-Based Protocols Secure Against Dictionary Attack', Proceedings of the 1992 IEEE Computer Society Conference on Research in Security and Privacy, 1992, pp. 72-84
 - M. Blaze, J. Feigenbaum, J. Lacy, `Decentralized Trust Management', _Proceedings 1996 IEEE Symposium on Security and Privacy_, May 1996
-- [[[disarc,10]]] R. Rivest and B. Lampson, 'SDSI - A Simple Distributed Security Architecture', unpublished, _http://theory.lcs.mit.edu/~rivest/sdsi10.ps_
-- [[[ansic,11]]] _American National Standard for Information Systems Programming Language C_, American National Standards Institute, X3.159-1989.
-- [[[gif1,12]]] _GIF Graphics Interchange Format: A standard defining a mechanism for the storage and transmission of bitmap-based graphics information_, CompuServe Incorporated, Columbus, OH, 1987.
-- [[[gif2,13]]] _GIF Graphics Interchange Format: Version 89a_, CompuServe Incorporated, Columbus, OH, 1990.
+- [[[disarc]]] R. Rivest and B. Lampson, 'SDSI - A Simple Distributed Security Architecture', unpublished, _http://theory.lcs.mit.edu/~rivest/sdsi10.ps_
+- [[[ansic]]] _American National Standard for Information Systems Programming Language C_, American National Standards Institute, X3.159-1989.
+- [[[gif1]]] _GIF Graphics Interchange Format: A standard defining a mechanism for the storage and transmission of bitmap-based graphics information_, CompuServe Incorporated, Columbus, OH, 1987.
+- [[[gif2]]] _GIF Graphics Interchange Format: Version 89a_, CompuServe Incorporated, Columbus, OH, 1990.
 - S. Dorward et al., 'Inferno', _IEEE Compcon 97 Proceedings_ , 1997.
-- [[[csp,15]]] C. A. R. Hoare, 'Communicating Sequential Processes'.  _Comm. ACM_ 21:8,  pp. 666-677, 1978.
-- [[[gc,16]]] L. Huelsbergen, and P. Winterbottom, 'Very Concurrent Mark & Sweep Garbage Collection without Fine-Grain Synchronization', Submitted _International Conference of Functional Programming_, Amsterdam, 1997.
-- [[[pascal,17]]] K. Jensen, and N. Wirth, _PascalUser Manual and Report_. Springer-Verlag, 1974.
-- [[[tk,18]]] John K. Ousterhout, _Tcl and the Tk Toolkit_, Addison-Wesley, 1994.
-- [[[jpeg,19]]] W. B. Pennebaker. and J. L. Mitchell, _JPEG Still Image Data Compression_, Van Nostrand Reinhold, New York, 1992.
-- [[[x,20]]] R. W. Scheifler, J. Gettys, and R. Newman, _X Window System_, Digital Press, 1988.
-- [[[unicode,21]]] The Unicode Consortium, _The Unicode Standard, Version 2.0_, Addison Wesley, 1996.
-- [[[cryptolib,22]]] J. B. Lacy, D. P. Mitchell, and W. M. Schell, 'CryptoLib: Cryptography in Software,' _UNIX Security Symposium IV Proceedings_, USENIX Association, 1993 pp. 1-17.
+- [[[csp]]] C. A. R. Hoare, 'Communicating Sequential Processes'.  _Comm. ACM_ 21:8,  pp. 666-677, 1978.
+- [[[gc]]] L. Huelsbergen, and P. Winterbottom, 'Very Concurrent Mark & Sweep Garbage Collection without Fine-Grain Synchronization', Submitted _International Conference of Functional Programming_, Amsterdam, 1997.
+- [[[pascal]]] K. Jensen, and N. Wirth, _PascalUser Manual and Report_. Springer-Verlag, 1974.
+- [[[tk]]] John K. Ousterhout, _Tcl and the Tk Toolkit_, Addison-Wesley, 1994.
+- [[[jpeg]]] W. B. Pennebaker. and J. L. Mitchell, _JPEG Still Image Data Compression_, Van Nostrand Reinhold, New York, 1992.
+- [[[x]]] R. W. Scheifler, J. Gettys, and R. Newman, _X Window System_, Digital Press, 1988.
+- [[[unicode]]] The Unicode Consortium, _The Unicode Standard, Version 2.0_, Addison Wesley, 1996.
+- [[[cryptolib]]] J. B. Lacy, D. P. Mitchell, and W. M. Schell, 'CryptoLib: Cryptography in Software,' _UNIX Security Symposium IV Proceedings_, USENIX Association, 1993 pp. 1-17.

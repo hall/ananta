@@ -1,6 +1,6 @@
 = {name}: one hell of an operating system
-:docpath: https://inf.bryton.io/manual
-:name: inf
+:docpath: https://{name}.bryton.io/manual
+:name: ananta
 
 {docpath}[{name}] is a derivative of http://www.inferno-os.info/inferno/[Inferno] (a distributed operating system originally developed at http://www.bell-labs.com/[Bell Labs] and currently maintained by http://www.vitanuova.com/[Vita Nuova]) aimed at modernization for mass adoption.
 
@@ -60,5 +60,4 @@ Documentation is at {docpath}[].
 
 == about
 
-https://gitlab.com/hall/inf[`{name}`] is licensed under the link:LICENSE[GNU GPLv3].
-
+https://gitlab.com/hall/{name}[`{name}`] is licensed under the link:LICENSE[GNU GPLv3].
